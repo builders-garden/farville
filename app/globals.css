@@ -3,19 +3,147 @@
 @tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --grass: #2d5a27;
+  --grass-hover: #366b2f;
+  --soil: #7b5d3f;
+  --soil-pattern: radial-gradient(
+    circle at 1px 1px,
+    rgba(0, 0, 0, 0.15) 1px,
+    transparent 0
+  );
+  --tilled: #8b6147;
+  --sky: #a7c7e7;
+  --wood: #966f33;
 }
 
 body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  @apply bg-[var(--grass)] text-slate-800 overflow-hidden touch-none select-none;
+}
+
+.grid-cell {
+  @apply border-2 border-black/5 transition-all duration-200 bg-opacity-90 
+         hover:border-black/10 hover:scale-[1.02] active:scale-95;
+  box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.1);
+}
+
+.grid-cell.soil {
+  @apply bg-[var(--soil)];
+  background-image: linear-gradient(
+    45deg,
+    rgba(0, 0, 0, 0.1) 25%,
+    transparent 25%,
+    transparent 50%,
+    rgba(0, 0, 0, 0.1) 50%,
+    rgba(0, 0, 0, 0.1) 75%,
+    transparent 75%,
+    transparent
+  );
+  background-size: 8px 8px;
+}
+
+.grid-cell.growing {
+  @apply bg-[var(--soil)] relative overflow-hidden;
+  animation: grow 2s ease-in-out infinite;
+}
+
+.grid-cell.ready {
+  @apply bg-yellow-500/50;
+  animation: pulse 1.5s ease-in-out infinite;
+  box-shadow: 0 0 15px rgba(234, 179, 8, 0.3);
+}
+
+@keyframes grow {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.02);
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 0.5;
+    filter: brightness(1);
+  }
+  50% {
+    opacity: 1;
+    filter: brightness(1.2);
+  }
+}
+
+.growth-progress {
+  @apply absolute bottom-0 left-0 w-full h-1 bg-black/20;
+  transform-origin: left;
+  transition: width 1s linear;
+}
+
+@keyframes xpGain {
+  0% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+}
+
+.xp-popup {
+  animation: xpGain 1s ease-out forwards;
+}
+
+.drop-shadow-glow {
+  filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.5));
+}
+
+@keyframes sparkle {
+  0% {
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%)
+      translate(
+        calc(cos(calc(360deg / 6 * var(--i))) * 50px),
+        calc(sin(calc(360deg / 6 * var(--i))) * 50px)
+      )
+      scale(1);
+    opacity: 0;
+  }
+}
+
+.soil-texture {
+  background-color: var(--tilled);
+  background-image: radial-gradient(
+      rgba(92, 64, 51, 0.4) 1.5px,
+      transparent 1.5px
+    ),
+    radial-gradient(rgba(92, 64, 51, 0.3) 1.5px, transparent 1.5px);
+  background-size: 10px 10px;
+  background-position: 0 0, 5px 5px;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.growing-texture {
+  background-color: var(--soil);
+  background-image: linear-gradient(
+      45deg,
+      rgba(73, 51, 41, 0.3) 25%,
+      transparent 25%
+    ),
+    linear-gradient(-45deg, rgba(73, 51, 41, 0.3) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, rgba(73, 51, 41, 0.3) 75%),
+    linear-gradient(-45deg, transparent 75%, rgba(73, 51, 41, 0.3) 75%);
+  background-size: 12px 12px;
+  background-position: 0 0, 0 6px, 6px -6px, -6px 0;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.cell-border {
+  border: 2px solid rgba(0, 0, 0, 0.1);
+  box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.1),
+    0 2px 4px rgba(0, 0, 0, 0.05);
 }
