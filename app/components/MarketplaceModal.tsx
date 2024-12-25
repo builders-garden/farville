@@ -18,38 +18,42 @@ const PERKS: Perk[] = [
   {
     id: "yield_1",
     name: "Basic Yield Booster",
-    description: "Increases crop yield by 50%",
+    description: "Increases crop yield by 50% for 24 hours",
     cost: 500,
     type: "YIELD_BOOSTER",
     multiplier: 1.5,
     icon: "✨",
+    duration: 24 * 60 * 60 * 1000,
   },
   {
     id: "yield_2",
     name: "Advanced Yield Booster",
-    description: "Doubles crop yield",
+    description: "Doubles crop yield for 24 hours",
     cost: 1000,
     type: "YIELD_BOOSTER",
     multiplier: 2,
     icon: "✨",
+    duration: 24 * 60 * 60 * 1000,
   },
   {
     id: "growth_1",
     name: "Basic Fertilizer",
-    description: "Crops grow 50% faster",
+    description: "Crops grow 50% faster for 24 hours",
     cost: 500,
     type: "GROWTH_BOOSTER",
     multiplier: 1.5,
     icon: "🌱",
+    duration: 24 * 60 * 60 * 1000,
   },
   {
     id: "growth_2",
     name: "Premium Fertilizer",
-    description: "Crops grow twice as fast",
+    description: "Crops grow twice as fast for 24 hours",
     cost: 1000,
     type: "GROWTH_BOOSTER",
     multiplier: 2,
     icon: "🌱",
+    duration: 24 * 60 * 60 * 1000,
   },
 ];
 
@@ -117,7 +121,7 @@ export default function MarketplaceModal({ onClose }: { onClose: () => void }) {
           </div>
 
           {/* Tabs */}
-          <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
+          <div className="grid grid-cols-4 gap-2 mb-6">
             {tabs.map((tab, index) => (
               <motion.button
                 key={tab.id}
@@ -125,7 +129,7 @@ export default function MarketplaceModal({ onClose }: { onClose: () => void }) {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
                 onClick={() => setActiveTab(tab.id)}
-                className={`px-4 py-2 rounded-lg flex items-center gap-2 transition-all duration-200
+                className={`px-3 py-2 rounded-lg flex items-center justify-center gap-1.5 transition-all duration-200 w-full
                   ${
                     activeTab === tab.id
                       ? "bg-[#6d4c2c] text-white scale-105 shadow-lg"
@@ -144,7 +148,7 @@ export default function MarketplaceModal({ onClose }: { onClose: () => void }) {
                 >
                   {tab.icon}
                 </motion.span>
-                <span>{tab.label}</span>
+                <span className="text-sm">{tab.label}</span>
               </motion.button>
             ))}
           </div>
@@ -414,9 +418,7 @@ export default function MarketplaceModal({ onClose }: { onClose: () => void }) {
                         className="bg-[#5c3d23] px-3 py-2 rounded flex items-center justify-between"
                       >
                         <div className="flex items-center gap-2">
-                          <span className="text-xl">
-                            {perk.type === "YIELD_BOOSTER" ? "🌾" : "🌱"}
-                          </span>
+                          <span className="text-xl">{perk.icon}</span>
                           <div>
                             <p className="text-white/90 text-sm font-medium">
                               {perk.name}
@@ -428,15 +430,18 @@ export default function MarketplaceModal({ onClose }: { onClose: () => void }) {
                         </div>
                         {perk.activatedAt && perk.duration && (
                           <div className="text-[#FFB938] text-sm font-medium">
-                            {Math.max(
-                              0,
-                              Math.ceil(
-                                (perk.duration -
-                                  (Date.now() - perk.activatedAt)) /
-                                  1000
-                              )
-                            )}
-                            s
+                            {(() => {
+                              const remainingMs =
+                                perk.duration - (Date.now() - perk.activatedAt);
+                              if (remainingMs <= 0) return "Expired";
+                              const hours = Math.floor(
+                                remainingMs / (60 * 60 * 1000)
+                              );
+                              const minutes = Math.floor(
+                                (remainingMs % (60 * 60 * 1000)) / (60 * 1000)
+                              );
+                              return `${hours}h ${minutes}m`;
+                            })()}
                           </div>
                         )}
                       </div>
@@ -448,7 +453,7 @@ export default function MarketplaceModal({ onClose }: { onClose: () => void }) {
               </div>
 
               {/* Available Perks */}
-              <div className="grid gap-2">
+              <div className="grid gap-3">
                 {PERKS.map((perk) => {
                   const isOwned = state.perks.owned.some(
                     (p) => p.id === perk.id
@@ -460,21 +465,21 @@ export default function MarketplaceModal({ onClose }: { onClose: () => void }) {
                   return (
                     <motion.div
                       key={perk.id}
-                      className="bg-[#6d4c2c] px-4 py-3 rounded-lg flex items-center justify-between
-                               border border-[#8B5E3C]/50 shadow-md"
+                      className="bg-[#6d4c2c] p-4 rounded-lg flex items-center justify-between
+                                 border border-[#8B5E3C]/50 shadow-md hover:bg-[#7d583a] transition-colors"
                     >
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 flex items-center justify-center">
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 bg-[#8B5E3C]/30 rounded-lg flex items-center justify-center">
                           <motion.span
                             className="text-2xl"
                             animate={{ y: [0, -2, 0] }}
                             transition={{ duration: 1.5, repeat: Infinity }}
                           >
-                            {perk.type === "YIELD_BOOSTER" ? "🌾" : "🌱"}
+                            {perk.icon}
                           </motion.span>
                         </div>
-                        <div>
-                          <p className="text-white/90 font-medium">
+                        <div className="flex-1">
+                          <p className="text-white/90 font-medium mb-1">
                             {perk.name}
                           </p>
                           <p className="text-white/60 text-sm">
@@ -482,35 +487,50 @@ export default function MarketplaceModal({ onClose }: { onClose: () => void }) {
                           </p>
                         </div>
                       </div>
-                      {!isOwned ? (
+                      <div className="flex flex-col items-end gap-2 ml-4">
                         <motion.button
                           whileHover={{ scale: 1.03 }}
                           whileTap={{ scale: 0.97 }}
                           onClick={() =>
-                            dispatch({ type: "PURCHASE_PERK", perk })
+                            isOwned
+                              ? dispatch({ type: "ACTIVATE_PERK", perk })
+                              : dispatch({ type: "PURCHASE_PERK", perk })
                           }
-                          disabled={state.coins < perk.cost}
-                          className="min-w-[100px] py-1.5 bg-[#8B5E3C] text-white/90 rounded hover:bg-[#9b6a44] 
-                                   transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-sm font-medium
-                                   border border-white/10"
-                        >
-                          🪙 {perk.cost}
-                        </motion.button>
-                      ) : (
-                        <motion.button
-                          whileHover={{ scale: 1.03 }}
-                          whileTap={{ scale: 0.97 }}
-                          onClick={() =>
-                            dispatch({ type: "ACTIVATE_PERK", perk })
+                          disabled={
+                            isOwned ? isActive : state.coins < perk.cost
                           }
-                          disabled={isActive}
-                          className="min-w-[100px] py-1.5 bg-[#2B593B] text-white/90 rounded hover:bg-[#346344] 
-                                   transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-sm font-medium
-                                   border border-white/10"
+                          className={`min-w-[100px] py-2 px-4 rounded-lg text-sm font-medium
+                                     transition-colors disabled:opacity-40 disabled:cursor-not-allowed
+                                     ${
+                                       isOwned
+                                         ? "bg-[#2B593B] text-white/90 hover:bg-[#346344]"
+                                         : "bg-[#8B5E3C] text-white/90 hover:bg-[#9b6a44]"
+                                     }
+                                     border border-white/10`}
                         >
-                          {isActive ? "Active" : "Activate"}
+                          {isOwned
+                            ? isActive
+                              ? "Active"
+                              : "Activate"
+                            : `🪙 ${perk.cost}`}
                         </motion.button>
-                      )}
+                        {isActive && perk.activatedAt && perk.duration && (
+                          <div className="text-[#FFB938] text-sm font-medium">
+                            {(() => {
+                              const remainingMs =
+                                perk.duration - (Date.now() - perk.activatedAt);
+                              if (remainingMs <= 0) return "Expired";
+                              const hours = Math.floor(
+                                remainingMs / (60 * 60 * 1000)
+                              );
+                              const minutes = Math.floor(
+                                (remainingMs % (60 * 60 * 1000)) / (60 * 1000)
+                              );
+                              return `${hours}h ${minutes}m`;
+                            })()}
+                          </div>
+                        )}
+                      </div>
                     </motion.div>
                   );
                 })}

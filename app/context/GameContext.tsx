@@ -15,6 +15,7 @@ import type {
   GridCell,
 } from "../types/game";
 import type { Perk } from "../types/perks";
+import { useAudio } from "./AudioContext";
 
 // Add EXPANSION_COSTS to the context file
 export const EXPANSION_COSTS: ExpansionCost[] = [
@@ -38,7 +39,8 @@ type GameAction =
   | { type: "SELL_CROPS"; cropType: CropType; amount: number }
   | { type: "EXPAND_LAND" }
   | { type: "TOGGLE_INVENTORY" }
-  | { type: "TOGGLE_MARKETPLACE" };
+  | { type: "TOGGLE_MARKETPLACE" }
+  | { type: "TOGGLE_SETTINGS" };
 
 // Define context type
 interface GameContextType {
@@ -54,6 +56,7 @@ interface GameContextType {
   dispatch: Dispatch<GameAction>;
   toggleInventory: () => void;
   toggleMarketplace: () => void;
+  toggleSettings: () => void;
 }
 
 type GrowthTimes = {
@@ -61,7 +64,11 @@ type GrowthTimes = {
 };
 
 // Game reducer function
-function gameReducer(state: GameState, action: GameAction): GameState {
+function gameReducer(
+  state: GameState,
+  action: GameAction,
+  playSound?: (sound: string) => void
+): GameState {
   switch (action.type) {
     case "TILL_SOIL": {
       const newGrid = [...state.grid];
@@ -81,6 +88,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
     }
 
     case "PLANT_CROP": {
+      playSound?.("plant");
       const newGrid = structuredClone(state.grid);
       const cell = newGrid[action.y][action.x];
 
@@ -111,6 +119,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
     }
 
     case "HARVEST_CROP": {
+      playSound?.("harvest");
       const newGrid = structuredClone(state.grid);
       const cell = newGrid[action.y][action.x];
 
@@ -133,6 +142,10 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 
       const newExperience = state.experience + reward.exp;
       const newLevel = Math.floor(newExperience / 100) + 1;
+
+      if (newLevel > state.level) {
+        playSound?.("levelUp");
+      }
 
       const yieldMultiplier = calculateYieldMultiplier(state, harvestedType);
       const harvestedAmount = Math.floor(reward.yield * yieldMultiplier);
@@ -201,29 +214,20 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         return state;
       }
 
+      const now = Date.now();
+      const activePerks = state.perks.active.filter((perk) => {
+        if (!perk.duration || !perk.activatedAt) return true;
+        return (
+          now - perk.activatedAt < perk.duration &&
+          perk.type !== action.perk.type
+        );
+      });
+
       return {
         ...state,
         perks: {
           ...state.perks,
-          active: [
-            ...state.perks.active,
-            { ...action.perk, activatedAt: Date.now() },
-          ],
-        },
-      };
-    }
-
-    case "PURCHASE_PERK": {
-      if (state.coins < action.perk.cost) {
-        return state;
-      }
-
-      return {
-        ...state,
-        coins: state.coins - action.perk.cost,
-        perks: {
-          ...state.perks,
-          owned: [...state.perks.owned, action.perk],
+          active: [...activePerks, { ...action.perk, activatedAt: now }],
         },
       };
     }
@@ -242,6 +246,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         return state;
       }
 
+      playSound?.("coins");
       return {
         ...state,
         coins: state.coins - totalCost,
@@ -253,6 +258,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
     }
 
     case "SELL_CROPS": {
+      playSound?.("coins");
       const cropPrices = {
         wheat: 10,
         corn: 15,
@@ -322,6 +328,28 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         showMarketplace: !state.showMarketplace,
       };
 
+    case "TOGGLE_SETTINGS":
+      return {
+        ...state,
+        showSettings: !state.showSettings,
+      };
+
+    case "PURCHASE_PERK": {
+      if (state.coins < action.perk.cost) {
+        return state;
+      }
+
+      playSound?.("coins");
+      return {
+        ...state,
+        coins: state.coins - action.perk.cost,
+        perks: {
+          ...state.perks,
+          owned: [...state.perks.owned, action.perk],
+        },
+      };
+    }
+
     default:
       return state;
   }
@@ -370,13 +398,19 @@ const initialState: GameState = {
   expansionLevel: 0,
   showInventory: false,
   showMarketplace: false,
+  showSettings: false,
 };
 
 // Create the context with initial null value
 export const GameContext = createContext<GameContextType | null>(null);
 
 export function GameProvider({ children }: { children: React.ReactNode }) {
-  const [state, dispatch] = useReducer(gameReducer, initialState);
+  const { playSound } = useAudio();
+  const [state, dispatch] = useReducer(
+    (state: GameState, action: GameAction) =>
+      gameReducer(state, action, playSound),
+    initialState
+  );
   const [selectedCrop, setSelectedCrop] = useState<CropType | null>(null);
 
   // Add debug logging for state changes
@@ -434,16 +468,25 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
   };
 
   const getActivePerks = () => {
-    // Filter out expired perks and return active ones
     const now = Date.now();
     return state.perks.active.filter((perk: Perk) => {
       if (!perk.duration || !perk.activatedAt) return true;
-      return now - perk.activatedAt < perk.duration;
+      const isActive = now - perk.activatedAt < perk.duration;
+
+      // If perk is expired, we should remove it from active perks
+      if (!isActive) {
+        dispatch({
+          type: "ACTIVATE_PERK",
+          perk: { ...perk, activatedAt: 0 },
+        });
+      }
+      return isActive;
     });
   };
 
   const toggleInventory = () => dispatch({ type: "TOGGLE_INVENTORY" });
   const toggleMarketplace = () => dispatch({ type: "TOGGLE_MARKETPLACE" });
+  const toggleSettings = () => dispatch({ type: "TOGGLE_SETTINGS" });
 
   return (
     <GameContext.Provider
@@ -460,6 +503,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
         dispatch,
         toggleInventory,
         toggleMarketplace,
+        toggleSettings,
       }}
     >
       {children}
@@ -477,11 +521,15 @@ function calculateGrowthMultiplier(
   state: GameState,
   cropType: CropType
 ): number {
+  const now = Date.now();
   return state.perks.active
     .filter(
       (perk: Perk) =>
         perk.type === "GROWTH_BOOSTER" &&
-        (!perk.cropType || perk.cropType === cropType)
+        (!perk.cropType || perk.cropType === cropType) &&
+        (!perk.duration ||
+          !perk.activatedAt ||
+          now - perk.activatedAt < perk.duration)
     )
     .reduce((mult: number, perk: Perk) => mult * perk.multiplier, 1);
 }
@@ -490,11 +538,15 @@ function calculateYieldMultiplier(
   state: GameState,
   cropType: CropType
 ): number {
+  const now = Date.now();
   return state.perks.active
     .filter(
       (perk: Perk) =>
         perk.type === "YIELD_BOOSTER" &&
-        (!perk.cropType || perk.cropType === cropType)
+        (!perk.cropType || perk.cropType === cropType) &&
+        (!perk.duration ||
+          !perk.activatedAt ||
+          now - perk.activatedAt < perk.duration)
     )
     .reduce((mult: number, perk: Perk) => mult * perk.multiplier, 1);
 }

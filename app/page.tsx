@@ -7,6 +7,8 @@ import Toolbar from "./components/Toolbar";
 import { AnimatePresence } from "framer-motion";
 import InventoryModal from "./components/InventoryModal";
 import MarketplaceModal from "./components/MarketplaceModal";
+import { AudioProvider } from "./context/AudioContext";
+import SettingsModal from "./components/SettingsModal";
 
 // These components are loaded only on the client side
 const GameGrid = dynamic(() => import("./components/GameGrid"), {
@@ -18,6 +20,8 @@ const GameGrid = dynamic(() => import("./components/GameGrid"), {
 
 // Create a wrapper component that uses the context
 function GameWrapper() {
+  const { state } = useGame();
+
   return (
     <div className="flex flex-col h-screen">
       <Header />
@@ -27,6 +31,9 @@ function GameWrapper() {
       <Toolbar />
       <InventoryModalContainer />
       <MarketplaceModalContainer />
+      <AnimatePresence>
+        {state.showSettings && <SettingsModal />}
+      </AnimatePresence>
     </div>
   );
 }
@@ -59,9 +66,11 @@ function MarketplaceModalContainer() {
 export default function Home() {
   return (
     <main className="min-h-screen bg-green-800">
-      <GameProvider>
-        <GameWrapper />
-      </GameProvider>
+      <AudioProvider>
+        <GameProvider>
+          <GameWrapper />
+        </GameProvider>
+      </AudioProvider>
     </main>
   );
 }
