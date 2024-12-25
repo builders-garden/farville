@@ -40,7 +40,8 @@ type GameAction =
   | { type: "EXPAND_LAND" }
   | { type: "TOGGLE_INVENTORY" }
   | { type: "TOGGLE_MARKETPLACE" }
-  | { type: "TOGGLE_SETTINGS" };
+  | { type: "TOGGLE_SETTINGS" }
+  | { type: "TOGGLE_LEADERBOARD" };
 
 // Define context type
 interface GameContextType {
@@ -57,6 +58,7 @@ interface GameContextType {
   toggleInventory: () => void;
   toggleMarketplace: () => void;
   toggleSettings: () => void;
+  toggleLeaderboard: () => void;
 }
 
 type GrowthTimes = {
@@ -350,6 +352,12 @@ function gameReducer(
       };
     }
 
+    case "TOGGLE_LEADERBOARD":
+      return {
+        ...state,
+        showLeaderboard: !state.showLeaderboard,
+      };
+
     default:
       return state;
   }
@@ -399,6 +407,7 @@ const initialState: GameState = {
   showInventory: false,
   showMarketplace: false,
   showSettings: false,
+  showLeaderboard: false,
 };
 
 // Create the context with initial null value
@@ -487,6 +496,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
   const toggleInventory = () => dispatch({ type: "TOGGLE_INVENTORY" });
   const toggleMarketplace = () => dispatch({ type: "TOGGLE_MARKETPLACE" });
   const toggleSettings = () => dispatch({ type: "TOGGLE_SETTINGS" });
+  const toggleLeaderboard = () => dispatch({ type: "TOGGLE_LEADERBOARD" });
 
   return (
     <GameContext.Provider
@@ -504,6 +514,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
         toggleInventory,
         toggleMarketplace,
         toggleSettings,
+        toggleLeaderboard,
       }}
     >
       {children}

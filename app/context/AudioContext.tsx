@@ -1,3 +1,5 @@
+"use client";
+
 import { createContext, useContext, useRef, useState } from "react";
 
 interface AudioContextType {
@@ -6,58 +8,42 @@ interface AudioContextType {
   isMusicPlaying: boolean;
   setVolume: (volume: number) => void;
   volume: number;
+  setMusicVolume: (volume: number) => void;
+  musicVolume: number;
+  isSoundEnabled: boolean;
+  toggleSound: () => void;
 }
 
 const AudioContext = createContext<AudioContextType | null>(null);
 
-const SOUNDS = {
-  plant: "/sounds/plant.mp3",
-  harvest: "/sounds/harvest.mp3",
-  coins: "/sounds/coins.mp3",
-  levelUp: "/sounds/level-up.mp3",
-  click: "/sounds/click.mp3",
-  bgMusic: "/sounds/background-music.mp3",
-};
-
 export function AudioProvider({ children }: { children: React.ReactNode }) {
   const [isMusicPlaying, setIsMusicPlaying] = useState(false);
   const [volume, setVolume] = useState(0.8);
+  const [musicVolume, setMusicVolume] = useState(0.5);
+  const [isSoundEnabled, setIsSoundEnabled] = useState(true);
   const audioRefs = useRef<{ [key: string]: HTMLAudioElement }>({});
   const musicRef = useRef<HTMLAudioElement | null>(null);
 
-  // Initialize audio elements
   const initAudio = () => {
-    Object.entries(SOUNDS).forEach(([key, src]) => {
-      if (key === "bgMusic") {
-        if (!musicRef.current) {
-          musicRef.current = new Audio(src);
-          musicRef.current.loop = true;
-        }
-      } else {
-        if (!audioRefs.current[key]) {
-          audioRefs.current[key] = new Audio(src);
-        }
-      }
-    });
+    audioRefs.current = {
+      plant: new Audio("/sounds/plant.mp3"),
+      harvest: new Audio("/sounds/harvest.mp3"),
+      coins: new Audio("/sounds/coins.mp3"),
+      levelUp: new Audio("/sounds/level-up.mp3"),
+      click: new Audio("/sounds/click.mp3"),
+    };
   };
 
   const playSound = (soundName: string) => {
+    if (!isSoundEnabled) return;
+
     if (!audioRefs.current[soundName]) {
       initAudio();
     }
 
     const audio = audioRefs.current[soundName];
     if (audio) {
-      // Adjust volume based on sound type
-      const soundVolumes = {
-        coins: volume * 1.2, // 20% louder than base volume
-        harvest: volume * 1.1, // 10% louder than base volume
-        plant: volume,
-        click: volume * 0.8, // 20% quieter than base volume
-      };
-
-      audio.volume =
-        soundVolumes[soundName as keyof typeof soundVolumes] || volume;
+      audio.volume = volume;
       audio.currentTime = 0;
       audio.play().catch(console.error);
     }
@@ -65,28 +51,35 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
 
   const toggleMusic = () => {
     if (!musicRef.current) {
-      initAudio();
+      musicRef.current = new Audio("/sounds/background-music.mp3");
+      musicRef.current.loop = true;
     }
 
-    if (musicRef.current) {
-      if (isMusicPlaying) {
-        musicRef.current.pause();
-      } else {
-        musicRef.current.volume = volume;
-        musicRef.current.play().catch(console.error);
-      }
-      setIsMusicPlaying(!isMusicPlaying);
+    if (isMusicPlaying) {
+      musicRef.current.pause();
+    } else {
+      musicRef.current.volume = musicVolume;
+      musicRef.current.play().catch(console.error);
     }
+    setIsMusicPlaying(!isMusicPlaying);
   };
 
   const updateVolume = (newVolume: number) => {
     setVolume(newVolume);
-    if (musicRef.current) {
-      musicRef.current.volume = newVolume;
-    }
     Object.values(audioRefs.current).forEach((audio) => {
       audio.volume = newVolume;
     });
+  };
+
+  const updateMusicVolume = (newVolume: number) => {
+    setMusicVolume(newVolume);
+    if (musicRef.current) {
+      musicRef.current.volume = newVolume;
+    }
+  };
+
+  const toggleSound = () => {
+    setIsSoundEnabled(!isSoundEnabled);
   };
 
   return (
@@ -97,6 +90,10 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
         isMusicPlaying,
         setVolume: updateVolume,
         volume,
+        setMusicVolume: updateMusicVolume,
+        musicVolume,
+        isSoundEnabled,
+        toggleSound,
       }}
     >
       {children}

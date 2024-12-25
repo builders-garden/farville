@@ -9,6 +9,7 @@ import InventoryModal from "./components/InventoryModal";
 import MarketplaceModal from "./components/MarketplaceModal";
 import { AudioProvider } from "./context/AudioContext";
 import SettingsModal from "./components/SettingsModal";
+import LeaderboardModal from "./components/LeaderboardModal";
 
 // These components are loaded only on the client side
 const GameGrid = dynamic(() => import("./components/GameGrid"), {
@@ -33,6 +34,7 @@ function GameWrapper() {
       <MarketplaceModalContainer />
       <AnimatePresence>
         {state.showSettings && <SettingsModal />}
+        {state.showLeaderboard && <LeaderboardModal />}
       </AnimatePresence>
     </div>
   );
