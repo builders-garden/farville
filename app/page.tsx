@@ -24,9 +24,9 @@ function GameWrapper() {
   const { state } = useGame();
 
   return (
-    <div className="flex flex-col h-screen">
+    <div className="flex flex-col h-[100dvh] overflow-hidden">
       <Header />
-      <div className="flex-1 relative">
+      <div className="flex-1 relative min-h-0">
         <GameGrid />
       </div>
       <Toolbar />
