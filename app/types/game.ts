@@ -29,6 +29,8 @@ export interface GameState {
   perks: Perks;
   showInventory: boolean;
   showMarketplace: boolean;
+  showSettings: boolean;
+  showLeaderboard: boolean;
   expansionLevel: number;
 }
 
