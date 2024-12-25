@@ -7,11 +7,11 @@ import { CropType } from "../types/game";
 import { EXPANSION_COSTS } from "../context/GameContext";
 import { Perk } from "../types/perks";
 
-const SEEDS: { type: CropType; icon: string; price: number }[] = [
-  { type: "wheat", icon: "🌾", price: 5 },
-  { type: "corn", icon: "🌽", price: 8 },
-  { type: "tomato", icon: "🍅", price: 12 },
-  { type: "potato", icon: "🥔", price: 15 },
+const SEEDS: { type: CropType; icon: string; price: number; name: string }[] = [
+  { type: "wheat", name: "Wheat", icon: "🌾", price: 5 },
+  { type: "corn", name: "Corn", icon: "🌽", price: 8 },
+  { type: "tomato", name: "Tomato", icon: "🍅", price: 12 },
+  { type: "potato", name: "Potato", icon: "🥔", price: 15 },
 ];
 
 const PERKS: Perk[] = [
@@ -77,7 +77,7 @@ export default function MarketplaceModal({ onClose }: { onClose: () => void }) {
 
   const tabs: { id: Tab; label: string; icon: string }[] = [
     { id: "seeds", label: "Seeds", icon: "🌱" },
-    { id: "crops", label: "Sell Crops", icon: "🌾" },
+    { id: "crops", label: "Crops", icon: "🌾" },
     { id: "perks", label: "Perks", icon: "⭐" },
     { id: "expansions", label: "Expand", icon: "🗺️" },
   ];
@@ -161,7 +161,7 @@ export default function MarketplaceModal({ onClose }: { onClose: () => void }) {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 20 }}
             >
-              {SEEDS.map(({ type, icon, price }, index) => (
+              {SEEDS.map(({ type, icon, price, name }, index) => (
                 <motion.div
                   key={type}
                   initial={{ opacity: 0, x: -20 }}
@@ -181,13 +181,22 @@ export default function MarketplaceModal({ onClose }: { onClose: () => void }) {
                       </motion.span>
                     </div>
                     <div className="flex-1">
-                      <p className="text-white/90 font-medium">{type} Seeds</p>
-                      <p className="text-white/60 text-sm">
-                        Price:{" "}
-                        <span className="text-[#FFB938] font-medium">
-                          🪙 {price}
+                      <p className="text-white/90 font-medium">{name} Seeds</p>
+                      <div className="flex items-center gap-2 text-sm">
+                        <span className="text-white/60">
+                          Price:{" "}
+                          <span className="text-[#FFB938] font-medium">
+                            🪙 {price}
+                          </span>
                         </span>
-                      </p>
+                        <span className="text-white/40">•</span>
+                        <span className="text-white/60">
+                          Owned:{" "}
+                          <span className="text-white/90 font-medium">
+                            {state.seeds[type]}
+                          </span>
+                        </span>
+                      </div>
                     </div>
                   </div>
                   <div className="flex gap-2 ml-13 md:ml-0">
@@ -219,7 +228,7 @@ export default function MarketplaceModal({ onClose }: { onClose: () => void }) {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 20 }}
             >
-              {SEEDS.map(({ type, icon }) => {
+              {SEEDS.map(({ type, icon, name }) => {
                 const amount = state.crops[type];
                 const sellPrice = {
                   wheat: 10,
@@ -247,7 +256,7 @@ export default function MarketplaceModal({ onClose }: { onClose: () => void }) {
                         </motion.span>
                       </div>
                       <div className="flex-1">
-                        <p className="text-white/90 font-medium">{type}</p>
+                        <p className="text-white/90 font-medium">{name}</p>
                         <div className="flex items-center gap-2 text-sm">
                           <span className="text-white/60">
                             Sell:{" "}
@@ -266,39 +275,20 @@ export default function MarketplaceModal({ onClose }: { onClose: () => void }) {
                       </div>
                     </div>
                     <div className="flex gap-2 ml-13 md:ml-0">
-                      {amount >= 1 && (
+                      {[1, 5, 10].map((sellAmount) => (
                         <motion.button
+                          key={sellAmount}
                           whileHover={{ scale: 1.03 }}
                           whileTap={{ scale: 0.97 }}
-                          onClick={() => handleSellCrops(type, 1)}
+                          onClick={() => handleSellCrops(type, sellAmount)}
+                          disabled={amount < sellAmount}
                           className="min-w-[70px] py-1.5 bg-[#2B593B] text-white/90 rounded hover:bg-[#346344] 
-                                   transition-colors text-sm font-medium border border-white/10"
+                                   transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-sm font-medium
+                                   border border-white/10"
                         >
-                          Sell 1
+                          Sell {sellAmount}
                         </motion.button>
-                      )}
-                      {amount >= 5 && (
-                        <motion.button
-                          whileHover={{ scale: 1.03 }}
-                          whileTap={{ scale: 0.97 }}
-                          onClick={() => handleSellCrops(type, 5)}
-                          className="min-w-[70px] py-1.5 bg-[#2B593B] text-white/90 rounded hover:bg-[#346344] 
-                                   transition-colors text-sm font-medium border border-white/10"
-                        >
-                          Sell 5
-                        </motion.button>
-                      )}
-                      {amount >= 10 && (
-                        <motion.button
-                          whileHover={{ scale: 1.03 }}
-                          whileTap={{ scale: 0.97 }}
-                          onClick={() => handleSellCrops(type, 10)}
-                          className="min-w-[70px] py-1.5 bg-[#2B593B] text-white/90 rounded hover:bg-[#346344] 
-                                   transition-colors text-sm font-medium border border-white/10"
-                        >
-                          Sell 10
-                        </motion.button>
-                      )}
+                      ))}
                     </div>
                   </motion.div>
                 );
