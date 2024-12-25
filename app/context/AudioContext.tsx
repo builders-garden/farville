@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useRef, useState } from "react";
+import { createContext, useContext, useRef, useState, useEffect } from "react";
 
 interface AudioContextType {
   playSound: (soundName: string) => void;
@@ -17,12 +17,21 @@ interface AudioContextType {
 const AudioContext = createContext<AudioContextType | null>(null);
 
 export function AudioProvider({ children }: { children: React.ReactNode }) {
-  const [isMusicPlaying, setIsMusicPlaying] = useState(false);
+  const [isMusicPlaying, setIsMusicPlaying] = useState(true);
   const [volume, setVolume] = useState(0.8);
-  const [musicVolume, setMusicVolume] = useState(0.5);
+  const [musicVolume, setMusicVolume] = useState(0.3);
   const [isSoundEnabled, setIsSoundEnabled] = useState(true);
   const audioRefs = useRef<{ [key: string]: HTMLAudioElement }>({});
   const musicRef = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    if (!musicRef.current) {
+      musicRef.current = new Audio("/sounds/background-music.mp3");
+      musicRef.current.loop = true;
+      musicRef.current.volume = 0.3;
+      musicRef.current.play().catch(console.error);
+    }
+  }, []);
 
   const initAudio = () => {
     audioRefs.current = {
