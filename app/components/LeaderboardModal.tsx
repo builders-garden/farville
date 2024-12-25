@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { useGame } from "../context/GameContext";
 import { useState } from "react";
+import { useAudio } from "../context/AudioContext";
 
 // Temporary mock data - replace with real data later
 const MOCK_GLOBAL_LEADERBOARD = [
@@ -29,6 +30,7 @@ const MOCK_FRIENDS = [
 
 export default function LeaderboardModal() {
   const { toggleLeaderboard } = useGame();
+  const { startBackgroundMusic } = useAudio();
   const [activeTab, setActiveTab] = useState<"global" | "friends">("global");
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -38,6 +40,11 @@ export default function LeaderboardModal() {
   const filteredLeaderboard = currentLeaderboard.filter((entry) =>
     entry.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const handleClose = () => {
+    toggleLeaderboard();
+    startBackgroundMusic();
+  };
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-start z-50">
@@ -59,7 +66,7 @@ export default function LeaderboardModal() {
               </motion.h2>
             </div>
             <button
-              onClick={toggleLeaderboard}
+              onClick={handleClose}
               className="w-8 h-8 hover:bg-black/20 rounded-full transition-colors text-white/90 
                        flex items-center justify-center hover:rotate-90 transform duration-200"
             >

@@ -12,12 +12,13 @@ interface AudioContextType {
   musicVolume: number;
   isSoundEnabled: boolean;
   toggleSound: () => void;
+  startBackgroundMusic: () => void;
 }
 
 const AudioContext = createContext<AudioContextType | null>(null);
 
 export function AudioProvider({ children }: { children: React.ReactNode }) {
-  const [isMusicPlaying, setIsMusicPlaying] = useState(true);
+  const [isMusicPlaying, setIsMusicPlaying] = useState(false);
   const [volume, setVolume] = useState(0.8);
   const [musicVolume, setMusicVolume] = useState(0.3);
   const [isSoundEnabled, setIsSoundEnabled] = useState(true);
@@ -28,8 +29,7 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
     if (!musicRef.current) {
       musicRef.current = new Audio("/sounds/background-music.mp3");
       musicRef.current.loop = true;
-      musicRef.current.volume = 0.3;
-      musicRef.current.play().catch(console.error);
+      musicRef.current.volume = musicVolume;
     }
   }, []);
 
@@ -91,6 +91,17 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
     setIsSoundEnabled(!isSoundEnabled);
   };
 
+  const startBackgroundMusic = () => {
+    if (musicRef.current && !isMusicPlaying) {
+      musicRef.current
+        .play()
+        .then(() => {
+          setIsMusicPlaying(true);
+        })
+        .catch(console.error);
+    }
+  };
+
   return (
     <AudioContext.Provider
       value={{
@@ -103,6 +114,7 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
         musicVolume,
         isSoundEnabled,
         toggleSound,
+        startBackgroundMusic,
       }}
     >
       {children}
