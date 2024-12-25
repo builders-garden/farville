@@ -1,8 +1,7 @@
 "use client";
 
 import { useGame } from "../context/GameContext";
-import { motion, AnimatePresence } from "framer-motion";
-import { useState } from "react";
+import { motion } from "framer-motion";
 
 export default function Header() {
   const { state, toggleMarketplace, toggleSettings, toggleLeaderboard } =

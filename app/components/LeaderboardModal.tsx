@@ -19,13 +19,13 @@ const MOCK_FRIENDS = [
   // ... add more entries
 ];
 
-type LeaderboardEntry = {
-  id: number;
-  name: string;
-  level: number;
-  experience: number;
-  coins: number;
-};
+// type LeaderboardEntry = {
+//   id: number;
+//   name: string;
+//   level: number;
+//   experience: number;
+//   coins: number;
+// };
 
 export default function LeaderboardModal() {
   const { toggleLeaderboard } = useGame();
