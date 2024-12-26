@@ -61,14 +61,14 @@ export default function GridCell({ cell }: GridCellProps) {
     }
   };
 
-  const handleDragOver = (e: React.DragEvent) => {
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     if (cell.tilled && !cell.crop) {
-      e.preventDefault(); // Allow drop
+      e.preventDefault();
       e.dataTransfer.dropEffect = "copy";
     }
   };
 
-  const handleDrop = (e: React.DragEvent) => {
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     const cropType = e.dataTransfer.getData("cropType") as CropType;
     if (cell.tilled && !cell.crop) {
