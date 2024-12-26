@@ -17,6 +17,7 @@ export default function GridCell({ cell }: GridCellProps) {
   const [floatingPosition, setFloatingPosition] = useState({ x: 0, y: 0 });
   const [harvestedExp, setHarvestedExp] = useState<number | null>(null);
   const cellRef = useRef<HTMLDivElement>(null);
+  const [isDragOver, setIsDragOver] = useState(false);
 
   const getRewards = (type: CropType) => {
     const rewards = {
@@ -60,17 +61,71 @@ export default function GridCell({ cell }: GridCellProps) {
     }
   };
 
+  const handleDragOver = (e: React.DragEvent) => {
+    if (cell.tilled && !cell.crop) {
+      e.preventDefault(); // Allow drop
+      e.dataTransfer.dropEffect = "copy";
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    const cropType = e.dataTransfer.getData("cropType") as CropType;
+    if (cell.tilled && !cell.crop) {
+      plantCrop(cell.x, cell.y, cropType);
+    }
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    e.preventDefault();
+    const touch = e.touches[0];
+    const element = document.elementFromPoint(touch.clientX, touch.clientY);
+    
+    if (element === cellRef.current && cell.tilled && !cell.crop) {
+      setIsDragOver(true);
+    } else {
+      setIsDragOver(false);
+    }
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    e.preventDefault();
+    setIsDragOver(false);
+
+    const touch = e.changedTouches[0];
+    const element = document.elementFromPoint(touch.clientX, touch.clientY);
+
+    if (element === cellRef.current && cell.tilled && !cell.crop) {
+      // Find the currently dragged crop type from the toolbar
+      const draggedButton = document.querySelector('button[dragging="true"]');
+      if (draggedButton) {
+        const cropType = draggedButton.getAttribute('data-crop-type') as CropType;
+        if (cropType) {
+          plantCrop(cell.x, cell.y, cropType);
+        }
+      }
+    }
+  };
+
   return (
     <motion.div
       ref={cellRef}
       onClick={handleClick}
+      onDragOver={handleDragOver}
+      onDrop={handleDrop}
+      data-tilled={cell.tilled}
+      data-x={cell.x}
+      data-y={cell.y}
       className={`
+        grid-cell
         aspect-square rounded-lg relative cursor-pointer
         ${
           cell.tilled
             ? "bg-[var(--soil)]"
             : "bg-[var(--grass)] hover:bg-[var(--grass-hover)]"
         }
+        ${!cell.crop && cell.tilled ? "drop-target" : ""}
+        ${isDragOver ? "dragover" : ""}
         transition-colors duration-200
       `}
       style={{

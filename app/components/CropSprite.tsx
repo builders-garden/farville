@@ -65,7 +65,7 @@ export default function CropSprite({ crop }: CropSpriteProps) {
           duration: 0.3,
           rotate: { duration: 0.5, repeat: Infinity, repeatDelay: 1 },
         }}
-        className="absolute inset-0 flex items-center justify-center text-2xl"
+        className="crop-sprite absolute inset-0 flex items-center justify-center"
       >
         {getCropEmoji()}
         {crop.readyToHarvest && (
