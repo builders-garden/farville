@@ -184,7 +184,7 @@ export default function Toolbar() {
                   setSelectedCrop(selectedCrop === type ? null : type)
                 }
                 draggable={isAvailable}
-                onDragStart={(e) => handleDragStart(e, type)}
+                onDragStart={(e) => handleDragStart(e as unknown as React.DragEvent, type)}
                 onTouchStart={(e) => handleTouchStart(e, type)}
                 onTouchEnd={handleTouchEnd}
                 whileHover={isAvailable ? { scale: 1.1 } : undefined}
