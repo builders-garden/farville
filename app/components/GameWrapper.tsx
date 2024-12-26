@@ -45,6 +45,8 @@ function MarketplaceModalContainer() {
 export default function GameWrapper() {
   const { state } = useGame();
 
+  
+
   return (
     <div className="flex flex-col h-[100dvh] overflow-hidden">
       <Header />

@@ -1,0 +1,32 @@
+{
+  "accountAssociation": {
+    "header": "eyJmaWQiOjQ0NjEsInR5cGUiOiJjdXN0b2R5Iiwia2V5IjoiMHgxMzU4MTU1YTE1OTMwZjg5ZUJjNzg3YTM0RWI0Y2NmZDk3MjBiQzYyIn0",
+    "payload": "eyJkb21haW4iOiJmYXJ2aWxsZS5mYXJtIn0",
+    "signature": "MHhlZjYzMzY0MGRmMzg2NGM2MmQzNzlhZjMzY2Y0MTM3MTY0ZWMxZmMxMzBkZDQxOTJkODMyODMzZGRjOTliYTE0MWQzN2Y5NDY0NTgzNDdlZGUxM2M5NjY0Mzc3NmIyNTNkMWZiOWExMjgwODQxZGVhMjgyMWE0MTMyOGRiMjNlZTFj"
+  },
+  "frame": {
+    "version": "1",
+    "name": "Farville",
+    "homeUrl": "https://farville.farm",
+    "iconUrl": "https://farville.farm/images/icon.png",
+    "imageUrl": "https://farville.farm/images/welcome.png",
+    "buttonTitle": "Play Farville 🧑‍🌾",
+    "splashImageUrl": "https://farville.farm/images/splash.png",
+    "splashBackgroundColor": "#90EE90",
+    "webhookUrl": "https://farville.farm/api/webhook"
+  },
+  "triggers": [
+    {
+      "type": "cast",
+      "id": "share-farm",
+      "url": "https://farville.farm/triggers/share",
+      "name": "Share Farm Progress"
+    },
+    {
+      "type": "composer",
+      "id": "post-harvest",
+      "url": "https://farville.farm/triggers/harvest",
+      "name": "Post Harvest Results"
+    }
+  ]
+}
