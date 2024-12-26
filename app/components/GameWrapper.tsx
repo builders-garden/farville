@@ -9,8 +9,6 @@ import InventoryModal from "./InventoryModal";
 import MarketplaceModal from "./MarketplaceModal";
 import SettingsModal from "./SettingsModal";
 import LeaderboardModal from "./LeaderboardModal";
-import sdk from "@farcaster/frame-sdk";
-import { useState, useEffect } from "react";
 
 // Load GameGrid component dynamically (client-side only)
 const GameGrid = dynamic(() => import("./GameGrid"), {
@@ -47,17 +45,7 @@ function MarketplaceModalContainer() {
 export default function GameWrapper() {
   const { state } = useGame();
 
-  const [isSDKLoaded, setIsSDKLoaded] = useState(false);
-
-  useEffect(() => {
-    const load = async () => {
-      sdk.actions.ready();
-    };
-    if (sdk && !isSDKLoaded) {
-      setIsSDKLoaded(true);
-      load();
-    }
-  }, [isSDKLoaded]);
+  
 
   return (
     <div className="flex flex-col h-[100dvh] overflow-hidden">
