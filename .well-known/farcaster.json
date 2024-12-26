@@ -6,13 +6,13 @@
   },
   "frame": {
     "version": "1",
-    "name": "Example Frame",
-    "iconUrl": "https://farville.farm/icon.png",
+    "name": "Farville",
+    "iconUrl": "https://farville.farm/images/icon.png",
     "homeUrl": "https://farville.farm",
-    "imageUrl": "https://farville.farm/image.png",
-    "buttonTitle": "Check this out",
-    "splashImageUrl": "https://farville.farm/splash.png",
-    "splashBackgroundColor": "#eeccff",
+    "imageUrl": "https://farville.farm/images/feed.png",
+    "buttonTitle": "Play Farville 🧑‍🌾",
+    "splashImageUrl": "https://farville.farm/images/splash.png",
+    "splashBackgroundColor": "#ffffff",
     "webhookUrl": "https://farville.farm/api/webhook"
   }
 }
