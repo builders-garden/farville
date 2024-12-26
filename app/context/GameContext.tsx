@@ -129,10 +129,10 @@ function gameReducer(
 
       const harvestedType = cell.crop.type;
       const rewards: { [key in CropType]: { exp: number; yield: number } } = {
-        wheat: { exp: 5, yield: 2 },
-        corn: { exp: 8, yield: 2 },
-        tomato: { exp: 10, yield: 3 },
-        potato: { exp: 12, yield: 4 },
+        wheat: { exp: 2, yield: 2 },
+        corn: { exp: 6, yield: 2 },
+        tomato: { exp: 12, yield: 3 },
+        potato: { exp: 25, yield: 4 },
       };
       const reward = rewards[harvestedType];
 
@@ -175,10 +175,10 @@ function gameReducer(
           if (!cell.crop || cell.crop.readyToHarvest) return cell;
 
           const growthTimes: GrowthTimes = {
-            wheat: 30000,
-            corn: 45000,
-            tomato: 60000,
-            potato: 90000,
+            wheat: 1800000, // 30 min = 30 * 60 * 1000
+            corn: 3600000, // 1 hour = 60 * 60 * 1000
+            tomato: 7200000, // 2 hours = 2 * 60 * 60 * 1000
+            potato: 21600000, // 6 hours = 6 * 60 * 60 * 1000
           };
           const baseGrowthTime = growthTimes[cell.crop.type];
 
@@ -262,10 +262,10 @@ function gameReducer(
     case "SELL_CROPS": {
       playSound?.("coins");
       const cropPrices = {
-        wheat: 10,
-        corn: 15,
-        tomato: 20,
-        potato: 25,
+        wheat: 8,
+        corn: 25,
+        tomato: 50,
+        potato: 100,
       };
 
       if (state.crops[action.cropType] < action.amount) {

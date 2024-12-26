@@ -20,7 +20,7 @@ const AudioContext = createContext<AudioContextType | null>(null);
 export function AudioProvider({ children }: { children: React.ReactNode }) {
   const [isMusicPlaying, setIsMusicPlaying] = useState(false);
   const [volume, setVolume] = useState(0.8);
-  const [musicVolume, setMusicVolume] = useState(0.3);
+  const [musicVolume, setMusicVolume] = useState(0.2);
   const [isSoundEnabled, setIsSoundEnabled] = useState(true);
   const audioRefs = useRef<{ [key: string]: HTMLAudioElement }>({});
   const musicRef = useRef<HTMLAudioElement | null>(null);

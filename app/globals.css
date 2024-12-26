@@ -156,7 +156,8 @@ body {
 }
 
 @keyframes pulse-border {
-  0%, 100% {
+  0%,
+  100% {
     @apply ring-opacity-50;
   }
   50% {

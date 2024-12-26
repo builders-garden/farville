@@ -80,7 +80,7 @@ export default function GridCell({ cell }: GridCellProps) {
     e.preventDefault();
     const touch = e.touches[0];
     const element = document.elementFromPoint(touch.clientX, touch.clientY);
-    
+
     if (element === cellRef.current && cell.tilled && !cell.crop) {
       setIsDragOver(true);
     } else {
@@ -99,7 +99,9 @@ export default function GridCell({ cell }: GridCellProps) {
       // Find the currently dragged crop type from the toolbar
       const draggedButton = document.querySelector('button[dragging="true"]');
       if (draggedButton) {
-        const cropType = draggedButton.getAttribute('data-crop-type') as CropType;
+        const cropType = draggedButton.getAttribute(
+          "data-crop-type"
+        ) as CropType;
         if (cropType) {
           plantCrop(cell.x, cell.y, cropType);
         }

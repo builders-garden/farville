@@ -9,9 +9,9 @@ import { Perk } from "../types/perks";
 
 const SEEDS: { type: CropType; icon: string; price: number; name: string }[] = [
   { type: "wheat", name: "Wheat", icon: "🌾", price: 5 },
-  { type: "corn", name: "Corn", icon: "🌽", price: 8 },
-  { type: "tomato", name: "Tomato", icon: "🍅", price: 12 },
-  { type: "potato", name: "Potato", icon: "🥔", price: 15 },
+  { type: "corn", name: "Corn", icon: "🌽", price: 15 },
+  { type: "tomato", name: "Tomato", icon: "🍅", price: 30 },
+  { type: "potato", name: "Potato", icon: "🥔", price: 60 },
 ];
 
 const PERKS: Perk[] = [
@@ -88,10 +88,10 @@ export default function MarketplaceModal({ onClose }: { onClose: () => void }) {
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: 50 }}
-        className="bg-[#7E4E31] w-full min-h-screen"
+        className="bg-[#7E4E31] w-full h-screen flex flex-col"
       >
-        <div className="max-w-4xl mx-auto p-6">
-          <div className="flex justify-between items-center mb-6">
+        <div className="max-w-4xl mx-auto w-full p-6 flex flex-col h-full">
+          <div className="flex justify-between items-center mb-6 flex-shrink-0">
             <div>
               <motion.h2
                 className="text-white/90 font-bold text-2xl mb-1 flex items-center gap-2"
@@ -120,8 +120,7 @@ export default function MarketplaceModal({ onClose }: { onClose: () => void }) {
             </button>
           </div>
 
-          {/* Tabs */}
-          <div className="grid grid-cols-4 gap-2 mb-6">
+          <div className="grid grid-cols-4 gap-2 mb-6 flex-shrink-0">
             {tabs.map((tab, index) => (
               <motion.button
                 key={tab.id}
@@ -153,95 +152,20 @@ export default function MarketplaceModal({ onClose }: { onClose: () => void }) {
             ))}
           </div>
 
-          {/* Seeds Tab */}
-          {activeTab === "seeds" && (
-            <motion.div
-              className="grid gap-3"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 20 }}
-            >
-              {SEEDS.map(({ type, icon, price, name }, index) => (
-                <motion.div
-                  key={type}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                  className="bg-[#6d4c2c] px-4 py-3 rounded-lg flex flex-col md:flex-row md:items-center gap-3
-                           border border-[#8B5E3C]/50 shadow-md"
-                >
-                  <div className="flex items-center gap-3 flex-1">
-                    <div className="w-10 h-10 flex items-center justify-center">
-                      <motion.span
-                        className="text-2xl"
-                        animate={{ y: [0, -2, 0] }}
-                        transition={{ duration: 1.5, repeat: Infinity }}
-                      >
-                        {icon}
-                      </motion.span>
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-white/90 font-medium">{name} Seeds</p>
-                      <div className="flex items-center gap-2 text-sm">
-                        <span className="text-white/60">
-                          Price:{" "}
-                          <span className="text-[#FFB938] font-medium">
-                            🪙 {price}
-                          </span>
-                        </span>
-                        <span className="text-white/40">•</span>
-                        <span className="text-white/60">
-                          Owned:{" "}
-                          <span className="text-white/90 font-medium">
-                            {state.seeds[type]}
-                          </span>
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex gap-2 ml-13 md:ml-0">
-                    {[1, 5, 10].map((amount) => (
-                      <motion.button
-                        key={amount}
-                        whileHover={{ scale: 1.03 }}
-                        whileTap={{ scale: 0.97 }}
-                        onClick={() => handleBuySeeds(type, amount)}
-                        disabled={state.coins < price * amount}
-                        className="min-w-[70px] py-1.5 bg-[#8B5E3C] text-white/90 rounded hover:bg-[#9b6a44] 
-                                 transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-sm font-medium
-                                 border border-white/10"
-                      >
-                        Buy {amount}
-                      </motion.button>
-                    ))}
-                  </div>
-                </motion.div>
-              ))}
-            </motion.div>
-          )}
-
-          {/* Sell Crops Tab */}
-          {activeTab === "crops" && (
-            <motion.div
-              className="grid gap-3"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 20 }}
-            >
-              {SEEDS.map(({ type, icon, name }) => {
-                const amount = state.crops[type];
-                const sellPrice = {
-                  wheat: 10,
-                  corn: 15,
-                  tomato: 20,
-                  potato: 25,
-                }[type];
-
-                return (
+          <div className="overflow-y-auto flex-1 -mr-2 pr-2">
+            {activeTab === "seeds" && (
+              <motion.div
+                className="grid gap-3 pb-6"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 20 }}
+              >
+                {SEEDS.map(({ type, icon, price, name }, index) => (
                   <motion.div
                     key={type}
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.1 }}
                     className="bg-[#6d4c2c] px-4 py-3 rounded-lg flex flex-col md:flex-row md:items-center gap-3
                              border border-[#8B5E3C]/50 shadow-md"
                   >
@@ -256,277 +180,359 @@ export default function MarketplaceModal({ onClose }: { onClose: () => void }) {
                         </motion.span>
                       </div>
                       <div className="flex-1">
-                        <p className="text-white/90 font-medium">{name}</p>
+                        <p className="text-white/90 font-medium">
+                          {name} Seeds
+                        </p>
                         <div className="flex items-center gap-2 text-sm">
                           <span className="text-white/60">
-                            Sell:{" "}
+                            Price:{" "}
                             <span className="text-[#FFB938] font-medium">
-                              🪙 {sellPrice}
+                              🪙 {price}
                             </span>
                           </span>
                           <span className="text-white/40">•</span>
                           <span className="text-white/60">
                             Owned:{" "}
                             <span className="text-white/90 font-medium">
-                              {amount}
+                              {state.seeds[type]}
                             </span>
                           </span>
                         </div>
                       </div>
                     </div>
                     <div className="flex gap-2 ml-13 md:ml-0">
-                      {[1, 5, 10].map((sellAmount) => (
+                      {[1, 5, 10].map((amount) => (
                         <motion.button
-                          key={sellAmount}
+                          key={amount}
                           whileHover={{ scale: 1.03 }}
                           whileTap={{ scale: 0.97 }}
-                          onClick={() => handleSellCrops(type, sellAmount)}
-                          disabled={amount < sellAmount}
-                          className="min-w-[70px] py-1.5 bg-[#2B593B] text-white/90 rounded hover:bg-[#346344] 
+                          onClick={() => handleBuySeeds(type, amount)}
+                          disabled={state.coins < price * amount}
+                          className="min-w-[70px] py-1.5 bg-[#8B5E3C] text-white/90 rounded hover:bg-[#9b6a44] 
                                    transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-sm font-medium
                                    border border-white/10"
                         >
-                          Sell {sellAmount}
+                          Buy {amount}
                         </motion.button>
                       ))}
                     </div>
                   </motion.div>
-                );
-              })}
-            </motion.div>
-          )}
+                ))}
+              </motion.div>
+            )}
 
-          {/* Expansions Tab */}
-          {activeTab === "expansions" && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 20 }}
-            >
-              {state.expansionLevel < EXPANSION_COSTS.length ? (
-                <div className="bg-[#6d4c2c] px-4 py-3 rounded-lg border border-[#8B5E3C]/50 shadow-md">
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="w-10 h-10 flex items-center justify-center">
-                      <motion.span
-                        className="text-2xl"
-                        animate={{ rotate: [0, -5, 5, 0] }}
-                        transition={{ duration: 2, repeat: Infinity }}
-                      >
-                        🌟
-                      </motion.span>
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-white/90 font-medium">
-                        Next Expansion
-                      </p>
-                      <div className="flex items-center gap-2 text-sm">
-                        <span className="text-white/60">
-                          Size:{" "}
-                          <span className="text-white/90 font-medium">
-                            {
-                              EXPANSION_COSTS[state.expansionLevel].nextSize
-                                .width
-                            }
-                            x
-                            {
-                              EXPANSION_COSTS[state.expansionLevel].nextSize
-                                .height
-                            }
-                          </span>
-                        </span>
-                        <span className="text-white/40">•</span>
-                        <span className="text-white/60">
-                          Required Level:{" "}
-                          <span
-                            className={`font-medium ${
-                              state.level >=
-                              EXPANSION_COSTS[state.expansionLevel].level
-                                ? "text-green-400"
-                                : "text-red-400"
-                            }`}
-                          >
-                            {EXPANSION_COSTS[state.expansionLevel].level}
-                          </span>
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                  <motion.button
-                    whileHover={{ scale: 1.03 }}
-                    whileTap={{ scale: 0.97 }}
-                    onClick={handleExpandLand}
-                    disabled={
-                      state.coins <
-                        EXPANSION_COSTS[state.expansionLevel].coins ||
-                      state.level < EXPANSION_COSTS[state.expansionLevel].level
-                    }
-                    className="w-full py-1.5 bg-[#FFB938] text-[#7E4E31] rounded hover:bg-[#ffc65c] 
-                             transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium
-                             border border-white/10"
-                  >
-                    {state.level < EXPANSION_COSTS[state.expansionLevel].level
-                      ? `Reach Level ${
-                          EXPANSION_COSTS[state.expansionLevel].level
-                        } to Expand`
-                      : `Expand for 🪙 ${
-                          EXPANSION_COSTS[state.expansionLevel].coins
-                        }`}
-                  </motion.button>
-                </div>
-              ) : (
-                <div className="bg-[#6d4c2c] px-4 py-3 rounded-lg border border-[#8B5E3C]/50 shadow-md">
-                  <div className="flex items-center gap-3">
-                    <span className="text-2xl">🎉</span>
-                    <p className="text-white/90">
-                      Maximum expansion level reached!
-                    </p>
-                  </div>
-                </div>
-              )}
-            </motion.div>
-          )}
-
-          {/* Perks Tab */}
-          {activeTab === "perks" && (
-            <motion.div
-              className="space-y-3"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 20 }}
-            >
-              {/* Active Perks */}
-              <div className="bg-[#6d4c2c] px-4 py-3 rounded-lg border border-[#8B5E3C]/50 shadow-md">
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="text-xl">⚡</span>
-                  <p className="text-white/90 font-medium">Active Perks</p>
-                </div>
-                <div className="grid gap-2">
-                  {state.perks.active.length > 0 ? (
-                    state.perks.active.map((perk) => (
-                      <div
-                        key={perk.id}
-                        className="bg-[#5c3d23] px-3 py-2 rounded flex items-center justify-between"
-                      >
-                        <div className="flex items-center gap-2">
-                          <span className="text-xl">{perk.icon}</span>
-                          <div>
-                            <p className="text-white/90 text-sm font-medium">
-                              {perk.name}
-                            </p>
-                            <p className="text-white/60 text-xs">
-                              {perk.description}
-                            </p>
-                          </div>
-                        </div>
-                        {perk.activatedAt && perk.duration && (
-                          <div className="text-[#FFB938] text-sm font-medium">
-                            {(() => {
-                              const remainingMs =
-                                perk.duration - (Date.now() - perk.activatedAt);
-                              if (remainingMs <= 0) return "Expired";
-                              const hours = Math.floor(
-                                remainingMs / (60 * 60 * 1000)
-                              );
-                              const minutes = Math.floor(
-                                (remainingMs % (60 * 60 * 1000)) / (60 * 1000)
-                              );
-                              return `${hours}h ${minutes}m`;
-                            })()}
-                          </div>
-                        )}
-                      </div>
-                    ))
-                  ) : (
-                    <p className="text-white/60 text-sm">No active perks</p>
-                  )}
-                </div>
-              </div>
-
-              {/* Available Perks */}
-              <div className="grid gap-3">
-                {PERKS.map((perk) => {
-                  const isOwned = state.perks.owned.some(
-                    (p) => p.id === perk.id
-                  );
-                  const isActive = state.perks.active.some(
-                    (p) => p.id === perk.id
-                  );
+            {activeTab === "crops" && (
+              <motion.div
+                className="grid gap-3 pb-6"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 20 }}
+              >
+                {SEEDS.map(({ type, icon, name }) => {
+                  const amount = state.crops[type];
+                  const sellPrice = {
+                    wheat: 10,
+                    corn: 15,
+                    tomato: 20,
+                    potato: 25,
+                  }[type];
 
                   return (
                     <motion.div
-                      key={perk.id}
-                      className="bg-[#6d4c2c] p-4 rounded-lg flex items-center justify-between
-                                 border border-[#8B5E3C]/50 shadow-md hover:bg-[#7d583a] transition-colors"
+                      key={type}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      className="bg-[#6d4c2c] px-4 py-3 rounded-lg flex flex-col md:flex-row md:items-center gap-3
+                               border border-[#8B5E3C]/50 shadow-md"
                     >
-                      <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 bg-[#8B5E3C]/30 rounded-lg flex items-center justify-center">
+                      <div className="flex items-center gap-3 flex-1">
+                        <div className="w-10 h-10 flex items-center justify-center">
                           <motion.span
                             className="text-2xl"
                             animate={{ y: [0, -2, 0] }}
                             transition={{ duration: 1.5, repeat: Infinity }}
                           >
-                            {perk.icon}
+                            {icon}
                           </motion.span>
                         </div>
                         <div className="flex-1">
-                          <p className="text-white/90 font-medium mb-1">
-                            {perk.name}
-                          </p>
-                          <p className="text-white/60 text-sm">
-                            {perk.description}
-                          </p>
+                          <p className="text-white/90 font-medium">{name}</p>
+                          <div className="flex items-center gap-2 text-sm">
+                            <span className="text-white/60">
+                              Sell:{" "}
+                              <span className="text-[#FFB938] font-medium">
+                                🪙 {sellPrice}
+                              </span>
+                            </span>
+                            <span className="text-white/40">•</span>
+                            <span className="text-white/60">
+                              Owned:{" "}
+                              <span className="text-white/90 font-medium">
+                                {amount}
+                              </span>
+                            </span>
+                          </div>
                         </div>
                       </div>
-                      <div className="flex flex-col items-end gap-2 ml-4">
-                        <motion.button
-                          whileHover={{ scale: 1.03 }}
-                          whileTap={{ scale: 0.97 }}
-                          onClick={() =>
-                            isOwned
-                              ? dispatch({ type: "ACTIVATE_PERK", perk })
-                              : dispatch({ type: "PURCHASE_PERK", perk })
-                          }
-                          disabled={
-                            isOwned ? isActive : state.coins < perk.cost
-                          }
-                          className={`min-w-[100px] py-2 px-4 rounded-lg text-sm font-medium
-                                     transition-colors disabled:opacity-40 disabled:cursor-not-allowed
-                                     ${
-                                       isOwned
-                                         ? "bg-[#2B593B] text-white/90 hover:bg-[#346344]"
-                                         : "bg-[#8B5E3C] text-white/90 hover:bg-[#9b6a44]"
-                                     }
-                                     border border-white/10`}
-                        >
-                          {isOwned
-                            ? isActive
-                              ? "Active"
-                              : "Activate"
-                            : `🪙 ${perk.cost}`}
-                        </motion.button>
-                        {isActive && perk.activatedAt && perk.duration && (
-                          <div className="text-[#FFB938] text-sm font-medium">
-                            {(() => {
-                              const remainingMs =
-                                perk.duration - (Date.now() - perk.activatedAt);
-                              if (remainingMs <= 0) return "Expired";
-                              const hours = Math.floor(
-                                remainingMs / (60 * 60 * 1000)
-                              );
-                              const minutes = Math.floor(
-                                (remainingMs % (60 * 60 * 1000)) / (60 * 1000)
-                              );
-                              return `${hours}h ${minutes}m`;
-                            })()}
-                          </div>
-                        )}
+                      <div className="flex gap-2 ml-13 md:ml-0">
+                        {[1, 5, 10].map((sellAmount) => (
+                          <motion.button
+                            key={sellAmount}
+                            whileHover={{ scale: 1.03 }}
+                            whileTap={{ scale: 0.97 }}
+                            onClick={() => handleSellCrops(type, sellAmount)}
+                            disabled={amount < sellAmount}
+                            className="min-w-[70px] py-1.5 bg-[#2B593B] text-white/90 rounded hover:bg-[#346344] 
+                                     transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-sm font-medium
+                                     border border-white/10"
+                          >
+                            Sell {sellAmount}
+                          </motion.button>
+                        ))}
                       </div>
                     </motion.div>
                   );
                 })}
-              </div>
-            </motion.div>
-          )}
+              </motion.div>
+            )}
+
+            {activeTab === "expansions" && (
+              <motion.div
+                className="pb-6"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 20 }}
+              >
+                {state.expansionLevel < EXPANSION_COSTS.length ? (
+                  <div className="bg-[#6d4c2c] px-4 py-3 rounded-lg border border-[#8B5E3C]/50 shadow-md">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="w-10 h-10 flex items-center justify-center">
+                        <motion.span
+                          className="text-2xl"
+                          animate={{ rotate: [0, -5, 5, 0] }}
+                          transition={{ duration: 2, repeat: Infinity }}
+                        >
+                          🌟
+                        </motion.span>
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-white/90 font-medium">
+                          Next Expansion
+                        </p>
+                        <div className="flex items-center gap-2 text-sm">
+                          <span className="text-white/60">
+                            Size:{" "}
+                            <span className="text-white/90 font-medium">
+                              {
+                                EXPANSION_COSTS[state.expansionLevel].nextSize
+                                  .width
+                              }
+                              x
+                              {
+                                EXPANSION_COSTS[state.expansionLevel].nextSize
+                                  .height
+                              }
+                            </span>
+                          </span>
+                          <span className="text-white/40">•</span>
+                          <span className="text-white/60">
+                            Required Level:{" "}
+                            <span
+                              className={`font-medium ${
+                                state.level >=
+                                EXPANSION_COSTS[state.expansionLevel].level
+                                  ? "text-green-400"
+                                  : "text-red-400"
+                              }`}
+                            >
+                              {EXPANSION_COSTS[state.expansionLevel].level}
+                            </span>
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    <motion.button
+                      whileHover={{ scale: 1.03 }}
+                      whileTap={{ scale: 0.97 }}
+                      onClick={handleExpandLand}
+                      disabled={
+                        state.coins <
+                          EXPANSION_COSTS[state.expansionLevel].coins ||
+                        state.level <
+                          EXPANSION_COSTS[state.expansionLevel].level
+                      }
+                      className="w-full py-1.5 bg-[#FFB938] text-[#7E4E31] rounded hover:bg-[#ffc65c] 
+                               transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium
+                               border border-white/10"
+                    >
+                      {state.level < EXPANSION_COSTS[state.expansionLevel].level
+                        ? `Reach Level ${
+                            EXPANSION_COSTS[state.expansionLevel].level
+                          } to Expand`
+                        : `Expand for 🪙 ${
+                            EXPANSION_COSTS[state.expansionLevel].coins
+                          }`}
+                    </motion.button>
+                  </div>
+                ) : (
+                  <div className="bg-[#6d4c2c] px-4 py-3 rounded-lg border border-[#8B5E3C]/50 shadow-md">
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl">🎉</span>
+                      <p className="text-white/90">
+                        Maximum expansion level reached!
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </motion.div>
+            )}
+
+            {activeTab === "perks" && (
+              <motion.div
+                className="space-y-3 pb-6"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 20 }}
+              >
+                <div className="bg-[#6d4c2c] px-4 py-3 rounded-lg border border-[#8B5E3C]/50 shadow-md">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-xl">⚡</span>
+                    <p className="text-white/90 font-medium">Active Perks</p>
+                  </div>
+                  <div className="grid gap-2">
+                    {state.perks.active.length > 0 ? (
+                      state.perks.active.map((perk) => (
+                        <div
+                          key={perk.id}
+                          className="bg-[#5c3d23] px-3 py-2 rounded flex items-center justify-between"
+                        >
+                          <div className="flex items-center gap-2">
+                            <span className="text-xl">{perk.icon}</span>
+                            <div>
+                              <p className="text-white/90 text-sm font-medium">
+                                {perk.name}
+                              </p>
+                              <p className="text-white/60 text-xs">
+                                {perk.description}
+                              </p>
+                            </div>
+                          </div>
+                          {perk.activatedAt && perk.duration && (
+                            <div className="text-[#FFB938] text-sm font-medium">
+                              {(() => {
+                                const remainingMs =
+                                  perk.duration -
+                                  (Date.now() - perk.activatedAt);
+                                if (remainingMs <= 0) return "Expired";
+                                const hours = Math.floor(
+                                  remainingMs / (60 * 60 * 1000)
+                                );
+                                const minutes = Math.floor(
+                                  (remainingMs % (60 * 60 * 1000)) / (60 * 1000)
+                                );
+                                return `${hours}h ${minutes}m`;
+                              })()}
+                            </div>
+                          )}
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-white/60 text-sm">No active perks</p>
+                    )}
+                  </div>
+                </div>
+
+                <div className="grid gap-3">
+                  {PERKS.map((perk) => {
+                    const isOwned = state.perks.owned.some(
+                      (p) => p.id === perk.id
+                    );
+                    const isActive = state.perks.active.some(
+                      (p) => p.id === perk.id
+                    );
+
+                    return (
+                      <motion.div
+                        key={perk.id}
+                        className="bg-[#6d4c2c] p-4 rounded-lg flex items-start justify-between
+                                   border border-[#8B5E3C]/50 shadow-md hover:bg-[#7d583a] transition-colors"
+                      >
+                        <div className="flex items-start gap-4">
+                          <div className="flex flex-col items-center gap-2">
+                            <div className="w-12 h-12 bg-[#8B5E3C]/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                              <motion.span
+                                className="text-2xl"
+                                animate={{ y: [0, -2, 0] }}
+                                transition={{ duration: 1.5, repeat: Infinity }}
+                              >
+                                {perk.icon}
+                              </motion.span>
+                            </div>
+                            <span className="px-2 py-0.5 bg-[#8B5E3C]/50 rounded text-xs text-white/80 font-medium">
+                              24h
+                            </span>
+                          </div>
+                          <div className="flex flex-col">
+                            <h3 className="text-white/90 font-medium mb-1">
+                              {perk.name}
+                            </h3>
+                            <p className="text-white/60 text-sm">
+                              {perk.description.replace(" for 24 hours", "")}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex flex-col items-end gap-2 ml-4 flex-shrink-0">
+                          <motion.button
+                            whileHover={{ scale: 1.03 }}
+                            whileTap={{ scale: 0.97 }}
+                            onClick={() =>
+                              isOwned
+                                ? dispatch({ type: "ACTIVATE_PERK", perk })
+                                : dispatch({ type: "PURCHASE_PERK", perk })
+                            }
+                            disabled={
+                              isOwned ? isActive : state.coins < perk.cost
+                            }
+                            className={`min-w-[100px] py-2 px-4 rounded text-sm font-medium
+                                       transition-colors disabled:opacity-40 disabled:cursor-not-allowed
+                                       ${
+                                         isOwned
+                                           ? "bg-[#2B593B] text-white/90 hover:bg-[#346344]"
+                                           : "bg-[#FFB938] text-[#7E4E31] hover:bg-[#ffc65c]"
+                                       }
+                                       border border-white/10`}
+                          >
+                            {isOwned
+                              ? isActive
+                                ? "Active"
+                                : "Activate"
+                              : `🪙 ${perk.cost}`}
+                          </motion.button>
+                          {isActive && perk.activatedAt && perk.duration && (
+                            <div className="text-[#FFB938] text-xs font-medium">
+                              {(() => {
+                                const remainingMs =
+                                  perk.duration -
+                                  (Date.now() - perk.activatedAt);
+                                if (remainingMs <= 0) return "Expired";
+                                const hours = Math.floor(
+                                  remainingMs / (60 * 60 * 1000)
+                                );
+                                const minutes = Math.floor(
+                                  (remainingMs % (60 * 60 * 1000)) / (60 * 1000)
+                                );
+                                return `${hours}h ${minutes}m remaining`;
+                              })()}
+                            </div>
+                          )}
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              </motion.div>
+            )}
+          </div>
         </div>
       </motion.div>
     </div>
