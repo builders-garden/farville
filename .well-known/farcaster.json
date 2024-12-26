@@ -1,32 +1,18 @@
 {
   "accountAssociation": {
-    "header": "eyJmaWQiOjQ0NjEsInR5cGUiOiJjdXN0b2R5Iiwia2V5IjoiMHgxMzU4MTU1YTE1OTMwZjg5ZUJjNzg3YTM0RWI0Y2NmZDk3MjBiQzYyIn0",
+    "header": "eyJmaWQiOjQ0NjEsInR5cGUiOiJjdXN0b2R5Iiwia2V5IjoiMHgyODJkNWYzQmZjNzY5YTI3NjAxNDg3NzhBNzMzNDI5YmEzQWVmMjU2In0",
     "payload": "eyJkb21haW4iOiJmYXJ2aWxsZS5mYXJtIn0",
-    "signature": "MHhlZjYzMzY0MGRmMzg2NGM2MmQzNzlhZjMzY2Y0MTM3MTY0ZWMxZmMxMzBkZDQxOTJkODMyODMzZGRjOTliYTE0MWQzN2Y5NDY0NTgzNDdlZGUxM2M5NjY0Mzc3NmIyNTNkMWZiOWExMjgwODQxZGVhMjgyMWE0MTMyOGRiMjNlZTFj"
+    "signature": "MHg3ZTdhMjExMWFhZGZmZmMyZmYyODQ1MTY5ZjBiZTk3NzcwMDk3MGM0YTA3MGViMGViNDhkMTFlMGQ1MGM2MWFlMjhlNTcyOGE5YTI1M2IxZTdhNDUyNTUxNWNhZGJlYjdlMTMyY2I3Y2JlZGVkZmYwN2U0YWNhODBlYzhjY2Y4ZjFi"
   },
   "frame": {
     "version": "1",
-    "name": "Farville",
+    "name": "Example Frame",
+    "iconUrl": "https://farville.farm/icon.png",
     "homeUrl": "https://farville.farm",
-    "iconUrl": "https://farville.farm/images/icon.png",
-    "imageUrl": "https://farville.farm/images/welcome.png",
-    "buttonTitle": "Play Farville 🧑‍🌾",
-    "splashImageUrl": "https://farville.farm/images/splash.png",
-    "splashBackgroundColor": "#90EE90",
+    "imageUrl": "https://farville.farm/image.png",
+    "buttonTitle": "Check this out",
+    "splashImageUrl": "https://farville.farm/splash.png",
+    "splashBackgroundColor": "#eeccff",
     "webhookUrl": "https://farville.farm/api/webhook"
-  },
-  "triggers": [
-    {
-      "type": "cast",
-      "id": "share-farm",
-      "url": "https://farville.farm/triggers/share",
-      "name": "Share Farm Progress"
-    },
-    {
-      "type": "composer",
-      "id": "post-harvest",
-      "url": "https://farville.farm/triggers/harvest",
-      "name": "Post Harvest Results"
-    }
-  ]
+  }
 }
