@@ -17,7 +17,7 @@ export default function GridCell({ cell }: GridCellProps) {
   const [floatingPosition, setFloatingPosition] = useState({ x: 0, y: 0 });
   const [harvestedExp, setHarvestedExp] = useState<number | null>(null);
   const cellRef = useRef<HTMLDivElement>(null);
-  const [isDragOver, setIsDragOver] = useState(false);
+  const [isDragOver] = useState(false);
 
   const getRewards = (type: CropType) => {
     const rewards = {
@@ -76,38 +76,6 @@ export default function GridCell({ cell }: GridCellProps) {
     }
   };
 
-  const handleTouchMove = (e: React.TouchEvent) => {
-    e.preventDefault();
-    const touch = e.touches[0];
-    const element = document.elementFromPoint(touch.clientX, touch.clientY);
-
-    if (element === cellRef.current && cell.tilled && !cell.crop) {
-      setIsDragOver(true);
-    } else {
-      setIsDragOver(false);
-    }
-  };
-
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    e.preventDefault();
-    setIsDragOver(false);
-
-    const touch = e.changedTouches[0];
-    const element = document.elementFromPoint(touch.clientX, touch.clientY);
-
-    if (element === cellRef.current && cell.tilled && !cell.crop) {
-      // Find the currently dragged crop type from the toolbar
-      const draggedButton = document.querySelector('button[dragging="true"]');
-      if (draggedButton) {
-        const cropType = draggedButton.getAttribute(
-          "data-crop-type"
-        ) as CropType;
-        if (cropType) {
-          plantCrop(cell.x, cell.y, cropType);
-        }
-      }
-    }
-  };
 
   return (
     <motion.div
