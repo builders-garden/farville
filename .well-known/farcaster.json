@@ -1,0 +1,14 @@
+{
+  "accountAssociation": {
+    "header": "eyJmaWQiOjQ0NjEsInR5cGUiOiJjdXN0b2R5Iiwia2V5IjoiMHgxMzU4MTU1YTE1OTMwZjg5ZUJjNzg3YTM0RWI0Y2NmZDk3MjBiQzYyIn0",
+    "payload": "eyJkb21haW4iOiJodHRwczovL2ZhcnZpbGxlLmZhcm0ifQ",
+    "signature": "MHhiMzJiOTNjOGI4MTY2ODkxNThjNzQxMGZhYjA2ZWRlZDA0ZTJhMDcxZDcyYjQzYzhiZmVlODk1NTg5NzY3NGNiNTc4NmNkMTUzZGY0YjlkMDhjNjcyNDg3NmY2MDQ5M2Y2NDJjZWVkNDg1N2RjZTM3YWNiOGUyNzE5ZGVmODJlNjFi"
+  },
+  "frame": {
+        "version": "1",
+        "iconUrl": "",
+        "imageUrl": "https://farville.farm/images/welcome.png",
+        "buttonTitle": "Play Farville 🧑‍🌾"
+      
+  }
+}
