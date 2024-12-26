@@ -7,11 +7,18 @@ import { CropType } from "../types/game";
 import { EXPANSION_COSTS } from "../context/GameContext";
 import { Perk } from "../types/perks";
 
-const SEEDS: { type: CropType; icon: string; price: number; name: string }[] = [
-  { type: "wheat", name: "Wheat", icon: "🌾", price: 5 },
-  { type: "corn", name: "Corn", icon: "🌽", price: 15 },
-  { type: "tomato", name: "Tomato", icon: "🍅", price: 30 },
-  { type: "potato", name: "Potato", icon: "🥔", price: 60 },
+const SEEDS: {
+  type: CropType;
+  icon: string;
+  price: number;
+  name: string;
+  level: number;
+  xp: number;
+}[] = [
+  { type: "wheat", name: "Wheat", icon: "🌾", price: 5, level: 1, xp: 2 },
+  { type: "corn", name: "Corn", icon: "🌽", price: 15, level: 3, xp: 6 },
+  { type: "tomato", name: "Tomato", icon: "🍅", price: 30, level: 5, xp: 12 },
+  { type: "potato", name: "Potato", icon: "🥔", price: 60, level: 8, xp: 25 },
 ];
 
 const PERKS: Perk[] = [
@@ -160,7 +167,7 @@ export default function MarketplaceModal({ onClose }: { onClose: () => void }) {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 20 }}
               >
-                {SEEDS.map(({ type, icon, price, name }, index) => (
+                {SEEDS.map(({ type, icon, price, name, level, xp }, index) => (
                   <motion.div
                     key={type}
                     initial={{ opacity: 0, x: -20 }}
@@ -192,6 +199,13 @@ export default function MarketplaceModal({ onClose }: { onClose: () => void }) {
                           </span>
                           <span className="text-white/40">•</span>
                           <span className="text-white/60">
+                            XP:{" "}
+                            <span className="text-yellow-400 font-medium">
+                              ⭐ {xp}
+                            </span>
+                          </span>
+                          <span className="text-white/40">•</span>
+                          <span className="text-white/60">
                             Owned:{" "}
                             <span className="text-white/90 font-medium">
                               {state.seeds[type]}
@@ -207,12 +221,20 @@ export default function MarketplaceModal({ onClose }: { onClose: () => void }) {
                           whileHover={{ scale: 1.03 }}
                           whileTap={{ scale: 0.97 }}
                           onClick={() => handleBuySeeds(type, amount)}
-                          disabled={state.coins < price * amount}
-                          className="min-w-[70px] py-1.5 bg-[#8B5E3C] text-white/90 rounded hover:bg-[#9b6a44] 
-                                   transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-sm font-medium
-                                   border border-white/10"
+                          disabled={
+                            state.coins < price * amount || state.level < level
+                          }
+                          className={`min-w-[70px] py-1.5 text-white/90 rounded transition-colors 
+                            disabled:opacity-40 disabled:cursor-not-allowed text-sm font-medium
+                            border border-white/10 ${
+                              state.level < level
+                                ? "bg-red-700 hover:bg-red-800"
+                                : "bg-[#2B593B] hover:bg-[#346344]"
+                            }`}
                         >
-                          Buy {amount}
+                          {state.level < level
+                            ? `Level ${level}`
+                            : `Buy ${amount}`}
                         </motion.button>
                       ))}
                     </div>

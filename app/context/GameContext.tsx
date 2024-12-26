@@ -242,6 +242,18 @@ function gameReducer(
         potato: 15,
       };
 
+      const levelRequirements = {
+        wheat: 1,
+        corn: 3,
+        tomato: 5,
+        potato: 8,
+      };
+
+      // Check level requirement
+      if (state.level < levelRequirements[action.cropType]) {
+        return state;
+      }
+
       const totalCost = seedPrices[action.cropType] * action.amount;
 
       if (state.coins < totalCost) {
