@@ -15,10 +15,16 @@ export default function Header() {
         <div className="relative">
           <div className="bg-[#7E4E31] h-[42px] px-3 rounded-xl shadow-lg border-2 border-[#6d4c2c] flex items-center gap-3">
             <div>
-              <span className="text-white/90 font-bold tracking-wide text-sm">
-                ⭐ Level {state.level}
-              </span>
-              <div className="mt-1 h-1.5 w-24 bg-[#6d4c2c] rounded-full overflow-hidden">
+              <div className="flex items-center gap-2">
+                <span className="text-white/90 font-bold tracking-wide text-sm">
+                  ⭐ Level {state.level}
+                </span>
+                <span className="text-white/70 text-xs">
+                  ({state.experience - (state.level - 1) * 100}/
+                  {state.level * 100})
+                </span>
+              </div>
+              <div className="mt-1 h-1.5 w-full bg-[#6d4c2c] rounded-full overflow-hidden">
                 <motion.div
                   className="h-full bg-[#FFB938]"
                   initial={{ width: 0 }}

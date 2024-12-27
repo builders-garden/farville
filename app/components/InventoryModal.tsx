@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { useGame } from "../context/GameContext";
 import { CropType } from "../types/game";
+import { Perk } from "../types/perks";
 
 const ITEMS: { type: CropType; icon: string }[] = [
   { type: "wheat", icon: "🌾" },
@@ -18,7 +19,7 @@ export default function InventoryModal({
   onClose: () => void;
   safeAreaInsets: { top: number; bottom: number; left: number; right: number };
 }) {
-  const { state, setSelectedCrop, dispatch, setSelectedFertilizer } = useGame();
+  const { state, setSelectedCrop, setSelectedFertilizer } = useGame();
   const totalSeeds = Object.values(state.seeds).reduce((a, b) => a + b, 0);
   const totalCrops = Object.values(state.crops).reduce((a, b) => a + b, 0);
   const totalFertilizers = state.perks.owned
