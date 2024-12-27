@@ -1,56 +1,36 @@
-"use client";
+import { Metadata } from "next";
+import App from "./app";
 
-import sdk from "@farcaster/frame-sdk";
-import { AnimatePresence } from "framer-motion";
-import dynamic from "next/dynamic";
-import { useEffect, useState } from "react";
-import { GameProvider } from "./context/GameContext";
+const appUrl = process.env.NEXT_PUBLIC_URL;
 
+const frame = {
+  version: "next",
+  imageUrl: `${appUrl}/images/icon.png`,
+  button: {
+    title: "Play FarVille 🧑‍🌾",
+    action: {
+      type: "launch_frame",
+      name: "FarVille Farm",
+      url: appUrl,
+      splashImageUrl: `${appUrl}/images/splash.png`,
+      splashBackgroundColor: "#f7f7f7",
+    },
+  },
+};
 
-const GameWrapper = dynamic(() => import("./components/GameWrapper"), {
-  ssr: false,
-});
-
-const WelcomeOverlay = dynamic(() => import("./components/WelcomeOverlay"), {
-  ssr: false,
-});
+export async function generateMetadata(): Promise<Metadata> {
+  return {
+    title: "FarVille",
+    openGraph: {
+      title: "FarVille",
+      description: "Plant, grow, and harvest crops with your friends.",
+    },
+    other: {
+      "fc:frame": JSON.stringify(frame),
+    },
+  };
+}
 
 export default function Home() {
-  const [showWelcome, setShowWelcome] = useState(true);
-  const [isSDKLoaded, setIsSDKLoaded] = useState(false);
-
-  const [safeAreaInsets, setSafeAreaInsets] = useState({
-    top: 0,
-    bottom: 0,
-    left: 0,
-    right: 0,
-  });
-
-  useEffect(() => {
-    const load = async () => {
-      sdk.actions.ready();
-      const context = await sdk.context;
-      setSafeAreaInsets(context.client.safeAreaInsets!);
-    };
-    if (sdk && !isSDKLoaded) {
-      setIsSDKLoaded(true);
-      load();
-    }
-  }, [isSDKLoaded]);
-
-  return (
-    <GameProvider>
-      <main className="bg-green-800">
-        <AnimatePresence>
-          {showWelcome && (
-            <WelcomeOverlay
-              safeAreaInsets={safeAreaInsets}
-              onStart={() => setShowWelcome(false)}
-            />
-          )}
-        </AnimatePresence>
-        <GameWrapper safeAreaInsets={safeAreaInsets} />
-      </main>
-    </GameProvider>
-  );
+  return <App />;
 }
