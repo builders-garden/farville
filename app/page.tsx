@@ -5,37 +5,7 @@ import { AnimatePresence } from "framer-motion";
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 import { GameProvider } from "./context/GameContext";
-import { Metadata } from "next";
 
-const appUrl = process.env.NEXT_PUBLIC_URL;
-
-const frame = {
-  version: "next",
-  imageUrl: `${appUrl}/images/icon.png`,
-  button: {
-    title: "Play FarVille 🧑‍🌾",
-    action: {
-      type: "launch_frame",
-      name: "FarVille Farm",
-      url: appUrl,
-      splashImageUrl: `${appUrl}/images/splash.png`,
-      splashBackgroundColor: "#f7f7f7",
-    },
-  },
-};
-
-export async function generateMetadata(): Promise<Metadata> {
-  return {
-    title: "FarVille",
-    openGraph: {
-      title: "FarVille",
-      description: "Plant, grow, and harvest crops with your friends.",
-    },
-    other: {
-      "fc:frame": JSON.stringify(frame),
-    },
-  };
-}
 
 const GameWrapper = dynamic(() => import("./components/GameWrapper"), {
   ssr: false,
