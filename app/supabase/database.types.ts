@@ -1,0 +1,119 @@
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json | undefined }
+  | Json[];
+
+export interface Database {
+  public: {
+    Tables: {
+      items: {
+        Row: {
+          id: number;
+          name: string;
+          description: string;
+          icon: string;
+          category: string;
+          buyPrice: number;
+          sellPrice: number;
+          requiredLevel: number;
+          createdAt: string;
+        };
+        Insert: {
+          id?: number;
+          name: string;
+          description: string;
+          icon: string;
+          category: string;
+          buyPrice: number;
+          sellPrice: number;
+          requiredLevel: number;
+          createdAt?: string;
+        };
+        Update: {
+          id?: number;
+          name?: string;
+          description?: string;
+          icon?: string;
+          category?: string;
+          buyPrice?: number;
+          sellPrice?: number;
+          requiredLevel?: number;
+          createdAt?: string;
+        };
+      };
+      users: {
+        Row: {
+          fid: number;
+          username: string;
+          displayName: string;
+          avatarUrl: string | null;
+          walletAddress: string | null;
+          xp: number;
+          coins: number;
+          expansions: number;
+          notificationDetails: string | null;
+          createdAt: string;
+        };
+        Insert: {
+          fid: number;
+          username: string;
+          displayName: string;
+          avatarUrl?: string | null;
+          walletAddress?: string | null;
+          xp?: number;
+          coins?: number;
+          expansions?: number;
+          notificationDetails?: string | null;
+          createdAt?: string;
+        };
+        Update: {
+          fid?: number;
+          username?: string;
+          displayName?: string;
+          avatarUrl?: string | null;
+          walletAddress?: string | null;
+          xp?: number;
+          coins?: number;
+          expansions?: number;
+          notificationDetails?: string | null;
+          createdAt?: string;
+        };
+      };
+      user_has_items: {
+        Row: {
+          id: number;
+          userFid: number;
+          itemId: number;
+          quantity: number;
+          createdAt: string;
+        };
+        Insert: {
+          id?: number;
+          userFid: number;
+          itemId: number;
+          quantity: number;
+          createdAt?: string;
+        };
+        Update: {
+          id?: number;
+          userFid?: number;
+          itemId?: number;
+          quantity?: number;
+          createdAt?: string;
+        };
+      };
+    };
+    Views: {
+      [_ in never]: never;
+    };
+    Functions: {
+      [_ in never]: never;
+    };
+    Enums: {
+      [_ in never]: never;
+    };
+  };
+}
