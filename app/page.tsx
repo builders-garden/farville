@@ -18,9 +18,18 @@ export default function Home() {
   const [showWelcome, setShowWelcome] = useState(true);
   const [isSDKLoaded, setIsSDKLoaded] = useState(false);
 
+  const [safeAreaInsets, setSafeAreaInsets] = useState({
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0,
+  });
+
   useEffect(() => {
     const load = async () => {
       sdk.actions.ready();
+      const context = await sdk.context;
+      setSafeAreaInsets(context.client.safeAreaInsets!);
     };
     if (sdk && !isSDKLoaded) {
       setIsSDKLoaded(true);
@@ -30,13 +39,18 @@ export default function Home() {
 
   return (
     <GameProvider>
-      <main className="min-h-screen bg-green-800">
+      <main
+        className="bg-green-800"
+      >
         <AnimatePresence>
           {showWelcome && (
-            <WelcomeOverlay onStart={() => setShowWelcome(false)} />
+            <WelcomeOverlay
+              safeAreaInsets={safeAreaInsets}
+              onStart={() => setShowWelcome(false)}
+            />
           )}
         </AnimatePresence>
-        <GameWrapper />
+        <GameWrapper safeAreaInsets={safeAreaInsets} />
       </main>
     </GameProvider>
   );

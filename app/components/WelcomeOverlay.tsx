@@ -6,6 +6,7 @@ import { useState, useEffect } from "react";
 import { GridCell as GridCellType, Crop, CropType } from "../types/game";
 import CropSprite from "./CropSprite";
 import Image from "next/image";
+import sdk from "@farcaster/frame-sdk";
 
 const DEMO_SEEDS: { type: CropType; icon: string; name: string }[] = [
   { type: "wheat", icon: "🌾", name: "Wheat" },
@@ -49,7 +50,13 @@ interface TouchDragState {
 
 // Add this constant at the top with other constants
 const DEMO_GROWTH_TIME = 9000; // 9 seconds total (3 seconds per stage)
-export default function WelcomeOverlay({ onStart }: { onStart: () => void }) {
+export default function WelcomeOverlay({
+  onStart,
+  safeAreaInsets,
+}: {
+  onStart: () => void;
+  safeAreaInsets: { top: number; bottom: number; left: number; right: number };
+}) {
   const { startBackgroundMusic, playSound } = useAudio();
   const [selectedSeed, setSelectedSeed] = useState<CropType | null>(null);
   const [musicStarted, setMusicStarted] = useState(false);
@@ -249,16 +256,22 @@ export default function WelcomeOverlay({ onStart }: { onStart: () => void }) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[100] bg-[#2d5a27] flex flex-col items-center justify-center gap-2 p-4"
+      style={{
+        marginTop: safeAreaInsets.top,
+        marginBottom: safeAreaInsets.bottom,
+        marginLeft: safeAreaInsets.left,
+        marginRight: safeAreaInsets.right,
+      }}
+      className="fixed inset-0 w-full h-full z-[100] bg-[#2d5a27] flex flex-col items-center justify-center gap-2 p-4"
     >
       {/* Updated Image component with responsive sizing */}
       <div className="w-full max-w-[300px] h-auto min-h-0 flex-shrink-0">
         <Image
           src="/images/welcome.png"
           alt="FarVille"
-          width={300}
-          height={100}
-          className="w-full h-auto rounded-xl"
+          width={150}
+          height={50}
+          className="rounded-xl mx-auto"
           priority
           style={{
             objectFit: "contain",
@@ -332,9 +345,9 @@ export default function WelcomeOverlay({ onStart }: { onStart: () => void }) {
       <motion.button
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
-        onClick={() => {
-          window.open("https://presave-link-here.com", "_blank");
+        onClick={async () => {
           startBackgroundMusic();
+          await sdk.actions.addFrame();
           onStart();
         }}
         className="mt-8 px-16 py-4 bg-white text-emerald-500 rounded-xl text-2xl font-bold

@@ -28,7 +28,11 @@ const MOCK_FRIENDS = [
 //   coins: number;
 // };
 
-export default function LeaderboardModal() {
+export default function LeaderboardModal({
+  safeAreaInsets,
+}: {
+  safeAreaInsets: { top: number; bottom: number; left: number; right: number };
+}) {
   const { toggleLeaderboard } = useGame();
   const { startBackgroundMusic } = useAudio();
   const [activeTab, setActiveTab] = useState<"global" | "friends">("global");
@@ -52,6 +56,12 @@ export default function LeaderboardModal() {
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: 50 }}
+        style={{
+          marginTop: safeAreaInsets.top,
+          marginBottom: safeAreaInsets.bottom,
+          marginLeft: safeAreaInsets.left,
+          marginRight: safeAreaInsets.right,
+        }}
         className="bg-[#7E4E31] w-full min-h-screen"
       >
         <div className="max-w-4xl mx-auto p-6">

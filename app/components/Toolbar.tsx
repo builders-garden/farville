@@ -20,7 +20,11 @@ const CROPS: { type: CropType; icon: string }[] = [
   { type: "potato", icon: "🥔" },
 ];
 
-export default function Toolbar() {
+export default function Toolbar({
+  safeAreaInsets,
+}: {
+  safeAreaInsets: { top: number; bottom: number; left: number; right: number };
+}) {
   const { state, selectedCrop, setSelectedCrop, toggleInventory } = useGame();
   const [isDragging, setIsDragging] = useState(false);
   const dragIconRef = useRef<HTMLDivElement>(null);
@@ -171,7 +175,14 @@ export default function Toolbar() {
         aria-hidden="true"
       />
 
-      <div className="fixed bottom-0 inset-x-0 bg-[#7E4E31] p-3 flex justify-between items-center">
+      <div className="fixed bottom-0 inset-x-0 bg-[#7E4E31] p-3 flex justify-between items-center"
+        style={{
+          marginTop: safeAreaInsets.top,
+          marginBottom: safeAreaInsets.bottom,
+          marginLeft: safeAreaInsets.left,
+          marginRight: safeAreaInsets.right,
+        }}
+      >
         <div className="flex gap-2">
           {CROPS.map(({ type, icon }) => {
             const isAvailable = state.seeds[type] > 0;
