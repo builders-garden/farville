@@ -83,22 +83,12 @@ export default function GridCell({ cell }: GridCellProps) {
           y: rect.top + rect.height / 2,
         });
 
-        console.log("Setting rewards:", {
-          exp: rewards.exp,
-          amount: rewards.amount,
-          cropType,
-          position: {
-            x: rect.left + rect.width / 2,
-            y: rect.top + rect.height / 2,
-          },
-        });
-
         setHarvestedExp(rewards.exp);
         setHarvestedAmount(rewards.amount);
         setHarvestedCropType(cropType);
         setShowFloating(true);
 
-        harvestCrop(cell.x, cell.y);
+        harvestCrop(cell.x, cell.y, rewards);
 
         setTimeout(() => {
           setShowFloating(false);

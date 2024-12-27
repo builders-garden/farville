@@ -1,8 +1,8 @@
 "use client";
 
+import { CropType } from "@/app/types/game";
 import { motion } from "framer-motion";
 import { createPortal } from "react-dom";
-import { CropType } from "../types/game";
 
 interface FloatingNumberProps {
   number: number;
@@ -46,7 +46,9 @@ export default function FloatingNumber({
         tomato: "🍅",
         potato: "🥔",
       };
-      return `+${number} ${cropType && cropIcons[cropType]}`;
+      return `+${number} ${
+        cropType && `${cropType.toUpperCase()} ${cropIcons[cropType]}`
+      }`;
     }
     return "";
   };

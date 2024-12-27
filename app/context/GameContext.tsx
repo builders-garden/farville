@@ -29,7 +29,7 @@ export const EXPANSION_COSTS: ExpansionCost[] = [
 type GameAction =
   | { type: "TILL_SOIL"; x: number; y: number }
   | { type: "PLANT_CROP"; x: number; y: number; cropType: CropType }
-  | { type: "HARVEST_CROP"; x: number; y: number }
+  | { type: "HARVEST_CROP"; x: number; y: number; rewards: { exp: number; amount: number } }
   | { type: "UPDATE_GROWTH" }
   | { type: "ACTIVATE_PERK"; perk: Perk; x?: number; y?: number }
   | { type: "PURCHASE_PERK"; perk: Perk }
@@ -51,7 +51,7 @@ interface GameContextType {
   setSelectedFertilizer: (perk: Perk | null) => void;
   tillSoil: (x: number, y: number) => void;
   plantCrop: (x: number, y: number, cropType: CropType) => void;
-  harvestCrop: (x: number, y: number) => void;
+  harvestCrop: (x: number, y: number, rewards: { exp: number; amount: number }) => void;
   activatePerk: (perk: Perk) => void;
   purchasePerk: (perk: Perk) => void;
   getActivePerks: () => Perk[];
@@ -129,17 +129,7 @@ function gameReducer(
       if (!cell.crop?.readyToHarvest) return state;
 
       const harvestedType = cell.crop.type;
-      const baseRewards: {
-        [key in CropType]: { exp: number; minYield: number; maxYield: number };
-      } = {
-        wheat: { exp: 2, minYield: 1, maxYield: 2 },
-        corn: { exp: 6, minYield: 1, maxYield: 2 },
-        tomato: { exp: 12, minYield: 1, maxYield: 2 },
-        potato: { exp: 25, minYield: 1, maxYield: 2 },
-      };
-
-      const reward = baseRewards[harvestedType];
-      const baseYield = Math.floor(Math.random() * 2) + 1;
+      const reward = action.rewards;
 
       newGrid[action.y][action.x] = {
         ...cell,
@@ -155,7 +145,7 @@ function gameReducer(
       }
 
       const yieldMultiplier = calculateYieldMultiplier(state, harvestedType);
-      const harvestedAmount = Math.floor(baseYield * yieldMultiplier);
+      const harvestedAmount = Math.floor(reward.amount * yieldMultiplier);
 
       const newCrops = {
         ...state.crops,
@@ -542,8 +532,8 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     dispatch({ type: "PLANT_CROP", x, y, cropType });
   };
 
-  const harvestCrop = (x: number, y: number) => {
-    dispatch({ type: "HARVEST_CROP", x, y });
+  const harvestCrop = (x: number, y: number, rewards: { exp: number; amount: number }) => {
+    dispatch({ type: "HARVEST_CROP", x, y, rewards });
   };
 
   // Update crop growth every second
