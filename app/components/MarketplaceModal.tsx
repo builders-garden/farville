@@ -22,49 +22,49 @@ const SEEDS: {
 ];
 
 const PERKS: Perk[] = [
-  {
-    id: "yield_1",
-    name: "Basic Yield Booster",
-    description: "Increases crop yield by 50% for 24 hours",
-    cost: 500,
-    type: "YIELD_BOOSTER",
-    multiplier: 1.5,
-    icon: "✨",
-    duration: 24 * 60 * 60 * 1000,
-  },
-  {
-    id: "yield_2",
-    name: "Advanced Yield Booster",
-    description: "Doubles crop yield for 24 hours",
-    cost: 1000,
-    type: "YIELD_BOOSTER",
-    multiplier: 2,
-    icon: "✨",
-    duration: 24 * 60 * 60 * 1000,
-  },
-  {
-    id: "growth_1",
-    name: "Basic Fertilizer",
-    description: "Crops grow 50% faster for 24 hours",
-    cost: 500,
-    type: "GROWTH_BOOSTER",
-    multiplier: 1.5,
-    icon: "🌱",
-    duration: 24 * 60 * 60 * 1000,
-  },
-  {
-    id: "growth_2",
-    name: "Premium Fertilizer",
-    description: "Crops grow twice as fast for 24 hours",
-    cost: 1000,
-    type: "GROWTH_BOOSTER",
-    multiplier: 2,
-    icon: "🌱",
-    duration: 24 * 60 * 60 * 1000,
-  },
+  // {
+  //   id: "yield_1",
+  //   name: "Basic Yield Booster",
+  //   description: "Increases crop yield by 50% for 24 hours",
+  //   cost: 500,
+  //   type: "YIELD_BOOSTER",
+  //   multiplier: 1.5,
+  //   icon: "✨",
+  //   duration: 24 * 60 * 60 * 1000,
+  // },
+  // {
+  //   id: "yield_2",
+  //   name: "Advanced Yield Booster",
+  //   description: "Doubles crop yield for 24 hours",
+  //   cost: 1000,
+  //   type: "YIELD_BOOSTER",
+  //   multiplier: 2,
+  //   icon: "✨",
+  //   duration: 24 * 60 * 60 * 1000,
+  // },
+  // {
+  //   id: "growth_1",
+  //   name: "Basic Fertilizer",
+  //   description: "Crops grow 50% faster for 24 hours",
+  //   cost: 500,
+  //   type: "GROWTH_BOOSTER",
+  //   multiplier: 1.5,
+  //   icon: "🌱",
+  //   duration: 24 * 60 * 60 * 1000,
+  // },
+  // {
+  //   id: "growth_2",
+  //   name: "Premium Fertilizer",
+  //   description: "Crops grow twice as fast for 24 hours",
+  //   cost: 1000,
+  //   type: "GROWTH_BOOSTER",
+  //   multiplier: 2,
+  //   icon: "🌱",
+  //   duration: 24 * 60 * 60 * 1000,
+  // },
   {
     id: "instant_growth_1",
-    name: "Basic Fertilizer",
+    name: "Fertilizer",
     description: "Instantly grows one crop to full maturity",
     cost: 100,
     type: "INSTANT_GROWTH",
@@ -450,60 +450,9 @@ export default function MarketplaceModal({
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 20 }}
               >
-                <div className="bg-[#6d4c2c] px-4 py-3 rounded-lg border border-[#8B5E3C]/50 shadow-md">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-xl">⚡</span>
-                    <p className="text-white/90 font-medium">Active Perks</p>
-                  </div>
-                  <div className="grid gap-2">
-                    {state.perks.active.length > 0 ? (
-                      state.perks.active.map((perk) => (
-                        <div
-                          key={perk.id}
-                          className="bg-[#5c3d23] px-3 py-2 rounded flex items-center justify-between"
-                        >
-                          <div className="flex items-center gap-2">
-                            <span className="text-xl">{perk.icon}</span>
-                            <div>
-                              <p className="text-white/90 text-sm font-medium">
-                                {perk.name}
-                              </p>
-                              <p className="text-white/60 text-xs">
-                                {perk.description}
-                              </p>
-                            </div>
-                          </div>
-                          {perk.activatedAt && perk.duration && (
-                            <div className="text-[#FFB938] text-sm font-medium">
-                              {(() => {
-                                const remainingMs =
-                                  perk.duration -
-                                  (Date.now() - perk.activatedAt);
-                                if (remainingMs <= 0) return "Expired";
-                                const hours = Math.floor(
-                                  remainingMs / (60 * 60 * 1000)
-                                );
-                                const minutes = Math.floor(
-                                  (remainingMs % (60 * 60 * 1000)) / (60 * 1000)
-                                );
-                                return `${hours}h ${minutes}m`;
-                              })()}
-                            </div>
-                          )}
-                        </div>
-                      ))
-                    ) : (
-                      <p className="text-white/60 text-sm">No active perks</p>
-                    )}
-                  </div>
-                </div>
-
                 <div className="grid gap-3">
                   {PERKS.map((perk) => {
                     const isOwned = state.perks.owned.some(
-                      (p) => p.id === perk.id
-                    );
-                    const isActive = state.perks.active.some(
                       (p) => p.id === perk.id
                     );
 
@@ -525,7 +474,7 @@ export default function MarketplaceModal({
                               </motion.span>
                             </div>
                             <span className="px-2 py-0.5 bg-[#8B5E3C]/50 rounded text-xs text-white/80 font-medium">
-                              24h
+                              {perk.quantity}x
                             </span>
                           </div>
                           <div className="flex flex-col">
@@ -533,7 +482,7 @@ export default function MarketplaceModal({
                               {perk.name}
                             </h3>
                             <p className="text-white/60 text-sm">
-                              {perk.description.replace(" for 24 hours", "")}
+                              {perk.description}
                             </p>
                           </div>
                         </div>
@@ -542,43 +491,19 @@ export default function MarketplaceModal({
                             whileHover={{ scale: 1.03 }}
                             whileTap={{ scale: 0.97 }}
                             onClick={() =>
-                              isOwned
-                                ? dispatch({ type: "ACTIVATE_PERK", perk })
-                                : dispatch({ type: "PURCHASE_PERK", perk })
+                              dispatch({ type: "PURCHASE_PERK", perk })
                             }
-                            disabled={
-                              isOwned ? isActive : state.coins < perk.cost
-                            }
-                            className={`min-w-[100px] py-2 px-4 rounded text-sm font-medium
-                                       transition-colors disabled:opacity-40 disabled:cursor-not-allowed
-                                       ${
-                                         isOwned
-                                           ? "bg-[#2B593B] text-white/90 hover:bg-[#346344]"
-                                           : "bg-[#FFB938] text-[#7E4E31] hover:bg-[#ffc65c]"
-                                       }
-                                       border border-white/10`}
+                            disabled={state.coins < perk.cost}
+                            className="min-w-[100px] py-2 px-4 rounded text-sm font-medium
+                                      bg-[#FFB938] text-[#7E4E31] hover:bg-[#ffc65c]
+                                      transition-colors disabled:opacity-40 disabled:cursor-not-allowed
+                                      border border-white/10"
                           >
-                            {isOwned
-                              ? isActive
-                                ? "Active"
-                                : "Activate"
-                              : `🪙 ${perk.cost}`}
+                            🪙 {perk.cost}
                           </motion.button>
-                          {isActive && perk.activatedAt && perk.duration && (
-                            <div className="text-[#FFB938] text-xs font-medium">
-                              {(() => {
-                                const remainingMs =
-                                  perk.duration -
-                                  (Date.now() - perk.activatedAt);
-                                if (remainingMs <= 0) return "Expired";
-                                const hours = Math.floor(
-                                  remainingMs / (60 * 60 * 1000)
-                                );
-                                const minutes = Math.floor(
-                                  (remainingMs % (60 * 60 * 1000)) / (60 * 1000)
-                                );
-                                return `${hours}h ${minutes}m remaining`;
-                              })()}
+                          {isOwned && (
+                            <div className="text-green-400 text-xs font-medium">
+                              In inventory
                             </div>
                           )}
                         </div>
