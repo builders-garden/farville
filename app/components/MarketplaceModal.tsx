@@ -62,6 +62,26 @@ const PERKS: Perk[] = [
     icon: "🌱",
     duration: 24 * 60 * 60 * 1000,
   },
+  {
+    id: "instant_growth_1",
+    name: "Basic Fertilizer",
+    description: "Instantly grows one crop to full maturity",
+    cost: 100,
+    type: "INSTANT_GROWTH",
+    multiplier: 1,
+    icon: "🧪",
+    quantity: 1,
+  },
+  {
+    id: "instant_growth_5",
+    name: "Fertilizer Pack",
+    description: "5 fertilizers to instantly grow crops",
+    cost: 450,
+    type: "INSTANT_GROWTH",
+    multiplier: 1,
+    icon: "🧪",
+    quantity: 5,
+  },
 ];
 
 type Tab = "seeds" | "crops" | "perks" | "expansions";

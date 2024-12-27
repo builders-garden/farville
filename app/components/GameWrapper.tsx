@@ -9,6 +9,7 @@ import InventoryModal from "./InventoryModal";
 import MarketplaceModal from "./MarketplaceModal";
 import SettingsModal from "./SettingsModal";
 import LeaderboardModal from "./LeaderboardModal";
+import FertilizerIndicator from "./FertilizerIndicator";
 
 // Load GameGrid component dynamically (client-side only)
 const GameGrid = dynamic(() => import("./GameGrid"), {
@@ -28,7 +29,12 @@ function InventoryModalContainer({
 
   return (
     <AnimatePresence>
-      {state.showInventory && <InventoryModal onClose={toggleInventory} safeAreaInsets={safeAreaInsets} />}
+      {state.showInventory && (
+        <InventoryModal
+          onClose={toggleInventory}
+          safeAreaInsets={safeAreaInsets}
+        />
+      )}
     </AnimatePresence>
   );
 }
@@ -44,7 +50,10 @@ function MarketplaceModalContainer({
   return (
     <AnimatePresence>
       {state.showMarketplace && (
-        <MarketplaceModal onClose={toggleMarketplace} safeAreaInsets={safeAreaInsets} />
+        <MarketplaceModal
+          onClose={toggleMarketplace}
+          safeAreaInsets={safeAreaInsets}
+        />
       )}
     </AnimatePresence>
   );
@@ -56,7 +65,6 @@ export default function GameWrapper({
   safeAreaInsets: { top: number; bottom: number; left: number; right: number };
 }) {
   const { state } = useGame();
-
 
   return (
     <div
@@ -73,11 +81,14 @@ export default function GameWrapper({
         <GameGrid />
       </div>
       <Toolbar safeAreaInsets={safeAreaInsets} />
+      <FertilizerIndicator />
       <InventoryModalContainer safeAreaInsets={safeAreaInsets} />
       <MarketplaceModalContainer safeAreaInsets={safeAreaInsets} />
       <AnimatePresence>
         {state.showSettings && <SettingsModal />}
-        {state.showLeaderboard && <LeaderboardModal safeAreaInsets={safeAreaInsets} />}
+        {state.showLeaderboard && (
+          <LeaderboardModal safeAreaInsets={safeAreaInsets} />
+        )}
       </AnimatePresence>
     </div>
   );

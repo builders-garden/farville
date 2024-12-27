@@ -1,6 +1,6 @@
 import { CropType } from "./game";
 
-export type PerkType = "GROWTH_BOOSTER" | "YIELD_BOOSTER";
+export type PerkType = "GROWTH_BOOSTER" | "YIELD_BOOSTER" | "INSTANT_GROWTH";
 
 export interface Perk {
   id: string;
@@ -13,6 +13,7 @@ export interface Perk {
   cropType?: CropType; // undefined means affects all crops
   icon: string;
   activatedAt?: number;
+  quantity?: number; // New field for inventory items
 }
 
 export interface PlayerPerks {

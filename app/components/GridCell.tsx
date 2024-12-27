@@ -12,12 +12,24 @@ interface GridCellProps {
 }
 
 export default function GridCell({ cell }: GridCellProps) {
-  const { tillSoil, plantCrop, harvestCrop, selectedCrop } = useGame();
+  const {
+    tillSoil,
+    plantCrop,
+    harvestCrop,
+    selectedCrop,
+    selectedFertilizer,
+    state,
+    dispatch,
+    setSelectedFertilizer,
+  } = useGame();
   const [showFloating, setShowFloating] = useState(false);
   const [floatingPosition, setFloatingPosition] = useState({ x: 0, y: 0 });
   const [harvestedExp, setHarvestedExp] = useState<number | null>(null);
   const cellRef = useRef<HTMLDivElement>(null);
   const [isDragOver] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
+
+  const isValidFertilizerTarget = cell.crop && !cell.crop.readyToHarvest;
 
   const getRewards = (type: CropType) => {
     const rewards = {
@@ -30,30 +42,19 @@ export default function GridCell({ cell }: GridCellProps) {
   };
 
   const handleClick = () => {
+    if (selectedFertilizer && cell.crop && !cell.crop.readyToHarvest) {
+      dispatch({
+        type: "ACTIVATE_PERK",
+        perk: selectedFertilizer,
+        x: cell.x,
+        y: cell.y,
+      });
+      setSelectedFertilizer(null);
+      return;
+    }
+
     if (cell.crop?.readyToHarvest) {
-      // Store the rewards before harvesting
-      const cropType = cell.crop.type;
-      const rewards = getRewards(cropType);
-      setHarvestedExp(rewards.exp);
-
-      // Get cell position for animation before harvesting
-      if (cellRef.current) {
-        const rect = cellRef.current.getBoundingClientRect();
-        setFloatingPosition({
-          x: rect.left + rect.width / 2,
-          y: rect.top + rect.height / 2,
-        });
-        setShowFloating(true);
-
-        // Harvest after setting up the animation
-        harvestCrop(cell.x, cell.y);
-
-        // Reset animation after it completes
-        setTimeout(() => {
-          setShowFloating(false);
-          setHarvestedExp(null);
-        }, 2000);
-      }
+      harvestCrop(cell.x, cell.y);
     } else if (!cell.tilled) {
       tillSoil(cell.x, cell.y);
     } else if (selectedCrop && !cell.crop) {
@@ -76,13 +77,14 @@ export default function GridCell({ cell }: GridCellProps) {
     }
   };
 
-
   return (
     <motion.div
       ref={cellRef}
       onClick={handleClick}
       onDragOver={handleDragOver}
       onDrop={handleDrop}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
       data-tilled={cell.tilled}
       data-x={cell.x}
       data-y={cell.y}
@@ -94,9 +96,15 @@ export default function GridCell({ cell }: GridCellProps) {
             ? "bg-[var(--soil)]"
             : "bg-[var(--grass)] hover:bg-[var(--grass-hover)]"
         }
+        ${
+          selectedFertilizer && isValidFertilizerTarget
+            ? "border-4 border-yellow-400 shadow-lg"
+            : ""
+        }
+        ${selectedFertilizer && !isValidFertilizerTarget ? "opacity-50" : ""}
         ${!cell.crop && cell.tilled ? "drop-target" : ""}
         ${isDragOver ? "dragover" : ""}
-        transition-colors duration-200
+        transition-all duration-200
       `}
       style={{
         backgroundImage: cell.tilled ? "var(--soil-pattern)" : "none",
@@ -113,6 +121,17 @@ export default function GridCell({ cell }: GridCellProps) {
       }}
     >
       {cell.crop && <CropSprite crop={cell.crop} />}
+
+      {/* Fertilizer Hover Effect */}
+      {selectedFertilizer && isHovered && isValidFertilizerTarget && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="absolute inset-0 bg-yellow-400/20 rounded-lg flex items-center justify-center"
+        >
+          <span className="text-2xl">🧪</span>
+        </motion.div>
+      )}
 
       {/* Floating Numbers */}
       {showFloating && harvestedExp && (

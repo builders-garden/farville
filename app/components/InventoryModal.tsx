@@ -11,11 +11,28 @@ const ITEMS: { type: CropType; icon: string }[] = [
   { type: "potato", icon: "🥔" },
 ];
 
-export default function InventoryModal({ onClose, safeAreaInsets }: { onClose: () => void; safeAreaInsets: { top: number; bottom: number; left: number; right: number }; }) {
-  const { state } = useGame();
+export default function InventoryModal({
+  onClose,
+  safeAreaInsets,
+}: {
+  onClose: () => void;
+  safeAreaInsets: { top: number; bottom: number; left: number; right: number };
+}) {
+  const { state, setSelectedCrop, dispatch, setSelectedFertilizer } = useGame();
   const totalSeeds = Object.values(state.seeds).reduce((a, b) => a + b, 0);
   const totalCrops = Object.values(state.crops).reduce((a, b) => a + b, 0);
-  const totalItems = totalSeeds + totalCrops;
+  const totalFertilizers = state.perks.owned
+    .filter((perk) => perk.type === "INSTANT_GROWTH")
+    .reduce((sum, perk) => sum + (perk.quantity || 0), 0);
+  const totalItems = totalSeeds + totalCrops + totalFertilizers;
+
+  const handlePerkClick = (perk: Perk) => {
+    if (perk.type === "INSTANT_GROWTH" && perk.quantity && perk.quantity > 0) {
+      setSelectedFertilizer(perk);
+      setSelectedCrop(null);
+      onClose();
+    }
+  };
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-start z-50">
@@ -67,92 +84,130 @@ export default function InventoryModal({ onClose, safeAreaInsets }: { onClose: (
             </button>
           </div>
 
-          {/* Seeds Section */}
-          <div className="mb-8">
-            <motion.h3
-              className="text-white/90 font-bold text-lg mb-4 flex items-center gap-2"
-              initial={{ x: -20, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-            >
-              <span className="text-2xl">🌱</span> Seeds
-            </motion.h3>
-            <div className="grid grid-cols-4 gap-4 md:grid-cols-8">
-              {ITEMS.map(({ type, icon }, index) => (
-                <motion.div
-                  key={`seed-${type}`}
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ delay: index * 0.1 }}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="bg-[#6d4c2c] aspect-square rounded-lg relative flex items-center justify-center
-                           shadow-lg hover:shadow-xl transition-shadow duration-200
-                           border-2 border-[#8B5E3C]"
-                >
-                  <motion.span
-                    className="text-2xl"
-                    animate={{ y: [0, -2, 0] }}
-                    transition={{
-                      duration: 1.5,
-                      repeat: Infinity,
-                      repeatType: "reverse",
+          <div className="space-y-8">
+            <div>
+              <motion.h3
+                className="text-white/90 font-bold text-lg mb-4 flex items-center gap-2"
+                initial={{ x: -20, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+              >
+                <span className="text-2xl">🌱</span> Seeds
+              </motion.h3>
+              <div className="grid grid-cols-4 gap-4 md:grid-cols-8">
+                {ITEMS.map(({ type, icon }) => (
+                  <motion.div
+                    key={type}
+                    className="bg-[#6d4c2c] aspect-square rounded-lg relative flex items-center justify-center
+                             shadow-lg hover:shadow-xl transition-shadow duration-200
+                             border-2 border-[#8B5E3C]"
+                    whileHover={{ scale: 1.02 }}
+                    onClick={() => setSelectedCrop(type)}
+                  >
+                    <motion.span
+                      className="text-2xl"
+                      animate={{ y: [0, -2, 0] }}
+                      transition={{ duration: 1.5, repeat: Infinity }}
+                    >
+                      {icon}
+                    </motion.span>
+                    <motion.div
+                      className="absolute -top-2 -right-2 bg-[#FFB938] text-[#7E4E31] text-xs px-2 py-0.5 
+                               rounded-full font-bold shadow-md border border-[#7E4E31]"
+                      animate={{
+                        scale: state.seeds[type] > 0 ? [1, 1.1, 1] : 1,
+                      }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      {state.seeds[type]}
+                    </motion.div>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <motion.h3
+                className="text-white/90 font-bold text-lg mb-4 flex items-center gap-2"
+                initial={{ x: -20, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+              >
+                <span className="text-2xl">🌾</span> Harvested Crops
+              </motion.h3>
+              <div className="grid grid-cols-4 gap-4 md:grid-cols-8">
+                {ITEMS.map(({ type, icon }) => (
+                  <motion.div
+                    key={type}
+                    className="bg-[#6d4c2c] aspect-square rounded-lg relative flex items-center justify-center
+                             shadow-lg hover:shadow-xl transition-shadow duration-200
+                             border-2 border-[#8B5E3C]"
+                  >
+                    <motion.span
+                      className="text-2xl"
+                      animate={{ rotate: [0, 5, -5, 0] }}
+                      transition={{ duration: 2, repeat: Infinity }}
+                    >
+                      {icon}
+                    </motion.span>
+                    <motion.div
+                      className="absolute -top-2 -right-2 bg-[#FFB938] text-[#7E4E31] text-xs px-2 py-0.5 
+                               rounded-full font-bold shadow-md border border-[#7E4E31]"
+                      animate={{
+                        scale: state.crops[type] > 0 ? [1, 1.1, 1] : 1,
+                      }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      {state.crops[type]}
+                    </motion.div>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <motion.h3
+                className="text-white/90 font-bold text-lg mb-4 flex items-center gap-2"
+                initial={{ x: -20, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+              >
+                <span className="text-2xl">⭐</span> Perks
+              </motion.h3>
+              <div className="grid grid-cols-4 gap-4 md:grid-cols-8">
+                {state.perks.owned.map((perk) => (
+                  <motion.div
+                    key={perk.id}
+                    className="bg-[#6d4c2c] aspect-square rounded-lg relative flex items-center justify-center
+                             shadow-lg hover:shadow-xl transition-shadow duration-200
+                             border-2 border-[#8B5E3C]"
+                    whileHover={{ scale: 1.05 }}
+                    title={perk.description}
+                    onClick={() => handlePerkClick(perk)}
+                    style={{
+                      cursor:
+                        perk.type === "INSTANT_GROWTH" && perk.quantity
+                          ? "pointer"
+                          : "default",
                     }}
                   >
-                    {icon}
-                  </motion.span>
-                  <motion.div
-                    className="absolute -top-2 -right-2 bg-[#FFB938] text-[#7E4E31] text-xs px-2 py-0.5 
-                             rounded-full font-bold shadow-md border border-[#7E4E31]"
-                    animate={{ scale: state.seeds[type] > 0 ? [1, 1.1, 1] : 1 }}
-                    transition={{ duration: 0.3 }}
-                  >
-                    {state.seeds[type]}
+                    <motion.span
+                      className="text-2xl"
+                      animate={{ y: [0, -2, 0] }}
+                      transition={{ duration: 1.5, repeat: Infinity }}
+                    >
+                      {perk.icon}
+                    </motion.span>
+                    {perk.quantity && (
+                      <motion.div
+                        className="absolute -top-2 -right-2 bg-[#FFB938] text-[#7E4E31] text-xs px-2 py-0.5 
+                                 rounded-full font-bold shadow-md border border-[#7E4E31]"
+                        animate={{ scale: perk.quantity > 0 ? [1, 1.1, 1] : 1 }}
+                        transition={{ duration: 0.3 }}
+                      >
+                        {perk.quantity}
+                      </motion.div>
+                    )}
                   </motion.div>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-
-          {/* Crops Section */}
-          <div>
-            <motion.h3
-              className="text-white/90 font-bold text-lg mb-4 flex items-center gap-2"
-              initial={{ x: -20, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              transition={{ delay: 0.2 }}
-            >
-              <span className="text-2xl">🌾</span> Harvested Crops
-            </motion.h3>
-            <div className="grid grid-cols-4 gap-4 md:grid-cols-8">
-              {ITEMS.map(({ type, icon }, index) => (
-                <motion.div
-                  key={`crop-${type}`}
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ delay: 0.3 + index * 0.1 }}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="bg-[#6d4c2c] aspect-square rounded-lg relative flex items-center justify-center
-                           shadow-lg hover:shadow-xl transition-shadow duration-200
-                           border-2 border-[#8B5E3C]"
-                >
-                  <motion.span
-                    className="text-2xl"
-                    animate={{ rotate: [0, 5, -5, 0] }}
-                    transition={{ duration: 2, repeat: Infinity }}
-                  >
-                    {icon}
-                  </motion.span>
-                  <motion.div
-                    className="absolute -top-2 -right-2 bg-[#FFB938] text-[#7E4E31] text-xs px-2 py-0.5 
-                             rounded-full font-bold shadow-md border border-[#7E4E31]"
-                    animate={{ scale: state.crops[type] > 0 ? [1, 1.1, 1] : 1 }}
-                    transition={{ duration: 0.3 }}
-                  >
-                    {state.crops[type]}
-                  </motion.div>
-                </motion.div>
-              ))}
+                ))}
+              </div>
             </div>
           </div>
         </div>

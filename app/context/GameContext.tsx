@@ -31,7 +31,7 @@ type GameAction =
   | { type: "PLANT_CROP"; x: number; y: number; cropType: CropType }
   | { type: "HARVEST_CROP"; x: number; y: number }
   | { type: "UPDATE_GROWTH" }
-  | { type: "ACTIVATE_PERK"; perk: Perk }
+  | { type: "ACTIVATE_PERK"; perk: Perk; x?: number; y?: number }
   | { type: "PURCHASE_PERK"; perk: Perk }
   | { type: "BUY_SEEDS"; cropType: CropType; amount: number }
   | { type: "SELL_CROPS"; cropType: CropType; amount: number }
@@ -39,13 +39,16 @@ type GameAction =
   | { type: "TOGGLE_INVENTORY" }
   | { type: "TOGGLE_MARKETPLACE" }
   | { type: "TOGGLE_SETTINGS" }
-  | { type: "TOGGLE_LEADERBOARD" };
+  | { type: "TOGGLE_LEADERBOARD" }
+  | { type: "SELECT_FERTILIZER"; perk: Perk };
 
 // Define context type
 interface GameContextType {
   state: GameState;
   selectedCrop: CropType | null;
   setSelectedCrop: (crop: CropType | null) => void;
+  selectedFertilizer: Perk | null;
+  setSelectedFertilizer: (perk: Perk | null) => void;
   tillSoil: (x: number, y: number) => void;
   plantCrop: (x: number, y: number, cropType: CropType) => void;
   harvestCrop: (x: number, y: number) => void;
@@ -214,6 +217,41 @@ function gameReducer(
         return state;
       }
 
+      // Handle instant growth fertilizer
+      if (
+        action.perk.type === "INSTANT_GROWTH" &&
+        action.x !== undefined &&
+        action.y !== undefined
+      ) {
+        const newGrid = structuredClone(state.grid);
+        const cell = newGrid[action.y][action.x];
+
+        if (!cell.crop || cell.crop.readyToHarvest) return state;
+
+        // Instantly grow the crop
+        cell.crop.growthStage = 4;
+        cell.crop.readyToHarvest = true;
+
+        // Remove one fertilizer from owned perks
+        const newOwnedPerks = state.perks.owned
+          .map((perk) =>
+            perk.id === action.perk.id && perk.quantity
+              ? { ...perk, quantity: perk.quantity - 1 }
+              : perk
+          )
+          .filter((perk) => perk.quantity !== 0); // Remove if quantity reaches 0
+
+        return {
+          ...state,
+          grid: newGrid,
+          perks: {
+            ...state.perks,
+            owned: newOwnedPerks,
+          },
+        };
+      }
+
+      // Original perk activation logic for non-fertilizer perks
       const now = Date.now();
       const activePerks = state.perks.active.filter((perk) => {
         if (!perk.duration || !perk.activatedAt) return true;
@@ -346,9 +384,33 @@ function gameReducer(
         showSettings: !state.showSettings,
       };
 
+    case "TOGGLE_LEADERBOARD":
+      return {
+        ...state,
+        showLeaderboard: !state.showLeaderboard,
+      };
+
     case "PURCHASE_PERK": {
       if (state.coins < action.perk.cost) {
         return state;
+      }
+
+      // For instant growth perks, check inventory capacity
+      if (action.perk.type === "INSTANT_GROWTH") {
+        const currentFertilizers = state.perks.owned
+          .filter((p) => p.type === "INSTANT_GROWTH")
+          .reduce((sum, p) => sum + (p.quantity || 0), 0);
+        const totalItems =
+          Object.values(state.seeds).reduce((a, b) => a + b, 0) +
+          Object.values(state.crops).reduce((a, b) => a + b, 0) +
+          currentFertilizers;
+
+        if (
+          totalItems + (action.perk.quantity || 1) >
+          state.inventoryCapacity
+        ) {
+          return state;
+        }
       }
 
       playSound?.("coins");
@@ -362,11 +424,8 @@ function gameReducer(
       };
     }
 
-    case "TOGGLE_LEADERBOARD":
-      return {
-        ...state,
-        showLeaderboard: !state.showLeaderboard,
-      };
+    case "SELECT_FERTILIZER":
+      return state;
 
     default:
       return state;
@@ -410,7 +469,18 @@ const initialState: GameState = {
   grid: createInitialGrid(2, 2),
   perks: {
     active: [],
-    owned: [],
+    owned: [
+      {
+        id: "instant_growth_1",
+        name: "Basic Fertilizer",
+        description: "Instantly grows one crop to full maturity",
+        cost: 100,
+        type: "INSTANT_GROWTH",
+        multiplier: 1,
+        icon: "🧪",
+        quantity: 4,
+      },
+    ],
   },
   gridSize: { width: 2, height: 2 },
   expansionLevel: 0,
@@ -431,6 +501,9 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     initialState
   );
   const [selectedCrop, setSelectedCrop] = useState<CropType | null>(null);
+  const [selectedFertilizer, setSelectedFertilizer] = useState<Perk | null>(
+    null
+  );
 
   // Add debug logging for state changes
   useEffect(() => {
@@ -514,6 +587,8 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
         state,
         selectedCrop,
         setSelectedCrop,
+        selectedFertilizer,
+        setSelectedFertilizer,
         tillSoil,
         plantCrop,
         harvestCrop,

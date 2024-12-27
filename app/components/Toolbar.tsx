@@ -144,7 +144,10 @@ export default function Toolbar({
   // Calculate total items
   const totalSeeds = Object.values(state.seeds).reduce((a, b) => a + b, 0);
   const totalCrops = Object.values(state.crops).reduce((a, b) => a + b, 0);
-  const totalItems = totalSeeds + totalCrops;
+  const totalFertilizers = state.perks.owned
+    .filter((perk) => perk.type === "INSTANT_GROWTH")
+    .reduce((sum, perk) => sum + (perk.quantity || 0), 0);
+  const totalItems = totalSeeds + totalCrops + totalFertilizers;
 
   // Handle drag start
   const handleDragStart = (e: React.DragEvent, type: CropType) => {
@@ -175,7 +178,8 @@ export default function Toolbar({
         aria-hidden="true"
       />
 
-      <div className="fixed bottom-0 inset-x-0 bg-[#7E4E31] p-3 flex justify-between items-center"
+      <div
+        className="fixed bottom-0 inset-x-0 bg-[#7E4E31] p-3 flex justify-between items-center"
         style={{
           marginTop: safeAreaInsets.top,
           marginBottom: safeAreaInsets.bottom,
@@ -195,7 +199,9 @@ export default function Toolbar({
                   setSelectedCrop(selectedCrop === type ? null : type)
                 }
                 draggable={isAvailable}
-                onDragStart={(e) => handleDragStart(e as unknown as React.DragEvent, type)}
+                onDragStart={(e) =>
+                  handleDragStart(e as unknown as React.DragEvent, type)
+                }
                 onTouchStart={(e) => handleTouchStart(e, type)}
                 onTouchEnd={handleTouchEnd}
                 whileHover={isAvailable ? { scale: 1.1 } : undefined}
