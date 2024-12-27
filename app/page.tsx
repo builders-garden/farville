@@ -4,6 +4,8 @@ import sdk from "@farcaster/frame-sdk";
 import { AnimatePresence } from "framer-motion";
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
+import { GameProvider } from "./context/GameContext";
+
 const GameWrapper = dynamic(() => import("./components/GameWrapper"), {
   ssr: false,
 });
@@ -14,7 +16,6 @@ const WelcomeOverlay = dynamic(() => import("./components/WelcomeOverlay"), {
 
 export default function Home() {
   const [showWelcome, setShowWelcome] = useState(true);
-
   const [isSDKLoaded, setIsSDKLoaded] = useState(false);
 
   useEffect(() => {
@@ -28,13 +29,15 @@ export default function Home() {
   }, [isSDKLoaded]);
 
   return (
-    <main className="min-h-screen bg-green-800">
-      <AnimatePresence>
-        {showWelcome && (
-          <WelcomeOverlay onStart={() => setShowWelcome(false)} />
-        )}
-      </AnimatePresence>
-      <GameWrapper />
-    </main>
+    <GameProvider>
+      <main className="min-h-screen bg-green-800">
+        <AnimatePresence>
+          {showWelcome && (
+            <WelcomeOverlay onStart={() => setShowWelcome(false)} />
+          )}
+        </AnimatePresence>
+        <GameWrapper />
+      </main>
+    </GameProvider>
   );
 }
