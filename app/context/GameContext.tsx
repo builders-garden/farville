@@ -29,7 +29,12 @@ export const EXPANSION_COSTS: ExpansionCost[] = [
 type GameAction =
   | { type: "TILL_SOIL"; x: number; y: number }
   | { type: "PLANT_CROP"; x: number; y: number; cropType: CropType }
-  | { type: "HARVEST_CROP"; x: number; y: number; rewards: { exp: number; amount: number } }
+  | {
+      type: "HARVEST_CROP";
+      x: number;
+      y: number;
+      rewards: { exp: number; amount: number };
+    }
   | { type: "UPDATE_GROWTH" }
   | { type: "ACTIVATE_PERK"; perk: Perk; x?: number; y?: number }
   | { type: "PURCHASE_PERK"; perk: Perk }
@@ -51,7 +56,11 @@ interface GameContextType {
   setSelectedFertilizer: (perk: Perk | null) => void;
   tillSoil: (x: number, y: number) => void;
   plantCrop: (x: number, y: number, cropType: CropType) => void;
-  harvestCrop: (x: number, y: number, rewards: { exp: number; amount: number }) => void;
+  harvestCrop: (
+    x: number,
+    y: number,
+    rewards: { exp: number; amount: number }
+  ) => void;
   activatePerk: (perk: Perk) => void;
   purchasePerk: (perk: Perk) => void;
   getActivePerks: () => Perk[];
@@ -532,7 +541,11 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     dispatch({ type: "PLANT_CROP", x, y, cropType });
   };
 
-  const harvestCrop = (x: number, y: number, rewards: { exp: number; amount: number }) => {
+  const harvestCrop = (
+    x: number,
+    y: number,
+    rewards: { exp: number; amount: number }
+  ) => {
     dispatch({ type: "HARVEST_CROP", x, y, rewards });
   };
 

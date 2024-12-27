@@ -50,6 +50,17 @@ interface TouchDragState {
 
 // Add this constant at the top with other constants
 const DEMO_GROWTH_TIME = 9000; // 9 seconds total (3 seconds per stage)
+
+// Add this constant near the top with other constants
+const SEED_ANIMATION = {
+  y: [0, -4, 0],
+  transition: {
+    duration: 2,
+    repeat: Infinity,
+    ease: "easeInOut"
+  }
+};
+
 export default function WelcomeOverlay({
   onStart,
   safeAreaInsets,
@@ -285,9 +296,7 @@ export default function WelcomeOverlay({
           <motion.div
             key={type}
             draggable
-            onDragStart={(e) =>
-              handleDragStart(e as unknown as React.DragEvent, type)
-            }
+            onDragStart={(e) => handleDragStart(e as unknown as React.DragEvent, type)}
             onTouchStart={(e) => handleTouchStart(e, type)}
             onTouchEnd={handleTouchEnd}
             onClick={() => {
@@ -296,17 +305,21 @@ export default function WelcomeOverlay({
             }}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
+            animate={SEED_ANIMATION}
             className={`
-              w-14 h-14 rounded-lg flex flex-col items-center justify-center cursor-pointer
-              bg-[#3d7a37] border-2 touch-none
-              ${
-                selectedSeed === type ? "border-yellow-400" : "border-[#2d5a27]"
-              }
+              relative w-14 h-14 rounded-lg flex flex-col items-center justify-center cursor-pointer
+              bg-[#3d7a37] border-2 touch-none group
+              ${selectedSeed === type ? "border-yellow-400" : "border-[#2d5a27]"}
               hover:border-yellow-400/50 transition-colors
             `}
           >
             <span className="text-2xl">{icon}</span>
             <span className="text-[10px] text-white mt-0.5">{name}</span>
+            
+            {/* Tooltip */}
+            <div className="opacity-0 group-hover:opacity-100 transition-opacity absolute -top-8 left-1/2 -translate-x-1/2 bg-black/75 text-white text-xs px-2 py-1 rounded whitespace-nowrap">
+              Drag to plant!
+            </div>
           </motion.div>
         ))}
       </div>
