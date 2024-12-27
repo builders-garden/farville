@@ -19,12 +19,10 @@ import { useAudio } from "./AudioContext";
 
 // Add EXPANSION_COSTS to the context file
 export const EXPANSION_COSTS: ExpansionCost[] = [
-  { coins: 500, level: 2, nextSize: { width: 6, height: 6 } },
-  { coins: 1000, level: 4, nextSize: { width: 8, height: 8 } },
-  { coins: 2500, level: 7, nextSize: { width: 10, height: 10 } },
-  { coins: 5000, level: 10, nextSize: { width: 12, height: 12 } },
-  { coins: 10000, level: 15, nextSize: { width: 14, height: 14 } },
-  { coins: 20000, level: 20, nextSize: { width: 16, height: 16 } },
+  { coins: 40, level: 1, nextSize: { width: 3, height: 3 } },
+  { coins: 500, level: 2, nextSize: { width: 4, height: 4 } },
+  { coins: 1000, level: 4, nextSize: { width: 5, height: 5 } },
+  { coins: 2500, level: 7, nextSize: { width: 6, height: 6 } },
 ];
 
 // Define action types
@@ -393,11 +391,11 @@ const createInitialGrid = (width: number, height: number): GridCell[][] => {
 
 // Initial state
 const initialState: GameState = {
-  coins: 100,
+  coins: 0,
   level: 1,
   experience: 0,
   seeds: {
-    wheat: 5,
+    wheat: 4,
     corn: 0,
     tomato: 0,
     potato: 0,
@@ -409,12 +407,12 @@ const initialState: GameState = {
     potato: 0,
   },
   inventoryCapacity: 100,
-  grid: createInitialGrid(4, 4),
+  grid: createInitialGrid(2, 2),
   perks: {
     active: [],
     owned: [],
   },
-  gridSize: { width: 4, height: 4 },
+  gridSize: { width: 2, height: 2 },
   expansionLevel: 0,
   showInventory: false,
   showMarketplace: false,
