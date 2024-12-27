@@ -185,9 +185,18 @@ export default function MarketplaceModal({
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: index * 0.1 }}
-                    className="bg-[#6d4c2c] px-4 py-3 rounded-lg flex flex-col md:flex-row md:items-center gap-3
-                             border border-[#8B5E3C]/50 shadow-md"
+                    className={`bg-[#6d4c2c] px-4 py-3 rounded-lg flex flex-col md:flex-row md:items-center gap-3
+                               border border-[#8B5E3C]/50 shadow-md relative ${
+                                 state.level < level ? "opacity-75" : ""
+                               }`}
                   >
+                    {state.level < level && (
+                      <div className="absolute inset-0 bg-red-900/20 backdrop-blur-[1px] rounded-lg flex items-center justify-center z-10">
+                        <span className="text-white/90 font-medium bg-red-900/90 px-3 py-1 rounded-lg text-sm">
+                          Level {level} Required
+                        </span>
+                      </div>
+                    )}
                     <div className="flex items-center gap-3 flex-1">
                       <div className="w-10 h-10 flex items-center justify-center">
                         <motion.span
@@ -227,28 +236,21 @@ export default function MarketplaceModal({
                       </div>
                     </div>
                     <div className="flex gap-2 ml-13 md:ml-0">
-                      {[1, 5, 10].map((amount) => (
-                        <motion.button
-                          key={amount}
-                          whileHover={{ scale: 1.03 }}
-                          whileTap={{ scale: 0.97 }}
-                          onClick={() => handleBuySeeds(type, amount)}
-                          disabled={
-                            state.coins < price * amount || state.level < level
-                          }
-                          className={`min-w-[70px] py-1.5 text-white/90 rounded transition-colors 
-                            disabled:opacity-40 disabled:cursor-not-allowed text-sm font-medium
-                            border border-white/10 ${
-                              state.level < level
-                                ? "bg-red-700 hover:bg-red-800"
-                                : "bg-[#2B593B] hover:bg-[#346344]"
-                            }`}
-                        >
-                          {state.level < level
-                            ? `Level ${level}`
-                            : `Buy ${amount}`}
-                        </motion.button>
-                      ))}
+                      {state.level >= level &&
+                        [1, 5, 10].map((amount) => (
+                          <motion.button
+                            key={amount}
+                            whileHover={{ scale: 1.03 }}
+                            whileTap={{ scale: 0.97 }}
+                            onClick={() => handleBuySeeds(type, amount)}
+                            disabled={state.coins < price * amount}
+                            className="min-w-[70px] py-1.5 bg-[#2B593B] text-white/90 rounded hover:bg-[#346344] 
+                                    transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-sm font-medium
+                                    border border-white/10"
+                          >
+                            Buy {amount}
+                          </motion.button>
+                        ))}
                     </div>
                   </motion.div>
                 ))}
