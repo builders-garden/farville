@@ -25,6 +25,10 @@ export default function GridCell({ cell }: GridCellProps) {
   const [showFloating, setShowFloating] = useState(false);
   const [floatingPosition, setFloatingPosition] = useState({ x: 0, y: 0 });
   const [harvestedExp, setHarvestedExp] = useState<number | null>(null);
+  const [harvestedAmount, setHarvestedAmount] = useState<number | null>(null);
+  const [harvestedCropType, setHarvestedCropType] = useState<CropType | null>(
+    null
+  );
   const cellRef = useRef<HTMLDivElement>(null);
   const [isDragOver] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
@@ -32,13 +36,28 @@ export default function GridCell({ cell }: GridCellProps) {
   const isValidFertilizerTarget = cell.crop && !cell.crop.readyToHarvest;
 
   const getRewards = (type: CropType) => {
-    const rewards = {
-      wheat: { exp: 5 },
-      corn: { exp: 8 },
-      tomato: { exp: 10 },
-      potato: { exp: 12 },
+    const baseRewards = {
+      wheat: { exp: 2, minAmount: 1, maxAmount: 2 },
+      corn: { exp: 6, minAmount: 1, maxAmount: 2 },
+      tomato: { exp: 12, minAmount: 1, maxAmount: 2 },
+      potato: { exp: 25, minAmount: 1, maxAmount: 2 },
     };
-    return rewards[type];
+
+    // Get yield multiplier from game state
+    const yieldMultiplier = state.perks.active
+      .filter(
+        (perk) =>
+          perk.type === "YIELD_BOOSTER" &&
+          (!perk.cropType || perk.cropType === type)
+      )
+      .reduce((mult, perk) => mult * perk.multiplier, 1);
+
+    const baseAmount = Math.floor(Math.random() * 2) + 1; // Simplified since all ranges are 1-2
+
+    return {
+      exp: baseRewards[type].exp,
+      amount: Math.floor(baseAmount * yieldMultiplier),
+    };
   };
 
   const handleClick = () => {
@@ -54,7 +73,40 @@ export default function GridCell({ cell }: GridCellProps) {
     }
 
     if (cell.crop?.readyToHarvest) {
-      harvestCrop(cell.x, cell.y);
+      if (cellRef.current) {
+        const rect = cellRef.current.getBoundingClientRect();
+        const cropType = cell.crop.type;
+        const rewards = getRewards(cropType);
+
+        setFloatingPosition({
+          x: rect.left + rect.width / 2,
+          y: rect.top + rect.height / 2,
+        });
+
+        console.log("Setting rewards:", {
+          exp: rewards.exp,
+          amount: rewards.amount,
+          cropType,
+          position: {
+            x: rect.left + rect.width / 2,
+            y: rect.top + rect.height / 2,
+          },
+        });
+
+        setHarvestedExp(rewards.exp);
+        setHarvestedAmount(rewards.amount);
+        setHarvestedCropType(cropType);
+        setShowFloating(true);
+
+        harvestCrop(cell.x, cell.y);
+
+        setTimeout(() => {
+          setShowFloating(false);
+          setHarvestedExp(null);
+          setHarvestedAmount(null);
+          setHarvestedCropType(null);
+        }, 1500);
+      }
     } else if (!cell.tilled) {
       tillSoil(cell.x, cell.y);
     } else if (selectedCrop && !cell.crop) {
@@ -134,13 +186,22 @@ export default function GridCell({ cell }: GridCellProps) {
       )}
 
       {/* Floating Numbers */}
-      {showFloating && harvestedExp && (
-        <FloatingNumber
-          number={harvestedExp}
-          x={floatingPosition.x}
-          y={floatingPosition.y}
-          type="xp"
-        />
+      {showFloating && (
+        <>
+          <FloatingNumber
+            number={harvestedExp || 0}
+            x={floatingPosition.x}
+            y={floatingPosition.y - 20}
+            type="xp"
+          />
+          <FloatingNumber
+            number={harvestedAmount || 0}
+            x={floatingPosition.x}
+            y={floatingPosition.y + 20}
+            type="crop"
+            cropType={harvestedCropType || "wheat"}
+          />
+        </>
       )}
     </motion.div>
   );

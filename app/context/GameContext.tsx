@@ -129,13 +129,17 @@ function gameReducer(
       if (!cell.crop?.readyToHarvest) return state;
 
       const harvestedType = cell.crop.type;
-      const rewards: { [key in CropType]: { exp: number; yield: number } } = {
-        wheat: { exp: 2, yield: 2 },
-        corn: { exp: 6, yield: 2 },
-        tomato: { exp: 12, yield: 3 },
-        potato: { exp: 25, yield: 4 },
+      const baseRewards: {
+        [key in CropType]: { exp: number; minYield: number; maxYield: number };
+      } = {
+        wheat: { exp: 2, minYield: 1, maxYield: 2 },
+        corn: { exp: 6, minYield: 1, maxYield: 2 },
+        tomato: { exp: 12, minYield: 1, maxYield: 2 },
+        potato: { exp: 25, minYield: 1, maxYield: 2 },
       };
-      const reward = rewards[harvestedType];
+
+      const reward = baseRewards[harvestedType];
+      const baseYield = Math.floor(Math.random() * 2) + 1;
 
       newGrid[action.y][action.x] = {
         ...cell,
@@ -151,7 +155,7 @@ function gameReducer(
       }
 
       const yieldMultiplier = calculateYieldMultiplier(state, harvestedType);
-      const harvestedAmount = Math.floor(reward.yield * yieldMultiplier);
+      const harvestedAmount = Math.floor(baseYield * yieldMultiplier);
 
       const newCrops = {
         ...state.crops,
