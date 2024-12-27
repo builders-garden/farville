@@ -14,8 +14,13 @@ const WelcomeOverlay = dynamic(() => import("./components/WelcomeOverlay"), {
   ssr: false,
 });
 
+const TutorialOverlay = dynamic(() => import("./components/TutorialOverlay"), {
+  ssr: false,
+});
+
 export default function App() {
   const [showWelcome, setShowWelcome] = useState(true);
+  const [showTutorial, setShowTutorial] = useState(false);
   const [isSDKLoaded, setIsSDKLoaded] = useState(false);
 
   const [safeAreaInsets, setSafeAreaInsets] = useState({
@@ -39,6 +44,11 @@ export default function App() {
     }
   }, [isSDKLoaded]);
 
+  const handleWelcomeComplete = () => {
+    setShowWelcome(false);
+    setShowTutorial(true);
+  };
+
   return (
     <GameProvider>
       <main className="bg-green-800">
@@ -46,8 +56,11 @@ export default function App() {
           {showWelcome && (
             <WelcomeOverlay
               safeAreaInsets={safeAreaInsets}
-              onStart={() => setShowWelcome(false)}
+              onStart={handleWelcomeComplete}
             />
+          )}
+          {showTutorial && (
+            <TutorialOverlay onComplete={() => setShowTutorial(false)} />
           )}
         </AnimatePresence>
         <GameWrapper safeAreaInsets={safeAreaInsets} />

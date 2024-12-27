@@ -165,80 +165,67 @@ export default function Toolbar({
   };
 
   return (
-    <>
-      {/* Hidden drag icons */}
-      <div
-        ref={dragIconRef}
-        className="drag-icon text-2xl hidden"
-        aria-hidden="true"
-      />
-      <div
-        ref={touchDragIconRef}
-        className="touch-drag-icon text-2xl"
-        aria-hidden="true"
-      />
+    <div
+      className="fixed bottom-0 inset-x-0 bg-[#7E4E31] p-3 flex justify-between items-center"
+      style={{
+        marginTop: safeAreaInsets.top,
+        marginBottom: safeAreaInsets.bottom,
+        marginLeft: safeAreaInsets.left,
+        marginRight: safeAreaInsets.right,
+      }}
+      data-tutorial="toolbar"
+    >
+      <div className="flex gap-2">
+        {CROPS.map(({ type, icon }) => {
+          const isAvailable = state.seeds[type] > 0;
 
-      <div
-        className="fixed bottom-0 inset-x-0 bg-[#7E4E31] p-3 flex justify-between items-center"
-        style={{
-          marginTop: safeAreaInsets.top,
-          marginBottom: safeAreaInsets.bottom,
-          marginLeft: safeAreaInsets.left,
-          marginRight: safeAreaInsets.right,
-        }}
-      >
-        <div className="flex gap-2">
-          {CROPS.map(({ type, icon }) => {
-            const isAvailable = state.seeds[type] > 0;
-
-            return (
-              <motion.button
-                key={type}
-                onClick={() =>
-                  isAvailable &&
-                  setSelectedCrop(selectedCrop === type ? null : type)
+          return (
+            <motion.button
+              key={type}
+              onClick={() =>
+                isAvailable &&
+                setSelectedCrop(selectedCrop === type ? null : type)
+              }
+              draggable={isAvailable}
+              onDragStart={(e) =>
+                handleDragStart(e as unknown as React.DragEvent, type)
+              }
+              onTouchStart={(e) => handleTouchStart(e, type)}
+              onTouchEnd={handleTouchEnd}
+              whileHover={isAvailable ? { scale: 1.1 } : undefined}
+              whileTap={isAvailable ? { scale: 0.95 } : undefined}
+              className={`
+                relative w-12 h-12 rounded-lg flex items-center justify-center
+                ${selectedCrop === type ? "bg-[#6d4c2c]" : "bg-[#8B5E3C]"}
+                border-2 ${CROP_COLORS[type]}
+                ${
+                  isAvailable
+                    ? "hover:bg-[#6d4c2c]"
+                    : "opacity-50 cursor-not-allowed"
                 }
-                draggable={isAvailable}
-                onDragStart={(e) =>
-                  handleDragStart(e as unknown as React.DragEvent, type)
-                }
-                onTouchStart={(e) => handleTouchStart(e, type)}
-                onTouchEnd={handleTouchEnd}
-                whileHover={isAvailable ? { scale: 1.1 } : undefined}
-                whileTap={isAvailable ? { scale: 0.95 } : undefined}
-                className={`
-                  relative w-12 h-12 rounded-lg flex items-center justify-center
-                  ${selectedCrop === type ? "bg-[#6d4c2c]" : "bg-[#8B5E3C]"}
-                  border-2 ${CROP_COLORS[type]}
-                  ${
-                    isAvailable
-                      ? "hover:bg-[#6d4c2c]"
-                      : "opacity-50 cursor-not-allowed"
-                  }
-                  transition-colors
-                `}
-              >
-                <span className="text-xl">{icon}</span>
-                <div className="absolute -top-2 -right-2 bg-[#6d4c2c] rounded-full w-5 h-5 flex items-center justify-center text-xs text-white/90">
-                  {state.seeds[type]}
-                </div>
-              </motion.button>
-            );
-          })}
-        </div>
-
-        <motion.button
-          onClick={toggleInventory}
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.95 }}
-          className="relative w-12 h-12 rounded-lg flex items-center justify-center bg-[#8B5E3C] hover:bg-[#6d4c2c] transition-colors"
-        >
-          <span className="text-xl">📦</span>
-          <div className="absolute -top-2 -right-2 bg-[#6d4c2c] rounded-full px-1.5 py-0.5 text-xs text-white/90">
-            {totalItems}/{state.inventoryCapacity}
-          </div>
-        </motion.button>
+                transition-colors
+              `}
+            >
+              <span className="text-xl">{icon}</span>
+              <div className="absolute -top-2 -right-2 bg-[#6d4c2c] rounded-full w-5 h-5 flex items-center justify-center text-xs text-white/90">
+                {state.seeds[type]}
+              </div>
+            </motion.button>
+          );
+        })}
       </div>
-    </>
+
+      <motion.button
+        onClick={toggleInventory}
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.95 }}
+        className="relative w-12 h-12 rounded-lg flex items-center justify-center bg-[#8B5E3C] hover:bg-[#6d4c2c] transition-colors"
+      >
+        <span className="text-xl">📦</span>
+        <div className="absolute -top-2 -right-2 bg-[#6d4c2c] rounded-full px-1.5 py-0.5 text-xs text-white/90">
+          {totalItems}/{state.inventoryCapacity}
+        </div>
+      </motion.button>
+    </div>
   );
 }
