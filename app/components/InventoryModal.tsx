@@ -11,7 +11,7 @@ const ITEMS: { type: CropType; icon: string }[] = [
   { type: "potato", icon: "🥔" },
 ];
 
-export default function InventoryModal({ onClose }: { onClose: () => void }) {
+export default function InventoryModal({ onClose, safeAreaInsets }: { onClose: () => void; safeAreaInsets: { top: number; bottom: number; left: number; right: number }; }) {
   const { state } = useGame();
   const totalSeeds = Object.values(state.seeds).reduce((a, b) => a + b, 0);
   const totalCrops = Object.values(state.crops).reduce((a, b) => a + b, 0);
@@ -23,6 +23,12 @@ export default function InventoryModal({ onClose }: { onClose: () => void }) {
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: 50 }}
+        style={{
+          marginTop: safeAreaInsets.top,
+          marginBottom: safeAreaInsets.bottom,
+          marginLeft: safeAreaInsets.left,
+          marginRight: safeAreaInsets.right,
+        }}
         className="bg-[#7E4E31] w-full min-h-screen"
       >
         <div className="max-w-4xl mx-auto p-6">

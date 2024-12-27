@@ -66,7 +66,13 @@ const PERKS: Perk[] = [
 
 type Tab = "seeds" | "crops" | "perks" | "expansions";
 
-export default function MarketplaceModal({ onClose }: { onClose: () => void }) {
+export default function MarketplaceModal({
+  onClose,
+  safeAreaInsets,
+}: {
+  onClose: () => void;
+  safeAreaInsets: { top: number; bottom: number; left: number; right: number };
+}) {
   const { state, dispatch } = useGame();
   const [activeTab, setActiveTab] = useState<Tab>("seeds");
 
@@ -95,6 +101,12 @@ export default function MarketplaceModal({ onClose }: { onClose: () => void }) {
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: 50 }}
+        style={{
+          marginTop: safeAreaInsets.top,
+          marginBottom: safeAreaInsets.bottom,
+          marginLeft: safeAreaInsets.left,
+          marginRight: safeAreaInsets.right,
+        }}
         className="bg-[#7E4E31] w-full h-screen flex flex-col"
       >
         <div className="max-w-4xl mx-auto w-full p-6 flex flex-col h-full">
