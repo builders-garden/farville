@@ -29,8 +29,8 @@ export default function App() {
     const load = async () => {
       sdk.actions.ready();
       const context = await sdk.context;
-      if (context) {
-        setSafeAreaInsets(context.client.safeAreaInsets!);
+      if (context && context.client.safeAreaInsets) {
+        setSafeAreaInsets(context.client.safeAreaInsets);
       }
     };
     if (sdk && !isSDKLoaded) {
