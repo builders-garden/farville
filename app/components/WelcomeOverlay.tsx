@@ -8,31 +8,14 @@ import CropSprite from "./CropSprite";
 import Image from "next/image";
 import sdk from "@farcaster/frame-sdk";
 import { useFrameContext } from "../context/FrameContext";
-
-const DEMO_SEEDS: { type: CropType; icon: string; name: string }[] = [
-  { type: "wheat", icon: "🌾", name: "Wheat" },
-  { type: "corn", icon: "🌽", name: "Corn" },
-  { type: "tomato", icon: "🍅", name: "Tomato" },
-  { type: "potato", icon: "🥔", name: "Potato" },
-];
+import { CROPS } from "../context/GameContext";
+import FloatingNumber from "./animations/FloatingNumber";
 
 // Demo version of CropSprite that shows seconds instead of minutes/hours
-function DemoCropSprite({ crop }: { crop: Crop }) {
-  const elapsed = Date.now() - crop.plantedAt;
-  const progress = Math.min(elapsed / DEMO_GROWTH_TIME, 1);
-
+function DemoCropSprite({ crop }: { crop?: Crop }) {
   return (
     <>
-      <CropSprite crop={crop} />
-      <div className="absolute bottom-0 left-0 w-full h-1 bg-black/20 rounded-full overflow-hidden">
-        <div
-          className="h-full bg-yellow-400"
-          style={{
-            width: `${progress * 100}%`,
-            transition: "width 1s linear",
-          }}
-        />
-      </div>
+      <CropSprite crop={crop} isDemo={true} />
     </>
   );
 }
@@ -40,6 +23,12 @@ function DemoCropSprite({ crop }: { crop: Crop }) {
 // At the top of the file, add this interface
 interface DemoGridCell extends GridCellType {
   justHarvested?: boolean;
+  harvestAnimation?: {
+    x: number;
+    y: number;
+    type: CropType;
+    amount: number;
+  };
 }
 
 // Add these interfaces at the top with other interfaces
@@ -62,11 +51,15 @@ const SEED_ANIMATION = {
   },
 };
 
-export default function WelcomeOverlay({
-  onStart,
-}: {
-  onStart: () => void;
-}) {
+// Add this CSS at the top of the file, after the imports
+const BACKGROUND_PATTERN = `
+  linear-gradient(45deg, #386A48 25%, transparent 25%),
+  linear-gradient(-45deg, #386A48 25%, transparent 25%),
+  linear-gradient(45deg, transparent 75%, #386A48 75%),
+  linear-gradient(-45deg, transparent 75%, #386A48 75%)
+`;
+
+export default function WelcomeOverlay({ onStart }: { onStart: () => void }) {
   const { startBackgroundMusic, playSound } = useAudio();
   const [selectedSeed, setSelectedSeed] = useState<CropType | null>(null);
   const [musicStarted, setMusicStarted] = useState(false);
@@ -115,22 +108,42 @@ export default function WelcomeOverlay({
           plantedAt: Date.now(),
           growthStage: 0,
           readyToHarvest: false,
+          growthTime: 9000,
         };
       } else if (cell.crop?.readyToHarvest) {
+        // Get cell position for animation
+        const cellElement = document.querySelector(
+          `[data-cell-index="${index}"]`
+        );
+        if (cellElement) {
+          const rect = cellElement.getBoundingClientRect();
+          const centerX = rect.left + rect.width / 2;
+          const centerY = rect.top + rect.height / 2;
+
+          // Add harvest animation data
+          cell.harvestAnimation = {
+            x: centerX,
+            y: centerY,
+            type: cell.crop.type,
+            amount: Math.floor(Math.random() * 3) + 1, // Random amount between 1-3
+          };
+        }
+
         // Harvest the crop and keep the soil tilled
         playSound("harvest");
         cell.crop = undefined;
         cell.justHarvested = true;
 
-        // Remove the justHarvested flag after a short delay
+        // Remove the justHarvested flag and animation after a short delay
         setTimeout(() => {
           setDemoCells((prev) => {
             const newCells = [...prev];
             const cell = newCells[index];
             cell.justHarvested = false;
+            cell.harvestAnimation = undefined;
             return newCells;
           });
-        }, 500);
+        }, 1500);
       }
 
       return newCells;
@@ -255,6 +268,7 @@ export default function WelcomeOverlay({
           plantedAt: Date.now(),
           growthStage: 0,
           readyToHarvest: false,
+          growthTime: 9000,
         };
       }
 
@@ -272,8 +286,12 @@ export default function WelcomeOverlay({
         marginBottom: safeAreaInsets.bottom,
         marginLeft: safeAreaInsets.left,
         marginRight: safeAreaInsets.right,
+        backgroundColor: "#255F37",
+        backgroundImage: BACKGROUND_PATTERN,
+        backgroundSize: "160px 160px",
+        backgroundPosition: "0 0, 0 80px, 80px -80px, -80px 0px",
       }}
-      className="fixed inset-0 w-full h-full z-[100] bg-[#2d5a27] flex flex-col items-center justify-center gap-2 p-4"
+      className="fixed inset-0 w-full h-full z-[100] flex flex-col items-center justify-center gap-2 p-4"
     >
       {/* Updated Image component with responsive sizing */}
       <div className="w-full max-w-[300px] h-auto min-h-0 flex-shrink-0">
@@ -292,7 +310,7 @@ export default function WelcomeOverlay({
 
       {/* Seed Selection Toolbar */}
       <div className="flex gap-2 mt-4">
-        {DEMO_SEEDS.map(({ type, icon, name }) => (
+        {CROPS.map(({ type, seedIcon, name }) => (
           <motion.div
             key={type}
             draggable
@@ -317,7 +335,13 @@ export default function WelcomeOverlay({
               hover:border-yellow-400/50 transition-colors
             `}
           >
-            <span className="text-2xl">{icon}</span>
+            <Image
+              src={seedIcon}
+              alt={name}
+              width={24}
+              height={24}
+              className="object-contain"
+            />
             <span className="text-[10px] text-white mt-0.5">{name}</span>
 
             {/* Tooltip */}
@@ -329,7 +353,7 @@ export default function WelcomeOverlay({
       </div>
 
       {/* 3x3 Grid */}
-      <div className="grid grid-cols-3 gap-2 p-4 bg-[#234d1f] rounded-xl">
+      <div className="grid grid-cols-3 gap-2">
         {demoCells.map((cell, index) => (
           <motion.div
             key={cell.id}
@@ -341,11 +365,6 @@ export default function WelcomeOverlay({
             whileTap={{ scale: 0.95 }}
             className={`
               w-20 h-20 rounded-lg relative cursor-pointer
-              ${
-                cell.tilled
-                  ? "bg-[var(--soil)]"
-                  : "bg-[var(--grass)] hover:bg-[var(--grass-hover)]"
-              }
               transition-colors duration-200
             `}
             style={{
@@ -353,7 +372,16 @@ export default function WelcomeOverlay({
               backgroundSize: "4px 4px",
             }}
           >
-            {cell.crop && <DemoCropSprite crop={cell.crop} />}
+            <DemoCropSprite crop={cell.crop} />
+            {cell.harvestAnimation && (
+              <FloatingNumber
+                number={cell.harvestAnimation.amount}
+                x={cell.harvestAnimation.x}
+                y={cell.harvestAnimation.y}
+                type="crop"
+                cropType={cell.harvestAnimation.type}
+              />
+            )}
           </motion.div>
         ))}
       </div>

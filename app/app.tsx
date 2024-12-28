@@ -14,13 +14,13 @@ const WelcomeOverlay = dynamic(() => import("./components/WelcomeOverlay"), {
   ssr: false,
 });
 
-const TutorialOverlay = dynamic(() => import("./components/TutorialOverlay"), {
-  ssr: false,
-});
+// const TutorialOverlay = dynamic(() => import("./components/TutorialOverlay"), {
+//   ssr: false,
+// });
 
 export default function App() {
   const [showWelcome, setShowWelcome] = useState(true);
-  const [showTutorial, setShowTutorial] = useState(false);
+  //const [showTutorial, setShowTutorial] = useState(false);
   const { isSDKLoaded } = useFrameContext();
 
   useEffect(() => {
@@ -29,7 +29,7 @@ export default function App() {
 
   const handleWelcomeComplete = () => {
     setShowWelcome(false);
-    setShowTutorial(true);
+    // setShowTutorial(true);
   };
 
   return (
@@ -37,9 +37,9 @@ export default function App() {
       <main className="bg-green-800">
         <AnimatePresence>
           {showWelcome && <WelcomeOverlay onStart={handleWelcomeComplete} />}
-          {showTutorial && (
+          {/* {showTutorial && (
             <TutorialOverlay onComplete={() => setShowTutorial(false)} />
-          )}
+          )} */}
         </AnimatePresence>
         <GameWrapper />
       </main>

@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { useGame } from "../context/GameContext";
+import { CROPS, useGame } from "../context/GameContext";
 import { CropType, GridCell as GridCellType } from "../types/game";
 import CropSprite from "./CropSprite";
 import FloatingNumber from "./animations/FloatingNumber";
@@ -36,12 +36,7 @@ export default function GridCell({ cell }: GridCellProps) {
   const isValidFertilizerTarget = cell.crop && !cell.crop.readyToHarvest;
 
   const getRewards = (type: CropType) => {
-    const baseRewards = {
-      wheat: { exp: 2, minAmount: 1, maxAmount: 2 },
-      corn: { exp: 6, minAmount: 1, maxAmount: 2 },
-      tomato: { exp: 12, minAmount: 1, maxAmount: 2 },
-      potato: { exp: 25, minAmount: 1, maxAmount: 2 },
-    };
+    const crop = CROPS.find((crop) => crop.type === type)!;
 
     // Get yield multiplier from game state
     const yieldMultiplier = state.perks.active
@@ -55,7 +50,7 @@ export default function GridCell({ cell }: GridCellProps) {
     const baseAmount = Math.floor(Math.random() * 2) + 1; // Simplified since all ranges are 1-2
 
     return {
-      exp: baseRewards[type].exp,
+      exp: crop.xp,
       amount: Math.floor(baseAmount * yieldMultiplier),
     };
   };
@@ -132,12 +127,7 @@ export default function GridCell({ cell }: GridCellProps) {
       data-y={cell.y}
       className={`
         grid-cell
-        aspect-square rounded-lg relative cursor-pointer
-        ${
-          cell.tilled
-            ? "bg-[var(--soil)]"
-            : "bg-[var(--grass)] hover:bg-[var(--grass-hover)]"
-        }
+        aspect-square rounded-xl relative cursor-pointer
         ${
           selectedFertilizer && isValidFertilizerTarget
             ? "border-4 border-yellow-400 shadow-lg"
@@ -148,10 +138,6 @@ export default function GridCell({ cell }: GridCellProps) {
         ${isDragOver ? "dragover" : ""}
         transition-all duration-200
       `}
-      style={{
-        backgroundImage: cell.tilled ? "var(--soil-pattern)" : "none",
-        backgroundSize: "4px 4px",
-      }}
       initial={false}
       animate={{
         scale: cell.crop?.readyToHarvest ? [1, 1.02, 1] : 1,
@@ -162,7 +148,7 @@ export default function GridCell({ cell }: GridCellProps) {
         repeatType: "reverse",
       }}
     >
-      {cell.crop && <CropSprite crop={cell.crop} />}
+      <CropSprite crop={cell.crop} />
 
       {/* Fertilizer Hover Effect */}
       {selectedFertilizer && isHovered && isValidFertilizerTarget && (
@@ -189,7 +175,7 @@ export default function GridCell({ cell }: GridCellProps) {
             x={floatingPosition.x}
             y={floatingPosition.y + 20}
             type="crop"
-            cropType={harvestedCropType || "wheat"}
+            cropType={harvestedCropType || "carrot"}
           />
         </>
       )}

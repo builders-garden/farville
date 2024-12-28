@@ -20,6 +20,70 @@ import { FrameContext } from "@farcaster/frame-sdk";
 import { useFrameContext } from "./FrameContext";
 import { trackEvent } from "../lib/posthog";
 
+export const CROPS: {
+  name: string;
+  type: CropType;
+  icon: string;
+  seedIcon: string;
+  sellPrice: number;
+  buyPrice: number;
+  levelRequirement: number;
+  xp: number;
+  imageUrl: string;
+}[] = [
+  {
+    name: "Carrot",
+    type: "carrot",
+    sellPrice: 8,
+    buyPrice: 5,
+    icon: "/images/crop/carrot.png",
+    seedIcon: "/images/seed/seed_carrot.png",
+    levelRequirement: 1,
+    xp: 2,
+    imageUrl: "/images/crops/carrot.png",
+  },
+  {
+    name: "Pumpkin",
+    type: "pumpkin",
+    sellPrice: 25,
+    buyPrice: 15,
+    icon: "/images/crop/pumpkin.png",
+    seedIcon: "/images/seed/seed_pumpkin.png",
+    levelRequirement: 3,
+    xp: 6,
+    imageUrl: "/images/crops/pumpkin.png",
+  },
+  {
+    name: "Tomato",
+    type: "tomato",
+    sellPrice: 50,
+    buyPrice: 30,
+    icon: "/images/crop/tomato.png",
+    seedIcon: "/images/seed/seed_tomato.png",
+    levelRequirement: 5,
+    xp: 12,
+    imageUrl: "/images/crops/tomato.png",
+  },
+  {
+    name: "Potato",
+    type: "potato",
+    sellPrice: 100,
+    buyPrice: 60,
+    icon: "/images/crop/potato.png",
+    seedIcon: "/images/seed/seed_potato.png",
+    levelRequirement: 8,
+    xp: 25,
+    imageUrl: "/images/crops/potato.png",
+  },
+];
+
+export const GROWTH_TIMES = {
+  carrot: 1800000,
+  pumpkin: 3600000,
+  tomato: 7200000,
+  potato: 21600000,
+};
+
 // Add EXPANSION_COSTS to the context file
 export const EXPANSION_COSTS: ExpansionCost[] = [
   { coins: 40, level: 1, nextSize: { width: 3, height: 3 } },
@@ -74,10 +138,6 @@ interface GameContextType {
   toggleLeaderboard: () => void;
 }
 
-type GrowthTimes = {
-  [K in CropType]: number;
-};
-
 // Game reducer function
 function gameReducer(
   state: GameState,
@@ -128,6 +188,7 @@ function gameReducer(
           plantedAt: Date.now(),
           growthStage: 0,
           readyToHarvest: false,
+          growthTime: GROWTH_TIMES[action.cropType],
         },
       };
 
@@ -213,13 +274,7 @@ function gameReducer(
         row.map((cell) => {
           if (!cell.crop || cell.crop.readyToHarvest) return cell;
 
-          const growthTimes: GrowthTimes = {
-            wheat: 1800000, // 30 min = 30 * 60 * 1000
-            corn: 3600000, // 1 hour = 60 * 60 * 1000
-            tomato: 7200000, // 2 hours = 2 * 60 * 60 * 1000
-            potato: 21600000, // 6 hours = 6 * 60 * 60 * 1000
-          };
-          const baseGrowthTime = growthTimes[cell.crop.type];
+          const baseGrowthTime = cell.crop.growthTime;
 
           const growthMultiplier = calculateGrowthMultiplier(
             state,
@@ -316,26 +371,14 @@ function gameReducer(
     }
 
     case "BUY_SEEDS": {
-      const seedPrices = {
-        wheat: 5,
-        corn: 8,
-        tomato: 12,
-        potato: 15,
-      };
-
-      const levelRequirements = {
-        wheat: 1,
-        corn: 3,
-        tomato: 5,
-        potato: 8,
-      };
-
+      const crop = CROPS.find((crop) => crop.type === action.cropType)!;
+      if (!crop) return state;
       // Check level requirement
-      if (state.level < levelRequirements[action.cropType]) {
+      if (state.level < crop?.levelRequirement) {
         return state;
       }
 
-      const totalCost = seedPrices[action.cropType] * action.amount;
+      const totalCost = crop.buyPrice * action.amount;
 
       if (state.coins < totalCost) {
         return state;
@@ -363,18 +406,12 @@ function gameReducer(
 
     case "SELL_CROPS": {
       playSound?.("coins");
-      const cropPrices = {
-        wheat: 8,
-        corn: 25,
-        tomato: 50,
-        potato: 100,
-      };
-
+      const crop = CROPS.find((crop) => crop.type === action.cropType)!;
       if (state.crops[action.cropType] < action.amount) {
         return state;
       }
 
-      const totalEarnings = cropPrices[action.cropType] * action.amount;
+      const totalEarnings = crop.sellPrice * action.amount;
 
       trackEvent("sell_crops", {
         cropType: action.cropType,
@@ -567,14 +604,14 @@ const initialState: GameState = {
   level: 1,
   experience: 0,
   seeds: {
-    wheat: 4,
-    corn: 0,
+    carrot: 4,
+    pumpkin: 0,
     tomato: 0,
     potato: 0,
   },
   crops: {
-    wheat: 0,
-    corn: 0,
+    carrot: 0,
+    pumpkin: 0,
     tomato: 0,
     potato: 0,
   },

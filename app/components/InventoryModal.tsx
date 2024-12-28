@@ -1,23 +1,11 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { useGame } from "../context/GameContext";
-import { CropType } from "../types/game";
+import { CROPS, useGame } from "../context/GameContext";
 import { Perk } from "../types/perks";
 import { useFrameContext } from "../context/FrameContext";
 
-const ITEMS: { type: CropType; icon: string }[] = [
-  { type: "wheat", icon: "🌾" },
-  { type: "corn", icon: "🌽" },
-  { type: "tomato", icon: "🍅" },
-  { type: "potato", icon: "🥔" },
-];
-
-export default function InventoryModal({
-  onClose,
-}: {
-  onClose: () => void;
-}) {
+export default function InventoryModal({ onClose }: { onClose: () => void }) {
   const { state, setSelectedCrop, setSelectedFertilizer } = useGame();
   const totalSeeds = Object.values(state.seeds).reduce((a, b) => a + b, 0);
   const totalCrops = Object.values(state.crops).reduce((a, b) => a + b, 0);
@@ -95,7 +83,7 @@ export default function InventoryModal({
                 <span className="text-2xl">🌱</span> Seeds
               </motion.h3>
               <div className="grid grid-cols-4 gap-4 md:grid-cols-8">
-                {ITEMS.map(({ type, icon }) => (
+                {CROPS.map(({ type, seedIcon }) => (
                   <motion.div
                     key={type}
                     className="bg-[#6d4c2c] aspect-square rounded-lg relative flex items-center justify-center
@@ -104,13 +92,13 @@ export default function InventoryModal({
                     whileHover={{ scale: 1.02 }}
                     onClick={() => setSelectedCrop(type)}
                   >
-                    <motion.span
-                      className="text-2xl"
+                    <motion.img
+                      src={seedIcon}
+                      alt={`${type} seed`}
+                      className="w-8 h-8 object-contain"
                       animate={{ y: [0, -2, 0] }}
                       transition={{ duration: 1.5, repeat: Infinity }}
-                    >
-                      {icon}
-                    </motion.span>
+                    />
                     <motion.div
                       className="absolute -top-2 -right-2 bg-[#FFB938] text-[#7E4E31] text-xs px-2 py-0.5 
                                rounded-full font-bold shadow-md border border-[#7E4E31]"
@@ -135,20 +123,20 @@ export default function InventoryModal({
                 <span className="text-2xl">🌾</span> Harvested Crops
               </motion.h3>
               <div className="grid grid-cols-4 gap-4 md:grid-cols-8">
-                {ITEMS.map(({ type, icon }) => (
+                {CROPS.map(({ type, icon }) => (
                   <motion.div
                     key={type}
                     className="bg-[#6d4c2c] aspect-square rounded-lg relative flex items-center justify-center
                              shadow-lg hover:shadow-xl transition-shadow duration-200
                              border-2 border-[#8B5E3C]"
                   >
-                    <motion.span
-                      className="text-2xl"
-                      animate={{ rotate: [0, 5, -5, 0] }}
-                      transition={{ duration: 2, repeat: Infinity }}
-                    >
-                      {icon}
-                    </motion.span>
+                    <motion.img
+                      src={icon}
+                      alt={`${type} crop`}
+                      className="w-8 h-8 object-contain"
+                      animate={{ y: [0, -2, 0] }}
+                      transition={{ duration: 1.5, repeat: Infinity }}
+                    />
                     <motion.div
                       className="absolute -top-2 -right-2 bg-[#FFB938] text-[#7E4E31] text-xs px-2 py-0.5 
                                rounded-full font-bold shadow-md border border-[#7E4E31]"

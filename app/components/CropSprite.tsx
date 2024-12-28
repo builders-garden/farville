@@ -1,70 +1,39 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { Crop, CropType } from "../types/game";
+import { Crop } from "../types/game";
 import { formatDistanceStrict } from "date-fns";
 
 interface CropSpriteProps {
   crop: Crop;
+  isDemo?: boolean;
 }
 
-const CROP_COLORS: Record<CropType, string> = {
-  wheat: "border-green-400",
-  corn: "border-yellow-400",
-  tomato: "border-red-400",
-  potato: "border-orange-400",
-};
+export function EmptyCropSprite() {
+  return (
+    <div
+      className="absolute inset-0"
+      style={{
+        backgroundImage: "url('/images/land/land_big.png')",
+        backgroundSize: "100% 100%",
+        backgroundPosition: "center",
+        imageRendering: "pixelated",
+      }}
+    />
+  );
+}
 
-const SEED_EMOJIS: Record<CropType, string> = {
-  wheat: "🌾",
-  corn: "🌽",
-  tomato: "🍅",
-  potato: "🥔",
-};
-
-export default function CropSprite({ crop }: CropSpriteProps) {
-  const getCropEmoji = () => {
-    const { type, growthStage, readyToHarvest } = crop;
-
-    if (readyToHarvest) {
-      return {
-        wheat: "🌾",
-        corn: "🌽",
-        tomato: "🍅",
-        potato: "🥔",
-      }[type];
-    }
-
-    // Growth stages (0-3)
-    return ["🌱", "🌿", "🎋", "🪴"][growthStage];
-  };
-
+export function PlantedCropSprite({ crop, isDemo }: CropSpriteProps) {
   const getGrowthProgress = () => {
-    const { type, plantedAt } = crop;
-    const growthTimes = {
-      wheat: 1800000,
-      corn: 3600000,
-      tomato: 7200000,
-      potato: 21600000,
-    };
-
-    const baseGrowthTime = growthTimes[type];
+    const { plantedAt, growthTime } = crop;
     const elapsed = Date.now() - plantedAt;
-    return Math.min(elapsed / baseGrowthTime, 1);
+    return Math.min(elapsed / growthTime, 1);
   };
 
   const getTimeRemaining = () => {
-    const { type, plantedAt } = crop;
-    const growthTimes = {
-      wheat: 1800000,
-      corn: 3600000,
-      tomato: 7200000,
-      potato: 21600000,
-    };
-
-    const baseGrowthTime = growthTimes[type];
+    const { plantedAt, growthTime } = crop;
     const elapsed = Date.now() - plantedAt;
-    const remaining = Math.max(baseGrowthTime - elapsed, 0);
+    const remaining = Math.max(growthTime - elapsed, 0);
 
     return formatDistanceStrict(0, remaining, {
       unit: remaining > 3600000 ? "hour" : "minute",
@@ -73,41 +42,50 @@ export default function CropSprite({ crop }: CropSpriteProps) {
 
   return (
     <>
-      {/* Colored Border Container */}
+      {/* Background Image */}
       <div
-        className={`absolute inset-0 border-2 rounded-lg ${
-          CROP_COLORS[crop.type]
-        } bg-opacity-20`}
+        className="absolute inset-0"
+        style={{
+          backgroundImage: "url('/images/land/land_big.png')",
+          backgroundSize: "100% 100%",
+          backgroundPosition: "center",
+          imageRendering: "pixelated",
+        }}
       />
+      {crop.plantedAt && (
+        <div
+          className="absolute inset-[5%] mb-2"
+          style={{
+            backgroundImage: "url('/images/land/soil_big.png')",
+            backgroundSize: "100% 100%",
+            backgroundPosition: "center",
+            imageRendering: "pixelated",
+          }}
+        />
+      )}
 
-      {/* Growth Progress Bar */}
+      {/* Progress Bar - Centered and smaller */}
       {!crop.readyToHarvest && (
-        <div className="absolute inset-x-0 bottom-0 h-1.5 bg-gray-200/50 rounded-b-lg overflow-hidden">
-          <motion.div
-            initial={{ width: "0%" }}
-            animate={{ width: `${getGrowthProgress() * 100}%` }}
-            className="h-full bg-green-500"
-            transition={{ duration: 0.5 }}
-          />
+        <div className="absolute bottom-[3%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center w-3/4">
+          {!isDemo && (
+            <div className="text-[10px] text-white font-medium mb-1 text-center drop-shadow-[0_1px_1px_rgba(0,0,0,0.8)]">
+              {getTimeRemaining()} •{" "}
+              {crop.type.charAt(0).toUpperCase() + crop.type.slice(1)}
+            </div>
+          )}
+          <div className="w-full h-2 bg-black/50">
+            <motion.div
+              className="h-full bg-green-400"
+              initial={{ width: 0 }}
+              animate={{ width: `${getGrowthProgress() * 100}%` }}
+              transition={{ duration: 0.5 }}
+              style={{ imageRendering: "pixelated" }}
+            />
+          </div>
         </div>
       )}
 
-      {/* Seed Planting Animation */}
-      <AnimatePresence>
-        {crop.growthStage === 0 && (
-          <motion.div
-            initial={{ scale: 1.5, opacity: 1, y: -20 }}
-            animate={{ scale: 0, opacity: 0, y: 0 }}
-            exit={{ scale: 0, opacity: 0 }}
-            transition={{ duration: 0.5 }}
-            className="absolute text-lg pointer-events-none"
-          >
-            {SEED_EMOJIS[crop.type]}
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Crop Emoji with Animations */}
+      {/* Crop Image/Emoji with Animations */}
       <motion.div
         initial={{ scale: 0, y: 20 }}
         animate={{
@@ -122,28 +100,27 @@ export default function CropSprite({ crop }: CropSpriteProps) {
         }}
         className="crop-sprite absolute inset-0 flex flex-col items-center justify-center"
       >
-        {getCropEmoji()}
-        {!crop.readyToHarvest && (
-          <div className="text-[10px] text-white font-medium mt-1 text-center drop-shadow-[0_1px_1px_rgba(0,0,0,0.8)]">
-            {getTimeRemaining()}
-          </div>
-        )}
-        {crop.readyToHarvest && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="absolute -top-1 -right-1 text-xs bg-yellow-400 rounded-full p-1"
-          >
-            ✨
-          </motion.div>
-        )}
+        <div
+          className="w-full h-full mb-2"
+          style={{
+            backgroundImage: `url('/images/crop/${crop.type}.png')`,
+            backgroundSize: `${
+              crop.readyToHarvest
+                ? "30"
+                : Math.min(getGrowthProgress() * 30, 30)
+            }%`,
+            backgroundPosition: "center",
+            backgroundRepeat: "no-repeat",
+            imageRendering: "pixelated",
+          }}
+        />
       </motion.div>
 
       {/* Harvest Ready Animation */}
       <AnimatePresence>
         {crop.readyToHarvest && (
           <motion.div
-            className="absolute inset-0 bg-yellow-400/20 rounded-lg"
+            className="absolute inset-0 bg-yellow-400/20 rounded-xl"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -152,5 +129,19 @@ export default function CropSprite({ crop }: CropSpriteProps) {
         )}
       </AnimatePresence>
     </>
+  );
+}
+
+export default function CropSprite({
+  crop,
+  isDemo,
+}: {
+  crop?: Crop;
+  isDemo?: boolean;
+}) {
+  return crop ? (
+    <PlantedCropSprite crop={crop} isDemo={isDemo} />
+  ) : (
+    <EmptyCropSprite />
   );
 }
