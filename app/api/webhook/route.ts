@@ -12,6 +12,7 @@ import {
   verifyAppKeyWithNeynar,
 } from "@farcaster/frame-node";
 import { NextRequest } from "next/server";
+import posthog from "posthog-js";
 
 export async function POST(request: NextRequest) {
   const requestJson = await request.json();
@@ -65,6 +66,10 @@ export async function POST(request: NextRequest) {
             expansions: 1,
             notificationDetails: JSON.stringify(event.notificationDetails),
           });
+          posthog.capture("signup", {
+            fid,
+            location: "frame_added",
+          });
         } else {
           await setUserNotificationDetails(fid, event.notificationDetails);
         }
@@ -76,11 +81,15 @@ export async function POST(request: NextRequest) {
       } else {
         await deleteUserNotificationDetails(fid);
       }
-
+      posthog.capture("frame_added", {
+        fid,
+      });
       break;
     case "frame_removed":
       await deleteUserNotificationDetails(fid);
-
+      posthog.capture("frame_removed", {
+        fid,
+      });
       break;
     case "notifications_enabled":
       await setUserNotificationDetails(fid, event.notificationDetails);
@@ -89,11 +98,15 @@ export async function POST(request: NextRequest) {
         title: "Ding ding ding",
         body: "Notifications for FarVille are now enabled",
       });
-
+      posthog.capture("notifications_enabled", {
+        fid,
+      });
       break;
     case "notifications_disabled":
       await deleteUserNotificationDetails(fid);
-
+      posthog.capture("notifications_disabled", {
+        fid,
+      });
       break;
   }
 
