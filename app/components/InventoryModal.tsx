@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { useGame } from "../context/GameContext";
 import { CropType } from "../types/game";
 import { Perk } from "../types/perks";
+import { useFrameContext } from "../context/FrameContext";
 
 const ITEMS: { type: CropType; icon: string }[] = [
   { type: "wheat", icon: "🌾" },
@@ -14,10 +15,8 @@ const ITEMS: { type: CropType; icon: string }[] = [
 
 export default function InventoryModal({
   onClose,
-  safeAreaInsets,
 }: {
   onClose: () => void;
-  safeAreaInsets: { top: number; bottom: number; left: number; right: number };
 }) {
   const { state, setSelectedCrop, setSelectedFertilizer } = useGame();
   const totalSeeds = Object.values(state.seeds).reduce((a, b) => a + b, 0);
@@ -26,6 +25,7 @@ export default function InventoryModal({
     .filter((perk) => perk.type === "INSTANT_GROWTH")
     .reduce((sum, perk) => sum + (perk.quantity || 0), 0);
   const totalItems = totalSeeds + totalCrops + totalFertilizers;
+  const { safeAreaInsets } = useFrameContext();
 
   const handlePerkClick = (perk: Perk) => {
     if (perk.type === "INSTANT_GROWTH" && perk.quantity && perk.quantity > 0) {

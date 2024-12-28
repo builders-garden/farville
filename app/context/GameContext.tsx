@@ -16,6 +16,9 @@ import type {
 } from "../types/game";
 import type { Perk } from "../types/perks";
 import { useAudio } from "./AudioContext";
+import { FrameContext } from "@farcaster/frame-sdk";
+import { useFrameContext } from "./FrameContext";
+import { trackEvent } from "../lib/posthog";
 
 // Add EXPANSION_COSTS to the context file
 export const EXPANSION_COSTS: ExpansionCost[] = [
@@ -79,7 +82,8 @@ type GrowthTimes = {
 function gameReducer(
   state: GameState,
   action: GameAction,
-  playSound?: (sound: string) => void
+  playSound?: (sound: string) => void,
+  context?: FrameContext
 ): GameState {
   switch (action.type) {
     case "TILL_SOIL": {
@@ -92,6 +96,15 @@ function gameReducer(
         ...cell,
         tilled: true,
       };
+
+      trackEvent("till_soil", {
+        x: action.x,
+        y: action.y,
+        gridSize: state.gridSize,
+        fid: context?.user?.fid,
+        xp: state.experience,
+        level: state.level,
+      });
 
       return {
         ...state,
@@ -122,6 +135,16 @@ function gameReducer(
         ...state.seeds,
         [action.cropType]: state.seeds[action.cropType] - 1,
       };
+
+      trackEvent("plant_crop", {
+        cropType: action.cropType,
+        x: action.x,
+        y: action.y,
+        gridSize: state.gridSize,
+        fid: context?.user?.fid,
+        xp: state.experience,
+        level: state.level,
+      });
 
       return {
         ...state,
@@ -163,6 +186,18 @@ function gameReducer(
           state.inventoryCapacity
         ),
       };
+
+      trackEvent("harvest_crop", {
+        cropType: harvestedType,
+        x: action.x,
+        y: action.y,
+        gridSize: state.gridSize,
+        amount: harvestedAmount,
+        rewardXp: reward.exp,
+        fid: context?.user?.fid,
+        xp: state.experience,
+        level: state.level,
+      });
 
       return {
         ...state,
@@ -264,6 +299,13 @@ function gameReducer(
         );
       });
 
+      trackEvent("activate_perk", {
+        perk: action.perk,
+        fid: context?.user?.fid,
+        xp: state.experience,
+        level: state.level,
+      });
+
       return {
         ...state,
         perks: {
@@ -300,6 +342,15 @@ function gameReducer(
       }
 
       playSound?.("coins");
+      trackEvent("buy_seeds", {
+        cropType: action.cropType,
+        amount: action.amount,
+        fid: context?.user?.fid,
+        xp: state.experience,
+        level: state.level,
+        cost: totalCost,
+        coins: state.coins,
+      });
       return {
         ...state,
         coins: state.coins - totalCost,
@@ -324,6 +375,16 @@ function gameReducer(
       }
 
       const totalEarnings = cropPrices[action.cropType] * action.amount;
+
+      trackEvent("sell_crops", {
+        cropType: action.cropType,
+        amount: action.amount,
+        fid: context?.user?.fid,
+        xp: state.experience,
+        level: state.level,
+        earnings: totalEarnings,
+        coins: state.coins,
+      });
 
       return {
         ...state,
@@ -360,6 +421,16 @@ function gameReducer(
             })
         );
 
+      trackEvent("expand_land", {
+        fid: context?.user?.fid,
+        previousSize: state.gridSize,
+        newSize: expansion.nextSize,
+        xp: state.experience,
+        level: state.level,
+        cost: expansion.coins,
+        coins: state.coins,
+      });
+
       return {
         ...state,
         coins: state.coins - expansion.coins,
@@ -369,29 +440,53 @@ function gameReducer(
       };
     }
 
-    case "TOGGLE_INVENTORY":
+    case "TOGGLE_INVENTORY": {
+      trackEvent("toggle_inventory", {
+        fid: context?.user?.fid,
+        xp: state.experience,
+        level: state.level,
+      });
       return {
         ...state,
         showInventory: !state.showInventory,
       };
+    }
 
-    case "TOGGLE_MARKETPLACE":
+    case "TOGGLE_MARKETPLACE": {
+      trackEvent("toggle_marketplace", {
+        fid: context?.user?.fid,
+        xp: state.experience,
+        level: state.level,
+      });
       return {
         ...state,
         showMarketplace: !state.showMarketplace,
       };
+    }
 
-    case "TOGGLE_SETTINGS":
+    case "TOGGLE_SETTINGS": {
+      trackEvent("toggle_settings", {
+        fid: context?.user?.fid,
+        xp: state.experience,
+        level: state.level,
+      });
       return {
         ...state,
         showSettings: !state.showSettings,
       };
+    }
 
-    case "TOGGLE_LEADERBOARD":
+    case "TOGGLE_LEADERBOARD": {
+      trackEvent("toggle_leaderboard", {
+        fid: context?.user?.fid,
+        xp: state.experience,
+        level: state.level,
+      });
       return {
         ...state,
         showLeaderboard: !state.showLeaderboard,
       };
+    }
 
     case "PURCHASE_PERK": {
       if (state.coins < action.perk.cost) {
@@ -417,6 +512,14 @@ function gameReducer(
       }
 
       playSound?.("coins");
+      trackEvent("purchase_perk", {
+        perk: action.perk,
+        fid: context?.user?.fid,
+        xp: state.experience,
+        level: state.level,
+        cost: action.perk.cost,
+        coins: state.coins,
+      });
       return {
         ...state,
         coins: state.coins - action.perk.cost,
@@ -427,8 +530,15 @@ function gameReducer(
       };
     }
 
-    case "SELECT_FERTILIZER":
+    case "SELECT_FERTILIZER": {
+      trackEvent("select_fertilizer", {
+        perk: action.perk,
+        fid: context?.user?.fid,
+        xp: state.experience,
+        level: state.level,
+      });
       return state;
+    }
 
     default:
       return state;
@@ -498,39 +608,16 @@ export const GameContext = createContext<GameContextType | null>(null);
 
 export function GameProvider({ children }: { children: React.ReactNode }) {
   const { playSound } = useAudio();
+  const { context } = useFrameContext();
   const [state, dispatch] = useReducer(
     (state: GameState, action: GameAction) =>
-      gameReducer(state, action, playSound),
+      gameReducer(state, action, playSound, context!),
     initialState
   );
   const [selectedCrop, setSelectedCrop] = useState<CropType | null>(null);
   const [selectedFertilizer, setSelectedFertilizer] = useState<Perk | null>(
     null
   );
-
-  // Add debug logging for state changes
-  useEffect(() => {
-    console.log("State updated:", {
-      inventory: state.inventoryCapacity,
-      experience: state.experience,
-      level: state.level,
-    });
-  }, [state]);
-
-  // Debug experience changes
-  useEffect(() => {
-    console.log("Experience updated:", {
-      previous: state.experience - (state.level - 1) * 100,
-      current: state.experience,
-      level: state.level,
-      nextLevel: state.level * 100,
-    });
-  }, [state.experience, state.level]);
-
-  // Debug inventory changes
-  useEffect(() => {
-    console.log("Inventory updated:", state.inventoryCapacity);
-  }, [state.inventoryCapacity]);
 
   // Implement game actions
   const tillSoil = (x: number, y: number) => {

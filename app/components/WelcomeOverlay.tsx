@@ -7,6 +7,7 @@ import { GridCell as GridCellType, Crop, CropType } from "../types/game";
 import CropSprite from "./CropSprite";
 import Image from "next/image";
 import sdk from "@farcaster/frame-sdk";
+import { useFrameContext } from "../context/FrameContext";
 
 const DEMO_SEEDS: { type: CropType; icon: string; name: string }[] = [
   { type: "wheat", icon: "🌾", name: "Wheat" },
@@ -63,14 +64,13 @@ const SEED_ANIMATION = {
 
 export default function WelcomeOverlay({
   onStart,
-  safeAreaInsets,
 }: {
   onStart: () => void;
-  safeAreaInsets: { top: number; bottom: number; left: number; right: number };
 }) {
   const { startBackgroundMusic, playSound } = useAudio();
   const [selectedSeed, setSelectedSeed] = useState<CropType | null>(null);
   const [musicStarted, setMusicStarted] = useState(false);
+  const { safeAreaInsets } = useFrameContext();
 
   // Add helper function to start music
   const startMusic = () => {
