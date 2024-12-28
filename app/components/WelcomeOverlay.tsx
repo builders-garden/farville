@@ -9,6 +9,7 @@ import Image from "next/image";
 import sdk from "@farcaster/frame-sdk";
 import { useFrameContext } from "../context/FrameContext";
 import { CROPS } from "../context/GameContext";
+import FloatingNumber from "./animations/FloatingNumber";
 
 // Demo version of CropSprite that shows seconds instead of minutes/hours
 function DemoCropSprite({ crop }: { crop?: Crop }) {
@@ -22,6 +23,12 @@ function DemoCropSprite({ crop }: { crop?: Crop }) {
 // At the top of the file, add this interface
 interface DemoGridCell extends GridCellType {
   justHarvested?: boolean;
+  harvestAnimation?: {
+    x: number;
+    y: number;
+    type: CropType;
+    amount: number;
+  };
 }
 
 // Add these interfaces at the top with other interfaces
@@ -104,20 +111,39 @@ export default function WelcomeOverlay({ onStart }: { onStart: () => void }) {
           growthTime: 9000,
         };
       } else if (cell.crop?.readyToHarvest) {
+        // Get cell position for animation
+        const cellElement = document.querySelector(
+          `[data-cell-index="${index}"]`
+        );
+        if (cellElement) {
+          const rect = cellElement.getBoundingClientRect();
+          const centerX = rect.left + rect.width / 2;
+          const centerY = rect.top + rect.height / 2;
+
+          // Add harvest animation data
+          cell.harvestAnimation = {
+            x: centerX,
+            y: centerY,
+            type: cell.crop.type,
+            amount: Math.floor(Math.random() * 3) + 1, // Random amount between 1-3
+          };
+        }
+
         // Harvest the crop and keep the soil tilled
         playSound("harvest");
         cell.crop = undefined;
         cell.justHarvested = true;
 
-        // Remove the justHarvested flag after a short delay
+        // Remove the justHarvested flag and animation after a short delay
         setTimeout(() => {
           setDemoCells((prev) => {
             const newCells = [...prev];
             const cell = newCells[index];
             cell.justHarvested = false;
+            cell.harvestAnimation = undefined;
             return newCells;
           });
-        }, 500);
+        }, 1500);
       }
 
       return newCells;
@@ -347,6 +373,15 @@ export default function WelcomeOverlay({ onStart }: { onStart: () => void }) {
             }}
           >
             <DemoCropSprite crop={cell.crop} />
+            {cell.harvestAnimation && (
+              <FloatingNumber
+                number={cell.harvestAnimation.amount}
+                x={cell.harvestAnimation.x}
+                y={cell.harvestAnimation.y}
+                type="crop"
+                cropType={cell.harvestAnimation.type}
+              />
+            )}
           </motion.div>
         ))}
       </div>

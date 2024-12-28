@@ -4,6 +4,7 @@ import { CROPS } from "@/app/context/GameContext";
 import { CropType } from "@/app/types/game";
 import { motion } from "framer-motion";
 import { createPortal } from "react-dom";
+import Image from "next/image";
 
 interface FloatingNumberProps {
   number: number;
@@ -33,12 +34,20 @@ export default function FloatingNumber({
   const getContent = () => {
     if (type === "xp") return `+${number} XP ⭐`;
     if (type === "coins") return `+${number} 🪙`;
-    if (type === "crop") {
+    if (type === "crop" && cropType) {
       const crop = CROPS.find((crop) => crop.type === cropType)!;
-
-      return `+${number} ${
-        cropType && `${cropType.toUpperCase()} ${crop.icon}`
-      }`;
+      return (
+        <>
+          +{number} {cropType.toUpperCase()}{" "}
+          <Image
+            src={crop.icon}
+            alt={cropType}
+            width={16}
+            height={16}
+            className="inline-block"
+          />
+        </>
+      );
     }
     return "";
   };
