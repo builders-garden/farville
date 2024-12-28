@@ -28,7 +28,7 @@ export const getUser = async (fid: number): Promise<DbUser | null> => {
     .from("users")
     .select("*")
     .eq("fid", fid)
-    .single();
+    .maybeSingle();
 
   if (error) throw error;
   return data;
@@ -177,7 +177,7 @@ export const getUserNotificationDetails = async (
     .single();
 
   if (error) throw error;
-  return data?.notificationDetails;
+  return data?.notificationDetails ? JSON.parse(data.notificationDetails) : null;
 };
 
 export const setUserNotificationDetails = async (
@@ -186,7 +186,7 @@ export const setUserNotificationDetails = async (
 ): Promise<void> => {
   await supabase
     .from("users")
-    .update({ notificationDetails: details })
+    .update({ notificationDetails: JSON.stringify(details) })
     .eq("fid", fid);
 };
 
