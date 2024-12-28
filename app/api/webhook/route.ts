@@ -1,7 +1,10 @@
+import { fetchUser } from "@/app/lib/neynar";
 import { sendFrameNotification } from "@/app/lib/notifs";
 import {
   setUserNotificationDetails,
   deleteUserNotificationDetails,
+  getUser,
+  createUser,
 } from "@/app/supabase/queries";
 import {
   ParseWebhookEvent,
@@ -48,7 +51,23 @@ export async function POST(request: NextRequest) {
   switch (event.event) {
     case "frame_added":
       if (event.notificationDetails) {
-        await setUserNotificationDetails(fid, event.notificationDetails);
+        const user = await getUser(fid);
+        if (!user) {
+          const neynarUser = await fetchUser(fid.toString());
+          await createUser({
+            fid,
+            username: neynarUser.username,
+            displayName: neynarUser.display_name,
+            avatarUrl: neynarUser.pfp_url,
+            walletAddress: neynarUser.custody_address,
+            xp: 0,
+            coins: 0,
+            expansions: 1,
+            notificationDetails: JSON.stringify(event.notificationDetails),
+          });
+        } else {
+          await setUserNotificationDetails(fid, event.notificationDetails);
+        }
         await sendFrameNotification({
           fid,
           title: "FarVille",
