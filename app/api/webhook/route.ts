@@ -1,5 +1,6 @@
 import { fetchUser } from "@/app/lib/neynar";
 import { sendFrameNotification } from "@/app/lib/notifs";
+import { trackEvent } from "@/app/lib/posthog";
 import {
   setUserNotificationDetails,
   deleteUserNotificationDetails,
@@ -65,6 +66,10 @@ export async function POST(request: NextRequest) {
             expansions: 1,
             notificationDetails: JSON.stringify(event.notificationDetails),
           });
+          trackEvent("signup", {
+            fid,
+            location: "frame_added",
+          });
         } else {
           await setUserNotificationDetails(fid, event.notificationDetails);
         }
@@ -76,11 +81,15 @@ export async function POST(request: NextRequest) {
       } else {
         await deleteUserNotificationDetails(fid);
       }
-
+      trackEvent("frame_added", {
+        fid,
+      });
       break;
     case "frame_removed":
       await deleteUserNotificationDetails(fid);
-
+      trackEvent("frame_removed", {
+        fid,
+      });
       break;
     case "notifications_enabled":
       await setUserNotificationDetails(fid, event.notificationDetails);
@@ -89,11 +98,15 @@ export async function POST(request: NextRequest) {
         title: "Ding ding ding",
         body: "Notifications for FarVille are now enabled",
       });
-
+      trackEvent("notifications_enabled", {
+        fid,
+      });
       break;
     case "notifications_disabled":
       await deleteUserNotificationDetails(fid);
-
+      trackEvent("notifications_disabled", {
+        fid,
+      });
       break;
   }
 

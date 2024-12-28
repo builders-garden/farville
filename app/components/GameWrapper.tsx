@@ -10,6 +10,7 @@ import MarketplaceModal from "./MarketplaceModal";
 import SettingsModal from "./SettingsModal";
 import LeaderboardModal from "./LeaderboardModal";
 import FertilizerIndicator from "./FertilizerIndicator";
+import { useFrameContext } from "../context/FrameContext";
 
 // Load GameGrid component dynamically (client-side only)
 const GameGrid = dynamic(() => import("./GameGrid"), {
@@ -20,11 +21,7 @@ const GameGrid = dynamic(() => import("./GameGrid"), {
 });
 
 // Separate component for the inventory modal
-function InventoryModalContainer({
-  safeAreaInsets,
-}: {
-  safeAreaInsets: { top: number; bottom: number; left: number; right: number };
-}) {
+function InventoryModalContainer() {
   const { state, toggleInventory } = useGame();
 
   return (
@@ -32,7 +29,6 @@ function InventoryModalContainer({
       {state.showInventory && (
         <InventoryModal
           onClose={toggleInventory}
-          safeAreaInsets={safeAreaInsets}
         />
       )}
     </AnimatePresence>
@@ -40,12 +36,9 @@ function InventoryModalContainer({
 }
 
 // Wrapper component for the marketplace modal
-function MarketplaceModalContainer({
-  safeAreaInsets,
-}: {
-  safeAreaInsets: { top: number; bottom: number; left: number; right: number };
-}) {
+function MarketplaceModalContainer() {
   const { state, toggleMarketplace } = useGame();
+  const { safeAreaInsets } = useFrameContext();
 
   return (
     <AnimatePresence>
@@ -59,13 +52,9 @@ function MarketplaceModalContainer({
   );
 }
 
-export default function GameWrapper({
-  safeAreaInsets,
-}: {
-  safeAreaInsets: { top: number; bottom: number; left: number; right: number };
-}) {
+export default function GameWrapper() {
   const { state } = useGame();
-
+  const { safeAreaInsets } = useFrameContext();
   return (
     <div
       className="flex flex-col h-[100dvh] overflow-hidden"
@@ -82,12 +71,12 @@ export default function GameWrapper({
       </div>
       <Toolbar safeAreaInsets={safeAreaInsets} />
       <FertilizerIndicator />
-      <InventoryModalContainer safeAreaInsets={safeAreaInsets} />
-      <MarketplaceModalContainer safeAreaInsets={safeAreaInsets} />
+      <InventoryModalContainer />
+      <MarketplaceModalContainer />
       <AnimatePresence>
         {state.showSettings && <SettingsModal />}
         {state.showLeaderboard && (
-          <LeaderboardModal safeAreaInsets={safeAreaInsets} />
+          <LeaderboardModal />
         )}
       </AnimatePresence>
     </div>

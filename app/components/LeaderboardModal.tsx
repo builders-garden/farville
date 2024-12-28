@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { useGame } from "../context/GameContext";
 import { useState } from "react";
 import { useAudio } from "../context/AudioContext";
+import { useFrameContext } from "../context/FrameContext";
 
 // Temporary mock data - replace with real data later
 const MOCK_GLOBAL_LEADERBOARD = [
@@ -28,15 +29,12 @@ const MOCK_FRIENDS = [
 //   coins: number;
 // };
 
-export default function LeaderboardModal({
-  safeAreaInsets,
-}: {
-  safeAreaInsets: { top: number; bottom: number; left: number; right: number };
-}) {
+export default function LeaderboardModal() {
   const { toggleLeaderboard } = useGame();
   const { startBackgroundMusic } = useAudio();
   const [activeTab, setActiveTab] = useState<"global" | "friends">("global");
   const [searchQuery, setSearchQuery] = useState("");
+  const { safeAreaInsets } = useFrameContext();
 
   const currentLeaderboard =
     activeTab === "global" ? MOCK_GLOBAL_LEADERBOARD : MOCK_FRIENDS;
