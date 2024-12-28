@@ -1,12 +1,13 @@
 import type { Perk } from "./perks";
 
-export type CropType = "wheat" | "corn" | "tomato" | "potato";
+export type CropType = "carrot" | "pumpkin" | "tomato" | "potato";
 
 export type Crop = {
   type: CropType;
   growthStage: number;
   readyToHarvest: boolean;
   plantedAt: number;
+  growthTime: number;
 };
 
 export type Seeds = {

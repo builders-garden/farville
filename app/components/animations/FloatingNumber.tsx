@@ -1,5 +1,6 @@
 "use client";
 
+import { CROPS } from "@/app/context/GameContext";
 import { CropType } from "@/app/types/game";
 import { motion } from "framer-motion";
 import { createPortal } from "react-dom";
@@ -11,13 +12,6 @@ interface FloatingNumberProps {
   type: "xp" | "coins" | "crop";
   cropType?: CropType;
 }
-
-const CROP_COLORS = {
-  wheat: "bg-green-500/90 text-green-100",
-  corn: "bg-yellow-500/90 text-yellow-900",
-  tomato: "bg-red-500/90 text-red-100",
-  potato: "bg-amber-500/90 text-amber-100",
-};
 
 export default function FloatingNumber({
   number,
@@ -32,7 +26,7 @@ export default function FloatingNumber({
   const getBackgroundColor = () => {
     if (type === "xp") return "bg-yellow-500/90 text-yellow-900";
     if (type === "coins") return "bg-amber-600/90 text-amber-100";
-    if (type === "crop" && cropType) return CROP_COLORS[cropType];
+    if (type === "crop" && cropType) return "bg-green-500/90 text-green-100";
     return "";
   };
 
@@ -40,14 +34,10 @@ export default function FloatingNumber({
     if (type === "xp") return `+${number} XP ⭐`;
     if (type === "coins") return `+${number} 🪙`;
     if (type === "crop") {
-      const cropIcons = {
-        wheat: "🌾",
-        corn: "🌽",
-        tomato: "🍅",
-        potato: "🥔",
-      };
+      const crop = CROPS.find((crop) => crop.type === cropType)!;
+
       return `+${number} ${
-        cropType && `${cropType.toUpperCase()} ${cropIcons[cropType]}`
+        cropType && `${cropType.toUpperCase()} ${crop.icon}`
       }`;
     }
     return "";

@@ -2,24 +2,10 @@
 
 import { motion } from "framer-motion";
 import { useState } from "react";
-import { useGame } from "../context/GameContext";
+import { CROPS, useGame } from "../context/GameContext";
 import { CropType } from "../types/game";
 import { EXPANSION_COSTS } from "../context/GameContext";
 import { Perk } from "../types/perks";
-
-const SEEDS: {
-  type: CropType;
-  icon: string;
-  price: number;
-  name: string;
-  level: number;
-  xp: number;
-}[] = [
-  { type: "wheat", name: "Wheat", icon: "🌾", price: 5, level: 1, xp: 2 },
-  { type: "corn", name: "Corn", icon: "🌽", price: 15, level: 3, xp: 6 },
-  { type: "tomato", name: "Tomato", icon: "🍅", price: 30, level: 5, xp: 12 },
-  { type: "potato", name: "Potato", icon: "🥔", price: 60, level: 8, xp: 25 },
-];
 
 const PERKS: Perk[] = [
   // {
@@ -199,7 +185,7 @@ export default function MarketplaceModal({
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 20 }}
               >
-                {SEEDS.map(({ type, icon, price, name, level, xp }, index) => (
+                {CROPS.map(({ name, type, seedIcon, buyPrice, levelRequirement, xp }, index) => (
                   <motion.div
                     key={type}
                     initial={{ opacity: 0, x: -20 }}
@@ -207,25 +193,25 @@ export default function MarketplaceModal({
                     transition={{ delay: index * 0.1 }}
                     className={`bg-[#6d4c2c] px-4 py-3 rounded-lg flex flex-col md:flex-row md:items-center gap-3
                                border border-[#8B5E3C]/50 shadow-md relative ${
-                                 state.level < level ? "opacity-75" : ""
+                                 state.level < levelRequirement ? "opacity-75" : ""
                                }`}
                   >
-                    {state.level < level && (
+                    {state.level < levelRequirement && (
                       <div className="absolute inset-0 bg-red-900/20 backdrop-blur-[1px] rounded-lg flex items-center justify-center z-10">
                         <span className="text-white/90 font-medium bg-red-900/90 px-3 py-1 rounded-lg text-sm">
-                          Level {level} Required
+                          Level {levelRequirement} Required
                         </span>
                       </div>
                     )}
                     <div className="flex items-center gap-3 flex-1">
                       <div className="w-10 h-10 flex items-center justify-center">
-                        <motion.span
-                          className="text-2xl"
+                        <motion.img
+                          src={seedIcon}
+                          alt={`${name} seed`}
+                          className="w-8 h-8 object-contain"
                           animate={{ y: [0, -2, 0] }}
                           transition={{ duration: 1.5, repeat: Infinity }}
-                        >
-                          {icon}
-                        </motion.span>
+                        />
                       </div>
                       <div className="flex-1">
                         <p className="text-white/90 font-medium">
@@ -235,7 +221,7 @@ export default function MarketplaceModal({
                           <span className="text-white/60">
                             Price:{" "}
                             <span className="text-[#FFB938] font-medium">
-                              🪙 {price}
+                              🪙 {buyPrice}
                             </span>
                           </span>
                           <span className="text-white/40">•</span>
@@ -256,14 +242,14 @@ export default function MarketplaceModal({
                       </div>
                     </div>
                     <div className="flex gap-2 ml-13 md:ml-0">
-                      {state.level >= level &&
+                      {state.level >= levelRequirement &&
                         [1, 5, 10].map((amount) => (
                           <motion.button
                             key={amount}
                             whileHover={{ scale: 1.03 }}
                             whileTap={{ scale: 0.97 }}
                             onClick={() => handleBuySeeds(type, amount)}
-                            disabled={state.coins < price * amount}
+                            disabled={state.coins < buyPrice * amount}
                             className="min-w-[70px] py-1.5 bg-[#2B593B] text-white/90 rounded hover:bg-[#346344] 
                                     transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-sm font-medium
                                     border border-white/10"
@@ -284,14 +270,9 @@ export default function MarketplaceModal({
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 20 }}
               >
-                {SEEDS.map(({ type, icon, name }) => {
+                {CROPS.map(({ type, icon, name, sellPrice }) => {
                   const amount = state.crops[type];
-                  const sellPrice = {
-                    wheat: 10,
-                    corn: 15,
-                    tomato: 20,
-                    potato: 25,
-                  }[type];
+  
 
                   return (
                     <motion.div
@@ -303,13 +284,13 @@ export default function MarketplaceModal({
                     >
                       <div className="flex items-center gap-3 flex-1">
                         <div className="w-10 h-10 flex items-center justify-center">
-                          <motion.span
-                            className="text-2xl"
+                          <motion.img
+                            src={icon}
+                            alt={name}
+                            className="w-8 h-8 object-contain"
                             animate={{ y: [0, -2, 0] }}
                             transition={{ duration: 1.5, repeat: Infinity }}
-                          >
-                            {icon}
-                          </motion.span>
+                          />
                         </div>
                         <div className="flex-1">
                           <p className="text-white/90 font-medium">{name}</p>

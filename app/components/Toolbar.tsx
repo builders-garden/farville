@@ -1,24 +1,17 @@
 "use client";
 
-import { useGame } from "../context/GameContext";
+import { CROPS, useGame } from "../context/GameContext";
 import { CropType } from "../types/game";
 import { motion } from "framer-motion";
 import { useState, useRef, useEffect } from "react";
 
 // Import the shared colors
 const CROP_COLORS: Record<CropType, string> = {
-  wheat: "border-green-400",
-  corn: "border-yellow-400",
+  carrot: "border-orange-400",
+  pumpkin: "border-yellow-400",
   tomato: "border-red-400",
-  potato: "border-orange-400",
+  potato: "border-green-400",
 };
-
-const CROPS: { type: CropType; icon: string }[] = [
-  { type: "wheat", icon: "🌾" },
-  { type: "corn", icon: "🌽" },
-  { type: "tomato", icon: "🍅" },
-  { type: "potato", icon: "🥔" },
-];
 
 export default function Toolbar({
   safeAreaInsets,
@@ -50,8 +43,14 @@ export default function Toolbar({
 
     // Initialize drag icon
     if (touchDragIconRef.current) {
-      touchDragIconRef.current.textContent =
-        CROPS.find((crop) => crop.type === type)?.icon || "";
+      const cropIcon = CROPS.find((crop) => crop.type === type)?.seedIcon;
+      if (cropIcon) {
+        const img = document.createElement("img");
+        img.src = cropIcon;
+        img.className = "w-8 h-8";
+        touchDragIconRef.current.innerHTML = "";
+        touchDragIconRef.current.appendChild(img);
+      }
       updateTouchDragIcon(touch.clientX, touch.clientY);
     }
 
@@ -158,8 +157,14 @@ export default function Toolbar({
 
     // Create a custom drag image
     if (dragIconRef.current) {
-      dragIconRef.current.textContent =
-        CROPS.find((crop) => crop.type === type)?.icon || "";
+      const cropIcon = CROPS.find((crop) => crop.type === type)?.seedIcon;
+      if (cropIcon) {
+        const img = document.createElement("img");
+        img.src = cropIcon;
+        img.className = "w-8 h-8";
+        dragIconRef.current.innerHTML = "";
+        dragIconRef.current.appendChild(img);
+      }
       e.dataTransfer.setDragImage(dragIconRef.current, 25, 25);
     }
   };
@@ -176,7 +181,7 @@ export default function Toolbar({
       data-tutorial="toolbar"
     >
       <div className="flex gap-2">
-        {CROPS.map(({ type, icon }) => {
+        {CROPS.map(({ type, seedIcon }) => {
           const isAvailable = state.seeds[type] > 0;
 
           return (
@@ -206,7 +211,13 @@ export default function Toolbar({
                 transition-colors
               `}
             >
-              <span className="text-xl">{icon}</span>
+              <motion.img
+                src={seedIcon}
+                alt={`${type} seed`}
+                className="w-8 h-8 object-contain"
+                animate={{ y: [0, -2, 0] }}
+                transition={{ duration: 1.5, repeat: Infinity }}
+              />
               <div className="absolute -top-2 -right-2 bg-[#6d4c2c] rounded-full w-5 h-5 flex items-center justify-center text-xs text-white/90">
                 {state.seeds[type]}
               </div>
