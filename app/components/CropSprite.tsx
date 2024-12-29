@@ -3,6 +3,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { Crop } from "../types/game";
 import { formatDistanceStrict } from "date-fns";
+import { useGame } from "../context/GameContext";
 
 interface CropSpriteProps {
   crop: Crop;
@@ -24,6 +25,7 @@ export function EmptyCropSprite() {
 }
 
 export function PlantedCropSprite({ crop, isDemo }: CropSpriteProps) {
+  const { state } = useGame();
   const getGrowthProgress = () => {
     const { plantedAt, growthTime } = crop;
     const elapsed = Date.now() - plantedAt;
@@ -67,10 +69,9 @@ export function PlantedCropSprite({ crop, isDemo }: CropSpriteProps) {
       {/* Progress Bar - Centered and smaller */}
       {!crop.readyToHarvest && (
         <div className="absolute bottom-[3%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center w-3/4">
-          {!isDemo && (
+          {!isDemo && state.gridSize.width < 5 && (
             <div className="text-[10px] text-white font-medium mb-1 text-center drop-shadow-[0_1px_1px_rgba(0,0,0,0.8)]">
-              {getTimeRemaining()} •{" "}
-              {crop.type.charAt(0).toUpperCase() + crop.type.slice(1)}
+              {getTimeRemaining()}
             </div>
           )}
           <div className="w-full h-2 bg-black/50">
