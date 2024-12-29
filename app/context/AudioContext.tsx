@@ -20,7 +20,7 @@ const AudioContext = createContext<AudioContextType | null>(null);
 export function AudioProvider({ children }: { children: React.ReactNode }) {
   const [isMusicPlaying, setIsMusicPlaying] = useState(false);
   const [volume, setVolume] = useState(0.8);
-  const [musicVolume, setMusicVolume] = useState(0.2);
+  const [musicVolume, setMusicVolume] = useState(0.1);
   const [isSoundEnabled, setIsSoundEnabled] = useState(true);
   const audioRefs = useRef<{ [key: string]: HTMLAudioElement }>({});
   const musicRef = useRef<HTMLAudioElement | null>(null);
@@ -29,7 +29,7 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
     if (!musicRef.current) {
       musicRef.current = new Audio("/sounds/background-music.mp3");
       musicRef.current.loop = true;
-      musicRef.current.volume = musicVolume;
+      musicRef.current.volume = 0.1;
     }
   }, []);
 

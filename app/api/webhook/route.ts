@@ -19,7 +19,9 @@ export async function POST(request: NextRequest) {
 
   let data;
   try {
+    console.log("parsing webhook event");
     data = await parseWebhookEvent(requestJson, verifyAppKeyWithNeynar);
+    console.log("parsed webhook event");
   } catch (e: unknown) {
     const error = e as ParseWebhookEvent.ErrorType;
 
@@ -53,7 +55,9 @@ export async function POST(request: NextRequest) {
     case "frame_added":
       if (event.notificationDetails) {
         const user = await getUser(fid);
+        console.log("user", user);
         if (!user) {
+          console.log("creating user");
           const neynarUser = await fetchUser(fid.toString());
           await createUser({
             fid,
@@ -66,24 +70,29 @@ export async function POST(request: NextRequest) {
             expansions: 1,
             notificationDetails: JSON.stringify(event.notificationDetails),
           });
+          console.log("created user");
           trackEvent("signup", {
             fid,
             location: "frame_added",
           });
         } else {
+          console.log("setting notification details");
           await setUserNotificationDetails(fid, event.notificationDetails);
         }
+        console.log("sending frame notification");
         await sendFrameNotification({
           fid,
           title: "FarVille",
           body: "FarVille is now added to Warpcast",
         });
       } else {
+        console.log("deleting notification details");
         await deleteUserNotificationDetails(fid);
       }
       trackEvent("frame_added", {
         fid,
       });
+      console.log("tracked event");
       break;
     case "frame_removed":
       await deleteUserNotificationDetails(fid);
