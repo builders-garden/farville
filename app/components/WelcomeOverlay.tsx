@@ -309,6 +309,13 @@ export default function WelcomeOverlay({ onStart }: { onStart: () => void }) {
 
       {/* Content container */}
       <div className="relative z-20 flex flex-col items-center gap-2 w-full max-w-md p-4">
+        {/* FarVille title */}
+        <div className="flex flex-col text-center items-center gap-2">
+          <h1 className="text-white/90 text-4xl font-bold [text-shadow:_2px_2px_4px_rgb(0_0_0_/_50%)]">FarVille</h1>
+          <p className="text-white/70 text-sm [text-shadow:_1px_1px_2px_rgb(0_0_0_/_50%)]">
+            Plant, grow, and harvest crops with frens!
+          </p>
+        </div>
         {/* Seed Selection Toolbar */}
         <div className="flex gap-2 mt-4">
           {CROPS.map(({ type, seedIcon, name }) => (
@@ -391,8 +398,31 @@ export default function WelcomeOverlay({ onStart }: { onStart: () => void }) {
 
         {/* Presave Button */}
         <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
+          whileHover={{ 
+            scale: 1.08,
+            rotate: [-1, 1, -1],
+            transition: {
+              rotate: {
+                repeat: Infinity,
+                duration: 0.5
+              }
+            }
+          }}
+          whileTap={{ scale: 0.92 }}
+          animate={{
+            y: [0, -10, 0],
+            boxShadow: [
+              "0 0 60px rgba(16,185,129,0.9), 0 0 60px rgba(34,197,94,0.8)",
+              "0 0 80px rgba(16,185,129,1), 0 0 80px rgba(34,197,94,1)", 
+              "0 0 60px rgba(16,185,129,0.9), 0 0 60px rgba(34,197,94,0.8)"
+            ],
+            scale: [1, 1.10, 1]
+          }}
+          transition={{ 
+            duration: 2,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
           onClick={async () => {
             startBackgroundMusic();
             await sdk.actions.addFrame();
@@ -402,13 +432,16 @@ export default function WelcomeOverlay({ onStart }: { onStart: () => void }) {
             mt-8 px-16 py-4 
             bg-white text-emerald-600 
             rounded-none text-2xl font-bold
-            hover:bg-emerald-100 transition-colors
+            hover:bg-emerald-100
             [image-rendering:pixelated]
+            shadow-[0_0_60px_rgba(16,185,129,0.9),0_0_60px_rgba(34,197,94,0.8)]
+            hover:shadow-[0_0_100px_rgba(16,185,129,1),0_0_100px_rgba(34,197,94,1)]
+            transition-all duration-300
           `}
           style={{
             border: PIXEL_BORDER,
             imageRendering: "pixelated",
-            textShadow: "2px 2px 0px rgba(0,0,0,0.2)",
+            textShadow: "3px 3px 0px rgba(0,0,0,0.3)",
           }}
         >
           Presave
