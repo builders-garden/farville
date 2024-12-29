@@ -116,14 +116,14 @@ export default function MarketplaceModal({
         className="bg-[#7E4E31] w-full h-screen flex flex-col"
       >
         <div className="max-w-4xl mx-auto w-full p-6 flex flex-col h-full">
-          <div className="flex justify-between items-center mb-6 flex-shrink-0">
-            <div>
+          <div className="flex justify-between mb-6 flex-shrink-0">
+            <div className="flex flex-col gap-1">
               <motion.h2
                 className="text-white/90 font-bold text-2xl mb-1 flex items-center gap-2"
                 animate={{ rotate: [0, -3, 3, 0] }}
                 transition={{ duration: 0.5, repeat: Infinity, repeatDelay: 5 }}
               >
-                <span className="text-3xl">🏪</span> Market
+                <span className="text-3xl mb-2">🏪</span> Market
               </motion.h2>
               <motion.p
                 className="text-white/70 text-sm flex items-center gap-1"
@@ -145,7 +145,7 @@ export default function MarketplaceModal({
             </button>
           </div>
 
-          <div className="grid grid-cols-4 gap-2 mb-6 flex-shrink-0">
+          <div className="grid grid-cols-4 gap-3 mb-6 flex-shrink-0">
             {tabs.map((tab, index) => (
               <motion.button
                 key={tab.id}
@@ -156,7 +156,7 @@ export default function MarketplaceModal({
                 className={`px-3 py-2 rounded-lg flex items-center justify-center gap-1.5 transition-all duration-200 w-full
                   ${
                     activeTab === tab.id
-                      ? "bg-[#6d4c2c] text-white scale-105 shadow-lg"
+                      ? " text-yellow-400 scale-105"
                       : "text-white/70 hover:bg-[#6d4c2c]/50"
                   }`}
                 whileHover={{ scale: activeTab === tab.id ? 1.05 : 1.02 }}
@@ -169,10 +169,11 @@ export default function MarketplaceModal({
                     repeat: Infinity,
                     repeatDelay: 2,
                   }}
+                  className="mb-1"
                 >
                   {tab.icon}
                 </motion.span>
-                <span className="text-sm">{tab.label}</span>
+                <span className="text-[10px]">{tab.label}</span>
               </motion.button>
             ))}
           </div>
@@ -185,81 +186,90 @@ export default function MarketplaceModal({
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 20 }}
               >
-                {CROPS.map(({ name, type, seedIcon, buyPrice, levelRequirement, xp }, index) => (
-                  <motion.div
-                    key={type}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.1 }}
-                    className={`bg-[#6d4c2c] px-4 py-3 rounded-lg flex flex-col md:flex-row md:items-center gap-3
+                {CROPS.map(
+                  (
+                    { name, type, seedIcon, buyPrice, levelRequirement, xp },
+                    index
+                  ) => (
+                    <motion.div
+                      key={type}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.1 }}
+                      className={`bg-[#6d4c2c] px-4 py-3 rounded-lg flex flex-col md:flex-row md:items-center gap-3
                                border border-[#8B5E3C]/50 shadow-md relative ${
-                                 state.level < levelRequirement ? "opacity-75" : ""
+                                 state.level < levelRequirement
+                                   ? "opacity-75"
+                                   : ""
                                }`}
-                  >
-                    {state.level < levelRequirement && (
-                      <div className="absolute inset-0 bg-red-900/20 backdrop-blur-[1px] rounded-lg flex items-center justify-center z-10">
-                        <span className="text-white/90 font-medium bg-red-900/90 px-3 py-1 rounded-lg text-sm">
-                          Level {levelRequirement} Required
-                        </span>
-                      </div>
-                    )}
-                    <div className="flex items-center gap-3 flex-1">
-                      <div className="w-10 h-10 flex items-center justify-center">
-                        <motion.img
-                          src={seedIcon}
-                          alt={`${name} seed`}
-                          className="w-8 h-8 object-contain"
-                          animate={{ y: [0, -2, 0] }}
-                          transition={{ duration: 1.5, repeat: Infinity }}
-                        />
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-white/90 font-medium">
-                          {name} Seeds
-                        </p>
-                        <div className="flex items-center gap-2 text-sm">
-                          <span className="text-white/60">
-                            Price:{" "}
-                            <span className="text-[#FFB938] font-medium">
-                              🪙 {buyPrice}
-                            </span>
-                          </span>
-                          <span className="text-white/40">•</span>
-                          <span className="text-white/60">
-                            XP:{" "}
-                            <span className="text-yellow-400 font-medium">
-                              ⭐ {xp}
-                            </span>
-                          </span>
-                          <span className="text-white/40">•</span>
-                          <span className="text-white/60">
-                            Owned:{" "}
-                            <span className="text-white/90 font-medium">
-                              {state.seeds[type]}
-                            </span>
+                    >
+                      {state.level < levelRequirement && (
+                        <div className="absolute inset-0 bg-red-900/20 backdrop-blur-[1px] rounded-lg flex items-center justify-center z-10">
+                          <span className="text-white/90 font-medium bg-red-900/90 px-3 py-1 rounded-lg text-sm">
+                            Level {levelRequirement} Required
                           </span>
                         </div>
+                      )}
+                      <div className="flex items-center gap-3 flex-1">
+                        <div className="w-10 h-10 flex items-center justify-center">
+                          <motion.img
+                            src={seedIcon}
+                            alt={`${name} seed`}
+                            className="w-8 h-8 object-contain"
+                            animate={{ y: [0, -2, 0] }}
+                            transition={{ duration: 1.5, repeat: Infinity }}
+                          />
+                        </div>
+                        <div className="flex-1 flex flex-col gap-2">
+                          <div className="flex flex-row gap-1 justify-between">
+                            <p className="text-white/90 font-medium">
+                              {name} Seeds
+                            </p>
+                            <p className="text-white/90">
+                              <span className="mr-1">🪙</span>
+                              {buyPrice}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-2 text-[10px]">
+                            <span className="text-white/60 flex items-center">
+                              XP:{" "}
+                              <span className="text-yellow-400 font-medium flex items-center">
+                                <span className="text-sm mb-1 ml-1 mr-0.5">
+                                  ⭐
+                                </span>
+                                {xp}
+                              </span>
+                            </span>
+                            <span className="text-white/40">•</span>
+                            <span className="text-white/60">
+                              Owned:
+                              <span className="text-white/90 font-medium">
+                                {state.seeds[type]}
+                              </span>
+                            </span>
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                    <div className="flex gap-2 ml-13 md:ml-0">
-                      {state.level >= levelRequirement &&
-                        [1, 5, 10].map((amount) => (
-                          <motion.button
-                            key={amount}
-                            whileHover={{ scale: 1.03 }}
-                            whileTap={{ scale: 0.97 }}
-                            onClick={() => handleBuySeeds(type, amount)}
-                            disabled={state.coins < buyPrice * amount}
-                            className="min-w-[70px] py-1.5 bg-[#2B593B] text-white/90 rounded hover:bg-[#346344] 
+                      <div className="flex gap-2 ml-13 md:ml-0">
+                        {state.level >= levelRequirement &&
+                          [1, 5, 10].map((amount) => (
+                            <motion.button
+                              key={amount}
+                              whileHover={{ scale: 1.03 }}
+                              whileTap={{ scale: 0.97 }}
+                              onClick={() => handleBuySeeds(type, amount)}
+                              disabled={state.coins < buyPrice * amount}
+                              className="min-w-[70px] px-2 py-1.5 bg-[#2B593B] text-white/90 rounded hover:bg-[#346344] 
                                     transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-sm font-medium
                                     border border-white/10"
-                          >
-                            Buy {amount}
-                          </motion.button>
-                        ))}
-                    </div>
-                  </motion.div>
-                ))}
+                            >
+                              Buy {amount}
+                            </motion.button>
+                          ))}
+                      </div>
+                    </motion.div>
+                  )
+                )}
               </motion.div>
             )}
 
@@ -272,7 +282,6 @@ export default function MarketplaceModal({
               >
                 {CROPS.map(({ type, icon, name, sellPrice }) => {
                   const amount = state.crops[type];
-  
 
                   return (
                     <motion.div
@@ -292,19 +301,18 @@ export default function MarketplaceModal({
                             transition={{ duration: 1.5, repeat: Infinity }}
                           />
                         </div>
-                        <div className="flex-1">
-                          <p className="text-white/90 font-medium">{name}</p>
-                          <div className="flex items-center gap-2 text-sm">
+                        <div className="flex-1 flex flex-col gap-2">
+                          <div className="flex flex-row gap-1 justify-between">
+                            <p className="text-white/90 font-medium">{name}</p>
+                            <p className="text-white/90">
+                              <span className="mr-1">🪙</span>
+                              {sellPrice}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-2 text-[10px]">
                             <span className="text-white/60">
-                              Sell:{" "}
-                              <span className="text-[#FFB938] font-medium">
-                                🪙 {sellPrice}
-                              </span>
-                            </span>
-                            <span className="text-white/40">•</span>
-                            <span className="text-white/60">
-                              Owned:{" "}
-                              <span className="text-white/90 font-medium">
+                              Owned:
+                              <span className="text-white/90 font-medium ml-1">
                                 {amount}
                               </span>
                             </span>
@@ -319,8 +327,8 @@ export default function MarketplaceModal({
                             whileTap={{ scale: 0.97 }}
                             onClick={() => handleSellCrops(type, sellAmount)}
                             disabled={amount < sellAmount}
-                            className="min-w-[70px] py-1.5 bg-[#2B593B] text-white/90 rounded hover:bg-[#346344] 
-                                     transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-sm font-medium
+                            className="min-w-[70px] px-2 py-1.5 bg-[#2B593B] text-white/90 rounded hover:bg-[#346344] 
+                                     transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-xs font-medium
                                      border border-white/10"
                           >
                             Sell {sellAmount}
@@ -352,13 +360,13 @@ export default function MarketplaceModal({
                           🌟
                         </motion.span>
                       </div>
-                      <div className="flex-1">
+                      <div className="flex-1 flex flex-col gap-2">
                         <p className="text-white/90 font-medium">
                           Next Expansion
                         </p>
-                        <div className="flex items-center gap-2 text-sm">
+                        <div className="flex flex-col gap-1 text-sm">
                           <span className="text-white/60">
-                            Size:{" "}
+                            Size:
                             <span className="text-white/90 font-medium">
                               {
                                 EXPANSION_COSTS[state.expansionLevel].nextSize
@@ -371,9 +379,8 @@ export default function MarketplaceModal({
                               }
                             </span>
                           </span>
-                          <span className="text-white/40">•</span>
                           <span className="text-white/60">
-                            Required Level:{" "}
+                            Required Level:
                             <span
                               className={`font-medium ${
                                 state.level >=
@@ -440,12 +447,12 @@ export default function MarketplaceModal({
                     return (
                       <motion.div
                         key={perk.id}
-                        className="bg-[#6d4c2c] p-4 rounded-lg flex items-start justify-between
-                                   border border-[#8B5E3C]/50 shadow-md hover:bg-[#7d583a] transition-colors"
+                        className="bg-[#6d4c2c] p-4 rounded-lg flex flex-col sm:flex-row sm:items-start gap-4
+                                 border border-[#8B5E3C]/50 shadow-md hover:bg-[#7d583a] transition-colors"
                       >
-                        <div className="flex items-start gap-4">
-                          <div className="flex flex-col items-center gap-2">
-                            <div className="w-12 h-12 bg-[#8B5E3C]/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <div className="flex sm:flex-1 items-start gap-4 min-w-0">
+                          <div className="flex flex-col items-center gap-2 flex-shrink-0">
+                            <div className="w-12 h-12 bg-[#8B5E3C]/30 rounded-lg flex items-center justify-center">
                               <motion.span
                                 className="text-2xl"
                                 animate={{ y: [0, -2, 0] }}
@@ -454,20 +461,21 @@ export default function MarketplaceModal({
                                 {perk.icon}
                               </motion.span>
                             </div>
-                            <span className="px-2 py-0.5 bg-[#8B5E3C]/50 rounded text-xs text-white/80 font-medium">
-                              {perk.quantity}x
-                            </span>
+                            
                           </div>
-                          <div className="flex flex-col">
-                            <h3 className="text-white/90 font-medium mb-1">
-                              {perk.name}
-                            </h3>
-                            <p className="text-white/60 text-sm">
+                          <div className="flex flex-col min-w-0 gap-2">
+                            <div className="flex flex-row justify-between">
+                              <h3 className="text-sm text-white/90 font-medium mb-1">{perk.name}</h3>
+                              <div className="h-fit px-2 py-0.5 bg-[#8B5E3C]/50 rounded text-xs text-white/80 font-medium text-center min-w-[24px]">
+                              {perk.quantity}x
+                              </div>
+                            </div>
+                            <p className="text-white/60 text-[10px]">
                               {perk.description}
                             </p>
                           </div>
                         </div>
-                        <div className="flex flex-col items-end gap-2 ml-4 flex-shrink-0">
+                        <div className="flex flex-col items-stretch sm:items-end gap-2 flex-shrink-0">
                           <motion.button
                             whileHover={{ scale: 1.03 }}
                             whileTap={{ scale: 0.97 }}
@@ -483,7 +491,7 @@ export default function MarketplaceModal({
                             🪙 {perk.cost}
                           </motion.button>
                           {isOwned && (
-                            <div className="text-green-400 text-xs font-medium">
+                            <div className="text-green-400 text-xs font-medium text-center sm:text-right">
                               In inventory
                             </div>
                           )}

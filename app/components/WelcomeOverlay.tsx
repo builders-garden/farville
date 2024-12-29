@@ -51,12 +51,14 @@ const SEED_ANIMATION = {
   },
 };
 
-// Add this CSS at the top of the file, after the imports
-const BACKGROUND_PATTERN = `
-  linear-gradient(45deg, #386A48 25%, transparent 25%),
-  linear-gradient(-45deg, #386A48 25%, transparent 25%),
-  linear-gradient(45deg, transparent 75%, #386A48 75%),
-  linear-gradient(-45deg, transparent 75%, #386A48 75%)
+// Add this CSS constant near the top with other constants
+const PIXEL_BORDER = `
+  2px solid #000;
+  box-shadow: 
+    -4px 0 0 0 #000,
+    4px 0 0 0 #000,
+    0 -4px 0 0 #000,
+    0 4px 0 0 #000;
 `;
 
 export default function WelcomeOverlay({ onStart }: { onStart: () => void }) {
@@ -286,120 +288,132 @@ export default function WelcomeOverlay({ onStart }: { onStart: () => void }) {
         marginBottom: safeAreaInsets.bottom,
         marginLeft: safeAreaInsets.left,
         marginRight: safeAreaInsets.right,
-        backgroundColor: "#255F37",
-        backgroundImage: BACKGROUND_PATTERN,
-        backgroundSize: "160px 160px",
-        backgroundPosition: "0 0, 0 80px, 80px -80px, -80px 0px",
       }}
-      className="fixed inset-0 w-full h-full z-[100] flex flex-col items-center justify-center gap-2 p-4"
+      className="fixed inset-0 w-full h-full z-[100] flex flex-col items-center justify-center gap-2 bg-black"
     >
-      {/* Updated Image component with responsive sizing */}
-      <div className="w-full max-w-[300px] h-auto min-h-0 flex-shrink-0">
+      {/* Full-screen background image */}
+      <div className="absolute inset-0 w-full h-full">
         <Image
           src="/images/welcome.png"
-          alt="FarVille"
-          width={150}
-          height={50}
-          className="rounded-xl mx-auto"
+          alt="Background"
+          fill
+          className="object-cover"
           priority
-          style={{
-            objectFit: "contain",
-          }}
+          sizes="100vw"
+          quality={100}
         />
       </div>
 
-      {/* Seed Selection Toolbar */}
-      <div className="flex gap-2 mt-4">
-        {CROPS.map(({ type, seedIcon, name }) => (
-          <motion.div
-            key={type}
-            draggable
-            onDragStart={(e) =>
-              handleDragStart(e as unknown as React.DragEvent, type)
-            }
-            onTouchStart={(e) => handleTouchStart(e, type)}
-            onTouchEnd={handleTouchEnd}
-            onClick={() => {
-              startMusic();
-              setSelectedSeed(type);
-            }}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            animate={SEED_ANIMATION}
-            className={`
-              relative w-14 h-14 rounded-lg flex flex-col items-center justify-center cursor-pointer
-              bg-[#3d7a37] border-2 touch-none group
-              ${
-                selectedSeed === type ? "border-yellow-400" : "border-[#2d5a27]"
+      {/* Semi-transparent gradient overlay */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-black/10" />
+
+      {/* Content container */}
+      <div className="relative z-20 flex flex-col items-center gap-2 w-full max-w-md p-4">
+        {/* Seed Selection Toolbar */}
+        <div className="flex gap-2 mt-4">
+          {CROPS.map(({ type, seedIcon, name }) => (
+            <motion.div
+              key={type}
+              draggable
+              onDragStart={(e) =>
+                handleDragStart(e as unknown as React.DragEvent, type)
               }
-              hover:border-yellow-400/50 transition-colors
-            `}
-          >
-            <Image
-              src={seedIcon}
-              alt={name}
-              width={24}
-              height={24}
-              className="object-contain"
-            />
-            <span className="text-[10px] text-white mt-0.5">{name}</span>
-
-            {/* Tooltip */}
-            <div className="opacity-0 group-hover:opacity-100 transition-opacity absolute -top-8 left-1/2 -translate-x-1/2 bg-black/75 text-white text-xs px-2 py-1 rounded whitespace-nowrap">
-              Drag to plant!
-            </div>
-          </motion.div>
-        ))}
-      </div>
-
-      {/* 3x3 Grid */}
-      <div className="grid grid-cols-3 gap-2">
-        {demoCells.map((cell, index) => (
-          <motion.div
-            key={cell.id}
-            data-cell-index={index}
-            onClick={() => handleCellClick(index)}
-            onDragOver={(e) => handleDragOver(e, index)}
-            onDrop={(e) => handleDrop(e, index)}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className={`
-              w-20 h-20 rounded-lg relative cursor-pointer
-              transition-colors duration-200
-            `}
-            style={{
-              backgroundImage: cell.tilled ? "var(--soil-pattern)" : "none",
-              backgroundSize: "4px 4px",
-            }}
-          >
-            <DemoCropSprite crop={cell.crop} />
-            {cell.harvestAnimation && (
-              <FloatingNumber
-                number={cell.harvestAnimation.amount}
-                x={cell.harvestAnimation.x}
-                y={cell.harvestAnimation.y}
-                type="crop"
-                cropType={cell.harvestAnimation.type}
+              onTouchStart={(e) => handleTouchStart(e, type)}
+              onTouchEnd={handleTouchEnd}
+              onClick={() => {
+                startMusic();
+                setSelectedSeed(type);
+              }}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              animate={SEED_ANIMATION}
+              className={`
+                relative w-14 h-14 rounded-lg flex flex-col items-center justify-center cursor-pointer
+                bg-[#3d7a37] border-2 touch-none group
+                ${
+                  selectedSeed === type
+                    ? "border-yellow-400"
+                    : "border-[#2d5a27]"
+                }
+                hover:border-yellow-400/50 transition-colors
+              `}
+            >
+              <Image
+                src={seedIcon}
+                alt={name}
+                width={24}
+                height={24}
+                className="object-contain"
               />
-            )}
-          </motion.div>
-        ))}
-      </div>
+              <span className={`text-[6px] text-white mt-0.5`}>{name}</span>
 
-      {/* Presave Button */}
-      <motion.button
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        onClick={async () => {
-          startBackgroundMusic();
-          await sdk.actions.addFrame();
-          onStart();
-        }}
-        className="mt-8 px-16 py-4 bg-white text-emerald-500 rounded-xl text-2xl font-bold
-                 hover:bg-emerald-100 hover:text-emerald-600 transition-colors shadow-lg border-2 border-emerald-600"
-      >
-        Presave
-      </motion.button>
+              {/* Tooltip */}
+              <div className="opacity-0 group-hover:opacity-100 transition-opacity absolute -top-8 left-1/2 -translate-x-1/2 bg-black/75 text-white text-xs px-2 py-1 rounded whitespace-nowrap">
+                Drag to plant!
+              </div>
+            </motion.div>
+          ))}
+        </div>
+
+        {/* 3x3 Grid */}
+        <div className="grid grid-cols-3 gap-2">
+          {demoCells.map((cell, index) => (
+            <motion.div
+              key={cell.id}
+              data-cell-index={index}
+              onClick={() => handleCellClick(index)}
+              onDragOver={(e) => handleDragOver(e, index)}
+              onDrop={(e) => handleDrop(e, index)}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className={`
+                w-20 h-20 rounded-lg relative cursor-pointer
+                transition-colors duration-200
+              `}
+              style={{
+                backgroundImage: cell.tilled ? "var(--soil-pattern)" : "none",
+                backgroundSize: "4px 4px",
+              }}
+            >
+              <DemoCropSprite crop={cell.crop} />
+              {cell.harvestAnimation && (
+                <FloatingNumber
+                  number={cell.harvestAnimation.amount}
+                  x={cell.harvestAnimation.x}
+                  y={cell.harvestAnimation.y}
+                  type="crop"
+                  cropType={cell.harvestAnimation.type}
+                />
+              )}
+            </motion.div>
+          ))}
+        </div>
+
+        {/* Presave Button */}
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={async () => {
+            startBackgroundMusic();
+            await sdk.actions.addFrame();
+            onStart();
+          }}
+          className={`
+            mt-8 px-16 py-4 
+            bg-white text-emerald-600 
+            rounded-none text-2xl font-bold
+            hover:bg-emerald-100 transition-colors
+            [image-rendering:pixelated]
+          `}
+          style={{
+            border: PIXEL_BORDER,
+            imageRendering: "pixelated",
+            textShadow: "2px 2px 0px rgba(0,0,0,0.2)",
+          }}
+        >
+          Presave
+        </motion.button>
+      </div>
     </motion.div>
   );
 }

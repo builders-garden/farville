@@ -226,6 +226,17 @@ export default function Toolbar({
         })}
       </div>
 
+      <motion.div
+        className="bg-[#8B5E3C] h-[42px] px-3 rounded-xl shadow-lg border-2 border-[#6d4c2c] flex items-center"
+        whileHover={{ scale: 1.02 }}
+        animate={{ rotate: [0, -1, 1, -1, 1, 0] }}
+        transition={{ duration: 0.5, repeat: Infinity, repeatDelay: 5 }}
+      >
+        <span className="text-white/90 font-bold text-sm tracking-wide">
+          <span className="text-lg mb-1 mr-1">🪙</span>{state.coins}
+        </span>
+      </motion.div>
+
       <motion.button
         onClick={toggleInventory}
         whileHover={{ scale: 1.1 }}
