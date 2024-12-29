@@ -1,10 +1,15 @@
 import type { Metadata } from "next";
-import { Geist } from "next/font/google";
+import { Press_Start_2P } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
 
-const geist = Geist({
-  variable: "--font-geist",
+// const geist = Geist({
+//   variable: "--font-geist",
+//   subsets: ["latin"],
+// });
+
+export const pixelFont = Press_Start_2P({
+  weight: "400",
   subsets: ["latin"],
 });
 
@@ -20,7 +25,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${geist.variable} antialiased`}>
+      <body className={`${pixelFont.className} antialiased`}>
         <Providers>{children}</Providers>
       </body>
     </html>
