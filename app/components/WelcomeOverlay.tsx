@@ -311,7 +311,9 @@ export default function WelcomeOverlay({ onStart }: { onStart: () => void }) {
       <div className="relative z-20 flex flex-col items-center gap-2 w-full max-w-md p-4">
         {/* FarVille title */}
         <div className="flex flex-col text-center items-center gap-2">
-          <h1 className="text-white/90 text-4xl font-bold [text-shadow:_2px_2px_4px_rgb(0_0_0_/_50%)]">FarVille</h1>
+          <h1 className="text-white/90 text-4xl font-bold [text-shadow:_2px_2px_4px_rgb(0_0_0_/_50%)]">
+            FarVille
+          </h1>
           <p className="text-white/70 text-sm [text-shadow:_1px_1px_2px_rgb(0_0_0_/_50%)]">
             Plant, grow, and harvest crops with frens!
           </p>
@@ -398,30 +400,30 @@ export default function WelcomeOverlay({ onStart }: { onStart: () => void }) {
 
         {/* Presave Button */}
         <motion.button
-          whileHover={{ 
+          whileHover={{
             scale: 1.08,
             rotate: [-1, 1, -1],
             transition: {
               rotate: {
                 repeat: Infinity,
-                duration: 0.5
-              }
-            }
+                duration: 0.5,
+              },
+            },
           }}
           whileTap={{ scale: 0.92 }}
           animate={{
             y: [0, -10, 0],
             boxShadow: [
               "0 0 60px rgba(16,185,129,0.9), 0 0 60px rgba(34,197,94,0.8)",
-              "0 0 80px rgba(16,185,129,1), 0 0 80px rgba(34,197,94,1)", 
-              "0 0 60px rgba(16,185,129,0.9), 0 0 60px rgba(34,197,94,0.8)"
+              "0 0 80px rgba(16,185,129,1), 0 0 80px rgba(34,197,94,1)",
+              "0 0 60px rgba(16,185,129,0.9), 0 0 60px rgba(34,197,94,0.8)",
             ],
-            scale: [1, 1.10, 1]
+            scale: [1, 1.1, 1],
           }}
-          transition={{ 
+          transition={{
             duration: 2,
             repeat: Infinity,
-            ease: "easeInOut"
+            ease: "easeInOut",
           }}
           onClick={async () => {
             startBackgroundMusic();
@@ -446,6 +448,11 @@ export default function WelcomeOverlay({ onStart }: { onStart: () => void }) {
         >
           Presave
         </motion.button>
+        <div className="flex flex-col items-center gap-2">
+          <p className="text-white/90 text-sm [text-shadow:_1px_1px_2px_rgb(0_0_0_/_80%)]">
+            Coming in January 2025!
+          </p>
+        </div>
       </div>
     </motion.div>
   );
