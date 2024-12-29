@@ -16,7 +16,7 @@ import { useFrameContext } from "../context/FrameContext";
 const GameGrid = dynamic(() => import("./GameGrid"), {
   ssr: false,
   loading: () => (
-    <div className="w-full h-full bg-[var(--grass)] animate-pulse" />
+    <div className="w-full h-full animate-pulse" />
   ),
 });
 
