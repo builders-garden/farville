@@ -34,6 +34,7 @@ export interface DbUserHasItem {
 export type DbReferrals = {
   fid: number;
   referredFid: number;
+  createdAt: string;
 };
 
 // Helper type for inserting new records
