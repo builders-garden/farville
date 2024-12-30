@@ -89,10 +89,10 @@ export async function POST(request: NextRequest) {
         console.log("deleting notification details");
         await deleteUserNotificationDetails(fid);
       }
-      trackEvent("frame_added", {
+      const capturedEvent = trackEvent("frame_added", {
         fid,
       });
-      console.log("tracked event");
+      console.log("tracked event", capturedEvent);
       break;
     case "frame_removed":
       await deleteUserNotificationDetails(fid);
