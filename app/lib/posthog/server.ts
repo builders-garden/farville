@@ -9,6 +9,7 @@ export const trackEvent = (
   event: string,
   properties: Record<string, unknown>
 ) => {
+  console.log("tracking event", event, properties);
   posthog.capture({
     distinctId: fid.toString(),
     event,
