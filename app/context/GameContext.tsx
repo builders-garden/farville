@@ -157,14 +157,16 @@ function gameReducer(
         tilled: true,
       };
 
-      trackEvent("till_soil", {
+      trackEvent( "till_soil", {
         x: action.x,
         y: action.y,
         gridSize: state.gridSize,
         fid: context?.user?.fid,
-        xp: state.experience,
-        level: state.level,
-      });
+          xp: state.experience,
+          level: state.level,
+        },
+        context?.user?.fid
+      );
 
       return {
         ...state,
@@ -205,7 +207,9 @@ function gameReducer(
         fid: context?.user?.fid,
         xp: state.experience,
         level: state.level,
-      });
+      },
+        context?.user?.fid
+      );
 
       return {
         ...state,
@@ -258,7 +262,9 @@ function gameReducer(
         fid: context?.user?.fid,
         xp: state.experience,
         level: state.level,
-      });
+      },
+        context?.user?.fid
+      );
 
       return {
         ...state,
@@ -359,7 +365,9 @@ function gameReducer(
         fid: context?.user?.fid,
         xp: state.experience,
         level: state.level,
-      });
+      },
+        context?.user?.fid
+      );
 
       return {
         ...state,
@@ -393,7 +401,9 @@ function gameReducer(
         level: state.level,
         cost: totalCost,
         coins: state.coins,
-      });
+      },
+        context?.user?.fid
+      );
       return {
         ...state,
         coins: state.coins - totalCost,
@@ -421,7 +431,9 @@ function gameReducer(
         level: state.level,
         earnings: totalEarnings,
         coins: state.coins,
-      });
+      },
+        context?.user?.fid
+      );
 
       return {
         ...state,
@@ -466,7 +478,9 @@ function gameReducer(
         level: state.level,
         cost: expansion.coins,
         coins: state.coins,
-      });
+      },
+        context?.user?.fid
+      );
 
       return {
         ...state,
@@ -482,7 +496,9 @@ function gameReducer(
         fid: context?.user?.fid,
         xp: state.experience,
         level: state.level,
-      });
+      },
+        context?.user?.fid
+      );
       return {
         ...state,
         showInventory: !state.showInventory,
@@ -494,7 +510,9 @@ function gameReducer(
         fid: context?.user?.fid,
         xp: state.experience,
         level: state.level,
-      });
+      },
+        context?.user?.fid
+      );
       return {
         ...state,
         showMarketplace: !state.showMarketplace,
@@ -506,7 +524,9 @@ function gameReducer(
         fid: context?.user?.fid,
         xp: state.experience,
         level: state.level,
-      });
+      },
+        context?.user?.fid
+      );
       return {
         ...state,
         showSettings: !state.showSettings,
@@ -518,7 +538,9 @@ function gameReducer(
         fid: context?.user?.fid,
         xp: state.experience,
         level: state.level,
-      });
+      },
+        context?.user?.fid
+      );
       return {
         ...state,
         showLeaderboard: !state.showLeaderboard,
@@ -556,7 +578,9 @@ function gameReducer(
         level: state.level,
         cost: action.perk.cost,
         coins: state.coins,
-      });
+      },
+        context?.user?.fid
+      );
       return {
         ...state,
         coins: state.coins - action.perk.cost,
@@ -573,7 +597,9 @@ function gameReducer(
         fid: context?.user?.fid,
         xp: state.experience,
         level: state.level,
-      });
+      },
+        context?.user?.fid
+      );
       return state;
     }
 
