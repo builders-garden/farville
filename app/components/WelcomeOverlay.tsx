@@ -11,6 +11,7 @@ import { useFrameContext } from "../context/FrameContext";
 import { CROPS } from "../context/GameContext";
 import FloatingNumber from "./animations/FloatingNumber";
 import { warpcastComposeCastUrl } from "../lib/utils";
+import { DbUser } from "../supabase/types";
 
 // Demo version of CropSprite that shows seconds instead of minutes/hours
 function DemoCropSprite({ crop }: { crop?: Crop }) {
@@ -65,6 +66,7 @@ export default function WelcomeOverlay() {
 
   const [frameContext, setFrameContext] = useState<FrameContext | null>(null);
   const { isSDKLoaded, context } = useFrameContext();
+  const [user, setUser] = useState<DbUser | null>(null);
 
   useEffect(() => {
     console.log({
@@ -76,7 +78,22 @@ export default function WelcomeOverlay() {
     }
   }, [isSDKLoaded, context]);
 
-  console.log({ frameLocationContext: frameContext });
+  useEffect(() => {
+    async function getUserIfExist(fid: number) {
+      try {
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_URL}/api/user?fid=${fid}`
+        );
+        const userData = await res.json();
+        setUser(userData.data);
+      } catch (error) {
+        console.error(error);
+      }
+    }
+    if (frameContext) {
+      getUserIfExist(frameContext.user.fid);
+    }
+  }, [frameContext]);
 
   // Add helper function to start music
   const startMusic = () => {
@@ -436,6 +453,11 @@ export default function WelcomeOverlay() {
         <div className="mt-2">
           <span className=" text-white/90 text-sm [text-shadow:_1px_1px_2px_rgb(0_0_0_/_80%)]">
             Early Access in Jan 2025!
+          </span>
+        </div>
+        <div className="mt-2">
+          <span className=" text-white/90 text-sm [text-shadow:_1px_1px_2px_rgb(0_0_0_/_80%)]">
+            {JSON.stringify(user, null, 2)}
           </span>
         </div>
       </div>
