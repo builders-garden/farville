@@ -82,8 +82,8 @@ export async function POST(request: NextRequest) {
         console.log("sending frame notification");
         await sendFrameNotification({
           fid,
-          title: "FarVille",
-          body: "FarVille is now added to Warpcast",
+          title: "Welcome to FarVille 🧑‍🌾",
+          body: "The 1st farming season will begin in January 2025!",
         });
       } else {
         console.log("deleting notification details");
