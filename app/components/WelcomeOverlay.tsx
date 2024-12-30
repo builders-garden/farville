@@ -357,7 +357,7 @@ export default function WelcomeOverlay({ onStart }: { onStart: () => void }) {
               <span className={`text-[6px] text-white mt-0.5`}>{name}</span>
 
               {/* Tooltip */}
-              <div className="opacity-0 group-hover:opacity-100 transition-opacity absolute -top-8 left-1/2 -translate-x-1/2 bg-black/75 text-white text-xs px-2 py-1 rounded whitespace-nowrap">
+              <div className="opacity-0 group-hover:opacity-100 transition-opacity absolute -top-8 left-1/2 -translate-x-1/2 bg-black/75 text-white text-[8px] px-2 py-1 rounded whitespace-nowrap">
                 Drag to plant!
               </div>
             </motion.div>
