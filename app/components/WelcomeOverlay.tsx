@@ -344,7 +344,7 @@ export default function WelcomeOverlay() {
         ) : (
           <div className="flex flex-col items-center mt-4">
             <p className="text-center text-yellow-300/90 text-[10px] w-3/4 [text-shadow:_1px_1px_2px_rgb(0_0_0_/_80%)]">
-              Refer a friend and get bonus seeds to start with!
+              Invite a friend and earn special rewards!
             </p>
             <motion.button
               whileHover={{
