@@ -177,7 +177,9 @@ export const getUserNotificationDetails = async (
     .single();
 
   if (error) throw error;
-  return data?.notificationDetails ? JSON.parse(data.notificationDetails) : null;
+  return data?.notificationDetails
+    ? JSON.parse(data.notificationDetails)
+    : null;
 };
 
 export const setUserNotificationDetails = async (
@@ -190,6 +192,41 @@ export const setUserNotificationDetails = async (
     .eq("fid", fid);
 };
 
-export const deleteUserNotificationDetails = async (fid: number): Promise<void> => {
-  await supabase.from("users").update({ notificationDetails: null }).eq("fid", fid);
+export const deleteUserNotificationDetails = async (
+  fid: number
+): Promise<void> => {
+  await supabase
+    .from("users")
+    .update({ notificationDetails: null })
+    .eq("fid", fid);
+};
+
+export const addReferral = async (
+  referrer: number,
+  referred: number
+): Promise<void> => {
+  await supabase.from("referrals").insert({
+    fid: referrer,
+    referredFid: referred,
+  });
+};
+
+export const getReferralsByFid = async (
+  fid: number
+): Promise<{
+  fid: number;
+  count: number;
+  referredFids: number[];
+}> => {
+  const { data, error } = await supabase
+    .from("referrals")
+    .select()
+    .eq("fid", fid);
+
+  if (error) throw error;
+  return {
+    fid,
+    count: data.length,
+    referredFids: data.map((referral) => referral.referredFid),
+  };
 };
