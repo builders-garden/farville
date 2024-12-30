@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const validatedBody = referralSchema.parse(body);
 
-    addReferral(validatedBody.referrer, validatedBody.referred);
+    await addReferral(validatedBody.referrer, validatedBody.referred);
 
     return NextResponse.json({ status: "ok" });
   } catch (error) {
