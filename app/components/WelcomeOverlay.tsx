@@ -10,6 +10,7 @@ import sdk from "@farcaster/frame-sdk";
 import { useFrameContext } from "../context/FrameContext";
 import { CROPS } from "../context/GameContext";
 import FloatingNumber from "./animations/FloatingNumber";
+import { warpcastComposeCastUrl } from "../lib/utils";
 
 // Demo version of CropSprite that shows seconds instead of minutes/hours
 function DemoCropSprite({ crop }: { crop?: Crop }) {
@@ -341,35 +342,42 @@ export default function WelcomeOverlay() {
             Presave
           </motion.button>
         ) : (
-          <motion.button
-            whileHover={{
-              scale: 1.08,
-              rotate: [-1, 1, -1],
-              transition: {
-                rotate: {
-                  repeat: Infinity,
-                  duration: 0.5,
+          <div className="flex flex-col items-center mt-4">
+            <p className="text-center text-yellow-300/90 text-[10px] w-3/4 [text-shadow:_1px_1px_2px_rgb(0_0_0_/_80%)]">
+              Refer a friend and get bonus seeds to start with!
+            </p>
+            <motion.button
+              whileHover={{
+                scale: 1.08,
+                rotate: [-1, 1, -1],
+                transition: {
+                  rotate: {
+                    repeat: Infinity,
+                    duration: 0.5,
+                  },
                 },
-              },
-            }}
-            whileTap={{ scale: 0.92 }}
-            animate={{
-              y: [0, -10, 0],
-              boxShadow: [
-                "0 0 60px rgba(16,185,129,0.9), 0 0 60px rgba(34,197,94,0.8)",
-                "0 0 80px rgba(16,185,129,1), 0 0 80px rgba(34,197,94,1)",
-                "0 0 60px rgba(16,185,129,0.9), 0 0 60px rgba(34,197,94,0.8)",
-              ],
-              scale: [1, 1.1, 1],
-            }}
-            transition={{
-              duration: 2,
-              repeat: Infinity,
-              ease: "easeInOut",
-            }}
-            onClick={async () => {}}
-            className={`
-            mt-8 px-16 py-4 
+              }}
+              whileTap={{ scale: 0.92 }}
+              animate={{
+                y: [0, -10, 0],
+                boxShadow: [
+                  "0 0 60px rgba(16,185,129,0.9), 0 0 60px rgba(34,197,94,0.8)",
+                  "0 0 80px rgba(16,185,129,1), 0 0 80px rgba(34,197,94,1)",
+                  "0 0 60px rgba(16,185,129,0.9), 0 0 60px rgba(34,197,94,0.8)",
+                ],
+                scale: [1, 1.1, 1],
+              }}
+              transition={{
+                duration: 2,
+                repeat: Infinity,
+                ease: "easeInOut",
+              }}
+              onClick={async () => {
+                const url = warpcastComposeCastUrl();
+                await sdk.actions.openUrl(url);
+              }}
+              className={`
+            mt-4 px-16 py-4 
             bg-white text-emerald-600 
             rounded-none text-2xl font-bold
             hover:bg-emerald-100
@@ -378,24 +386,20 @@ export default function WelcomeOverlay() {
             hover:shadow-[0_0_100px_rgba(16,185,129,1),0_0_100px_rgba(34,197,94,1)]
             transition-all duration-300
           `}
-            style={{
-              border: PIXEL_BORDER,
-              imageRendering: "pixelated",
-              textShadow: "3px 3px 0px rgba(0,0,0,0.3)",
-            }}
-          >
-            Share
-          </motion.button>
-        )}
-        <div className="flex flex-col items-center gap-2">
-          <div className="flex flex-col items-center gap-2">
-            <p className="text-center text-green-400 text-sm [text-shadow:_1px_1px_2px_rgb(0_0_0_/_80%)]">
-              Early Access
-            </p>
-            <p className="text-center text-white/90 text-sm [text-shadow:_1px_1px_2px_rgb(0_0_0_/_80%)]">
-              coming in January 2025!
-            </p>
+              style={{
+                border: PIXEL_BORDER,
+                imageRendering: "pixelated",
+                textShadow: "3px 3px 0px rgba(0,0,0,0.3)",
+              }}
+            >
+              Share
+            </motion.button>
           </div>
+        )}
+        <div className="mt-2">
+          <span className=" text-white/90 text-sm [text-shadow:_1px_1px_2px_rgb(0_0_0_/_80%)]">
+            Early Access in Jan 2025!
+          </span>
         </div>
       </div>
 
