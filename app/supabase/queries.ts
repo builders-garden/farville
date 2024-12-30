@@ -230,3 +230,55 @@ export const getReferralsByFid = async (
     referredFids: data.map((referral) => referral.referredFid),
   };
 };
+
+export interface LeaderboardEntry {
+  fid: number;
+  username: string;
+  displayName: string;
+  avatarUrl: string | null;
+  referralCount: number;
+  xp: number;
+}
+
+export async function getLeaderboard(
+  limit: number = 10
+): Promise<LeaderboardEntry[]> {
+  // Get all referrals
+  const { data: referrals, error: referralsError } = await supabase
+    .from("referrals")
+    .select("fid");
+
+  if (referralsError) throw referralsError;
+  if (!referrals.length) return [];
+
+  // Count referrals per fid and get top referrers
+  const referralCounts = referrals.reduce((acc, { fid }) => {
+    acc.set(fid, (acc.get(fid) || 0) + 1);
+    return acc;
+  }, new Map<number, number>());
+
+  const topReferrerFids = Array.from(referralCounts.entries())
+    .sort(([, a], [, b]) => b - a)
+    .slice(0, limit)
+    .map(([fid]) => fid);
+
+  // Get user details for top referrers
+  const { data: users, error: usersError } = await supabase
+    .from("users")
+    .select("fid, username, displayName, avatarUrl, xp")
+    .in("fid", topReferrerFids);
+
+  if (usersError) throw usersError;
+
+  // Combine user data with referral counts
+  return users
+    .map((user) => ({
+      fid: user.fid,
+      username: user.username ?? "",
+      displayName: user.displayName ?? "",
+      avatarUrl: user.avatarUrl,
+      referralCount: referralCounts.get(user.fid) ?? 0,
+      xp: user.xp,
+    }))
+    .sort((a, b) => b.referralCount - a.referralCount);
+}

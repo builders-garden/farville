@@ -12,6 +12,7 @@ import { CROPS } from "../context/GameContext";
 import FloatingNumber from "./animations/FloatingNumber";
 import { warpcastComposeCastUrl } from "../lib/utils";
 import { DbUser } from "../supabase/types";
+import Link from "next/link";
 
 // Demo version of CropSprite that shows seconds instead of minutes/hours
 function DemoCropSprite({ crop }: { crop?: Crop }) {
@@ -472,6 +473,17 @@ export default function WelcomeOverlay() {
       >
         {isMuted ? "🔇" : "🔊"}
       </motion.button>
+
+      {/* Referral leaderboard */}
+      <Link href="/leaderboard">
+        <motion.button
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
+          className="absolute top-4 left-4 z-30 transition-colors text-2xl [text-shadow:_0_0_20px_rgba(255,255,255,0.9)]"
+        >
+          🏆
+        </motion.button>
+      </Link>
     </motion.div>
   );
 }
