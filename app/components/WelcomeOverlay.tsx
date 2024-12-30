@@ -61,11 +61,12 @@ const PIXEL_BORDER = `
     0 4px 0 0 #000;
 `;
 
-export default function WelcomeOverlay({ onStart }: { onStart: () => void }) {
+export default function WelcomeOverlay() {
   const { startBackgroundMusic, playSound } = useAudio();
   const [selectedSeed, setSelectedSeed] = useState<CropType | null>(null);
   const [musicStarted, setMusicStarted] = useState(false);
   const { safeAreaInsets } = useFrameContext();
+  const [showShareButton, setShowShareButton] = useState(true);
 
   // Add helper function to start music
   const startMusic = () => {
@@ -399,38 +400,40 @@ export default function WelcomeOverlay({ onStart }: { onStart: () => void }) {
         </div>
 
         {/* Presave Button */}
-        <motion.button
-          whileHover={{
-            scale: 1.08,
-            rotate: [-1, 1, -1],
-            transition: {
-              rotate: {
-                repeat: Infinity,
-                duration: 0.5,
+        {!showShareButton ? (
+          <motion.button
+            whileHover={{
+              scale: 1.08,
+              rotate: [-1, 1, -1],
+              transition: {
+                rotate: {
+                  repeat: Infinity,
+                  duration: 0.5,
+                },
               },
-            },
-          }}
-          whileTap={{ scale: 0.92 }}
-          animate={{
-            y: [0, -10, 0],
-            boxShadow: [
-              "0 0 60px rgba(16,185,129,0.9), 0 0 60px rgba(34,197,94,0.8)",
-              "0 0 80px rgba(16,185,129,1), 0 0 80px rgba(34,197,94,1)",
-              "0 0 60px rgba(16,185,129,0.9), 0 0 60px rgba(34,197,94,0.8)",
-            ],
-            scale: [1, 1.1, 1],
-          }}
-          transition={{
-            duration: 2,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
-          onClick={async () => {
-            startBackgroundMusic();
-            await sdk.actions.addFrame();
-            onStart();
-          }}
-          className={`
+            }}
+            whileTap={{ scale: 0.92 }}
+            animate={{
+              y: [0, -10, 0],
+              boxShadow: [
+                "0 0 60px rgba(16,185,129,0.9), 0 0 60px rgba(34,197,94,0.8)",
+                "0 0 80px rgba(16,185,129,1), 0 0 80px rgba(34,197,94,1)",
+                "0 0 60px rgba(16,185,129,0.9), 0 0 60px rgba(34,197,94,0.8)",
+              ],
+              scale: [1, 1.1, 1],
+            }}
+            transition={{
+              duration: 2,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
+            onClick={async () => {
+              startBackgroundMusic();
+              await sdk.actions.addFrame();
+              setShowShareButton(true);
+              // onStart();
+            }}
+            className={`
             mt-8 px-16 py-4 
             bg-white text-emerald-600 
             rounded-none text-2xl font-bold
@@ -440,16 +443,63 @@ export default function WelcomeOverlay({ onStart }: { onStart: () => void }) {
             hover:shadow-[0_0_100px_rgba(16,185,129,1),0_0_100px_rgba(34,197,94,1)]
             transition-all duration-300
           `}
-          style={{
-            border: PIXEL_BORDER,
-            imageRendering: "pixelated",
-            textShadow: "3px 3px 0px rgba(0,0,0,0.3)",
-          }}
-        >
-          Presave
-        </motion.button>
+            style={{
+              border: PIXEL_BORDER,
+              imageRendering: "pixelated",
+              textShadow: "3px 3px 0px rgba(0,0,0,0.3)",
+            }}
+          >
+            Presave
+          </motion.button>
+        ) : (
+          <motion.button
+            whileHover={{
+              scale: 1.08,
+              rotate: [-1, 1, -1],
+              transition: {
+                rotate: {
+                  repeat: Infinity,
+                  duration: 0.5,
+                },
+              },
+            }}
+            whileTap={{ scale: 0.92 }}
+            animate={{
+              y: [0, -10, 0],
+              boxShadow: [
+                "0 0 60px rgba(16,185,129,0.9), 0 0 60px rgba(34,197,94,0.8)",
+                "0 0 80px rgba(16,185,129,1), 0 0 80px rgba(34,197,94,1)",
+                "0 0 60px rgba(16,185,129,0.9), 0 0 60px rgba(34,197,94,0.8)",
+              ],
+              scale: [1, 1.1, 1],
+            }}
+            transition={{
+              duration: 2,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
+            onClick={async () => {}}
+            className={`
+            mt-8 px-16 py-4 
+            bg-white text-emerald-600 
+            rounded-none text-2xl font-bold
+            hover:bg-emerald-100
+            [image-rendering:pixelated]
+            shadow-[0_0_60px_rgba(16,185,129,0.9),0_0_60px_rgba(34,197,94,0.8)]
+            hover:shadow-[0_0_100px_rgba(16,185,129,1),0_0_100px_rgba(34,197,94,1)]
+            transition-all duration-300
+          `}
+            style={{
+              border: PIXEL_BORDER,
+              imageRendering: "pixelated",
+              textShadow: "3px 3px 0px rgba(0,0,0,0.3)",
+            }}
+          >
+            Share
+          </motion.button>
+        )}
         <div className="flex flex-col items-center gap-2">
-          <p className="text-white/90 text-sm [text-shadow:_1px_1px_2px_rgb(0_0_0_/_80%)]">
+          <p className="text-center text-white/90 text-sm [text-shadow:_1px_1px_2px_rgb(0_0_0_/_80%)]">
             Coming in January 2025!
           </p>
         </div>
