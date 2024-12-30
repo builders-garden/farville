@@ -31,13 +31,6 @@ interface DemoGridCell extends GridCellType {
   };
 }
 
-// Add these interfaces at the top with other interfaces
-interface TouchDragState {
-  active: boolean;
-  seedType: CropType | null;
-  element: HTMLElement | null;
-}
-
 // Add this constant at the top with other constants
 const DEMO_GROWTH_TIME = 9000; // 9 seconds total (3 seconds per stage)
 
@@ -62,11 +55,12 @@ const PIXEL_BORDER = `
 `;
 
 export default function WelcomeOverlay() {
-  const { startBackgroundMusic, playSound } = useAudio();
+  const { startBackgroundMusic, playSound, stopBackgroundMusic } = useAudio();
   const [selectedSeed, setSelectedSeed] = useState<CropType | null>(null);
   const [musicStarted, setMusicStarted] = useState(false);
   const { safeAreaInsets } = useFrameContext();
-  const [showShareButton, setShowShareButton] = useState(true);
+  const [showShareButton, setShowShareButton] = useState(false);
+  const [isMuted, setIsMuted] = useState(false);
 
   // Add helper function to start music
   const startMusic = () => {
@@ -90,13 +84,7 @@ export default function WelcomeOverlay() {
       }))
   );
 
-  // Add touch drag state
-  const [touchDrag, setTouchDrag] = useState<TouchDragState>({
-    active: false,
-    seedType: null,
-    element: null,
-  });
-
+  // Handle cell clicks
   const handleCellClick = (index: number) => {
     startMusic();
     setDemoCells((prev) => {
@@ -153,23 +141,6 @@ export default function WelcomeOverlay() {
     });
   };
 
-  const handleDragStart = (e: React.DragEvent, cropType: CropType) => {
-    e.dataTransfer.setData("cropType", cropType);
-  };
-
-  const handleDragOver = (e: React.DragEvent, index: number) => {
-    const cell = demoCells[index];
-    if (!cell.crop && !cell.justHarvested) {
-      e.preventDefault();
-    }
-  };
-
-  const handleDrop = (e: React.DragEvent, index: number) => {
-    e.preventDefault();
-    const cropType = e.dataTransfer.getData("cropType") as CropType;
-    handlePlanting(index, cropType);
-  };
-
   // Update growth stages
   useEffect(() => {
     const interval = setInterval(() => {
@@ -195,88 +166,14 @@ export default function WelcomeOverlay() {
     return () => clearInterval(interval);
   }, []);
 
-  // Add these handlers for touch events
-  const handleTouchStart = (e: React.TouchEvent, type: CropType) => {
-    const element = e.currentTarget.cloneNode(true) as HTMLElement;
-
-    // Style the dragged element
-    element.style.position = "fixed";
-    element.style.pointerEvents = "none";
-    element.style.zIndex = "1000";
-    element.style.opacity = "0.8";
-    element.style.transform = "scale(1.1)";
-    document.body.appendChild(element);
-
-    setTouchDrag({
-      active: true,
-      seedType: type,
-      element: element,
-    });
-  };
-
-  const handleTouchMove = (e: TouchEvent) => {
-    if (touchDrag.active && touchDrag.element) {
-      const touch = e.touches[0];
-      touchDrag.element.style.left = `${touch.clientX - 28}px`; // Half of w-14
-      touchDrag.element.style.top = `${touch.clientY - 28}px`; // Half of h-14
+  // Add this function to handle mute toggle
+  const handleMuteToggle = () => {
+    setIsMuted(!isMuted);
+    if (isMuted) {
+      startBackgroundMusic();
+    } else {
+      stopBackgroundMusic();
     }
-  };
-
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    if (touchDrag.active && touchDrag.element) {
-      const touch = e.changedTouches[0];
-      const elements = document.elementsFromPoint(touch.clientX, touch.clientY);
-
-      // Find the grid cell element under the touch point
-      const cellElement = elements.find(
-        (el) => el.getAttribute("data-cell-index") !== null
-      );
-
-      if (cellElement && touchDrag.seedType) {
-        const cellIndex = parseInt(
-          cellElement.getAttribute("data-cell-index") || "-1"
-        );
-        if (cellIndex >= 0) {
-          handlePlanting(cellIndex, touchDrag.seedType);
-        }
-      }
-
-      // Clean up
-      document.body.removeChild(touchDrag.element);
-      setTouchDrag({ active: false, seedType: null, element: null });
-    }
-  };
-
-  // Add useEffect for touch move event
-  useEffect(() => {
-    if (touchDrag.active) {
-      document.addEventListener("touchmove", handleTouchMove, {
-        passive: false,
-      });
-      return () => document.removeEventListener("touchmove", handleTouchMove);
-    }
-  }, [touchDrag.active]);
-
-  // Extract planting logic to be reused
-  const handlePlanting = (index: number, cropType: CropType) => {
-    startMusic();
-    setDemoCells((prev) => {
-      const newCells = [...prev];
-      const cell = newCells[index];
-
-      if (!cell.crop && !cell.justHarvested) {
-        playSound("plant");
-        cell.crop = {
-          type: cropType,
-          plantedAt: Date.now(),
-          growthStage: 0,
-          readyToHarvest: false,
-          growthTime: 9000,
-        };
-      }
-
-      return newCells;
-    });
   };
 
   return (
@@ -324,12 +221,6 @@ export default function WelcomeOverlay() {
           {CROPS.map(({ type, seedIcon, name }) => (
             <motion.div
               key={type}
-              draggable
-              onDragStart={(e) =>
-                handleDragStart(e as unknown as React.DragEvent, type)
-              }
-              onTouchStart={(e) => handleTouchStart(e, type)}
-              onTouchEnd={handleTouchEnd}
               onClick={() => {
                 startMusic();
                 setSelectedSeed(type);
@@ -339,7 +230,7 @@ export default function WelcomeOverlay() {
               animate={SEED_ANIMATION}
               className={`
                 relative w-14 h-14 rounded-lg flex flex-col items-center justify-center cursor-pointer
-                bg-[#3d7a37] border-2 touch-none group
+                bg-[#3d7a37] border-2
                 ${
                   selectedSeed === type
                     ? "border-yellow-400"
@@ -357,9 +248,9 @@ export default function WelcomeOverlay() {
               />
               <span className={`text-[6px] text-white mt-0.5`}>{name}</span>
 
-              {/* Tooltip */}
+              {/* Update tooltip text */}
               <div className="opacity-0 group-hover:opacity-100 transition-opacity absolute -top-8 left-1/2 -translate-x-1/2 bg-black/75 text-white text-[8px] px-2 py-1 rounded whitespace-nowrap">
-                Drag to plant!
+                Click to select!
               </div>
             </motion.div>
           ))}
@@ -372,8 +263,6 @@ export default function WelcomeOverlay() {
               key={cell.id}
               data-cell-index={index}
               onClick={() => handleCellClick(index)}
-              onDragOver={(e) => handleDragOver(e, index)}
-              onDrop={(e) => handleDrop(e, index)}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               className={`
@@ -499,11 +388,26 @@ export default function WelcomeOverlay() {
           </motion.button>
         )}
         <div className="flex flex-col items-center gap-2">
-          <p className="text-center text-white/90 text-sm [text-shadow:_1px_1px_2px_rgb(0_0_0_/_80%)]">
-            Coming in January 2025!
-          </p>
+          <div className="flex flex-col items-center gap-2">
+            <p className="text-center text-green-400 text-sm [text-shadow:_1px_1px_2px_rgb(0_0_0_/_80%)]">
+              Early Access
+            </p>
+            <p className="text-center text-white/90 text-sm [text-shadow:_1px_1px_2px_rgb(0_0_0_/_80%)]">
+              coming in January 2025!
+            </p>
+          </div>
         </div>
       </div>
+
+      {/* Add the sound control button */}
+      <motion.button
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.9 }}
+        onClick={handleMuteToggle}
+        className="absolute top-4 right-4 z-30 transition-colors text-2xl [text-shadow:_0_0_20px_rgba(255,255,255,0.9)]"
+      >
+        {isMuted ? "🔇" : "🔊"}
+      </motion.button>
     </motion.div>
   );
 }
