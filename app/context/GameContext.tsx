@@ -18,7 +18,7 @@ import type { Perk } from "../types/perks";
 import { useAudio } from "./AudioContext";
 import { FrameContext } from "@farcaster/frame-sdk";
 import { useFrameContext } from "./FrameContext";
-import { trackEvent } from "../lib/posthog";
+import { trackEvent } from "../lib/posthog/client";
 
 export const CROPS: {
   name: string;
