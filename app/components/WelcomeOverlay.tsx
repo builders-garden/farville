@@ -95,6 +95,12 @@ export default function WelcomeOverlay() {
     }
   }, [frameContext]);
 
+  useEffect(() => {
+    if (user) {
+      setShowShareButton(true);
+    }
+  }, [user]);
+
   // Add helper function to start music
   const startMusic = () => {
     if (!musicStarted) {
@@ -398,7 +404,7 @@ export default function WelcomeOverlay() {
         ) : (
           <div className="flex flex-col items-center mt-4">
             <p className="text-center text-yellow-300/90 text-[10px] w-3/4 [text-shadow:_1px_1px_2px_rgb(0_0_0_/_80%)]">
-              Invite a friend and earn special rewards!
+              Invite friends and earn special rewards!
             </p>
             <motion.button
               whileHover={{
@@ -453,11 +459,6 @@ export default function WelcomeOverlay() {
         <div className="mt-2">
           <span className=" text-white/90 text-sm [text-shadow:_1px_1px_2px_rgb(0_0_0_/_80%)]">
             Early Access in Jan 2025!
-          </span>
-        </div>
-        <div className="mt-2">
-          <span className=" text-white/90 text-sm [text-shadow:_1px_1px_2px_rgb(0_0_0_/_80%)]">
-            {JSON.stringify(user, null, 2)}
           </span>
         </div>
       </div>
