@@ -12,10 +12,6 @@ interface LeaderboardPageProps {
 export default function LeaderboardPage({ leaderboard }: LeaderboardPageProps) {
   const { safeAreaInsets } = useFrameContext();
 
-  console.log({
-    leaderboard,
-  });
-
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -53,7 +49,7 @@ export default function LeaderboardPage({ leaderboard }: LeaderboardPageProps) {
             Leaderboard
           </h1>
           <p className="text-white/70 text-xs [text-shadow:_1px_1px_2px_rgb(0_0_0_/_50%)]">
-            Share with friends to climb the ranks!
+            Share with friends to climb the ranks and receive rewards!
           </p>
         </div>
         <div className="flex gap-2 mt-4">
@@ -72,9 +68,9 @@ export default function LeaderboardPage({ leaderboard }: LeaderboardPageProps) {
                     key={entry.fid}
                     className="text-white border-b border-white/10 last:border-0"
                   >
-                    <td className="py-2 px-4">
+                    <td className="py-2 px-[6px]">
                       <div
-                        className={`flex items-start ${
+                        className={`flex items-start text-xs ${
                           index + 1 === 1
                             ? "text-amber-400"
                             : index + 1 === 2
@@ -96,7 +92,7 @@ export default function LeaderboardPage({ leaderboard }: LeaderboardPageProps) {
                         </sup>
                       </div>
                     </td>
-                    <td className="py-2 px-4">
+                    <td className="py-2 px-[6px]">
                       <div className="flex items-center gap-2">
                         <div className="w-[1.6rem] h-[1.6rem] rounded-full overflow-hidden">
                           <Image
@@ -106,10 +102,14 @@ export default function LeaderboardPage({ leaderboard }: LeaderboardPageProps) {
                             height={32}
                           />
                         </div>
-                        <p className="text-[10px]">{entry.username}</p>
+                        <p className="text-[10px]">
+                          {entry.username.length > 10
+                            ? entry.username.substring(0, 10) + "..."
+                            : entry.username}
+                        </p>
                       </div>
                     </td>
-                    <td className="py-2 text-right px-4">
+                    <td className="py-2 text-right px-[6px] text-xs">
                       {entry.referralCount}
                     </td>
                   </tr>
