@@ -205,9 +205,11 @@ export const addReferral = async (
   referrer: number,
   referred: number
 ): Promise<void> => {
-  await supabase.from("referrals").insert({
+  await supabase.from("referrals").upsert({
     fid: referrer,
     referredFid: referred,
+  }, {
+    onConflict: 'fid,referredFid'
   });
 };
 
