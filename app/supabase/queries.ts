@@ -282,3 +282,43 @@ export async function getLeaderboard(
     }))
     .sort((a, b) => b.referralCount - a.referralCount);
 }
+
+export interface GameStats {
+  totalUsers: number;
+  totalReferrals: number;
+  totalUsersLastWeek: number;
+}
+
+export async function getStats(): Promise<GameStats> {
+  // Get total users
+  const { count: totalUsers, error: usersError } = await supabase
+    .from("users")
+    .select("*", { count: "exact", head: true });
+
+  if (usersError) throw usersError;
+
+  // Get total referrals
+  const { count: totalReferrals, error: referralsError } = await supabase
+    .from("referrals")
+    .select("*", { count: "exact", head: true });
+
+  if (referralsError) throw referralsError;
+
+  // Get users from last week
+  const lastWeek = new Date();
+  lastWeek.setDate(lastWeek.getDate() - 7);
+  const lastWeekISO = lastWeek.toISOString();
+
+  const { count: totalUsersLastWeek, error: recentUsersError } = await supabase
+    .from("users")
+    .select("*", { count: "exact", head: true })
+    .gte("createdAt", lastWeekISO);
+
+  if (recentUsersError) throw recentUsersError;
+
+  return {
+    totalUsers: totalUsers || 0,
+    totalReferrals: totalReferrals || 0,
+    totalUsersLastWeek: totalUsersLastWeek || 0,
+  };
+}

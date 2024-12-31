@@ -1,7 +1,7 @@
 import { AnimatePresence } from "framer-motion";
 import { Metadata } from "next";
-import LeaderboardPage from "../components/LeaderboardPage";
-import { getLeaderboard } from "../supabase/queries";
+import { getLeaderboard, getStats } from "../supabase/queries";
+import StatsPage from "../components/StatsPage";
 
 const appUrl = process.env.NEXT_PUBLIC_URL;
 
@@ -9,7 +9,7 @@ const frame = {
   version: "next",
   imageUrl: `${appUrl}/images/feed.png`,
   button: {
-    title: "FarVille - Leaderboard 🏆",
+    title: "FarVille - Stats",
     action: {
       type: "launch_frame",
       name: "FarVille",
@@ -22,9 +22,9 @@ const frame = {
 
 export async function generateMetadata(): Promise<Metadata> {
   return {
-    title: "FarVille - Leaderboard",
+    title: "FarVille - Stats",
     openGraph: {
-      title: "FarVille - Leaderboard",
+      title: "FarVille - Stats",
       description: "Plant, grow, and harvest crops with your friends.",
     },
     other: {
@@ -33,13 +33,17 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default async function Leaderboard() {
-  const leaderboard = await getLeaderboard();
+export default async function Stats() {
+  const referralLeaderboard = await getLeaderboard(5);
+  const gameStats = await getStats();
 
   return (
     <main className="bg-green-800">
       <AnimatePresence>
-        <LeaderboardPage leaderboard={leaderboard} />
+        <StatsPage
+          referralLeaderboard={referralLeaderboard}
+          gameStats={gameStats}
+        />
       </AnimatePresence>
     </main>
   );
