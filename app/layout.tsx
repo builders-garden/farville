@@ -2,11 +2,7 @@ import type { Metadata } from "next";
 import { Press_Start_2P } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
-
-// const geist = Geist({
-//   variable: "--font-geist",
-//   subsets: ["latin"],
-// });
+import { getSession } from "../auth";
 
 export const pixelFont = Press_Start_2P({
   weight: "400",
@@ -18,15 +14,16 @@ export const metadata: Metadata = {
   description: "A farming simulation game",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const session = await getSession()
   return (
     <html lang="en">
       <body className={`${pixelFont.className} antialiased`}>
-        <Providers>{children}</Providers>
+        <Providers session={session!}>{children}</Providers>
       </body>
     </html>
   );

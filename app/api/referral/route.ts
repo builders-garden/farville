@@ -1,4 +1,4 @@
-import { addReferral, getReferralsByFid } from "@/app/supabase/queries";
+import { addReferral, getReferralsByFid } from "@/supabase/queries";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 

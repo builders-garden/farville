@@ -1,12 +1,14 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { AudioProvider } from "./context/AudioContext";
-import { GameProvider } from "./context/GameContext";
+import { AudioProvider } from "../context/AudioContext";
+import { GameProvider } from "../context/GameContext";
 import posthog from "posthog-js";
+import type { Session } from "next-auth";
 import { PostHogProvider } from "posthog-js/react";
+import { SessionProvider } from "next-auth/react";
 
-const WagmiProvider = dynamic(() => import("./components/WagmiProvider"), {
+const WagmiProvider = dynamic(() => import("../components/WagmiProvider"), {
   ssr: false,
 });
 
@@ -17,14 +19,22 @@ if (typeof window !== "undefined") {
   });
 }
 
-export function Providers({ children }: { children: React.ReactNode }) {
+export function Providers({
+  session,
+  children,
+}: {
+  session: Session;
+  children: React.ReactNode;
+}) {
   return (
-    <PostHogProvider client={posthog}>
-      <WagmiProvider>
-        <AudioProvider>
-          <GameProvider>{children}</GameProvider>
-        </AudioProvider>
-      </WagmiProvider>
-    </PostHogProvider>
+    <SessionProvider session={session}>
+      <PostHogProvider client={posthog}>
+        <WagmiProvider>
+          <AudioProvider>
+            <GameProvider>{children}</GameProvider>
+          </AudioProvider>
+        </WagmiProvider>
+      </PostHogProvider>
+    </SessionProvider>
   );
 }
