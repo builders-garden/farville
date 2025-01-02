@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import * as jose from "jose";
 
+export const config = {
+  matcher: ["/api/:path*"],
+};
+
 export default async function middleware(req: NextRequest) {
   // Skip auth check for sign-in endpoint
   if (req.nextUrl.pathname === "/api/sign-in") {
