@@ -6,7 +6,7 @@ import { useState, useEffect } from "react";
 import { GridCell as GridCellType, Crop, CropType } from "../types/game";
 import CropSprite from "./CropSprite";
 import Image from "next/image";
-import sdk, { FrameContext } from "@farcaster/frame-sdk";
+import sdk from "@farcaster/frame-sdk";
 import { useFrameContext } from "../context/FrameContext";
 import { CROPS } from "../context/GameContext";
 import FloatingNumber from "./animations/FloatingNumber";
@@ -65,17 +65,12 @@ export default function WelcomeOverlay({
   const [showShareButton, setShowShareButton] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
 
-  const [frameContext, setFrameContext] = useState<FrameContext | null>(null);
   const { isSDKLoaded, context } = useFrameContext();
   const [user, setUser] = useState<DbUser | null>(null);
   const [showPreview, setShowPreview] = useState(false);
+
   useEffect(() => {
-    console.log({
-      isSDKLoaded,
-      context,
-    });
     if (isSDKLoaded) {
-      setFrameContext(context || null);
       if (context?.user.fid) {
         if (WHITELISTED_FIDS.includes(context.user.fid)) {
           setShowPreview(true);
@@ -96,10 +91,10 @@ export default function WelcomeOverlay({
         console.error(error);
       }
     }
-    if (frameContext) {
-      getUserIfExist(frameContext.user.fid);
+    if (context) {
+      getUserIfExist(context.user.fid);
     }
-  }, [frameContext]);
+  }, [context]);
 
   useEffect(() => {
     if (user) {
@@ -218,27 +213,6 @@ export default function WelcomeOverlay({
       startBackgroundMusic();
     } else {
       stopBackgroundMusic();
-    }
-  };
-
-  const handleAddReferral = async () => {
-    try {
-      if (frameContext && frameContext.location?.type === "cast_embed") {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_URL}/api/referral`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            referrer: frameContext.location.cast.fid,
-            referred: frameContext?.user.fid,
-          }),
-        });
-        const data = await res.json();
-        console.log(data);
-      }
-    } catch (error) {
-      console.error(error);
     }
   };
 
@@ -386,7 +360,6 @@ export default function WelcomeOverlay({
               startBackgroundMusic();
               await sdk.actions.addFrame();
               setShowShareButton(true);
-              handleAddReferral();
               // onStart();
             }}
             className={`

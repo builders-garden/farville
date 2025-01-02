@@ -55,9 +55,7 @@ export async function POST(request: NextRequest) {
     case "frame_added":
       if (event.notificationDetails) {
         const user = await getUser(fid);
-        console.log("user", user);
         if (!user) {
-          console.log("creating user");
           const neynarUser = await fetchUser(fid.toString());
           await createUser({
             fid,
@@ -70,29 +68,24 @@ export async function POST(request: NextRequest) {
             expansions: 1,
             notificationDetails: JSON.stringify(event.notificationDetails),
           });
-          console.log("created user");
           trackEvent(fid, "signup", {
             fid,
             location: "frame_added",
           });
         } else {
-          console.log("setting notification details");
           await setUserNotificationDetails(fid, event.notificationDetails);
         }
-        console.log("sending frame notification");
         await sendFrameNotification({
           fid,
           title: "Welcome to FarVille 🧑‍🌾",
           body: "The 1st farming season will begin in January 2025!",
         });
       } else {
-        console.log("deleting notification details");
         await deleteUserNotificationDetails(fid);
       }
-      const capturedEvent = trackEvent(fid, "frame_added", {
+      trackEvent(fid, "frame_added", {
         fid,
       });
-      console.log("tracked event", capturedEvent);
       break;
     case "frame_removed":
       await deleteUserNotificationDetails(fid);
