@@ -13,6 +13,7 @@ import FloatingNumber from "./animations/FloatingNumber";
 import { warpcastComposeCastUrl } from "../lib/utils";
 import { DbUser } from "../supabase/types";
 import Link from "next/link";
+import { WHITELISTED_FIDS } from "../lib/whitelist";
 
 // Demo version of CropSprite that shows seconds instead of minutes/hours
 function DemoCropSprite({ crop }: { crop?: Crop }) {
@@ -49,15 +50,14 @@ const SEED_ANIMATION = {
 
 // Add this CSS constant near the top with other constants
 const PIXEL_BORDER = `
-  2px solid #000;
-  box-shadow: 
-    -4px 0 0 0 #000,
-    4px 0 0 0 #000,
-    0 -4px 0 0 #000,
-    0 4px 0 0 #000;
-`;
+  border: 2px solid #000;
+  box-shadow: -4px 0 0 0 #000, 4px 0 0 0 #000, 0 -4px 0 0 #000, 0 4px 0 0 #000`;
 
-export default function WelcomeOverlay() {
+export default function WelcomeOverlay({
+  onComplete,
+}: {
+  onComplete: () => void;
+}) {
   const { startBackgroundMusic, playSound, stopBackgroundMusic } = useAudio();
   const [selectedSeed, setSelectedSeed] = useState<CropType | null>(null);
   const [musicStarted, setMusicStarted] = useState(false);
@@ -68,7 +68,7 @@ export default function WelcomeOverlay() {
   const [frameContext, setFrameContext] = useState<FrameContext | null>(null);
   const { isSDKLoaded, context } = useFrameContext();
   const [user, setUser] = useState<DbUser | null>(null);
-
+  const [showPreview, setShowPreview] = useState(false);
   useEffect(() => {
     console.log({
       isSDKLoaded,
@@ -76,6 +76,11 @@ export default function WelcomeOverlay() {
     });
     if (isSDKLoaded) {
       setFrameContext(context || null);
+      if (context?.user.fid) {
+        if (WHITELISTED_FIDS.includes(context.user.fid)) {
+          setShowPreview(true);
+        }
+      }
     }
   }, [isSDKLoaded, context]);
 
@@ -462,6 +467,19 @@ export default function WelcomeOverlay() {
             Early Access in Jan 2025!
           </span>
         </div>
+        {showPreview && (
+          <motion.button
+            onClick={onComplete}
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            className="px-8 py-2 text-xl font-bold text-white bg-transparent border-none cursor-pointer
+              [text-shadow:_0_0_5px_#fff,_0_0_10px_#22c55e]
+              hover:[text-shadow:_0_0_8px_#fff,_0_0_15px_#22c55e]
+              transition-all duration-300"
+          >
+            Preview
+          </motion.button>
+        )}
       </div>
 
       {/* Add the sound control button */}
