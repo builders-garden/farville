@@ -121,16 +121,16 @@ interface GameContextType {
   setSelectedCrop: (crop: CropType | null) => void;
   selectedFertilizer: Perk | null;
   setSelectedFertilizer: (perk: Perk | null) => void;
-  tillSoil: (x: number, y: number) => void;
-  plantCrop: (x: number, y: number, cropType: CropType) => void;
+  tillSoil: (x: number, y: number) => Promise<void>;
+  plantCrop: (x: number, y: number, cropType: CropType) => Promise<void>;
   harvestCrop: (
     x: number,
     y: number,
     rewards: { exp: number; amount: number }
-  ) => void;
-  activatePerk: (perk: Perk) => void;
-  purchasePerk: (perk: Perk) => void;
-  getActivePerks: () => Perk[];
+  ) => Promise<void>;
+  activatePerk: (perk: Perk) => Promise<void>;
+  purchasePerk: (perk: Perk) => Promise<void>;
+  getActivePerks: () => Promise<Perk[]>;
   dispatch: Dispatch<GameAction>;
   toggleInventory: () => void;
   toggleMarketplace: () => void;
@@ -657,15 +657,15 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
   );
 
   // Implement game actions
-  const tillSoil = (x: number, y: number) => {
+  const tillSoil = async (x: number, y: number) => {
     dispatch({ type: "TILL_SOIL", x, y });
   };
 
-  const plantCrop = (x: number, y: number, cropType: CropType) => {
+  const plantCrop = async (x: number, y: number, cropType: CropType) => {
     dispatch({ type: "PLANT_CROP", x, y, cropType });
   };
 
-  const harvestCrop = (
+  const harvestCrop = async (
     x: number,
     y: number,
     rewards: { exp: number; amount: number }
@@ -682,15 +682,15 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     return () => clearInterval(interval);
   }, []);
 
-  const activatePerk = (perk: Perk) => {
+  const activatePerk = async (perk: Perk) => {
     dispatch({ type: "ACTIVATE_PERK", perk });
   };
 
-  const purchasePerk = (perk: Perk) => {
+  const purchasePerk = async (perk: Perk) => {
     dispatch({ type: "PURCHASE_PERK", perk });
   };
 
-  const getActivePerks = () => {
+  const getActivePerks = async () => {
     const now = Date.now();
     return state.perks.active.filter((perk: Perk) => {
       if (!perk.duration || !perk.activatedAt) return true;
