@@ -1,1 +1,1 @@
-export const WHITELISTED_FIDS = [4461, 3, 2];
+export const WHITELISTED_FIDS = [4461, 3, 2, 16286, 262800];

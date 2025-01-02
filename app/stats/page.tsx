@@ -33,6 +33,9 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
+export const revalidate = 60; // revalidate every 60 seconds
+export const dynamic = "force-dynamic";
+
 export default async function Stats() {
   const referralLeaderboard = await getLeaderboard(5);
   const gameStats = await getStats();
