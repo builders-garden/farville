@@ -1,7 +1,7 @@
 import { AnimatePresence } from "framer-motion";
 import { Metadata } from "next";
-import LeaderboardPage from "../components/LeaderboardPage";
-import { getLeaderboard } from "../supabase/queries";
+import LeaderboardPage from "../../components/LeaderboardPage";
+import { getLeaderboard } from "../../supabase/queries";
 
 const appUrl = process.env.NEXT_PUBLIC_URL;
 

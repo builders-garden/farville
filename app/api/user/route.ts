@@ -1,4 +1,4 @@
-import { getUser } from "@/app/supabase/queries";
+import { getUser } from "@/supabase/queries";
 import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {

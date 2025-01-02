@@ -1,12 +1,12 @@
-import { fetchUser } from "@/app/lib/neynar";
-import { sendFrameNotification } from "@/app/lib/notifs";
-import { trackEvent } from "@/app/lib/posthog/server";
+import { fetchUser } from "@/lib/neynar";
+import { sendFrameNotification } from "@/lib/notifs";
+import { trackEvent } from "@/lib/posthog/server";
 import {
   setUserNotificationDetails,
   deleteUserNotificationDetails,
   getUser,
   createUser,
-} from "@/app/supabase/queries";
+} from "@/supabase/queries";
 import {
   ParseWebhookEvent,
   parseWebhookEvent,
