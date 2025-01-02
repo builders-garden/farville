@@ -1,12 +1,12 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { AudioProvider } from "./context/AudioContext";
-import { GameProvider } from "./context/GameContext";
+import { AudioProvider } from "./../context/AudioContext";
+import { GameProvider } from "./../context/GameContext";
 import posthog from "posthog-js";
 import { PostHogProvider } from "posthog-js/react";
 
-const WagmiProvider = dynamic(() => import("./components/WagmiProvider"), {
+const WagmiProvider = dynamic(() => import("./../components/WagmiProvider"), {
   ssr: false,
 });
 

@@ -2,15 +2,15 @@
 
 import { AnimatePresence } from "framer-motion";
 import dynamic from "next/dynamic";
-import { GameProvider } from "./context/GameContext";
-import { useFrameContext } from "./context/FrameContext";
+import { GameProvider } from "./../context/GameContext";
+import { useFrameContext } from "./../context/FrameContext";
 import { useEffect, useState } from "react";
 
-const GameWrapper = dynamic(() => import("./components/GameWrapper"), {
+const GameWrapper = dynamic(() => import("./../components/GameWrapper"), {
   ssr: false,
 });
 
-const WelcomeOverlay = dynamic(() => import("./components/WelcomeOverlay"), {
+const WelcomeOverlay = dynamic(() => import("./../components/WelcomeOverlay"), {
   ssr: false,
 });
 
