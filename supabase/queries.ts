@@ -1,10 +1,27 @@
 import { FrameNotificationDetails } from "@farcaster/frame-sdk";
 import { supabase } from "./client";
-import { DbItem, DbUser, DbUserHasItem, InsertDbUser } from "./types";
+import {
+  DbItem,
+  DbUser,
+  DbUserHasItem,
+  InsertDbUser,
+  DbGridCell,
+} from "./types";
 
 // Items queries
 export const getItems = async (): Promise<DbItem[]> => {
   const { data, error } = await supabase.from("items").select("*");
+
+  if (error) throw error;
+  return data;
+};
+
+export const getItemById = async (itemId: number): Promise<DbItem | null> => {
+  const { data, error } = await supabase
+    .from("items")
+    .select("*")
+    .eq("id", itemId)
+    .maybeSingle();
 
   if (error) throw error;
   return data;
@@ -82,7 +99,12 @@ export const getUserItems = async (
 ): Promise<DbUserHasItem[]> => {
   const { data, error } = await supabase
     .from("user_has_items")
-    .select("*")
+    .select(
+      `
+      *,
+      items (*)
+    `
+    )
     .eq("userFid", userFid);
 
   if (error) throw error;
@@ -164,6 +186,11 @@ export const removeUserItem = async (
 
     if (error) throw error;
   }
+};
+
+export const giftStarterPack = async (userFid: number) => {
+  await addUserItem(userFid, 1, 4);
+  await addUserItem(userFid, 9, 4);
 };
 
 // Notifications queries
@@ -322,3 +349,89 @@ export async function getStats(): Promise<GameStats> {
     totalUsersLastWeek: totalUsersLastWeek || 0,
   };
 }
+
+// Farm plot queries
+export const getGridCells = async (fid: number): Promise<DbGridCell[]> => {
+  const { data, error } = await supabase
+    .from("user_grid_cells")
+    .select("*")
+    .eq("fid", fid)
+    .order("x", { ascending: true })
+    .order("y", { ascending: true });
+
+  if (error) throw error;
+  return data;
+};
+
+export const plantCrop = async (
+  fid: number,
+  x: number,
+  y: number,
+  cropType: string
+): Promise<DbGridCell> => {
+  const { data, error } = await supabase
+    .from("user_grid_cells")
+    .insert({
+      fid,
+      x,
+      y,
+      cropType: cropType,
+      plantedAt: new Date().toISOString(),
+    })
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+};
+
+export const harvestCrop = async (
+  fid: number,
+  x: number,
+  y: number
+): Promise<void> => {
+  const { error } = await supabase
+    .from("user_grid_cells")
+    .update({
+      cropType: null,
+      plantedAt: null,
+      isReadyToHarvest: false,
+    })
+    .eq("fid", fid)
+    .eq("x", x)
+    .eq("y", y);
+
+  if (error) throw error;
+};
+
+export const fertilizeCrop = async (
+  fid: number,
+  x: number,
+  y: number
+): Promise<void> => {
+  const { error } = await supabase
+    .from("user_grid_cells")
+    .update({ isReadyToHarvest: true })
+    .eq("fid", fid)
+    .eq("x", x)
+    .eq("y", y);
+
+  if (error) throw error;
+};
+
+export const getGridCell = async (
+  fid: number,
+  x: number,
+  y: number
+): Promise<DbGridCell | null> => {
+  const { data, error } = await supabase
+    .from("user_grid_cells")
+    .select("*")
+    .eq("fid", fid)
+    .eq("x", x)
+    .eq("y", y)
+    .maybeSingle();
+
+  if (error) throw error;
+  return data;
+};

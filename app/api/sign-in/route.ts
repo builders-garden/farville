@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { verifyMessage } from "viem";
 import * as jose from "jose";
 import { COOKIE_AGE } from "@/lib/constants";
-import { addReferral, createUser, getUser } from "@/supabase/queries";
+import { addReferral, createUser, getUser, giftStarterPack } from "@/supabase/queries";
 import { trackEvent } from "@/lib/posthog/server";
 
 export const POST = async (req: NextRequest) => {
@@ -29,6 +29,9 @@ export const POST = async (req: NextRequest) => {
     if (referrerFid) {
       await addReferral(referrerFid, fid);
     }
+
+    // Give them a starter pack
+    await giftStarterPack(fid);
 
     trackEvent(fid, "sign_up", {
       fid,

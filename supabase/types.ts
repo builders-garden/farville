@@ -41,3 +41,16 @@ export type DbReferrals = {
 export type InsertDbItem = Omit<DbItem, "id" | "createdAt">;
 export type InsertDbUser = Omit<DbUser, "createdAt">;
 export type InsertDbUserHasItem = Omit<DbUserHasItem, "id" | "createdAt">;
+
+export interface DbGridCell {
+  fid: number;
+  x: number;
+  y: number;
+  cropType: string | null;
+  plantedAt: string | null;
+  isReadyToHarvest: boolean;
+  createdAt: string;
+}
+
+// Helper type for inserting new grid cells
+export type InsertDbGridCell = Omit<DbGridCell, "createdAt">;

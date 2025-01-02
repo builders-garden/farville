@@ -105,6 +105,35 @@ export interface Database {
           createdAt?: string;
         };
       };
+      user_grid_cells: {
+        Row: {
+          fid: number;
+          x: number;
+          y: number;
+          cropType: string;
+          plantedAt: string;
+          isReadyToHarvest: boolean;
+          createdAt: string;
+        };
+        Insert: {
+          fid: number;
+          x: number;
+          y: number;
+          cropType: string;
+          plantedAt: string;
+          isReadyToHarvest: boolean;
+          createdAt?: string;
+        };
+        Update: {
+          fid?: number;
+          x?: number;
+          y?: number;
+          cropType?: string;
+          plantedAt?: string;
+          isReadyToHarvest?: boolean;
+          createdAt?: string;
+        };
+      };
     };
     Views: {
       [_ in never]: never;
