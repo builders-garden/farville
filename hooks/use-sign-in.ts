@@ -15,6 +15,10 @@ export const useSignIn = () => {
       setIsLoading(true);
       setError(null);
 
+      if (!context) {
+        throw new Error("You must use play FarVille from Warpcast!");
+      }
+
       const result = await sdk.actions.signIn({
         nonce: Math.random().toString(36).substring(2),
         notBefore: new Date().toISOString(),

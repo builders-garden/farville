@@ -17,14 +17,9 @@ const WelcomeOverlay = dynamic(() => import("./../components/WelcomeOverlay"), {
   ssr: false,
 });
 
-//  const TutorialOverlay = dynamic(() => import("./components/TutorialOverlay"), {
-//    ssr: false,
-//  });
-
 export default function App() {
   const [showWelcome, setShowWelcome] = useState(true);
-  // const [showTutorial, setShowTutorial] = useState(false);
-  const { isSDKLoaded } = useFrameContext();
+  const { isSDKLoaded, context } = useFrameContext();
   const { signIn, isSignedIn, isLoading, error } = useSignIn();
 
   useEffect(() => {
@@ -36,7 +31,6 @@ export default function App() {
 
   const handleWelcomeComplete = () => {
     setShowWelcome(false);
-    //   // setShowTutorial(true);
   };
 
   return (
@@ -47,14 +41,14 @@ export default function App() {
             src="/images/welcome.png"
             alt="Background"
             fill
-            className="object-cover"
+            className="object-contain"
             priority
             sizes="100vw"
             quality={100}
           />
         </div>
-        {isLoading && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center">
+        {isLoading && context && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-8">
             <div className="absolute inset-0 bg-black/80" />
             <div className="relative z-10 flex flex-col items-center gap-4">
               <div className="w-16 h-16 border-4 border-green-500 border-t-transparent rounded-full animate-spin" />
@@ -62,8 +56,8 @@ export default function App() {
             </div>
           </div>
         )}
-        {error && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center">
+        {error && context && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-8">
             <div className="absolute inset-0 bg-black/80" />
             <div className="relative z-10 p-6 bg-red-500/20 backdrop-blur-sm rounded-lg border-2 border-red-500 shadow-lg">
               <p className="text-red-100 text-lg font-medium">{error}</p>
