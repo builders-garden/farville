@@ -7,6 +7,7 @@ export interface DbItem {
   buyPrice: number;
   sellPrice: number;
   requiredLevel: number;
+  slug: string;
   createdAt: string;
 }
 

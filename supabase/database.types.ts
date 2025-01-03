@@ -19,6 +19,7 @@ export interface Database {
           buyPrice: number;
           sellPrice: number;
           requiredLevel: number;
+          slug: string;
           createdAt: string;
         };
         Insert: {
@@ -30,6 +31,7 @@ export interface Database {
           buyPrice: number;
           sellPrice: number;
           requiredLevel: number;
+          slug: string;
           createdAt?: string;
         };
         Update: {
@@ -41,6 +43,7 @@ export interface Database {
           buyPrice?: number;
           sellPrice?: number;
           requiredLevel?: number;
+          slug?: string;
           createdAt?: string;
         };
       };

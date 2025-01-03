@@ -1,16 +1,16 @@
 import { sdk } from "@farcaster/frame-sdk";
 import { useFrameContext } from "@/context/FrameContext";
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { MESSAGE_EXPIRATION_TIME } from "@/lib/constants";
 import posthog from "posthog-js";
 
 export const useSignIn = () => {
-  const { context } = useFrameContext();
+  const { isSDKLoaded, context } = useFrameContext();
   const [isSignedIn, setIsSignedIn] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const signIn = async () => {
+  const signIn = useCallback(async () => {
     try {
       setIsLoading(true);
       setError(null);
@@ -56,7 +56,13 @@ export const useSignIn = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [context]);
+
+  useEffect(() => {
+    if (isSDKLoaded) {
+      signIn();
+    }
+  }, [isSDKLoaded, signIn]);
 
   return { signIn, isSignedIn, isLoading, error };
 };

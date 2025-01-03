@@ -1,8 +1,9 @@
-import { useItems, UserItem } from "./use-items";
+import { useUserItems, UserItem } from "./use-user-items";
 import { useUser } from "./use-user";
 import { useEffect, useState, useCallback } from "react";
 import { useGridCells } from "./use-grid-cells";
-import { DbGridCell } from "@/supabase/types";
+import { DbGridCell, DbItem } from "@/supabase/types";
+import { useItems } from "./use-items";
 
 export interface GameState {
   coins: number;
@@ -17,51 +18,72 @@ export interface GameState {
   };
   perks: UserItem[];
   expansionLevel: number;
+  items: DbItem[];
 }
 
 export const useGameState = () => {
   const [state, setState] = useState<GameState>();
-  const { items, isLoading: itemsLoading, refetch: refetchItems } = useItems();
+  const {
+    userItems,
+    isLoading: userItemsLoading,
+    refetch: refetchUserItems,
+  } = useUserItems();
   const { user, isLoading: userLoading, refetch: refetchUser } = useUser();
   const {
     gridCells,
     isLoading: gridCellsLoading,
     refetch: refetchGrid,
   } = useGridCells();
+  const { items, isLoading: itemsLoading, refetch: refetchItems } = useItems();
 
   const updateState = useCallback(() => {
-    if (items && user && gridCells) {
+    if (userItems && items && user && gridCells) {
       setState({
         coins: user.coins,
         level: Math.floor(Math.sqrt(user.xp / 100)) + 1,
         experience: user.xp,
-        seeds: items.filter((item) => item.item.name === "seed"),
-        crops: items.filter((item) => item.item.name === "crop"),
+        seeds: userItems
+          .filter((ui) => ui.item.name === "seed")
+          .map((ui) => ui),
+        crops: userItems
+          .filter((ui) => ui.item.name === "crop")
+          .map((ui) => ui),
         grid: gridCells,
         gridSize: {
           width: Math.max(...gridCells.map((cell) => cell.x)),
           height: Math.max(...gridCells.map((cell) => cell.y)),
         },
-        perks: items.filter((item) => item.item.name === "perk"),
+        perks: userItems.filter((item) => item.item.name === "perk"),
         expansionLevel: user.expansions,
+        items: items,
       });
     }
-  }, [items, user, gridCells]);
+  }, [userItems, items, user, gridCells]);
 
   useEffect(() => {
     updateState();
   }, [updateState]);
 
   const refetchAll = useCallback(async () => {
-    await Promise.all([refetchItems(), refetchUser(), refetchGrid()]);
+    await Promise.all([
+      refetchUserItems(),
+      refetchUser(),
+      refetchGrid(),
+      refetchItems(),
+    ]);
     updateState();
-  }, [refetchItems, refetchUser, refetchGrid, updateState]);
+  }, [refetchUserItems, refetchUser, refetchGrid, refetchItems, updateState]);
 
   return {
     state,
-    loading: itemsLoading || userLoading || gridCellsLoading,
+    loading:
+      userItemsLoading || itemsLoading || userLoading || gridCellsLoading,
     refetch: {
       all: refetchAll,
+      userItems: async () => {
+        await refetchUserItems();
+        updateState();
+      },
       items: async () => {
         await refetchItems();
         updateState();

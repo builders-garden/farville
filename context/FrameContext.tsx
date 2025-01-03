@@ -14,7 +14,7 @@ export const useFrameContext = () => {
 
   useEffect(() => {
     const load = async () => {
-      sdk.actions.ready();
+      await sdk.actions.ready();
       const context = await sdk.context;
       if (context) {
         if (context.client?.safeAreaInsets) {
@@ -24,8 +24,10 @@ export const useFrameContext = () => {
       }
     };
     if (sdk && !isSDKLoaded) {
-      setIsSDKLoaded(true);
-      load();
+      load().then(() => {
+        console.log("SDK loaded");
+        setIsSDKLoaded(true);
+      });
     }
   }, [isSDKLoaded]);
 

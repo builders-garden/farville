@@ -1,12 +1,8 @@
-import { DbItem, DbUserHasItem } from "@/supabase/types";
+import { DbItem } from "@/supabase/types";
 import { useQuery } from "@tanstack/react-query";
 
-export interface UserItem extends DbUserHasItem {
-  item: DbItem;
-}
-
 export const useItems = () => {
-  const { data, isLoading, refetch } = useQuery<UserItem[]>({
+  const { data, isLoading, refetch } = useQuery<DbItem[]>({
     queryKey: ["items"],
     queryFn: async () => {
       const response = await fetch("/api/items");

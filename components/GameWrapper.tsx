@@ -15,34 +15,60 @@ import { useFrameContext } from "../context/FrameContext";
 // Load GameGrid component dynamically (client-side only)
 const GameGrid = dynamic(() => import("./GameGrid"), {
   ssr: false,
-  loading: () => (
-    <div className="w-full h-full animate-pulse" />
-  ),
+  loading: () => <div className="w-full h-full animate-pulse" />,
 });
 
 // Separate component for the inventory modal
 function InventoryModalContainer() {
-  const { state, toggleInventory } = useGame();
+  const { showInventory, setShowInventory } = useGame();
 
   return (
     <AnimatePresence>
-      {state.showInventory && <InventoryModal onClose={toggleInventory} />}
+      {showInventory && (
+        <InventoryModal onClose={() => setShowInventory(false)} />
+      )}
     </AnimatePresence>
   );
 }
 
 // Wrapper component for the marketplace modal
 function MarketplaceModalContainer() {
-  const { state, toggleMarketplace } = useGame();
+  const { showMarket, setShowMarket } = useGame();
   const { safeAreaInsets } = useFrameContext();
 
   return (
     <AnimatePresence>
-      {state.showMarketplace && (
+      {showMarket && (
         <MarketplaceModal
-          onClose={toggleMarketplace}
+          onClose={() => setShowMarket(false)}
           safeAreaInsets={safeAreaInsets}
         />
+      )}
+    </AnimatePresence>
+  );
+}
+
+// New container component for the settings modal
+function SettingsModalContainer() {
+  const { showSettings, setShowSettings } = useGame();
+
+  return (
+    <AnimatePresence>
+      {showSettings && (
+        <SettingsModal onClose={() => setShowSettings(false)} />
+      )}
+    </AnimatePresence>
+  );
+}
+
+// New container component for the leaderboard modal
+function LeaderboardModalContainer() {
+  const { showLeaderboard, setShowLeaderboard } = useGame();
+
+  return (
+    <AnimatePresence>
+      {showLeaderboard && (
+        <LeaderboardModal onClose={() => setShowLeaderboard(false)} />
       )}
     </AnimatePresence>
   );
@@ -57,7 +83,6 @@ const BACKGROUND_PATTERN = `
 `;
 
 export default function GameWrapper() {
-  const { state } = useGame();
   const { safeAreaInsets } = useFrameContext();
   return (
     <div
@@ -81,10 +106,8 @@ export default function GameWrapper() {
       <FertilizerIndicator />
       <InventoryModalContainer />
       <MarketplaceModalContainer />
-      <AnimatePresence>
-        {state.showSettings && <SettingsModal />}
-        {state.showLeaderboard && <LeaderboardModal />}
-      </AnimatePresence>
+      <SettingsModalContainer />
+      <LeaderboardModalContainer />
     </div>
   );
 }

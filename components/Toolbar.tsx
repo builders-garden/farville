@@ -1,7 +1,7 @@
 "use client";
 
-import { CROPS, useGame } from "../context/GameContext";
-import { CropType } from "../types/game";
+import { useGame } from "../context/GameContext";
+import { CropType, SeedType } from "../types/game";
 import { motion } from "framer-motion";
 import { useState, useRef, useEffect } from "react";
 
@@ -18,11 +18,11 @@ export default function Toolbar({
 }: {
   safeAreaInsets: { top: number; bottom: number; left: number; right: number };
 }) {
-  const { state, selectedCrop, setSelectedCrop, toggleInventory } = useGame();
+  const { state, selectedSeed, setSelectedSeed, setShowInventory } = useGame();
   const [isDragging, setIsDragging] = useState(false);
   const dragIconRef = useRef<HTMLDivElement>(null);
   const touchDragIconRef = useRef<HTMLDivElement>(null);
-  const draggedCropRef = useRef<CropType | null>(null);
+  const draggedCropRef = useRef<SeedType | null>(null);
 
   // Track touch position
   const updateTouchDragIcon = (x: number, y: number) => {
@@ -34,19 +34,20 @@ export default function Toolbar({
   };
 
   // Handle touch start for mobile drag
-  const handleTouchStart = (e: React.TouchEvent, type: CropType) => {
-    if (state.seeds[type] <= 0) return;
+  const handleTouchStart = (e: React.TouchEvent, type: SeedType) => {
+    const seed = state.seeds.find((seed) => seed.item.slug === type);
+    if (!seed || seed.quantity <= 0) return;
 
     const touch = e.touches[0];
-    draggedCropRef.current = type;
+    draggedCropRef.current = type as SeedType;
     setIsDragging(true);
 
     // Initialize drag icon
     if (touchDragIconRef.current) {
-      const cropIcon = CROPS.find((crop) => crop.type === type)?.seedIcon;
-      if (cropIcon) {
+      const seedIcon = seed.item.icon;
+      if (seedIcon) {
         const img = document.createElement("img");
-        img.src = cropIcon;
+        img.src = seedIcon;
         img.className = "w-8 h-8";
         touchDragIconRef.current.innerHTML = "";
         touchDragIconRef.current.appendChild(img);
@@ -95,12 +96,10 @@ export default function Toolbar({
       const y = parseInt(gridCell.getAttribute("data-y") || "0");
 
       // Attempt to plant the crop
-      if (
-        state.grid[y]?.[x] &&
-        !state.grid[y][x].crop &&
-        state.grid[y][x].tilled
-      ) {
-        setSelectedCrop(draggedCropRef.current);
+      const cell = state.grid.find((cell) => cell.x === x && cell.y === y);
+
+      if (cell && !cell.plantedAt) {
+        setSelectedSeed(draggedCropRef.current as SeedType);
         // Small delay to ensure selectedCrop is set before clicking
         setTimeout(() => {
           (gridCell as HTMLElement).click();
@@ -141,26 +140,33 @@ export default function Toolbar({
   }, [isDragging, state.grid]);
 
   // Calculate total items
-  const totalSeeds = Object.values(state.seeds).reduce((a, b) => a + b, 0);
-  const totalCrops = Object.values(state.crops).reduce((a, b) => a + b, 0);
-  const totalFertilizers = state.perks.owned
-    .filter((perk) => perk.type === "INSTANT_GROWTH")
+  const totalSeeds = Object.values(state.seeds).reduce(
+    (a, b) => a + b.quantity,
+    0
+  );
+  const totalCrops = Object.values(state.crops).reduce(
+    (a, b) => a + b.quantity,
+    0
+  );
+  const totalFertilizers = state.perks
+    .filter((perk) => perk.item.category === "perk")
     .reduce((sum, perk) => sum + (perk.quantity || 0), 0);
   const totalItems = totalSeeds + totalCrops + totalFertilizers;
 
   // Handle drag start
-  const handleDragStart = (e: React.DragEvent, type: CropType) => {
-    if (state.seeds[type] <= 0) return;
+  const handleDragStart = (e: React.DragEvent, type: SeedType) => {
+    const seed = state.seeds.find((seed) => seed.item.slug === type);
+    if (!seed || seed.quantity <= 0) return;
 
     e.dataTransfer.setData("cropType", type);
     e.dataTransfer.effectAllowed = "copy";
 
     // Create a custom drag image
     if (dragIconRef.current) {
-      const cropIcon = CROPS.find((crop) => crop.type === type)?.seedIcon;
-      if (cropIcon) {
+      const seedIcon = seed.item.icon;
+      if (seedIcon) {
         const img = document.createElement("img");
-        img.src = cropIcon;
+        img.src = seedIcon;
         img.className = "w-8 h-8";
         dragIconRef.current.innerHTML = "";
         dragIconRef.current.appendChild(img);
@@ -181,28 +187,37 @@ export default function Toolbar({
       data-tutorial="toolbar"
     >
       <div className="flex gap-2">
-        {CROPS.map(({ type, seedIcon }) => {
-          const isAvailable = state.seeds[type] > 0;
+        {state.items
+          .filter((item) => item.category === "seed")
+          .map(({ slug, icon }) => {
+            const isAvailable =
+              (state.seeds.find((seed) => seed.item.slug === slug)?.quantity ??
+                0) > 0;
 
-          return (
-            <motion.button
-              key={type}
-              onClick={() =>
-                isAvailable &&
-                setSelectedCrop(selectedCrop === type ? null : type)
-              }
-              draggable={isAvailable}
-              onDragStart={(e) =>
-                handleDragStart(e as unknown as React.DragEvent, type)
-              }
-              onTouchStart={(e) => handleTouchStart(e, type)}
-              onTouchEnd={handleTouchEnd}
-              whileHover={isAvailable ? { scale: 1.1 } : undefined}
-              whileTap={isAvailable ? { scale: 0.95 } : undefined}
-              className={`
+            return (
+              <motion.button
+                key={slug}
+                onClick={() =>
+                  isAvailable &&
+                  setSelectedSeed(
+                    selectedSeed === slug ? null : (slug as SeedType)
+                  )
+                }
+                draggable={isAvailable}
+                onDragStart={(e) =>
+                  handleDragStart(
+                    e as unknown as React.DragEvent,
+                    slug as SeedType
+                  )
+                }
+                onTouchStart={(e) => handleTouchStart(e, slug as SeedType)}
+                onTouchEnd={handleTouchEnd}
+                whileHover={isAvailable ? { scale: 1.1 } : undefined}
+                whileTap={isAvailable ? { scale: 0.95 } : undefined}
+                className={`
                 relative w-12 h-12 rounded-lg flex items-center justify-center
-                ${selectedCrop === type ? "bg-[#6d4c2c]" : "bg-[#8B5E3C]"}
-                border-2 ${CROP_COLORS[type]}
+                ${selectedSeed === slug ? "bg-[#6d4c2c]" : "bg-[#8B5E3C]"}
+                border-2 ${CROP_COLORS[slug as CropType]}
                 ${
                   isAvailable
                     ? "hover:bg-[#6d4c2c]"
@@ -210,20 +225,21 @@ export default function Toolbar({
                 }
                 transition-colors
               `}
-            >
-              <motion.img
-                src={seedIcon}
-                alt={`${type} seed`}
-                className="w-8 h-8 object-contain"
-                animate={{ y: [0, -2, 0] }}
-                transition={{ duration: 1.5, repeat: Infinity }}
-              />
-              <div className="absolute -top-2 -right-2 bg-[#6d4c2c] rounded-full w-5 h-5 flex items-center justify-center text-xs text-white/90">
-                {state.seeds[type]}
-              </div>
-            </motion.button>
-          );
-        })}
+              >
+                <motion.img
+                  src={icon}
+                  alt={`${slug} seed`}
+                  className="w-8 h-8 object-contain"
+                  animate={{ y: [0, -2, 0] }}
+                  transition={{ duration: 1.5, repeat: Infinity }}
+                />
+                <div className="absolute -top-2 -right-2 bg-[#6d4c2c] rounded-full w-5 h-5 flex items-center justify-center text-xs text-white/90">
+                  {state.seeds.find((seed) => seed.item.slug === slug)
+                    ?.quantity || 0}
+                </div>
+              </motion.button>
+            );
+          })}
       </div>
 
       <motion.div
@@ -233,19 +249,20 @@ export default function Toolbar({
         transition={{ duration: 0.5, repeat: Infinity, repeatDelay: 5 }}
       >
         <span className="text-white/90 font-bold text-sm tracking-wide">
-          <span className="text-lg mb-1 mr-1">🪙</span>{state.coins}
+          <span className="text-lg mb-1 mr-1">🪙</span>
+          {state.coins}
         </span>
       </motion.div>
 
       <motion.button
-        onClick={toggleInventory}
+        onClick={() => setShowInventory(true)}
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.95 }}
         className="relative w-12 h-12 rounded-lg flex items-center justify-center bg-[#8B5E3C] hover:bg-[#6d4c2c] transition-colors"
       >
         <span className="text-xl">📦</span>
         <div className="absolute -top-2 -right-2 bg-[#6d4c2c] rounded-full px-1.5 py-0.5 text-xs text-white/90">
-          {totalItems}/{state.inventoryCapacity}
+          {totalItems}/100
         </div>
       </motion.button>
     </div>

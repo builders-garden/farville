@@ -9,7 +9,7 @@ export const useBuyItem = () => {
       itemId: number;
       quantity: number;
     }) => {
-      const res = await fetch(`/api/items/${itemId}`, {
+      const res = await fetch(`/api/users/meitems/${itemId}`, {
         method: "POST",
         body: JSON.stringify({ action: "buy", quantity }),
       });

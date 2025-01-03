@@ -9,8 +9,14 @@ import {
 } from "./types";
 
 // Items queries
-export const getItems = async (): Promise<DbItem[]> => {
-  const { data, error } = await supabase.from("items").select("*");
+export const getItems = async (category?: string): Promise<DbItem[]> => {
+  const query = supabase.from("items").select("*");
+
+  if (category) {
+    query.eq("category", category);
+  }
+
+  const { data, error } = await query;
 
   if (error) throw error;
   return data;
@@ -95,9 +101,10 @@ export const getUsersByXp = async (limit?: number): Promise<DbUser[]> => {
 
 // User Items queries
 export const getUserItems = async (
-  userFid: number
+  userFid: number,
+  category?: string
 ): Promise<DbUserHasItem[]> => {
-  const { data, error } = await supabase
+  const query = supabase
     .from("user_has_items")
     .select(
       `
@@ -106,6 +113,12 @@ export const getUserItems = async (
     `
     )
     .eq("userFid", userFid);
+
+  if (category) {
+    query.eq("items.category", category);
+  }
+
+  const { data, error } = await query;
 
   if (error) throw error;
   return data;

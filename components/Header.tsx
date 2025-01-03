@@ -4,7 +4,7 @@ import { useGame } from "../context/GameContext";
 import { motion } from "framer-motion";
 
 export default function Header() {
-  const { state, toggleMarketplace, toggleSettings, toggleLeaderboard } =
+  const { state, setShowMarket, setShowSettings, setShowLeaderboard } =
     useGame();
 
   const progress = ((state.experience - (state.level - 1) * 100) / 100) * 100;
@@ -40,7 +40,7 @@ export default function Header() {
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            onClick={toggleMarketplace}
+            onClick={() => setShowMarket(true)}
             data-tutorial="marketplace"
             className="bg-[#8B5E3C] h-[42px] w-[42px] flex items-center justify-center text-white/90 rounded-xl hover:bg-[#9b6e4c] 
                      shadow-lg border-2 border-[#6d4c2c] text-lg font-medium"
@@ -51,7 +51,7 @@ export default function Header() {
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            onClick={toggleLeaderboard}
+            onClick={() => setShowLeaderboard(true)}
             className="bg-[#8B5E3C] h-[42px] w-[42px] flex items-center justify-center text-white/90 rounded-xl hover:bg-[#9b6e4c] 
                      shadow-lg border-2 border-[#6d4c2c] text-lg font-medium"
           >
@@ -61,7 +61,7 @@ export default function Header() {
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            onClick={toggleSettings}
+            onClick={() => setShowSettings(true)}
             className="bg-[#8B5E3C] h-[42px] w-[42px] flex items-center justify-center text-white/90 rounded-xl hover:bg-[#9b6e4c] 
                      shadow-lg border-2 border-[#6d4c2c] text-lg font-medium"
           >

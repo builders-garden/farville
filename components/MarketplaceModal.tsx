@@ -2,73 +2,8 @@
 
 import { motion } from "framer-motion";
 import { useState } from "react";
-import { CROPS, useGame } from "../context/GameContext";
-import { CropType } from "../types/game";
+import { useGame } from "../context/GameContext";
 import { EXPANSION_COSTS } from "../context/GameContext";
-import { Perk } from "../types/perks";
-
-const PERKS: Perk[] = [
-  // {
-  //   id: "yield_1",
-  //   name: "Basic Yield Booster",
-  //   description: "Increases crop yield by 50% for 24 hours",
-  //   cost: 500,
-  //   type: "YIELD_BOOSTER",
-  //   multiplier: 1.5,
-  //   icon: "✨",
-  //   duration: 24 * 60 * 60 * 1000,
-  // },
-  // {
-  //   id: "yield_2",
-  //   name: "Advanced Yield Booster",
-  //   description: "Doubles crop yield for 24 hours",
-  //   cost: 1000,
-  //   type: "YIELD_BOOSTER",
-  //   multiplier: 2,
-  //   icon: "✨",
-  //   duration: 24 * 60 * 60 * 1000,
-  // },
-  // {
-  //   id: "growth_1",
-  //   name: "Basic Fertilizer",
-  //   description: "Crops grow 50% faster for 24 hours",
-  //   cost: 500,
-  //   type: "GROWTH_BOOSTER",
-  //   multiplier: 1.5,
-  //   icon: "🌱",
-  //   duration: 24 * 60 * 60 * 1000,
-  // },
-  // {
-  //   id: "growth_2",
-  //   name: "Premium Fertilizer",
-  //   description: "Crops grow twice as fast for 24 hours",
-  //   cost: 1000,
-  //   type: "GROWTH_BOOSTER",
-  //   multiplier: 2,
-  //   icon: "🌱",
-  //   duration: 24 * 60 * 60 * 1000,
-  // },
-  {
-    id: "instant_growth_1",
-    name: "Fertilizer",
-    description: "Instantly grows one crop to full maturity",
-    cost: 100,
-    type: "INSTANT_GROWTH",
-    multiplier: 1,
-    icon: "🧪",
-    quantity: 1,
-  },
-  {
-    id: "instant_growth_5",
-    name: "Fertilizer Pack",
-    description: "5 fertilizers to instantly grow crops",
-    cost: 450,
-    type: "INSTANT_GROWTH",
-    multiplier: 1,
-    icon: "🧪",
-    quantity: 5,
-  },
-];
 
 type Tab = "seeds" | "crops" | "perks" | "expansions";
 
@@ -79,20 +14,8 @@ export default function MarketplaceModal({
   onClose: () => void;
   safeAreaInsets: { top: number; bottom: number; left: number; right: number };
 }) {
-  const { state, dispatch } = useGame();
+  const { state, buyItem, sellItem, expandGrid } = useGame();
   const [activeTab, setActiveTab] = useState<Tab>("seeds");
-
-  const handleBuySeeds = (cropType: CropType, amount: number) => {
-    dispatch({ type: "BUY_SEEDS", cropType, amount });
-  };
-
-  const handleSellCrops = (cropType: CropType, amount: number) => {
-    dispatch({ type: "SELL_CROPS", cropType, amount });
-  };
-
-  const handleExpandLand = () => {
-    dispatch({ type: "EXPAND_LAND" });
-  };
 
   const tabs: { id: Tab; label: string; icon: string }[] = [
     { id: "seeds", label: "Seeds", icon: "🌱" },
@@ -186,35 +109,34 @@ export default function MarketplaceModal({
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 20 }}
               >
-                {CROPS.map(
-                  (
-                    { name, type, seedIcon, buyPrice, levelRequirement, xp },
-                    index
-                  ) => (
+                {state.items
+                  .filter((item) => item.category === "seed")
+                  .sort((a, b) => a.buyPrice - b.buyPrice)
+                  .map((item, index) => (
                     <motion.div
-                      key={type}
+                      key={item.slug}
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: index * 0.1 }}
                       className={`bg-[#6d4c2c] px-4 py-3 rounded-lg flex flex-col md:flex-row md:items-center gap-3
                                border border-[#8B5E3C]/50 shadow-md relative ${
-                                 state.level < levelRequirement
+                                 state.level < item.requiredLevel
                                    ? "opacity-75"
                                    : ""
                                }`}
                     >
-                      {state.level < levelRequirement && (
+                      {state.level < item.requiredLevel && (
                         <div className="absolute inset-0 bg-red-900/20 backdrop-blur-[1px] rounded-lg flex items-center justify-center z-10">
                           <span className="text-white/90 font-medium bg-red-900/90 px-3 py-1 rounded-lg text-sm">
-                            Level {levelRequirement} Required
+                            Level {item.requiredLevel} Required
                           </span>
                         </div>
                       )}
                       <div className="flex items-center gap-3 flex-1">
                         <div className="w-10 h-10 flex items-center justify-center">
                           <motion.img
-                            src={seedIcon}
-                            alt={`${name} seed`}
+                            src={item.icon}
+                            alt={`${item.name} seed`}
                             className="w-8 h-8 object-contain"
                             animate={{ y: [0, -2, 0] }}
                             transition={{ duration: 1.5, repeat: Infinity }}
@@ -223,11 +145,11 @@ export default function MarketplaceModal({
                         <div className="flex-1 flex flex-col gap-2">
                           <div className="flex flex-row gap-1 justify-between">
                             <p className="text-white/90 font-medium">
-                              {name} Seeds
+                              {item.name}
                             </p>
                             <p className="text-white/90">
                               <span className="mr-1">🪙</span>
-                              {buyPrice}
+                              {item.buyPrice}
                             </p>
                           </div>
                           <div className="flex items-center gap-2 text-[10px]">
@@ -237,28 +159,31 @@ export default function MarketplaceModal({
                                 <span className="text-sm mb-1 ml-1 mr-0.5">
                                   ⭐
                                 </span>
-                                {xp}
+                                10
                               </span>
                             </span>
                             <span className="text-white/40">•</span>
                             <span className="text-white/60">
                               Owned:
                               <span className="text-white/90 font-medium">
-                                {state.seeds[type]}
+                                {state.seeds.find((seed) => seed.id === item.id)
+                                  ?.quantity || 0}
                               </span>
                             </span>
                           </div>
                         </div>
                       </div>
                       <div className="flex gap-2 ml-13 md:ml-0">
-                        {state.level >= levelRequirement &&
+                        {state.level >= item.requiredLevel &&
                           [1, 5, 10].map((amount) => (
                             <motion.button
                               key={amount}
                               whileHover={{ scale: 1.03 }}
                               whileTap={{ scale: 0.97 }}
-                              onClick={() => handleBuySeeds(type, amount)}
-                              disabled={state.coins < buyPrice * amount}
+                              onClick={() =>
+                                buyItem({ itemId: item.id, quantity: amount })
+                              }
+                              disabled={state.coins < item.buyPrice * amount}
                               className="min-w-[70px] px-2 py-1.5 bg-[#2B593B] text-white/90 rounded hover:bg-[#346344] 
                                     transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-sm font-medium
                                     border border-white/10"
@@ -268,8 +193,7 @@ export default function MarketplaceModal({
                           ))}
                       </div>
                     </motion.div>
-                  )
-                )}
+                  ))}
               </motion.div>
             )}
 
@@ -280,64 +204,76 @@ export default function MarketplaceModal({
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 20 }}
               >
-                {CROPS.map(({ type, icon, name, sellPrice }) => {
-                  const amount = state.crops[type];
+                {state.items
+                  .filter((item) => item.category === "crop")
+                  .sort((a, b) => a.sellPrice - b.sellPrice)
+                  .map((item) => {
+                    const amount =
+                      state.crops.find((crop) => crop.itemId === item.id)
+                        ?.quantity || 0;
 
-                  return (
-                    <motion.div
-                      key={type}
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      className="bg-[#6d4c2c] px-4 py-3 rounded-lg flex flex-col md:flex-row md:items-center gap-3
+                    return (
+                      <motion.div
+                        key={item.slug}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        className="bg-[#6d4c2c] px-4 py-3 rounded-lg flex flex-col md:flex-row md:items-center gap-3
                                border border-[#8B5E3C]/50 shadow-md"
-                    >
-                      <div className="flex items-center gap-3 flex-1">
-                        <div className="w-10 h-10 flex items-center justify-center">
-                          <motion.img
-                            src={icon}
-                            alt={name}
-                            className="w-8 h-8 object-contain"
-                            animate={{ y: [0, -2, 0] }}
-                            transition={{ duration: 1.5, repeat: Infinity }}
-                          />
-                        </div>
-                        <div className="flex-1 flex flex-col gap-2">
-                          <div className="flex flex-row gap-1 justify-between">
-                            <p className="text-white/90 font-medium">{name}</p>
-                            <p className="text-white/90">
-                              <span className="mr-1">🪙</span>
-                              {sellPrice}
-                            </p>
+                      >
+                        <div className="flex items-center gap-3 flex-1">
+                          <div className="w-10 h-10 flex items-center justify-center">
+                            <motion.img
+                              src={item.icon}
+                              alt={item.name}
+                              className="w-8 h-8 object-contain"
+                              animate={{ y: [0, -2, 0] }}
+                              transition={{ duration: 1.5, repeat: Infinity }}
+                            />
                           </div>
-                          <div className="flex items-center gap-2 text-[10px]">
-                            <span className="text-white/60">
-                              Owned:
-                              <span className="text-white/90 font-medium ml-1">
-                                {amount}
+                          <div className="flex-1 flex flex-col gap-2">
+                            <div className="flex flex-row gap-1 justify-between">
+                              <p className="text-white/90 font-medium">
+                                {item.name}
+                              </p>
+                              <p className="text-white/90">
+                                <span className="mr-1">🪙</span>
+                                {item.sellPrice}
+                              </p>
+                            </div>
+                            <div className="flex items-center gap-2 text-[10px]">
+                              <span className="text-white/60">
+                                Owned:
+                                <span className="text-white/90 font-medium ml-1">
+                                  {amount}
+                                </span>
                               </span>
-                            </span>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                      <div className="flex gap-2 ml-13 md:ml-0">
-                        {[1, 5, 10].map((sellAmount) => (
-                          <motion.button
-                            key={sellAmount}
-                            whileHover={{ scale: 1.03 }}
-                            whileTap={{ scale: 0.97 }}
-                            onClick={() => handleSellCrops(type, sellAmount)}
-                            disabled={amount < sellAmount}
-                            className="min-w-[70px] px-2 py-1.5 bg-[#2B593B] text-white/90 rounded hover:bg-[#346344] 
+                        <div className="flex gap-2 ml-13 md:ml-0">
+                          {[1, 5, 10].map((sellAmount) => (
+                            <motion.button
+                              key={sellAmount}
+                              whileHover={{ scale: 1.03 }}
+                              whileTap={{ scale: 0.97 }}
+                              onClick={() =>
+                                sellItem({
+                                  itemId: item.id,
+                                  quantity: sellAmount,
+                                })
+                              }
+                              disabled={amount < sellAmount}
+                              className="min-w-[70px] px-2 py-1.5 bg-[#2B593B] text-white/90 rounded hover:bg-[#346344] 
                                      transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-xs font-medium
                                      border border-white/10"
-                          >
-                            Sell {sellAmount}
-                          </motion.button>
-                        ))}
-                      </div>
-                    </motion.div>
-                  );
-                })}
+                            >
+                              Sell {sellAmount}
+                            </motion.button>
+                          ))}
+                        </div>
+                      </motion.div>
+                    );
+                  })}
               </motion.div>
             )}
 
@@ -398,7 +334,7 @@ export default function MarketplaceModal({
                     <motion.button
                       whileHover={{ scale: 1.03 }}
                       whileTap={{ scale: 0.97 }}
-                      onClick={handleExpandLand}
+                      onClick={() => expandGrid()}
                       disabled={
                         state.coins <
                           EXPANSION_COSTS[state.expansionLevel].coins ||
@@ -439,66 +375,73 @@ export default function MarketplaceModal({
                 exit={{ opacity: 0, y: 20 }}
               >
                 <div className="grid gap-3">
-                  {PERKS.map((perk) => {
-                    const isOwned = state.perks.owned.some(
-                      (p) => p.id === perk.id
-                    );
+                  {state.items
+                    .filter((item) => item.category === "perk")
+                    .map((perk) => {
+                      const isOwned = state.perks.some((p) => p.id === perk.id);
+                      // const amount =
+                      //   state.perks.find((p) => p.id === perk.id)?.quantity ||
+                      //   0;
 
-                    return (
-                      <motion.div
-                        key={perk.id}
-                        className="bg-[#6d4c2c] p-4 rounded-lg flex flex-col sm:flex-row sm:items-start gap-4
+                      return (
+                        <motion.div
+                          key={perk.id}
+                          className="bg-[#6d4c2c] p-4 rounded-lg flex flex-col sm:flex-row sm:items-start gap-4
                                  border border-[#8B5E3C]/50 shadow-md hover:bg-[#7d583a] transition-colors"
-                      >
-                        <div className="flex sm:flex-1 items-start gap-4 min-w-0">
-                          <div className="flex flex-col items-center gap-2 flex-shrink-0">
-                            <div className="w-12 h-12 bg-[#8B5E3C]/30 rounded-lg flex items-center justify-center">
-                              <motion.span
-                                className="text-2xl"
-                                animate={{ y: [0, -2, 0] }}
-                                transition={{ duration: 1.5, repeat: Infinity }}
-                              >
-                                {perk.icon}
-                              </motion.span>
-                            </div>
-                            
-                          </div>
-                          <div className="flex flex-col min-w-0 gap-2">
-                            <div className="flex flex-row justify-between">
-                              <h3 className="text-sm text-white/90 font-medium mb-1">{perk.name}</h3>
-                              <div className="h-fit px-2 py-0.5 bg-[#8B5E3C]/50 rounded text-xs text-white/80 font-medium text-center min-w-[24px]">
-                              {perk.quantity}x
+                        >
+                          <div className="flex sm:flex-1 items-start gap-4 min-w-0">
+                            <div className="flex flex-col items-center gap-2 flex-shrink-0">
+                              <div className="w-12 h-12 bg-[#8B5E3C]/30 rounded-lg flex items-center justify-center">
+                                <motion.span
+                                  className="text-2xl"
+                                  animate={{ y: [0, -2, 0] }}
+                                  transition={{
+                                    duration: 1.5,
+                                    repeat: Infinity,
+                                  }}
+                                >
+                                  {perk.icon}
+                                </motion.span>
                               </div>
                             </div>
-                            <p className="text-white/60 text-[10px]">
-                              {perk.description}
-                            </p>
+                            <div className="flex flex-col min-w-0 gap-2">
+                              <div className="flex flex-row justify-between">
+                                <h3 className="text-sm text-white/90 font-medium mb-1">
+                                  {perk.name}
+                                </h3>
+                                <div className="h-fit px-2 py-0.5 bg-[#8B5E3C]/50 rounded text-xs text-white/80 font-medium text-center min-w-[24px]">
+                                  1x
+                                </div>
+                              </div>
+                              <p className="text-white/60 text-[10px]">
+                                {perk.description}
+                              </p>
+                            </div>
                           </div>
-                        </div>
-                        <div className="flex flex-col items-stretch sm:items-end gap-2 flex-shrink-0">
-                          <motion.button
-                            whileHover={{ scale: 1.03 }}
-                            whileTap={{ scale: 0.97 }}
-                            onClick={() =>
-                              dispatch({ type: "PURCHASE_PERK", perk })
-                            }
-                            disabled={state.coins < perk.cost}
-                            className="min-w-[100px] py-2 px-4 rounded text-sm font-medium
+                          <div className="flex flex-col items-stretch sm:items-end gap-2 flex-shrink-0">
+                            <motion.button
+                              whileHover={{ scale: 1.03 }}
+                              whileTap={{ scale: 0.97 }}
+                              onClick={() =>
+                                buyItem({ itemId: perk.id, quantity: 1 })
+                              }
+                              disabled={state.coins < perk.buyPrice}
+                              className="min-w-[100px] py-2 px-4 rounded text-sm font-medium
                                       bg-[#FFB938] text-[#7E4E31] hover:bg-[#ffc65c]
                                       transition-colors disabled:opacity-40 disabled:cursor-not-allowed
                                       border border-white/10"
-                          >
-                            🪙 {perk.cost}
-                          </motion.button>
-                          {isOwned && (
-                            <div className="text-green-400 text-xs font-medium text-center sm:text-right">
-                              In inventory
-                            </div>
-                          )}
-                        </div>
-                      </motion.div>
-                    );
-                  })}
+                            >
+                              🪙 {perk.buyPrice}
+                            </motion.button>
+                            {isOwned && (
+                              <div className="text-green-400 text-xs font-medium text-center sm:text-right">
+                                In inventory
+                              </div>
+                            )}
+                          </div>
+                        </motion.div>
+                      );
+                    })}
                 </div>
               </motion.div>
             )}

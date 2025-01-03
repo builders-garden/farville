@@ -1,5 +1,7 @@
 import type { Perk } from "./perks";
 
+export type SeedType = "carrot-seeds" | "pumpkin-seeds" | "tomato-seeds" | "potato-seeds";
+
 export type CropType = "carrot" | "pumpkin" | "tomato" | "potato";
 
 export type Crop = {

@@ -1,8 +1,7 @@
 "use client";
 
 import { createContext, useContext, useState } from "react";
-import type { CropType, ExpansionCost } from "../types/game";
-import type { Perk } from "../types/perks";
+import type { CropType, ExpansionCost, SeedType } from "../types/game";
 //import { useAudio } from "./AudioContext";
 import { GameState, useGameState } from "@/hooks/use-game-state";
 import { usePlantSeed } from "@/hooks/game-actions/use-plant-seed";
@@ -11,6 +10,7 @@ import { useFertilize } from "@/hooks/game-actions/use-fertilize";
 import { useBuyItem } from "@/hooks/game-actions/use-buy-item";
 import { useExpandGrid } from "@/hooks/game-actions/use-expand-grid";
 import { useSellItem } from "@/hooks/game-actions/use-sell-item";
+import { UserItem } from "@/hooks/use-user-items";
 
 export const CROPS: {
   name: string;
@@ -87,10 +87,10 @@ export const EXPANSION_COSTS: ExpansionCost[] = [
 // Update context type to match actual implementation
 interface GameContextType {
   state: GameState;
-  selectedCrop: CropType | null;
-  setSelectedCrop: (crop: CropType | null) => void;
-  selectedFertilizer: Perk | null;
-  setSelectedFertilizer: (perk: Perk | null) => void;
+  selectedSeed: SeedType | null;
+  setSelectedSeed: (seed: SeedType | null) => void;
+  selectedFertilizer: UserItem | null;
+  setSelectedFertilizer: (perk: UserItem | null) => void;
   plantSeed: (params: { x: number; y: number; cropType: CropType }) => void;
   harvestCrop: (params: { x: number; y: number }) => void;
   fertilize: (params: { x: number; y: number }) => void;
@@ -98,15 +98,27 @@ interface GameContextType {
   sellItem: (params: { itemId: number; quantity: number }) => void;
   expandGrid: () => void;
   refetchState: () => Promise<void>;
+  showInventory: boolean;
+  showMarket: boolean;
+  showLeaderboard: boolean;
+  showSettings: boolean;
+  setShowInventory: (show: boolean) => void;
+  setShowMarket: (show: boolean) => void;
+  setShowLeaderboard: (show: boolean) => void;
+  setShowSettings: (show: boolean) => void;
 }
 
 export const GameContext = createContext<GameContextType | null>(null);
 
 export function GameProvider({ children }: { children: React.ReactNode }) {
+  const [showInventory, setShowInventory] = useState(false);
+  const [showMarket, setShowMarket] = useState(false);
+  const [showLeaderboard, setShowLeaderboard] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   // const { playSound } = useAudio();
   const { state, refetch } = useGameState();
-  const [selectedCrop, setSelectedCrop] = useState<CropType | null>(null);
-  const [selectedFertilizer, setSelectedFertilizer] = useState<Perk | null>(
+  const [selectedSeed, setSelectedSeed] = useState<SeedType | null>(null);
+  const [selectedFertilizer, setSelectedFertilizer] = useState<UserItem | null>(
     null
   );
 
@@ -129,8 +141,8 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     <GameContext.Provider
       value={{
         state,
-        selectedCrop,
-        setSelectedCrop,
+        selectedSeed,
+        setSelectedSeed,
         selectedFertilizer,
         setSelectedFertilizer,
         plantSeed,
@@ -140,6 +152,14 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
         sellItem,
         expandGrid,
         refetchState: refetch.all,
+        showInventory,
+        showMarket,
+        showLeaderboard,
+        showSettings,
+        setShowInventory,
+        setShowMarket,
+        setShowLeaderboard,
+        setShowSettings,
       }}
     >
       {children}

@@ -1,24 +1,32 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { CROPS, useGame } from "../context/GameContext";
-import { Perk } from "../types/perks";
+import { useGame } from "../context/GameContext";
 import { useFrameContext } from "../context/FrameContext";
+import { UserItem } from "@/hooks/use-user-items";
+import { SeedType } from "@/types/game";
 
 export default function InventoryModal({ onClose }: { onClose: () => void }) {
-  const { state, setSelectedCrop, setSelectedFertilizer } = useGame();
-  const totalSeeds = Object.values(state.seeds).reduce((a, b) => a + b, 0);
-  const totalCrops = Object.values(state.crops).reduce((a, b) => a + b, 0);
-  const totalFertilizers = state.perks.owned
-    .filter((perk) => perk.type === "INSTANT_GROWTH")
+  
+  const { state, setSelectedSeed, setSelectedFertilizer } = useGame();
+  const totalSeeds = Object.values(state.seeds).reduce(
+    (a, b) => a + b.quantity,
+    0
+  );
+  const totalCrops = Object.values(state.crops).reduce(
+    (a, b) => a + b.quantity,
+    0
+  );
+  const totalFertilizers = state.perks
+    .filter((perk) => perk.item.name === "Fertilizer")
     .reduce((sum, perk) => sum + (perk.quantity || 0), 0);
   const totalItems = totalSeeds + totalCrops + totalFertilizers;
   const { safeAreaInsets } = useFrameContext();
 
-  const handlePerkClick = (perk: Perk) => {
-    if (perk.type === "INSTANT_GROWTH" && perk.quantity && perk.quantity > 0) {
+  const handlePerkClick = (perk: UserItem) => {
+    if (perk.item.name === "Fertilizer" && perk.quantity && perk.quantity > 0) {
       setSelectedFertilizer(perk);
-      setSelectedCrop(null);
+      setSelectedSeed(null);
       onClose();
     }
   };
@@ -51,9 +59,7 @@ export default function InventoryModal({ onClose }: { onClose: () => void }) {
                 <span>Storage:</span>
                 <motion.span
                   className={`font-bold ${
-                    totalItems >= state.inventoryCapacity
-                      ? "text-red-400"
-                      : "text-green-400"
+                    totalItems >= 100 ? "text-red-400" : "text-green-400"
                   }`}
                   animate={{ scale: [1, 1.2, 1] }}
                   transition={{ duration: 0.3 }}
@@ -61,7 +67,7 @@ export default function InventoryModal({ onClose }: { onClose: () => void }) {
                   {totalItems}
                 </motion.span>
                 <span>/</span>
-                <span>{state.inventoryCapacity}</span>
+                <span>100</span>
               </p>
             </div>
             <button
@@ -83,18 +89,18 @@ export default function InventoryModal({ onClose }: { onClose: () => void }) {
                 <span className="text-2xl">🌱</span> Seeds
               </motion.h3>
               <div className="grid grid-cols-4 gap-4 md:grid-cols-8">
-                {CROPS.map(({ type, seedIcon }) => (
+                {state.items.filter((item) => item.category === "seed").map((item) => (
                   <motion.div
-                    key={type}
+                    key={item.id}
                     className="bg-[#6d4c2c] aspect-square rounded-lg relative flex items-center justify-center
                              shadow-lg hover:shadow-xl transition-shadow duration-200
                              border-2 border-[#8B5E3C]"
                     whileHover={{ scale: 1.02 }}
-                    onClick={() => setSelectedCrop(type)}
+                    onClick={() => setSelectedSeed(item.slug as SeedType)}
                   >
                     <motion.img
-                      src={seedIcon}
-                      alt={`${type} seed`}
+                      src={item.icon}
+                      alt={`${item.name} seed`}
                       className="w-8 h-8 object-contain"
                       animate={{ y: [0, -2, 0] }}
                       transition={{ duration: 1.5, repeat: Infinity }}
@@ -103,11 +109,11 @@ export default function InventoryModal({ onClose }: { onClose: () => void }) {
                       className="absolute -top-2 -right-2 bg-[#FFB938] text-[#7E4E31] text-xs px-2 py-0.5 
                                rounded-full font-bold shadow-md border border-[#7E4E31]"
                       animate={{
-                        scale: state.seeds[type] > 0 ? [1, 1.1, 1] : 1,
+                        scale: state.seeds.find((seed) => seed.item.slug === item.slug) ? [1, 1.1, 1] : 1,
                       }}
                       transition={{ duration: 0.3 }}
                     >
-                      {state.seeds[type]}
+                      {state.seeds.find((seed) => seed.item.slug === item.slug)?.quantity || 0}
                     </motion.div>
                   </motion.div>
                 ))}
@@ -123,16 +129,16 @@ export default function InventoryModal({ onClose }: { onClose: () => void }) {
                 <span className="text-2xl">🌾</span> Harvested Crops
               </motion.h3>
               <div className="grid grid-cols-4 gap-4 md:grid-cols-8">
-                {CROPS.map(({ type, icon }) => (
+                {state.items.filter((item) => item.category === "crop").map((item) => (
                   <motion.div
-                    key={type}
+                    key={item.id}
                     className="bg-[#6d4c2c] aspect-square rounded-lg relative flex items-center justify-center
                              shadow-lg hover:shadow-xl transition-shadow duration-200
                              border-2 border-[#8B5E3C]"
                   >
                     <motion.img
-                      src={icon}
-                      alt={`${type} crop`}
+                      src={item.icon}
+                      alt={`${item.name} crop`}
                       className="w-8 h-8 object-contain"
                       animate={{ y: [0, -2, 0] }}
                       transition={{ duration: 1.5, repeat: Infinity }}
@@ -141,11 +147,11 @@ export default function InventoryModal({ onClose }: { onClose: () => void }) {
                       className="absolute -top-2 -right-2 bg-[#FFB938] text-[#7E4E31] text-xs px-2 py-0.5 
                                rounded-full font-bold shadow-md border border-[#7E4E31]"
                       animate={{
-                        scale: state.crops[type] > 0 ? [1, 1.1, 1] : 1,
+                        scale: state.crops.find((crop) => crop.item.slug === item.slug)?.quantity || 0 > 0 ? [1, 1.1, 1] : 1,
                       }}
                       transition={{ duration: 0.3 }}
                     >
-                      {state.crops[type]}
+                      {state.crops.find((crop) => crop.item.slug === item.slug)?.quantity || 0}
                     </motion.div>
                   </motion.div>
                 ))}
@@ -161,28 +167,22 @@ export default function InventoryModal({ onClose }: { onClose: () => void }) {
                 <span className="text-2xl">⭐</span> Perks
               </motion.h3>
               <div className="grid grid-cols-4 gap-4 md:grid-cols-8">
-                {state.perks.owned.map((perk) => (
+                {state.perks.map((perk) => (
                   <motion.div
                     key={perk.id}
                     className="bg-[#6d4c2c] aspect-square rounded-lg relative flex items-center justify-center
                              shadow-lg hover:shadow-xl transition-shadow duration-200
                              border-2 border-[#8B5E3C]"
                     whileHover={{ scale: 1.05 }}
-                    title={perk.description}
+                    title={perk.item.description}
                     onClick={() => handlePerkClick(perk)}
-                    style={{
-                      cursor:
-                        perk.type === "INSTANT_GROWTH" && perk.quantity
-                          ? "pointer"
-                          : "default",
-                    }}
                   >
                     <motion.span
                       className="text-2xl"
                       animate={{ y: [0, -2, 0] }}
                       transition={{ duration: 1.5, repeat: Infinity }}
                     >
-                      {perk.icon}
+                      {perk.item.icon}
                     </motion.span>
                     {perk.quantity && (
                       <motion.div

@@ -1,9 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { useGame } from "../context/GameContext";
 import { useState } from "react";
-import { useAudio } from "../context/AudioContext";
 import { useFrameContext } from "../context/FrameContext";
 
 // Temporary mock data - replace with real data later
@@ -29,9 +27,7 @@ const MOCK_FRIENDS = [
 //   coins: number;
 // };
 
-export default function LeaderboardModal() {
-  const { toggleLeaderboard } = useGame();
-  const { startBackgroundMusic } = useAudio();
+export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
   const [activeTab, setActiveTab] = useState<"global" | "friends">("global");
   const [searchQuery, setSearchQuery] = useState("");
   const { safeAreaInsets } = useFrameContext();
@@ -44,8 +40,7 @@ export default function LeaderboardModal() {
   );
 
   const handleClose = () => {
-    toggleLeaderboard();
-    startBackgroundMusic();
+    onClose();
   };
 
   return (

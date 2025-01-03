@@ -5,7 +5,7 @@ import { AnimatePresence } from "framer-motion";
 import dynamic from "next/dynamic";
 import { GameProvider } from "./../context/GameContext";
 import { useFrameContext } from "./../context/FrameContext";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useSignIn } from "@/hooks/use-sign-in";
 import Image from "next/image";
 
@@ -20,14 +20,7 @@ const WelcomeOverlay = dynamic(() => import("./../components/WelcomeOverlay"), {
 export default function App() {
   const [showWelcome, setShowWelcome] = useState(true);
   const { isSDKLoaded, context } = useFrameContext();
-  const { signIn, isSignedIn, isLoading, error } = useSignIn();
-
-  useEffect(() => {
-    console.log("isSDKLoaded", isSDKLoaded);
-    if (isSDKLoaded) {
-      signIn();
-    }
-  }, [isSDKLoaded]);
+  const { isSignedIn, isLoading, error } = useSignIn();
 
   const handleWelcomeComplete = () => {
     setShowWelcome(false);
