@@ -40,20 +40,20 @@ export const useGameState = () => {
     if (userItems && items && user && gridCells) {
       setState({
         coins: user.coins,
-        level: Math.floor(Math.sqrt(user.xp / 100)) + 1,
+        level: user.xp > 0 ? Math.floor(Math.sqrt(user.xp / 100)) + 1 : 1,
         experience: user.xp,
         seeds: userItems
-          .filter((ui) => ui.item.name === "seed")
+          .filter((ui) => ui.item.category === "seed")
           .map((ui) => ui),
         crops: userItems
-          .filter((ui) => ui.item.name === "crop")
+          .filter((ui) => ui.item.category === "crop")
           .map((ui) => ui),
         grid: gridCells,
         gridSize: {
           width: Math.max(...gridCells.map((cell) => cell.x)),
           height: Math.max(...gridCells.map((cell) => cell.y)),
         },
-        perks: userItems.filter((item) => item.item.name === "perk"),
+        perks: userItems.filter((item) => item.item.category === "perk"),
         expansionLevel: user.expansions,
         items: items,
       });

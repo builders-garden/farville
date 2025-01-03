@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { useGame } from "../context/GameContext";
-import { CropType } from "../types/game";
+import { CropType, SeedType } from "../types/game";
 import CropSprite from "./CropSprite";
 import FloatingNumber from "./animations/FloatingNumber";
 import { useState, useRef } from "react";
@@ -17,7 +17,7 @@ export default function GridCell({ cell }: GridCellProps) {
     plantSeed,
     harvestCrop,
     fertilize,
-    selectedCrop,
+    selectedSeed,
     selectedFertilizer,
     setSelectedFertilizer,
   } = useGame();
@@ -46,7 +46,14 @@ export default function GridCell({ cell }: GridCellProps) {
         const rect = cellRef.current.getBoundingClientRect();
         const cropType = cell.cropType as CropType;
 
-        const harvestResult = await harvestCrop({ x: cell.x, y: cell.y });
+        const harvestResult = await harvestCrop({
+          x: cell.x,
+          y: cell.y,
+        });
+
+        if (!harvestResult) {
+          return;
+        }
 
         setFloatingPosition({
           x: rect.left + rect.width / 2,
@@ -65,8 +72,12 @@ export default function GridCell({ cell }: GridCellProps) {
           setHarvestedCropType(null);
         }, 1500);
       }
-    } else if (selectedCrop && !cell.plantedAt) {
-      const updatedCell = await plantSeed({ x: cell.x, y: cell.y, cropType: selectedCrop });
+    } else if (selectedSeed && !cell.plantedAt) {
+      const updatedCell = await plantSeed({
+        x: cell.x,
+        y: cell.y,
+        seedType: selectedSeed,
+      });
       console.log(updatedCell);
     }
   };
@@ -80,9 +91,9 @@ export default function GridCell({ cell }: GridCellProps) {
 
   const handleDrop = async (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
-    const cropType = e.dataTransfer.getData("cropType") as CropType;
+    const seedType = e.dataTransfer.getData("seedType") as SeedType;
     if (!cell.plantedAt) {
-      const updatedCell = await plantSeed({ x: cell.x, y: cell.y, cropType });
+      const updatedCell = await plantSeed({ x: cell.x, y: cell.y, seedType });
       console.log(updatedCell);
     }
   };
@@ -120,7 +131,19 @@ export default function GridCell({ cell }: GridCellProps) {
         repeatType: "reverse",
       }}
     >
-      <CropSprite crop={cell.cropType as CropType} />
+      <CropSprite
+        crop={
+          cell.cropType
+            ? {
+                type: cell.cropType as CropType,
+                plantedAt: cell.plantedAt
+                  ? new Date(cell.plantedAt).getTime()
+                  : 0,
+                readyToHarvest: cell.isReadyToHarvest,
+              }
+            : undefined
+        }
+      />
 
       {/* Fertilizer Hover Effect */}
       {selectedFertilizer && isHovered && isValidFertilizerTarget && (

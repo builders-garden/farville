@@ -1,12 +1,16 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { Crop } from "../types/game";
+import { CropType } from "../types/game";
 import { formatDistanceStrict } from "date-fns";
-import { useGame } from "../context/GameContext";
+import { GROWTH_TIMES, useGame } from "../context/GameContext";
 
 interface CropSpriteProps {
-  crop: Crop;
+  crop: {
+    type: CropType;
+    plantedAt: number;
+    readyToHarvest: boolean;
+  };
   isDemo?: boolean;
 }
 
@@ -27,13 +31,15 @@ export function EmptyCropSprite() {
 export function PlantedCropSprite({ crop, isDemo }: CropSpriteProps) {
   const { state } = useGame();
   const getGrowthProgress = () => {
-    const { plantedAt, growthTime } = crop;
+    const { plantedAt } = crop;
+    const growthTime = GROWTH_TIMES[crop.type];
     const elapsed = Date.now() - plantedAt;
     return Math.min(elapsed / growthTime, 1);
   };
 
   const getTimeRemaining = () => {
-    const { plantedAt, growthTime } = crop;
+    const { plantedAt } = crop;
+    const growthTime = GROWTH_TIMES[crop.type];
     const elapsed = Date.now() - plantedAt;
     const remaining = Math.max(growthTime - elapsed, 0);
 
@@ -137,7 +143,11 @@ export default function CropSprite({
   crop,
   isDemo,
 }: {
-  crop?: Crop;
+  crop?: {
+    type: CropType;
+    plantedAt: number;
+    readyToHarvest: boolean;
+  };
   isDemo?: boolean;
 }) {
   return crop ? (

@@ -1,4 +1,4 @@
-import { CropType } from "@/types/game";
+import { SeedType } from "@/types/game";
 import { useMutation } from "@tanstack/react-query";
 
 export const usePlantSeed = () => {
@@ -6,15 +6,15 @@ export const usePlantSeed = () => {
     mutationFn: async ({
       x,
       y,
-      cropType,
+      seedType,
     }: {
       x: number;
       y: number;
-      cropType: CropType;
+      seedType: SeedType;
     }) => {
       const res = await fetch(`/api/grid-cells/${x}/${y}`, {
         method: "POST",
-        body: JSON.stringify({ action: "plant", cropType }),
+        body: JSON.stringify({ action: "plant", seedType }),
       });
       return res.json();
     },

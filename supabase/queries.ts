@@ -109,7 +109,7 @@ export const getUserItems = async (
     .select(
       `
       *,
-      items (*)
+      item:items (*)
     `
     )
     .eq("userFid", userFid);

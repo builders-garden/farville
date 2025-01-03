@@ -140,14 +140,8 @@ export default function Toolbar({
   }, [isDragging, state.grid]);
 
   // Calculate total items
-  const totalSeeds = Object.values(state.seeds).reduce(
-    (a, b) => a + b.quantity,
-    0
-  );
-  const totalCrops = Object.values(state.crops).reduce(
-    (a, b) => a + b.quantity,
-    0
-  );
+  const totalSeeds = state.seeds.reduce((a, b) => a + b.quantity, 0);
+  const totalCrops = state.crops.reduce((a, b) => a + b.quantity, 0);
   const totalFertilizers = state.perks
     .filter((perk) => perk.item.category === "perk")
     .reduce((sum, perk) => sum + (perk.quantity || 0), 0);
@@ -189,14 +183,12 @@ export default function Toolbar({
       <div className="flex gap-2">
         {state.items
           .filter((item) => item.category === "seed")
-          .map(({ slug, icon }) => {
-            const isAvailable =
-              (state.seeds.find((seed) => seed.item.slug === slug)?.quantity ??
-                0) > 0;
+          .map(({ id, slug, icon }) => {
+            const isAvailable = !!state.seeds.find((seed) => seed.item.id === id);
 
             return (
               <motion.button
-                key={slug}
+                key={id}
                 onClick={() =>
                   isAvailable &&
                   setSelectedSeed(

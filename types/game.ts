@@ -1,6 +1,10 @@
 import type { Perk } from "./perks";
 
-export type SeedType = "carrot-seeds" | "pumpkin-seeds" | "tomato-seeds" | "potato-seeds";
+export type SeedType =
+  | "carrot-seeds"
+  | "pumpkin-seeds"
+  | "tomato-seeds"
+  | "potato-seeds";
 
 export type CropType = "carrot" | "pumpkin" | "tomato" | "potato";
 
@@ -84,4 +88,11 @@ export interface DecorationItem {
   cost: number;
   isAnimated?: boolean;
   isRare?: boolean;
+}
+
+export interface HarvestResponse {
+  rewards: {
+    xp: number;
+    amount: number;
+  };
 }

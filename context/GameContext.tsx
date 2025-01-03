@@ -1,7 +1,12 @@
 "use client";
 
 import { createContext, useContext, useState } from "react";
-import type { CropType, ExpansionCost, SeedType } from "../types/game";
+import type {
+  CropType,
+  ExpansionCost,
+  HarvestResponse,
+  SeedType,
+} from "../types/game";
 //import { useAudio } from "./AudioContext";
 import { GameState, useGameState } from "@/hooks/use-game-state";
 import { usePlantSeed } from "@/hooks/game-actions/use-plant-seed";
@@ -91,8 +96,11 @@ interface GameContextType {
   setSelectedSeed: (seed: SeedType | null) => void;
   selectedFertilizer: UserItem | null;
   setSelectedFertilizer: (perk: UserItem | null) => void;
-  plantSeed: (params: { x: number; y: number; cropType: CropType }) => void;
-  harvestCrop: (params: { x: number; y: number }) => void;
+  plantSeed: (params: { x: number; y: number; seedType: SeedType }) => void;
+  harvestCrop: (params: {
+    x: number;
+    y: number;
+  }) => Promise<HarvestResponse | undefined>;
   fertilize: (params: { x: number; y: number }) => void;
   buyItem: (params: { itemId: number; quantity: number }) => void;
   sellItem: (params: { itemId: number; quantity: number }) => void;
@@ -123,11 +131,20 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
   );
 
   const { mutate: plantSeed } = usePlantSeed();
-  const { mutate: harvestCrop } = useHarvestCrop();
+  const { mutate: harvestCropMutation } = useHarvestCrop();
   const { mutate: fertilize } = useFertilize();
   const { mutate: buyItem } = useBuyItem();
   const { mutate: sellItem } = useSellItem();
   const { mutate: expandGrid } = useExpandGrid();
+
+  const harvestCrop = (params: { x: number; y: number }) => {
+    return new Promise<HarvestResponse | undefined>((resolve) => {
+      harvestCropMutation(params, {
+        onSuccess: (data) => resolve(data),
+        onError: () => resolve(undefined),
+      });
+    });
+  };
 
   if (!state) {
     return (
