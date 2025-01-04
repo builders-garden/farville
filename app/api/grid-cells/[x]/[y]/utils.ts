@@ -44,14 +44,7 @@ export const harvest = async (fid: number, x: number, y: number) => {
   if (!gridCell.plantedAt) {
     throw new Error("Grid cell is not planted");
   }
-  console.log(
-    "plantedAt",
-    new Date(gridCell.plantedAt).getTime(),
-    "growthTime",
-    GROWTH_TIMES[gridCell.cropType as CropType],
-    "currentTime",
-    Date.now()
-  );
+
   if (
     !gridCell.isReadyToHarvest &&
     // Check if enough time has passed since planting for crop to be ready:

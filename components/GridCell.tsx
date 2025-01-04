@@ -103,8 +103,7 @@ export default function GridCell({ cell }: GridCellProps) {
     e.preventDefault();
     const seedType = e.dataTransfer.getData("seedType") as SeedType;
     if (!cell.plantedAt) {
-      const updatedCell = await plantSeed({ x: cell.x, y: cell.y, seedType });
-      console.log(updatedCell);
+      await plantSeed({ x: cell.x, y: cell.y, seedType });
     }
   };
 

@@ -21,14 +21,6 @@ export default function Game() {
   const { isSDKLoaded, context } = useFrameContext();
   const { isSignedIn, isLoading, error } = useSignIn();
 
-  console.log({
-    isSDKLoaded,
-    context,
-    isSignedIn,
-    isLoading,
-    error,
-  });
-
   const handleWelcomeComplete = () => {
     setShowWelcome(false);
   };

@@ -8,8 +8,6 @@ import {
   DbGridCell,
 } from "./types";
 
-
-
 // Items queries
 export const getItems = async (category?: string): Promise<DbItem[]> => {
   const query = supabase.from("items").select("*");
@@ -94,7 +92,6 @@ export const updateUserXP = async (
     .select("xp")
     .eq("fid", fid)
     .single();
-  console.log(currentUser!.xp);
   const { data, error } = await supabase
     .from("users")
     .update({ xp: (currentUser?.xp || 0) + xp })
@@ -229,7 +226,7 @@ export const addUserItem = async (
         quantity: existing ? existing.quantity + quantity : quantity,
       },
       {
-        onConflict: "userFid,itemId"
+        onConflict: "userFid,itemId",
       }
     )
     .select()
