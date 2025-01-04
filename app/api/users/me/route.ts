@@ -8,5 +8,5 @@ export async function GET(request: NextRequest) {
   }
 
   const user = await getUser(Number(fid));
-  return NextResponse.json({ user });
+  return NextResponse.json(user);
 }

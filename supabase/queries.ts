@@ -516,3 +516,20 @@ export const getGridCell = async (
   if (error) throw error;
   return data;
 };
+
+export const createGridCell = async (
+  fid: number,
+  x: number,
+  y: number
+): Promise<void> => {
+  await supabase.from("user_grid_cells").upsert(
+    {
+      fid,
+      x,
+      y,
+    },
+    {
+      onConflict: "fid,x,y",
+    }
+  );
+};

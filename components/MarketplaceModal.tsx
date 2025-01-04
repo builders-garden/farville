@@ -166,8 +166,9 @@ export default function MarketplaceModal({
                             <span className="text-white/60">
                               Owned:
                               <span className="text-white/90 font-medium">
-                                {state.seeds.find((seed) => seed.id === item.id)
-                                  ?.quantity || 0}
+                                {state.seeds.find(
+                                  (seed) => seed.item.id === item.id
+                                )?.quantity || 0}
                               </span>
                             </span>
                           </div>

@@ -23,7 +23,7 @@ export const useBuyItem = ({
     }) => {
       if (isActionInProgress) return;
       setIsActionInProgress(true);
-      const res = await fetch(`/api/users/meitems/${itemId}`, {
+      const res = await fetch(`/api/users/me/items/${itemId}`, {
         method: "POST",
         body: JSON.stringify({ action: "buy", itemId, quantity }),
       });
