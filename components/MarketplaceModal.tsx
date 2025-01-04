@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 import { useState } from "react";
 import { useGame } from "../context/GameContext";
-import { EXPANSION_COSTS } from "../context/GameContext";
+import { EXPANSION_COSTS } from "../lib/game-constants";
 
 type Tab = "seeds" | "crops" | "perks" | "expansions";
 

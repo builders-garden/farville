@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useState } from "react";
-import type { ExpansionCost, HarvestResponse, SeedType } from "../types/game";
+import type { HarvestResponse, SeedType } from "../types/game";
 //import { useAudio } from "./AudioContext";
 import { GameState, useGameState } from "@/hooks/use-game-state";
 import { usePlantSeed } from "@/hooks/game-actions/use-plant-seed";
@@ -11,14 +11,6 @@ import { useBuyItem } from "@/hooks/game-actions/use-buy-item";
 import { useExpandGrid } from "@/hooks/game-actions/use-expand-grid";
 import { useSellItem } from "@/hooks/game-actions/use-sell-item";
 import { UserItem } from "@/hooks/use-user-items";
-
-// Add EXPANSION_COSTS to the context file
-export const EXPANSION_COSTS: ExpansionCost[] = [
-  { coins: 40, level: 1, nextSize: { width: 3, height: 3 } },
-  { coins: 500, level: 3, nextSize: { width: 4, height: 4 } },
-  { coins: 1000, level: 5, nextSize: { width: 5, height: 5 } },
-  { coins: 2500, level: 10, nextSize: { width: 6, height: 6 } },
-];
 
 // Update context type to match actual implementation
 interface GameContextType {
