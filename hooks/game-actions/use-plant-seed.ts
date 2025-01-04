@@ -1,11 +1,17 @@
+"use client";
+
+import { useAudio } from "@/context/AudioContext";
 import { SeedType } from "@/types/game";
 import { useMutation } from "@tanstack/react-query";
 
 export const usePlantSeed = ({
   refetchGridCells,
+  refetchUserItems,
 }: {
   refetchGridCells: () => void;
+  refetchUserItems: () => void;
 }) => {
+  const { playSound } = useAudio();
   const mutation = useMutation({
     mutationFn: async ({
       x,
@@ -24,6 +30,8 @@ export const usePlantSeed = ({
     },
     onSuccess: () => {
       refetchGridCells();
+      refetchUserItems();
+      playSound("plant");
     },
   });
 

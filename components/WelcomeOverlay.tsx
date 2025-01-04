@@ -8,7 +8,7 @@ import CropSprite from "./CropSprite";
 import Image from "next/image";
 import sdk from "@farcaster/frame-sdk";
 import { useFrameContext } from "../context/FrameContext";
-import { CROPS } from "../context/GameContext";
+import { CROPS } from "../lib/game-constants";
 import FloatingNumber from "./animations/FloatingNumber";
 import { warpcastComposeCastUrl } from "../lib/utils";
 import { DbUser } from "../supabase/types";

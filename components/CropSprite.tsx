@@ -3,7 +3,8 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { CropType } from "../types/game";
 import { formatDistanceStrict } from "date-fns";
-import { GROWTH_TIMES, useGame } from "../context/GameContext";
+import { useGame } from "../context/GameContext";
+import { GROWTH_TIMES } from "../lib/game-constants";
 
 interface CropSpriteProps {
   crop: {

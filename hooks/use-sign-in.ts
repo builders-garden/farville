@@ -56,7 +56,7 @@ export const useSignIn = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [context]);
+  }, [context, isSDKLoaded]);
 
   useEffect(() => {
     if (isSDKLoaded) {

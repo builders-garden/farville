@@ -1,3 +1,6 @@
+"use client";
+
+import { useAudio } from "@/context/AudioContext";
 import { useMutation } from "@tanstack/react-query";
 
 interface HarvestResponse {
@@ -7,7 +10,16 @@ interface HarvestResponse {
   };
 }
 
-export const useHarvestCrop = () => {
+export const useHarvestCrop = ({
+  refetchGridCells,
+  refetchUserItems,
+  refetchUser,
+}: {
+  refetchGridCells: () => Promise<void>;
+  refetchUserItems: () => Promise<void>;
+  refetchUser: () => Promise<void>;
+}) => {
+  const { playSound } = useAudio();
   const mutation = useMutation<
     HarvestResponse,
     Error,
@@ -24,6 +36,12 @@ export const useHarvestCrop = () => {
       }
 
       return res.json();
+    },
+    onSuccess: () => {
+      refetchGridCells();
+      refetchUserItems();
+      refetchUser();
+      playSound("harvest");
     },
   });
 

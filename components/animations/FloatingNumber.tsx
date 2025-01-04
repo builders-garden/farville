@@ -1,6 +1,6 @@
 "use client";
 
-import { CROPS } from "@/context/GameContext";
+import { CROPS } from "@/lib/game-constants";
 import { CropType } from "@/types/game";
 import { motion } from "framer-motion";
 import { createPortal } from "react-dom";

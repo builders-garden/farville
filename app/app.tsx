@@ -6,6 +6,7 @@ import dynamic from "next/dynamic";
 import { GameProvider } from "./../context/GameContext";
 import { useFrameContext } from "./../context/FrameContext";
 import { useState } from "react";
+import { useSignIn } from "@/hooks/use-sign-in";
 import Image from "next/image";
 
 const GameWrapper = dynamic(() => import("./../components/GameWrapper"), {
@@ -19,12 +20,15 @@ const WelcomeOverlay = dynamic(() => import("./../components/WelcomeOverlay"), {
 export default function App() {
   const [showWelcome, setShowWelcome] = useState(true);
   const { isSDKLoaded, context } = useFrameContext();
+  const { isSignedIn, isLoading, error } = useSignIn();
+
+  console.log("isSignedIn", isSignedIn);
 
   const handleWelcomeComplete = () => {
     setShowWelcome(false);
   };
 
-  if (!context && isSDKLoaded) {
+  if (!context && isSDKLoaded && !isLoading) {
     return (
       <main className="h-screen w-screen overflow-hidden">
         <div className="fixed inset-0">
@@ -72,7 +76,7 @@ export default function App() {
             quality={100}
           />
         </div>
-        {context && (
+        {isLoading && context && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-8">
             <div className="absolute inset-0 bg-black/80" />
             <div className="relative z-10 flex flex-col items-center gap-4">
@@ -81,17 +85,27 @@ export default function App() {
             </div>
           </div>
         )}
-        <div className="relative z-10">
-          <AnimatePresence>
-            {showWelcome && (
-              <WelcomeOverlay onComplete={handleWelcomeComplete} />
-            )}
-            {/* {showTutorial && (
+        {error && context && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-8">
+            <div className="absolute inset-0 bg-black/80" />
+            <div className="relative z-10 p-6 bg-red-500/20 backdrop-blur-sm rounded-lg border-2 border-red-500 shadow-lg">
+              <p className="text-red-100 text-lg font-medium">{error}</p>
+            </div>
+          </div>
+        )}
+        {isSignedIn && (
+          <div className="relative z-10">
+            <AnimatePresence>
+              {showWelcome && (
+                <WelcomeOverlay onComplete={handleWelcomeComplete} />
+              )}
+              {/* {showTutorial && (
                 <TutorialOverlay onComplete={() => setShowTutorial(false)} />
               )} */}
-          </AnimatePresence>
-          <GameWrapper />
-        </div>
+            </AnimatePresence>
+            <GameWrapper />
+          </div>
+        )}
       </main>
     </GameProvider>
   );

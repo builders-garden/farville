@@ -12,7 +12,6 @@ export const POST = async (req: NextRequest) => {
   let user = await getUser(fid);
 
   if (!user) {
-    console.log({ fid });
     const newUser = await fetchUser(fid);
     user = await createUser({
       fid: fid,

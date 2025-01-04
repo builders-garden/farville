@@ -83,6 +83,27 @@ export const updateUser = async (
   return data;
 };
 
+export const updateUserXP = async (
+  fid: number,
+  xp: number
+): Promise<DbUser> => {
+  const { data: currentUser } = await supabase
+    .from("users")
+    .select("xp")
+    .eq("fid", fid)
+    .single();
+  console.log(currentUser!.xp);
+  const { data, error } = await supabase
+    .from("users")
+    .update({ xp: (currentUser?.xp || 0) + xp })
+    .eq("fid", fid)
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+};
+
 export const getUsersByXp = async (limit?: number): Promise<DbUser[]> => {
   const query = supabase
     .from("users")
@@ -184,11 +205,16 @@ export const addUserItem = async (
 
   const { data, error } = await supabase
     .from("user_has_items")
-    .upsert({
-      userFid,
-      itemId,
-      quantity: existing ? existing.quantity + quantity : quantity,
-    })
+    .upsert(
+      {
+        userFid,
+        itemId,
+        quantity: existing ? existing.quantity + quantity : quantity,
+      },
+      {
+        onConflict: "userFid,itemId"
+      }
+    )
     .select()
     .single();
 
@@ -408,21 +434,20 @@ export const plantGridCell = async (
   x: number,
   y: number,
   cropType: string
-): Promise<DbGridCell> => {
-  const { data, error } = await supabase
+): Promise<void> => {
+  const { error } = await supabase
     .from("user_grid_cells")
-    .insert({
-      fid,
-      x,
-      y,
+    .update({
       cropType: cropType,
       plantedAt: new Date().toISOString(),
     })
+    .eq("fid", fid)
+    .eq("x", x)
+    .eq("y", y)
     .select()
     .single();
 
   if (error) throw error;
-  return data;
 };
 
 export const harvestGridCell = async (
@@ -440,7 +465,6 @@ export const harvestGridCell = async (
     .eq("fid", fid)
     .eq("x", x)
     .eq("y", y);
-
   if (error) throw error;
 };
 
@@ -454,7 +478,9 @@ export const fertilizeGridCell = async (
     .update({ isReadyToHarvest: true })
     .eq("fid", fid)
     .eq("x", x)
-    .eq("y", y);
+    .eq("y", y)
+    .select()
+    .single();
 
   if (error) throw error;
 };
