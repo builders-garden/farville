@@ -47,7 +47,6 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
   const [showMarket, setShowMarket] = useState(false);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
-  // const { playSound } = useAudio();
   const { state, refetch } = useGameState();
   const [selectedSeed, setSelectedSeed] = useState<SeedType | null>(null);
   const [selectedFertilizer, setSelectedFertilizer] = useState<UserItem | null>(
@@ -84,8 +83,18 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     isActionInProgress,
     setIsActionInProgress,
   });
-  const { mutate: buyItem } = useBuyItem();
-  const { mutate: sellItem } = useSellItem();
+  const { mutate: buyItem } = useBuyItem({
+    refetchUser: refetch.user,
+    refetchUserItems: refetch.userItems,
+    isActionInProgress,
+    setIsActionInProgress,
+  });
+  const { mutate: sellItem } = useSellItem({
+    refetchUser: refetch.user,
+    refetchUserItems: refetch.userItems,
+    isActionInProgress,
+    setIsActionInProgress,
+  });
   const { mutate: expandGrid } = useExpandGrid();
 
   if (!state) {

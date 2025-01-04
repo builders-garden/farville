@@ -1,5 +1,5 @@
-import { getItemById } from "@/supabase/queries";
 import { NextRequest, NextResponse } from "next/server";
+import { buyItem, sellItem } from "./utils";
 
 export const POST = async (req: NextRequest) => {
   const { action, itemId, quantity } = await req.json();
@@ -8,25 +8,13 @@ export const POST = async (req: NextRequest) => {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const item = await getItemById(Number(itemId));
-  if (!item) {
-    return NextResponse.json({ error: "Item not found" }, { status: 404 });
-  }
-
   switch (action) {
     case "buy":
-      // TODO: Implement buy logic
-      // TODO: Check if user has enough funds
-      // TODO: Check if item is already owned
-      // TODO: If already owned, increase quantity
-      // TODO: If not owned, create new item
-      // TODO: Decrease user funds
+      await buyItem(Number(fid), Number(itemId), Number(quantity));
+      return NextResponse.json({ message: "Item bought" }, { status: 200 });
     case "sell":
-      // TODO: Implement sell logic
-      // TODO: Check if user has enough items
-      // TODO: Check if item is owned
-      // TODO: If owned, decrease quantity
-      // TODO: If quantity is 0, delete item
-      // TODO: Increase user funds
+      await sellItem(Number(fid), Number(itemId), Number(quantity));
+      return NextResponse.json({ message: "Item sold" }, { status: 200 });
   }
+  return NextResponse.json({ error: "Invalid action" }, { status: 400 });
 };

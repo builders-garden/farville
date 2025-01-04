@@ -8,6 +8,8 @@ import {
   DbGridCell,
 } from "./types";
 
+
+
 // Items queries
 export const getItems = async (category?: string): Promise<DbItem[]> => {
   const query = supabase.from("items").select("*");
@@ -96,6 +98,21 @@ export const updateUserXP = async (
   const { data, error } = await supabase
     .from("users")
     .update({ xp: (currentUser?.xp || 0) + xp })
+    .eq("fid", fid)
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+};
+
+export const updateUserCoins = async (
+  fid: number,
+  coins: number
+): Promise<DbUser> => {
+  const { data, error } = await supabase
+    .from("users")
+    .update({ coins })
     .eq("fid", fid)
     .select()
     .single();
@@ -224,7 +241,8 @@ export const addUserItem = async (
 
 export const removeUserItem = async (
   userFid: number,
-  itemId: number
+  itemId: number,
+  quantity: number
 ): Promise<void> => {
   const { data: existing } = await supabase
     .from("user_has_items")
@@ -235,7 +253,7 @@ export const removeUserItem = async (
 
   if (!existing) return;
 
-  if (existing.quantity <= 1) {
+  if (existing.quantity <= quantity) {
     const { error } = await supabase
       .from("user_has_items")
       .delete()
@@ -246,7 +264,7 @@ export const removeUserItem = async (
   } else {
     const { error } = await supabase
       .from("user_has_items")
-      .update({ quantity: existing.quantity - 1 })
+      .update({ quantity: existing.quantity - quantity })
       .eq("userFid", userFid)
       .eq("itemId", itemId);
 

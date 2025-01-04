@@ -33,7 +33,7 @@ export const plantSeed = async (
 
   await plantGridCell(fid, x, y, item.slug.replace("-seeds", ""));
 
-  await removeUserItem(fid, item.id);
+  await removeUserItem(fid, item.id, 1);
 };
 
 export const harvest = async (fid: number, x: number, y: number) => {
@@ -73,7 +73,7 @@ export const fertilize = async (fid: number, x: number, y: number) => {
     throw new Error("Grid cell is ready to harvest");
   }
   await fertilizeGridCell(fid, x, y);
-  await removeUserItem(fid, fertilizer.id);
+  await removeUserItem(fid, fertilizer.id, 1);
 };
 
 export const rewardUser = async (
