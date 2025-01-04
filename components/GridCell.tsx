@@ -41,7 +41,7 @@ export default function GridCell({ cell }: GridCellProps) {
         GROWTH_TIMES[cell.cropType as CropType] <
         Date.now());
 
-  const isValidFertilizerTarget = cell.plantedAt && isReadyToHarvest;
+  const isValidFertilizerTarget = cell.plantedAt && !isReadyToHarvest;
 
   const handleClick = async () => {
     if (isActionInProgress) return;
