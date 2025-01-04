@@ -99,6 +99,33 @@ export const getUsersByXp = async (limit?: number): Promise<DbUser[]> => {
   return data;
 };
 
+export const getItemBySlug = async (slug: string): Promise<DbItem | null> => {
+  const { data, error } = await supabase
+    .from("items")
+    .select("*")
+    .eq("slug", slug)
+    .maybeSingle();
+
+  if (error) throw error;
+  return data;
+};
+
+export const getUserItemByItemId = async (
+  userFid: number,
+  itemId: number
+): Promise<(DbUserHasItem & { item: DbItem }) | null> => {
+  const { data, error } = await supabase
+    .from("user_has_items")
+    .select("*, item:items(*)")
+    .eq("userFid", userFid)
+    .eq("itemId", itemId)
+    .gte("quantity", 1)
+    .maybeSingle();
+
+  if (error) throw error;
+  return data;
+};
+
 // User Items queries
 export const getUserItems = async (
   userFid: number,
@@ -376,7 +403,7 @@ export const getGridCells = async (fid: number): Promise<DbGridCell[]> => {
   return data;
 };
 
-export const plantCrop = async (
+export const plantGridCell = async (
   fid: number,
   x: number,
   y: number,
@@ -398,7 +425,7 @@ export const plantCrop = async (
   return data;
 };
 
-export const harvestCrop = async (
+export const harvestGridCell = async (
   fid: number,
   x: number,
   y: number
@@ -417,7 +444,7 @@ export const harvestCrop = async (
   if (error) throw error;
 };
 
-export const fertilizeCrop = async (
+export const fertilizeGridCell = async (
   fid: number,
   x: number,
   y: number

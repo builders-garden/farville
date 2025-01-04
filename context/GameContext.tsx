@@ -16,6 +16,7 @@ import { useBuyItem } from "@/hooks/game-actions/use-buy-item";
 import { useExpandGrid } from "@/hooks/game-actions/use-expand-grid";
 import { useSellItem } from "@/hooks/game-actions/use-sell-item";
 import { UserItem } from "@/hooks/use-user-items";
+import { useSignIn } from "@/hooks/use-sign-in";
 
 export const CROPS: {
   name: string;
@@ -119,6 +120,7 @@ interface GameContextType {
 export const GameContext = createContext<GameContextType | null>(null);
 
 export function GameProvider({ children }: { children: React.ReactNode }) {
+  const { isSignedIn, isLoading } = useSignIn();
   const [showInventory, setShowInventory] = useState(false);
   const [showMarket, setShowMarket] = useState(false);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
@@ -130,7 +132,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     null
   );
 
-  const { mutate: plantSeed } = usePlantSeed();
+  const { mutate: plantSeed } = usePlantSeed({ refetchGridCells: refetch.grid });
   const { mutate: harvestCropMutation } = useHarvestCrop();
   const { mutate: fertilize } = useFertilize();
   const { mutate: buyItem } = useBuyItem();
@@ -145,6 +147,10 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
       });
     });
   };
+
+  if (!isSignedIn && !isLoading) {
+    return <div>You must sign in to play FarVille!</div>;
+  }
 
   if (!state) {
     return (

@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+import { plantSeed } from "./utils";
+import { DbGridCell } from "@/supabase/types";
 
 export const POST = async (
   req: NextRequest,
@@ -6,21 +8,23 @@ export const POST = async (
   params: { x: string; y: string }
 ) => {
   const { x, y } = params;
-  const { action } = await req.json();
+  const { action, seedType } = await req.json();
 
   const fid = req.headers.get("x-user-fid");
   if (!fid) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  let result: DbGridCell | null = null;
+
   switch (action) {
     case "plant":
-      // TODO: Implement planting logic
-      // TODO: Check if the grid cell is already planted
-      // TODO: Check if the player has enough seeds of "crop_type" to plant
-      // TODO: Call plantCrop supabase function
-      // TODO: Decrease player's seed count
-      // TODO: Return the updated grid cell and rewards null
+      result = await plantSeed(
+        parseInt(fid),
+        parseInt(x),
+        parseInt(y),
+        seedType
+      );
       break;
     case "harvest":
       // TODO: Implement harvesting logic
@@ -36,4 +40,5 @@ export const POST = async (
       // TODO: Return the updated grid cell and rewards null
       break;
   }
+  return NextResponse.json(result);
 };

@@ -1,7 +1,11 @@
 import { SeedType } from "@/types/game";
 import { useMutation } from "@tanstack/react-query";
 
-export const usePlantSeed = () => {
+export const usePlantSeed = ({
+  refetchGridCells,
+}: {
+  refetchGridCells: () => void;
+}) => {
   const mutation = useMutation({
     mutationFn: async ({
       x,
@@ -17,6 +21,9 @@ export const usePlantSeed = () => {
         body: JSON.stringify({ action: "plant", seedType }),
       });
       return res.json();
+    },
+    onSuccess: () => {
+      refetchGridCells();
     },
   });
 
