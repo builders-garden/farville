@@ -5,7 +5,7 @@ import { MESSAGE_EXPIRATION_TIME } from "@/lib/constants";
 import posthog from "posthog-js";
 
 export const useSignIn = () => {
-  const { isSDKLoaded, context } = useFrameContext();
+  const { isSDKLoaded, context, error: contextError } = useFrameContext();
   const [isSignedIn, setIsSignedIn] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -15,8 +15,18 @@ export const useSignIn = () => {
       setIsLoading(true);
       setError(null);
 
+      if (contextError) {
+        throw new Error(`SDK initialization failed: ${contextError}`);
+      }
+
       if (!context) {
-        throw new Error("You must use play FarVille from Warpcast!");
+        throw new Error("FarVille must be played from Warpcast!");
+      }
+
+      if (!context.user?.fid) {
+        throw new Error(
+          "No FID found. Please make sure you're logged into Warpcast."
+        );
       }
 
       const result = await sdk.actions.signIn({
@@ -27,42 +37,50 @@ export const useSignIn = () => {
         ).toISOString(),
       });
 
-      let referrerFid = null;
-      if (context && context.location?.type === "cast_embed") {
-        referrerFid = context.location.cast.fid;
-      }
+      const referrerFid =
+        context.location?.type === "cast_embed"
+          ? context.location.cast.fid
+          : null;
 
       const res = await fetch("/api/sign-in", {
         method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({
           signature: result.signature,
           message: result.message,
-          fid: context?.user.fid,
-          referrerFid: referrerFid,
+          fid: context.user.fid,
+          referrerFid,
         }),
       });
 
       if (!res.ok) {
-        throw new Error("Sign in failed");
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.message || "Sign in failed");
       }
 
       const data = await res.json();
       setIsSignedIn(true);
-      posthog.identify(context?.user.fid.toString());
+      posthog.identify(context.user.fid.toString());
       return data;
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Sign in failed");
+      const errorMessage =
+        err instanceof Error ? err.message : "Sign in failed";
+      setError(errorMessage);
       throw err;
     } finally {
       setIsLoading(false);
     }
-  }, [context, isSDKLoaded]);
+  }, [context, contextError, isSDKLoaded]);
 
   useEffect(() => {
-    if (isSDKLoaded) {
-      signIn();
+    if (isSDKLoaded && !isSignedIn && !isLoading && !error) {
+      signIn().catch((err) => {
+        console.error("Auto sign-in failed:", err);
+      });
     }
-  }, [isSDKLoaded, signIn]);
+  }, [isSDKLoaded, isSignedIn, isLoading, error, signIn]);
 
   return { signIn, isSignedIn, isLoading, error };
 };

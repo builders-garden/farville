@@ -14,6 +14,10 @@ export default async function middleware(req: NextRequest) {
   // Get token from cookies
   const token = req.cookies.get("token");
 
+  console.log({
+    token,
+  });
+
   if (!token?.value) {
     return NextResponse.json(
       { error: "Authentication required" },

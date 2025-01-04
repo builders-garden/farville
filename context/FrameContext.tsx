@@ -11,21 +11,31 @@ export const useFrameContext = () => {
     right: 0,
   });
   const [isSDKLoaded, setIsSDKLoaded] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const load = async () => {
-      await sdk.actions.ready();
-      const context = await sdk.context;
-      if (context) {
-        if (context.client?.safeAreaInsets) {
-          setSafeAreaInsets(context.client.safeAreaInsets);
+      try {
+        const context = await sdk.context;
+        if (context) {
+          if (context.client?.safeAreaInsets) {
+            setSafeAreaInsets(context.client.safeAreaInsets);
+          }
+          setContext(context);
+        } else {
+          setError("Failed to load Farcaster context");
         }
-        setContext(context);
+        await sdk.actions.ready();
+      } catch (err) {
+        setError(
+          err instanceof Error ? err.message : "Failed to initialize SDK"
+        );
+        console.error("SDK initialization error:", err);
       }
     };
+
     if (sdk && !isSDKLoaded) {
       load().then(() => {
-        console.log("SDK loaded");
         setIsSDKLoaded(true);
       });
     }
@@ -35,5 +45,6 @@ export const useFrameContext = () => {
     context,
     safeAreaInsets,
     isSDKLoaded,
+    error,
   };
 };
