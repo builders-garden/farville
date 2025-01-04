@@ -1,4 +1,4 @@
-import { REWARD_XP } from "@/lib/game-constants";
+import { GROWTH_TIMES, REWARD_XP } from "@/lib/game-constants";
 import {
   getUserItemByItemId,
   getGridCell,
@@ -10,7 +10,7 @@ import {
   addUserItem,
   updateUserXP,
 } from "@/supabase/queries";
-import { SeedType } from "@/types/game";
+import { CropType, SeedType } from "@/types/game";
 
 export const plantSeed = async (
   fid: number,
@@ -41,7 +41,25 @@ export const harvest = async (fid: number, x: number, y: number) => {
   if (!gridCell) {
     throw new Error("Grid cell not found");
   }
-  if (!gridCell.isReadyToHarvest) {
+  if (!gridCell.plantedAt) {
+    throw new Error("Grid cell is not planted");
+  }
+  console.log(
+    "plantedAt",
+    new Date(gridCell.plantedAt).getTime(),
+    "growthTime",
+    GROWTH_TIMES[gridCell.cropType as CropType],
+    "currentTime",
+    Date.now()
+  );
+  if (
+    !gridCell.isReadyToHarvest &&
+    // Check if enough time has passed since planting for crop to be ready:
+    // plantedTime + growthTime < currentTime
+    new Date(gridCell.plantedAt).getTime() + // Get plant time in milliseconds
+      GROWTH_TIMES[gridCell.cropType as CropType] > // Add required growth time for this crop
+      Date.now() // Compare against current time
+  ) {
     throw new Error("Grid cell is not ready to harvest");
   }
   const crop = await getItemBySlug(gridCell.cropType!);

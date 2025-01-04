@@ -7,6 +7,7 @@ import CropSprite from "./CropSprite";
 import FloatingNumber from "./animations/FloatingNumber";
 import { useState, useRef } from "react";
 import { DbGridCell } from "@/supabase/types";
+import { GROWTH_TIMES } from "@/lib/game-constants";
 
 interface GridCellProps {
   cell: DbGridCell;
@@ -33,7 +34,14 @@ export default function GridCell({ cell }: GridCellProps) {
   const [isDragOver] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
 
-  const isValidFertilizerTarget = cell.plantedAt && !cell.isReadyToHarvest;
+  const isReadyToHarvest =
+    cell.isReadyToHarvest ||
+    (cell.plantedAt &&
+      new Date(cell.plantedAt).getTime() +
+        GROWTH_TIMES[cell.cropType as CropType] <
+        Date.now());
+
+  const isValidFertilizerTarget = cell.plantedAt && isReadyToHarvest;
 
   const handleClick = async () => {
     if (isActionInProgress) return;
@@ -44,7 +52,7 @@ export default function GridCell({ cell }: GridCellProps) {
       return;
     }
 
-    if (cell.plantedAt && cell.isReadyToHarvest) {
+    if (cell.plantedAt && isReadyToHarvest) {
       if (cellRef.current) {
         const rect = cellRef.current.getBoundingClientRect();
         const cropType = cell.cropType as CropType;
@@ -130,11 +138,11 @@ export default function GridCell({ cell }: GridCellProps) {
       `}
       initial={false}
       animate={{
-        scale: cell.isReadyToHarvest ? [1, 1.02, 1] : 1,
+        scale: isReadyToHarvest ? [1, 1.02, 1] : 1,
       }}
       transition={{
         duration: 1,
-        repeat: cell.isReadyToHarvest ? Infinity : 0,
+        repeat: isReadyToHarvest ? Infinity : 0,
         repeatType: "reverse",
       }}
     >
@@ -146,7 +154,7 @@ export default function GridCell({ cell }: GridCellProps) {
                 plantedAt: cell.plantedAt
                   ? new Date(cell.plantedAt).getTime()
                   : 0,
-                readyToHarvest: cell.isReadyToHarvest,
+                readyToHarvest: !!isReadyToHarvest,
               }
             : undefined
         }
