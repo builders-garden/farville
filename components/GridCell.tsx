@@ -20,6 +20,7 @@ export default function GridCell({ cell }: GridCellProps) {
     selectedSeed,
     selectedFertilizer,
     setSelectedFertilizer,
+    isActionInProgress,
   } = useGame();
   const [showFloating, setShowFloating] = useState(false);
   const [floatingPosition, setFloatingPosition] = useState({ x: 0, y: 0 });
@@ -35,6 +36,8 @@ export default function GridCell({ cell }: GridCellProps) {
   const isValidFertilizerTarget = cell.plantedAt && !cell.isReadyToHarvest;
 
   const handleClick = async () => {
+    if (isActionInProgress) return;
+
     if (selectedFertilizer && isValidFertilizerTarget) {
       await fertilize({ x: cell.x, y: cell.y });
       setSelectedFertilizer(null);
@@ -73,12 +76,11 @@ export default function GridCell({ cell }: GridCellProps) {
         }, 1500);
       }
     } else if (selectedSeed && !cell.plantedAt) {
-      const updatedCell = await plantSeed({
+      await plantSeed({
         x: cell.x,
         y: cell.y,
         seedType: selectedSeed,
       });
-      console.log(updatedCell);
     }
   };
 
@@ -110,7 +112,12 @@ export default function GridCell({ cell }: GridCellProps) {
       data-y={cell.y}
       className={`
         grid-cell
-        aspect-square rounded-xl relative cursor-pointer
+        aspect-square rounded-xl relative
+        ${
+          isActionInProgress
+            ? "cursor-not-allowed opacity-50"
+            : "cursor-pointer"
+        }
         ${
           selectedFertilizer && isValidFertilizerTarget
             ? "border-4 border-yellow-400 shadow-lg"

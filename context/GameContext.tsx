@@ -1,11 +1,7 @@
 "use client";
 
 import { createContext, useContext, useState } from "react";
-import type {
-  ExpansionCost,
-  HarvestResponse,
-  SeedType,
-} from "../types/game";
+import type { ExpansionCost, HarvestResponse, SeedType } from "../types/game";
 //import { useAudio } from "./AudioContext";
 import { GameState, useGameState } from "@/hooks/use-game-state";
 import { usePlantSeed } from "@/hooks/game-actions/use-plant-seed";
@@ -49,6 +45,7 @@ interface GameContextType {
   setShowMarket: (show: boolean) => void;
   setShowLeaderboard: (show: boolean) => void;
   setShowSettings: (show: boolean) => void;
+  isActionInProgress: boolean;
 }
 
 export const GameContext = createContext<GameContextType | null>(null);
@@ -64,23 +61,21 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
   const [selectedFertilizer, setSelectedFertilizer] = useState<UserItem | null>(
     null
   );
+  const [isActionInProgress, setIsActionInProgress] = useState(false);
 
   const { mutate: plantSeed } = usePlantSeed({
     refetchGridCells: refetch.grid,
     refetchUserItems: refetch.userItems,
+    setIsActionInProgress,
+    isActionInProgress,
   });
   const { mutate: harvestCropMutation } = useHarvestCrop({
     refetchGridCells: refetch.grid,
     refetchUserItems: refetch.userItems,
     refetchUser: refetch.user,
+    isActionInProgress,
+    setIsActionInProgress,
   });
-  const { mutate: fertilize } = useFertilize({
-    refetchGridCells: refetch.grid,
-    refetchUserItems: refetch.userItems,
-  });
-  const { mutate: buyItem } = useBuyItem();
-  const { mutate: sellItem } = useSellItem();
-  const { mutate: expandGrid } = useExpandGrid();
 
   const harvestCrop = (params: { x: number; y: number }) => {
     return new Promise<HarvestResponse | undefined>((resolve) => {
@@ -90,6 +85,16 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
       });
     });
   };
+
+  const { mutate: fertilize } = useFertilize({
+    refetchGridCells: refetch.grid,
+    refetchUserItems: refetch.userItems,
+    isActionInProgress,
+    setIsActionInProgress,
+  });
+  const { mutate: buyItem } = useBuyItem();
+  const { mutate: sellItem } = useSellItem();
+  const { mutate: expandGrid } = useExpandGrid();
 
   if (!state) {
     return (
@@ -122,6 +127,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
         setShowMarket,
         setShowLeaderboard,
         setShowSettings,
+        isActionInProgress,
       }}
     >
       {children}

@@ -14,10 +14,14 @@ export const useHarvestCrop = ({
   refetchGridCells,
   refetchUserItems,
   refetchUser,
+  isActionInProgress,
+  setIsActionInProgress,
 }: {
   refetchGridCells: () => Promise<void>;
   refetchUserItems: () => Promise<void>;
   refetchUser: () => Promise<void>;
+  isActionInProgress: boolean;
+  setIsActionInProgress: (value: boolean) => void;
 }) => {
   const { playSound } = useAudio();
   const mutation = useMutation<
@@ -26,6 +30,9 @@ export const useHarvestCrop = ({
     { x: number; y: number }
   >({
     mutationFn: async ({ x, y }) => {
+      if (isActionInProgress) return;
+
+      setIsActionInProgress(true);
       const res = await fetch(`/api/grid-cells/${x}/${y}`, {
         method: "POST",
         body: JSON.stringify({ action: "harvest" }),
@@ -42,6 +49,9 @@ export const useHarvestCrop = ({
       refetchUserItems();
       refetchUser();
       playSound("harvest");
+    },
+    onSettled: () => {
+      setIsActionInProgress(false);
     },
   });
 
