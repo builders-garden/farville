@@ -1,16 +1,16 @@
 "use client";
 
 import { useGame } from "../context/GameContext";
-import { CropType, SeedType } from "../types/game";
+import { SeedType } from "../types/game";
 import { motion } from "framer-motion";
 import { useState, useRef, useEffect } from "react";
 
 // Import the shared colors
-const CROP_COLORS: Record<CropType, string> = {
-  carrot: "border-orange-400",
-  pumpkin: "border-yellow-400",
-  tomato: "border-red-400",
-  potato: "border-green-400",
+const CROP_COLORS: Record<SeedType, string> = {
+  "carrot-seeds": "border-orange-400",
+  "pumpkin-seeds": "border-yellow-400",
+  "tomato-seeds": "border-red-400",
+  "potato-seeds": "border-green-400",
 };
 
 export default function Toolbar({
@@ -152,7 +152,7 @@ export default function Toolbar({
     const seed = state.seeds.find((seed) => seed.item.slug === type);
     if (!seed || seed.quantity <= 0) return;
 
-    e.dataTransfer.setData("cropType", type);
+    e.dataTransfer.setData("seedType", type);
     e.dataTransfer.effectAllowed = "copy";
 
     // Create a custom drag image
@@ -184,7 +184,9 @@ export default function Toolbar({
         {state.items
           .filter((item) => item.category === "seed")
           .map(({ id, slug, icon }) => {
-            const isAvailable = !!state.seeds.find((seed) => seed.item.id === id);
+            const isAvailable = !!state.seeds.find(
+              (seed) => seed.item.id === id
+            );
 
             return (
               <motion.button
@@ -209,7 +211,7 @@ export default function Toolbar({
                 className={`
                 relative w-12 h-12 rounded-lg flex items-center justify-center
                 ${selectedSeed === slug ? "bg-[#6d4c2c]" : "bg-[#8B5E3C]"}
-                border-2 ${CROP_COLORS[slug as CropType]}
+                border-2 ${CROP_COLORS[slug as SeedType]}
                 ${
                   isAvailable
                     ? "hover:bg-[#6d4c2c]"
