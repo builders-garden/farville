@@ -3,41 +3,21 @@
 import { motion } from "framer-motion";
 import { useState } from "react";
 import { useFrameContext } from "../context/FrameContext";
-
-// Temporary mock data - replace with real data later
-const MOCK_GLOBAL_LEADERBOARD = [
-  { id: 1, name: "FarmerJoe", level: 25, experience: 2480, coins: 15000 },
-  { id: 2, name: "CropMaster", level: 23, experience: 2350, coins: 12500 },
-  { id: 3, name: "HarvestQueen", level: 22, experience: 2200, coins: 11000 },
-  // ... add more entries
-];
-
-const MOCK_FRIENDS = [
-  { id: 1, name: "Alice", level: 18, experience: 1850, coins: 8000 },
-  { id: 2, name: "Bob", level: 15, experience: 1520, coins: 6500 },
-  { id: 3, name: "Charlie", level: 12, experience: 1250, coins: 5000 },
-  // ... add more entries
-];
-
-// type LeaderboardEntry = {
-//   id: number;
-//   name: string;
-//   level: number;
-//   experience: number;
-//   coins: number;
-// };
+import { useLeaderboard } from "@/hooks/use-leadeboard";
+import { LEVEL_XP_THRESHOLDS } from "@/lib/constants";
 
 export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
+  const { users } = useLeaderboard();
   const [activeTab, setActiveTab] = useState<"global" | "friends">("global");
-  const [searchQuery, setSearchQuery] = useState("");
+  //const [searchQuery, setSearchQuery] = useState("");
   const { safeAreaInsets } = useFrameContext();
 
-  const currentLeaderboard =
-    activeTab === "global" ? MOCK_GLOBAL_LEADERBOARD : MOCK_FRIENDS;
+  // const currentLeaderboard =
+  //   activeTab === "global" ? MOCK_GLOBAL_LEADERBOARD : MOCK_FRIENDS;
 
-  const filteredLeaderboard = currentLeaderboard.filter((entry) =>
-    entry.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // const filteredLeaderboard = users?.filter((entry) =>
+  //   entry.username.toLowerCase().includes(searchQuery.toLowerCase())
+  // );
 
   const handleClose = () => {
     onClose();
@@ -55,65 +35,73 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
           marginLeft: safeAreaInsets.left,
           marginRight: safeAreaInsets.right,
         }}
-        className="bg-[#7E4E31] w-full min-h-screen"
+        className="bg-[#7E4E31] w-full h-full"
       >
-        <div className="max-w-4xl mx-auto p-6">
-          <div className="flex justify-between items-center mb-6">
-            <div>
-              <motion.h2
-                className="text-white/90 font-bold text-2xl mb-1 flex items-center gap-2"
-                animate={{ rotate: [0, -3, 3, 0] }}
-                transition={{ duration: 0.5, repeat: Infinity, repeatDelay: 5 }}
-              >
-                <span className="text-3xl">🏆</span> Leaderboard
-              </motion.h2>
-            </div>
-            <button
-              onClick={handleClose}
-              className="w-8 h-8 hover:bg-black/20 rounded-full transition-colors text-white/90 
-                       flex items-center justify-center hover:rotate-90 transform duration-200"
-            >
-              ✕
-            </button>
-          </div>
-
-          {/* Tabs */}
-          <div className="grid grid-cols-2 gap-2 mb-6">
-            {[
-              { id: "global", label: "Global", icon: "🌍" },
-              { id: "friends", label: "Friends", icon: "👥" },
-            ].map((tab) => (
-              <motion.button
-                key={tab.id}
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                onClick={() => setActiveTab(tab.id as "global" | "friends")}
-                className={`px-3 py-2 rounded-lg flex items-center justify-center gap-1.5 transition-all duration-200
-                  ${
-                    activeTab === tab.id
-                      ? "bg-[#6d4c2c] text-white scale-105 shadow-lg"
-                      : "text-white/70 hover:bg-[#6d4c2c]/50"
-                  }`}
-                whileHover={{ scale: activeTab === tab.id ? 1.05 : 1.02 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                <motion.span
-                  animate={{ rotate: activeTab === tab.id ? [0, -5, 5, 0] : 0 }}
+        <div className="max-w-4xl mx-auto w-full h-full p-6 flex flex-col">
+          <div className="flex-none">
+            <div className="flex justify-between items-center mb-6">
+              <div>
+                <motion.h2
+                  className="text-white/90 font-bold text-2xl mb-1 flex items-center gap-2"
+                  animate={{ rotate: [0, -3, 3, 0] }}
                   transition={{
                     duration: 0.5,
                     repeat: Infinity,
-                    repeatDelay: 2,
+                    repeatDelay: 5,
                   }}
                 >
-                  {tab.icon}
-                </motion.span>
-                <span className="text-sm font-medium">{tab.label}</span>
-              </motion.button>
-            ))}
+                  <span className="text-3xl">🏆</span> Leaderboard
+                </motion.h2>
+              </div>
+              <button
+                onClick={handleClose}
+                className="w-8 h-8 hover:bg-black/20 rounded-full transition-colors text-white/90 
+                         flex items-center justify-center hover:rotate-90 transform duration-200"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Tabs */}
+            <div className="grid grid-cols-2 gap-2 mb-6">
+              {[
+                { id: "global", label: "Global", icon: "🌍" },
+                // { id: "friends", label: "Friends", icon: "👥" },
+              ].map((tab) => (
+                <motion.button
+                  key={tab.id}
+                  initial={{ opacity: 0, y: -20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  onClick={() => setActiveTab(tab.id as "global" | "friends")}
+                  className={`px-3 py-2 rounded-lg flex items-center justify-center gap-1.5 transition-all duration-200
+                    ${
+                      activeTab === tab.id
+                        ? "bg-[#6d4c2c] text-white scale-105 shadow-lg"
+                        : "text-white/70 hover:bg-[#6d4c2c]/50"
+                    }`}
+                  whileHover={{ scale: activeTab === tab.id ? 1.05 : 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <motion.span
+                    animate={{
+                      rotate: activeTab === tab.id ? [0, -5, 5, 0] : 0,
+                    }}
+                    transition={{
+                      duration: 0.5,
+                      repeat: Infinity,
+                      repeatDelay: 2,
+                    }}
+                  >
+                    {tab.icon}
+                  </motion.span>
+                  <span className="text-sm font-medium">{tab.label}</span>
+                </motion.button>
+              ))}
+            </div>
           </div>
 
           {/* Search Bar */}
-          <div className="relative mb-6">
+          {/* <div className="relative mb-6">
             <input
               type="text"
               placeholder="Search players..."
@@ -125,39 +113,47 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/50">
               🔍
             </span>
-          </div>
+          </div> */}
 
-          {/* Leaderboard List */}
-          <div className="space-y-2">
-            {filteredLeaderboard.map((entry, index) => (
-              <motion.div
-                key={entry.id}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: index * 0.05 }}
-                className="bg-[#6d4c2c] px-4 py-3 rounded-lg flex items-center gap-3
-                         border border-[#8B5E3C]/50 shadow-md"
-              >
-                <div className="w-8 h-8 flex items-center justify-center bg-[#5c4121] rounded-lg text-white/90">
-                  #{index + 1}
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <p className="text-white/90 font-medium">{entry.name}</p>
-                    <span className="bg-[#FFB938] text-[#7E4E31] px-2 py-0.5 rounded-full text-xs font-medium">
-                      Level {entry.level}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-4 mt-1 text-sm text-white/60">
-                    <span>XP: {entry.experience.toLocaleString()}</span>
-                    <span className="flex items-center gap-1">
-                      <span className="text-[#FFB938]">🪙</span>
-                      {entry.coins.toLocaleString()}
-                    </span>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
+          {/* Scrollable leaderboard list */}
+          <div className="flex-1 overflow-y-auto min-h-0">
+            <div className="space-y-2">
+              {users &&
+                users.map((entry, index) => (
+                  <motion.div
+                    key={entry.fid}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                    className="bg-[#6d4c2c] px-4 py-3 rounded-lg flex items-center gap-3
+                           border border-[#8B5E3C]/50 shadow-md"
+                  >
+                    <div className="px-2 py-1 flex items-center justify-center bg-[#5c4121] rounded-lg text-white/90 text-xs">
+                      #{index + 1}
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <p className="text-white/90 font-medium">
+                          {entry.username}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-4 mt-1 text-xs text-white/60">
+                        <span className="bg-[#FFB938] text-[#7E4E31] px-2 py-0.5 rounded-full font-medium">
+                          Level{" "}
+                          {LEVEL_XP_THRESHOLDS.findIndex(
+                            (threshold) => entry.xp < threshold
+                          ) + 1}
+                        </span>
+                        <span>XP:{entry.xp.toLocaleString()}</span>
+                        <span className="flex items-center gap-1">
+                          <span className="text-[#FFB938]">🪙</span>
+                          {entry.coins.toLocaleString()}
+                        </span>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+            </div>
           </div>
         </div>
       </motion.div>

@@ -1,5 +1,6 @@
 "use client";
 
+import { LEVEL_XP_THRESHOLDS } from "@/lib/constants";
 import { useGame } from "../context/GameContext";
 import { motion } from "framer-motion";
 
@@ -17,11 +18,11 @@ export default function Header() {
             <div className="w-fit">
               <div className="flex items-center justify-between gap-1">
                 <span className="text-white/90 font-semibold tracking-wide text-xs flex items-center gap-1">
-                  <span className="text-[#FFB938] mb-1">⭐</span> {state.level}
+                  <span className="text-[#FFB938] mb-1">⭐</span> {LEVEL_XP_THRESHOLDS.findIndex(threshold => state.experience < threshold) + 1}
                 </span>
                 <span className="text-white/70 text-[10px]">
-                  ({state.experience - (state.level - 1) * 100}/
-                  {state.level * 100})
+                  ({state.experience.toLocaleString()}/
+                  {LEVEL_XP_THRESHOLDS[LEVEL_XP_THRESHOLDS.findIndex(threshold => state.experience < threshold)].toLocaleString()})
                 </span>
               </div>
               <div className="mt-1.5 h-1.5 w-full bg-[#5d3c1c] rounded-full overflow-hidden">

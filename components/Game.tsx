@@ -7,6 +7,7 @@ import { GameProvider } from "./../context/GameContext";
 import { useSignIn } from "@/hooks/use-sign-in";
 import Image from "next/image";
 import { useFrameContext } from "@/context/FrameContext";
+import { useAudio } from "@/context/AudioContext";
 
 const GameWrapper = dynamic(() => import("./../components/GameWrapper"), {
   ssr: false,
@@ -20,9 +21,11 @@ export default function Game() {
   const [showWelcome, setShowWelcome] = useState(true);
   const { isSDKLoaded, context } = useFrameContext();
   const { isSignedIn, isLoading, error } = useSignIn();
+  const { startBackgroundMusic } = useAudio();
 
   const handleWelcomeComplete = () => {
     setShowWelcome(false);
+    startBackgroundMusic();
   };
 
   if (!context && isSDKLoaded && !isLoading) {
