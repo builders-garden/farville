@@ -1,5 +1,6 @@
 "use client";
 
+import { useAudio } from "@/context/AudioContext";
 import { useApiMutation } from "@/hooks/use-api-mutation";
 
 export const useFertilize = ({
@@ -13,12 +14,14 @@ export const useFertilize = ({
   refetchGridCells: () => Promise<void>;
   refetchUserItems: () => Promise<void>;
 }) => {
+  const { playSound } = useAudio();
   const mutation = useApiMutation({
     url: ({ x, y }: { x: number; y: number }) => `/api/grid-cells/${x}/${y}`,
     body: () => ({ action: "fertilize" }),
     onSuccess: () => {
       refetchGridCells();
       refetchUserItems();
+      playSound("fertilize");
     },
     onMutate: () => {
       if (isActionInProgress) return;
