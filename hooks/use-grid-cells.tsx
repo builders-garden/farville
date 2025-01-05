@@ -1,13 +1,12 @@
 import { DbGridCell } from "@/supabase/types";
-import { useQuery } from "@tanstack/react-query";
+import { useApiQuery } from "./use-api-query";
 
 export const useGridCells = () => {
-  const { data, isLoading, refetch   } = useQuery<DbGridCell[]>({
+  const { data, isLoading, refetch } = useApiQuery<DbGridCell[]>({
     queryKey: ["gridCells"],
-    queryFn: async () => {
-      const res = await fetch("/api/grid-cells");
-      return res.json();
-    },
+    url: "/api/grid-cells",
+    isProtected: true,
   });
+
   return { gridCells: data, isLoading, refetch };
 };

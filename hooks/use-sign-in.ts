@@ -61,6 +61,7 @@ export const useSignIn = () => {
       }
 
       const data = await res.json();
+      localStorage.setItem("token", data.token);
       setIsSignedIn(true);
       posthog.identify(context.user.fid.toString());
       return data;

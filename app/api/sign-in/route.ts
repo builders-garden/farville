@@ -2,7 +2,6 @@ import { fetchUser } from "@/lib/neynar";
 import { NextRequest, NextResponse } from "next/server";
 import { verifyMessage } from "viem";
 import * as jose from "jose";
-import { COOKIE_AGE } from "@/lib/constants";
 import { addReferral, createUser, getUser, giftStarterPack } from "@/supabase/queries";
 import { trackEvent } from "@/lib/posthog/server";
 
@@ -56,17 +55,17 @@ export const POST = async (req: NextRequest) => {
     .setExpirationTime("30 days")
     .sign(new TextEncoder().encode(process.env.JWT_SECRET));
 
-  const response = NextResponse.json({ success: true });
+  const response = NextResponse.json({ success: true, token: jwtToken });
 
-  response.cookies.set({
-    name: "token",
-    value: jwtToken,
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "strict",
-    path: "/",
-    maxAge: COOKIE_AGE,
-  });
+  // response.cookies.set({
+  //   name: "token",
+  //   value: jwtToken,
+  //   httpOnly: true,
+  //   secure: process.env.NODE_ENV === "production",
+  //   sameSite: "strict",
+  //   path: "/",
+  //   maxAge: COOKIE_AGE,
+  // });
 
   trackEvent(fid, "sign_in", {
     fid,

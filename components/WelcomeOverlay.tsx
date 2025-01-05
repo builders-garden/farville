@@ -83,7 +83,12 @@ export default function WelcomeOverlay({
     async function getUserIfExist(fid: number) {
       try {
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_URL}/api/user?fid=${fid}`
+          `${process.env.NEXT_PUBLIC_URL}/api/user?fid=${fid}`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
         );
         const userData = await res.json();
         setUser(userData.data);

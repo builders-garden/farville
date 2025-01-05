@@ -1,10 +1,11 @@
 import { DbUser } from "@/supabase/types";
-import { useQuery } from "@tanstack/react-query";
+import { useApiQuery } from "./use-api-query";
 
 export const useUser = () => {
-  const { data, isLoading, refetch } = useQuery<DbUser>({
+  const { data, isLoading, refetch } = useApiQuery<DbUser>({
     queryKey: ["user"],
-    queryFn: () => fetch("/api/users/me").then((res) => res.json()),
+    url: "/api/users/me",
+    isProtected: true,
   });
 
   return { user: data, isLoading, refetch };

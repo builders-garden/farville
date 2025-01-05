@@ -1,16 +1,11 @@
 import { DbItem } from "@/supabase/types";
-import { useQuery } from "@tanstack/react-query";
+import { useApiQuery } from "./use-api-query";
 
 export const useItems = () => {
-  const { data, isLoading, refetch } = useQuery<DbItem[]>({
+  const { data, isLoading, refetch } = useApiQuery<DbItem[]>({
     queryKey: ["items"],
-    queryFn: async () => {
-      const response = await fetch("/api/items");
-      if (!response.ok) {
-        throw new Error("Failed to fetch items");
-      }
-      return response.json();
-    },
+    url: "/api/items",
+    isProtected: true,
   });
 
   return { items: data, isLoading, refetch };

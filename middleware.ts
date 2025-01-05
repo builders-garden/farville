@@ -11,10 +11,13 @@ export default async function middleware(req: NextRequest) {
     return NextResponse.next();
   }
 
-  // Get token from cookies
-  const token = req.cookies.get("token");
+  // Get token from Authorization header
+  const authHeader = req.headers.get("Authorization");
+  const token = authHeader?.startsWith("Bearer ")
+    ? authHeader.substring(7) // Remove "Bearer " prefix
+    : null;
 
-  if (!token?.value) {
+  if (!token) {
     return NextResponse.json(
       { error: "Authentication required" },
       { status: 401 }
@@ -24,7 +27,7 @@ export default async function middleware(req: NextRequest) {
   try {
     const secret = new TextEncoder().encode(process.env.JWT_SECRET);
     // Verify the token using jose
-    const { payload } = await jose.jwtVerify(token.value, secret);
+    const { payload } = await jose.jwtVerify(token, secret);
 
     // Clone the request headers to add user info
     const requestHeaders = new Headers(req.headers);
