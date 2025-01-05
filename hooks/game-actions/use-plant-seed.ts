@@ -2,7 +2,7 @@
 
 import { useAudio } from "@/context/AudioContext";
 import { SeedType } from "@/types/game";
-import { useMutation } from "@tanstack/react-query";
+import { useApiMutation } from "@/hooks/use-api-mutation";
 
 export const usePlantSeed = ({
   isActionInProgress,
@@ -16,24 +16,14 @@ export const usePlantSeed = ({
   refetchUserItems: () => void;
 }) => {
   const { playSound } = useAudio();
-  const mutation = useMutation({
-    mutationFn: async ({
-      x,
-      y,
-      seedType,
-    }: {
-      x: number;
-      y: number;
-      seedType: SeedType;
-    }) => {
-      if (isActionInProgress) return;
 
+  return useApiMutation({
+    url: ({ x, y }: { x: number; y: number; seedType: SeedType }) =>
+      `/api/grid-cells/${x}/${y}`,
+    body: ({ seedType }) => ({ action: "plant", seedType }),
+    onMutate: () => {
+      if (isActionInProgress) return;
       setIsActionInProgress(true);
-      const res = await fetch(`/api/grid-cells/${x}/${y}`, {
-        method: "POST",
-        body: JSON.stringify({ action: "plant", seedType }),
-      });
-      return res.json();
     },
     onSuccess: () => {
       refetchGridCells();
@@ -44,6 +34,4 @@ export const usePlantSeed = ({
       setIsActionInProgress(false);
     },
   });
-
-  return mutation;
 };

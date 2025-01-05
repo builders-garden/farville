@@ -1,20 +1,7 @@
-import { useMutation } from "@tanstack/react-query";
+import { useApiMutation } from "@/hooks/use-api-mutation";
 
 export const useExpandGrid = () => {
-  const mutation = useMutation({
-    mutationFn: async () => {
-      const response = await fetch("/api/grid-cells", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-      if (!response.ok) {
-        throw new Error("Failed to expand grid");
-      }
-      return response.json();
-    }
+  return useApiMutation<unknown, void>({
+    url: "/api/grid-cells",
   });
-
-  return mutation;
 };

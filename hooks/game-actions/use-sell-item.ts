@@ -1,5 +1,6 @@
-import { useMutation } from "@tanstack/react-query";
+import { useApiMutation } from "@/hooks/use-api-mutation";
 import { useAudio } from "@/context/AudioContext";
+
 export const useSellItem = ({
   isActionInProgress,
   setIsActionInProgress,
@@ -12,21 +13,17 @@ export const useSellItem = ({
   refetchUserItems: () => void;
 }) => {
   const { playSound } = useAudio();
-  const mutation = useMutation({
-    mutationFn: async ({
-      itemId,
-      quantity,
-    }: {
-      itemId: number;
-      quantity: number;
-    }) => {
+
+  return useApiMutation({
+    url: ({ itemId }: { itemId: number; quantity: number }) =>
+      `/api/users/me/items/${itemId}`,
+    body: (variables) => ({
+      action: "sell",
+      ...variables,
+    }),
+    onMutate: () => {
       if (isActionInProgress) return;
       setIsActionInProgress(true);
-      const res = await fetch(`/api/users/me/items/${itemId}`, {
-        method: "POST",
-        body: JSON.stringify({ action: "sell", itemId, quantity }),
-      });
-      return res.json();
     },
     onSuccess: () => {
       refetchUser();
@@ -37,6 +34,4 @@ export const useSellItem = ({
       setIsActionInProgress(false);
     },
   });
-
-  return mutation;
 };

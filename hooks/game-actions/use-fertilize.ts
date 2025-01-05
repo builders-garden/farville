@@ -1,6 +1,6 @@
 "use client";
 
-import { useMutation } from "@tanstack/react-query";
+import { useApiMutation } from "@/hooks/use-api-mutation";
 
 export const useFertilize = ({
   isActionInProgress,
@@ -13,20 +13,16 @@ export const useFertilize = ({
   refetchGridCells: () => Promise<void>;
   refetchUserItems: () => Promise<void>;
 }) => {
-  const mutation = useMutation({
-    mutationFn: async ({ x, y }: { x: number; y: number }) => {
-      if (isActionInProgress) return;
-
-      setIsActionInProgress(true);
-      const res = await fetch(`/api/grid-cells/${x}/${y}`, {
-        method: "POST",
-        body: JSON.stringify({ action: "fertilize" }),
-      });
-      return res.json();
-    },
+  const mutation = useApiMutation({
+    url: ({ x, y }: { x: number; y: number }) => `/api/grid-cells/${x}/${y}`,
+    body: () => ({ action: "fertilize" }),
     onSuccess: () => {
       refetchGridCells();
       refetchUserItems();
+    },
+    onMutate: () => {
+      if (isActionInProgress) return;
+      setIsActionInProgress(true);
     },
     onSettled: () => {
       setIsActionInProgress(false);
