@@ -82,6 +82,7 @@ export default function WelcomeOverlay({
   useEffect(() => {
     async function getUserIfExist(fid: number) {
       try {
+        const token = localStorage.getItem("token");
         const res = await fetch(
           `${process.env.NEXT_PUBLIC_URL}/api/user?fid=${fid}`,
           {

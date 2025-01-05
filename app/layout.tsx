@@ -8,7 +8,7 @@ import { Providers } from "./providers";
 //   subsets: ["latin"],
 // });
 
-export const pixelFont = Press_Start_2P({
+const pixelFont = Press_Start_2P({
   weight: "400",
   subsets: ["latin"],
 });
