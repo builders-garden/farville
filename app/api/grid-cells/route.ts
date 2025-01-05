@@ -1,8 +1,8 @@
 import { EXPANSION_COSTS } from "@/lib/game-constants";
 import {
-  createGridCell,
   getUser,
   getGridCells,
+  createGridCell,
   updateUser,
 } from "@/supabase/queries";
 import { NextRequest, NextResponse } from "next/server";
@@ -41,29 +41,16 @@ export const POST = async (req: NextRequest) => {
     return NextResponse.json({ error: "Insufficient funds" }, { status: 400 });
   }
 
-  // Get current size from previous expansion, or 2x2 for first expansion
-  const currentSize =
-    user.expansions === 0
-      ? { width: 2, height: 2 }
-      : EXPANSION_COSTS[user.expansions - 1].nextSize;
-
   const { nextSize } = nextExpansion;
-
-  console.log("Current size:", currentSize, "Next size:", nextSize);
-
-  // Create grid cells for new expansion area, only for new cells
-  for (let x = 0; x < nextSize.width; x++) {
-    for (let y = 0; y < nextSize.height; y++) {
-      // Skip if cell would be in existing area
-      if (x < currentSize.width && y < currentSize.height) {
-        continue;
-      }
-      console.log("Creating new cell:", x, y);
-      await createGridCell(Number(fid), x + 1, y + 1);
+  for (let i = 1; i <= nextSize.width; i++) {
+    if (i < nextSize.width) {
+      console.log("Creating new cell:", i, nextSize.height);
+      await createGridCell(Number(fid), i, nextSize.height);
     }
+    console.log("Creating new cell:", nextSize.width, i);
+    await createGridCell(Number(fid), nextSize.width, i);
   }
 
-  // Update user's expansion level and coins
   await updateUser(Number(fid), {
     expansions: user.expansions + 1,
     coins: user.coins - nextExpansion.coins,
