@@ -106,7 +106,7 @@ export default function WelcomeOverlay({
 
   // Add helper function to start music
   const startMusic = () => {
-    if (!musicStarted) {
+    if (!musicStarted && !isMuted) {
       startBackgroundMusic();
       setMusicStarted(true);
     }
@@ -213,8 +213,10 @@ export default function WelcomeOverlay({
     setIsMuted(!isMuted);
     if (isMuted) {
       startBackgroundMusic();
+      setMusicStarted(true);
     } else {
       stopBackgroundMusic();
+      setMusicStarted(false);
     }
   };
 
@@ -359,7 +361,7 @@ export default function WelcomeOverlay({
               ease: "easeInOut",
             }}
             onClick={async () => {
-              startBackgroundMusic();
+              startMusic();
               await sdk.actions.addFrame();
               setShowShareButton(true);
               // onStart();

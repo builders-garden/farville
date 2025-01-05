@@ -94,12 +94,19 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
 
   const startBackgroundMusic = () => {
     if (musicRef.current && !isMusicPlaying) {
+      musicRef.current.volume = musicVolume;
       musicRef.current
         .play()
         .then(() => {
           setIsMusicPlaying(true);
+          console.log("Music started successfully");
         })
-        .catch(console.error);
+        .catch((error) => {
+          console.error("Failed to start music:", error);
+          if (error.name === "NotAllowedError") {
+            console.log("Autoplay prevented - waiting for user interaction");
+          }
+        });
     }
   };
 
