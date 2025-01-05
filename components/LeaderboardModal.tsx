@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useFrameContext } from "../context/FrameContext";
 import { useLeaderboard } from "@/hooks/use-leadeboard";
 import { LEVEL_XP_THRESHOLDS } from "@/lib/constants";
+import Image from "next/image";
 
 export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
   const { users } = useLeaderboard();
@@ -128,27 +129,44 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
                     className="bg-[#6d4c2c] px-4 py-3 rounded-lg flex items-center gap-3
                            border border-[#8B5E3C]/50 shadow-md"
                   >
-                    <div className="px-2 py-1 flex items-center justify-center bg-[#5c4121] rounded-lg text-white/90 text-xs">
+                    {/* Rank */}
+                    <div className="flex-none text-center px-2 py-1 bg-[#5c4121] rounded-lg text-white/90 text-xs font-medium">
                       #{index + 1}
                     </div>
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        <p className="text-white/90 font-medium">
+
+                    {/* Avatar */}
+                    {entry.avatarUrl ? (
+                      <Image
+                        src={entry.avatarUrl}
+                        alt={`${entry.username}'s avatar`}
+                        className="w-10 h-10 rounded-full object-cover border-2 border-[#FFB938] flex-none"
+                        width={40}
+                        height={40}
+                      />
+                    ) : (
+                      <div className="w-10 h-10 rounded-full bg-[#5c4121] flex items-center justify-center text-white/90 flex-none">
+                        👤
+                      </div>
+                    )}
+
+                    {/* User Info */}
+                    <div className="flex-1 min-w-0 flex items-center justify-between gap-4">
+                      {/* Username and XP */}
+                      <div className="min-w-0 flex flex-col gap-1">
+                        <p className="text-white/90 font-medium truncate text-sm">
                           {entry.username}
                         </p>
-                      </div>
-                      <div className="flex items-center gap-4 mt-1 text-xs text-white/60">
-                        <span className="bg-[#FFB938] text-[#7E4E31] px-2 py-0.5 rounded-full font-medium">
-                          Level{" "}
-                          {LEVEL_XP_THRESHOLDS.findIndex(
-                            (threshold) => entry.xp < threshold
-                          ) + 1}
-                        </span>
-                        <span>XP:{entry.xp.toLocaleString()}</span>
-                        <span className="flex items-center gap-1">
-                          <span className="text-[#FFB938]">🪙</span>
-                          {entry.coins.toLocaleString()}
-                        </span>
+                        <div className="flex items-center gap-4">
+                          <span className="text-[#FFB938] rounded-full font-medium text-xs">
+                            Lvl{" "}
+                            {LEVEL_XP_THRESHOLDS.findIndex(
+                              (threshold) => entry.xp < threshold
+                            ) + 1}
+                          </span>
+                          <p className="text-white/60 text-xs">
+                            XP:{entry.xp.toLocaleString()}
+                          </p>
+                        </div>
                       </div>
                     </div>
                   </motion.div>
