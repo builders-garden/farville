@@ -24,10 +24,10 @@ export default function App() {
 
   useEffect(() => {
     console.log("isSDKLoaded", isSDKLoaded);
-    if (isSDKLoaded) {
+    if (isSDKLoaded && context) {
       signIn();
     }
-  }, [isSDKLoaded]);
+  }, [isSDKLoaded, context]);
 
   const handleWelcomeComplete = () => {
     setShowWelcome(false);
