@@ -1,6 +1,6 @@
 import { AnimatePresence } from "framer-motion";
 import { Metadata } from "next";
-import { getLeaderboard, getStats } from "../../supabase/queries";
+import { getReferralLeaderboard, getStats } from "../../supabase/queries";
 import StatsPage from "../../components/StatsPage";
 
 const appUrl = process.env.NEXT_PUBLIC_URL;
@@ -37,7 +37,7 @@ export const revalidate = 60; // revalidate every 60 seconds
 export const dynamic = "force-dynamic";
 
 export default async function Stats() {
-  const referralLeaderboard = await getLeaderboard(5);
+  const referralLeaderboard = await getReferralLeaderboard(5);
   const gameStats = await getStats();
 
   return (

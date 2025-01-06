@@ -339,7 +339,7 @@ export const getReferralsByFid = async (
   };
 };
 
-export interface LeaderboardEntry {
+export interface ReferralLeaderboardEntry {
   fid: number;
   username: string;
   displayName: string;
@@ -348,9 +348,9 @@ export interface LeaderboardEntry {
   xp: number;
 }
 
-export async function getLeaderboard(
+export async function getReferralLeaderboard(
   limit: number = 10
-): Promise<LeaderboardEntry[]> {
+): Promise<ReferralLeaderboardEntry[]> {
   // Get all referrals
   const { data: referrals, error: referralsError } = await supabase
     .from("referrals")
@@ -532,4 +532,30 @@ export const createGridCell = async (
       onConflict: "fid,x,y",
     }
   );
+};
+
+export const initializeGrid = async (fid: number): Promise<void> => {
+  const initialSize = {
+    width: 2,
+    height: 2,
+  };
+
+  // Create a grid of cells based on the initial size
+  const cells = [];
+  for (let x = 1; x <= initialSize.width; x++) {
+    for (let y = 1; y <= initialSize.height; y++) {
+      cells.push({
+        fid,
+        x,
+        y,
+      });
+    }
+  }
+
+  // Insert all cells at once
+  const { error } = await supabase.from("user_grid_cells").upsert(cells, {
+    onConflict: "fid,x,y",
+  });
+
+  if (error) throw error;
 };

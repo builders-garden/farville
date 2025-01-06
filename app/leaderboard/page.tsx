@@ -1,7 +1,7 @@
 import { AnimatePresence } from "framer-motion";
 import { Metadata } from "next";
 import LeaderboardPage from "../../components/LeaderboardPage";
-import { getLeaderboard } from "../../supabase/queries";
+import { getReferralLeaderboard } from "../../supabase/queries";
 
 const appUrl = process.env.NEXT_PUBLIC_URL;
 
@@ -37,7 +37,7 @@ export const revalidate = 60;
 export const dynamic = "force-dynamic";
 
 export default async function Leaderboard() {
-  const leaderboard = await getLeaderboard();
+  const leaderboard = await getReferralLeaderboard();
 
   return (
     <main className="bg-green-800">

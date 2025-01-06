@@ -2,7 +2,14 @@ import { fetchUser } from "@/lib/neynar";
 import { NextRequest, NextResponse } from "next/server";
 import { verifyMessage } from "viem";
 import * as jose from "jose";
-import { addReferral, createUser, getUser, giftStarterPack } from "@/supabase/queries";
+import {
+  addReferral,
+  createUser,
+  getGridCells,
+  getUser,
+  giftStarterPack,
+  initializeGrid,
+} from "@/supabase/queries";
 import { trackEvent } from "@/lib/posthog/server";
 
 export const POST = async (req: NextRequest) => {
@@ -34,6 +41,14 @@ export const POST = async (req: NextRequest) => {
     trackEvent(fid, "sign_up", {
       fid,
     });
+  }
+  // POST: the user exists
+
+  // check if the user has already the grid cells
+  // if not, initialize the grid
+  const gridCells = await getGridCells(fid);
+  if (gridCells.length === 0) {
+    await initializeGrid(fid);
   }
 
   // Verify signature matches custody address
