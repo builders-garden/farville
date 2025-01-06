@@ -139,14 +139,6 @@ export default function Toolbar({
     };
   }, [isDragging, state.grid]);
 
-  // Calculate total items
-  const totalSeeds = state.seeds.reduce((a, b) => a + b.quantity, 0);
-  const totalCrops = state.crops.reduce((a, b) => a + b.quantity, 0);
-  const totalFertilizers = state.perks
-    .filter((perk) => perk.item.category === "perk")
-    .reduce((sum, perk) => sum + (perk.quantity || 0), 0);
-  const totalItems = totalSeeds + totalCrops + totalFertilizers;
-
   // Handle drag start
   const handleDragStart = (e: React.DragEvent, type: SeedType) => {
     const seed = state.seeds.find((seed) => seed.item.slug === type);
@@ -255,9 +247,6 @@ export default function Toolbar({
         className="relative w-12 h-12 rounded-lg flex items-center justify-center bg-[#8B5E3C] hover:bg-[#6d4c2c] transition-colors"
       >
         <span className="text-xl">📦</span>
-        <div className="absolute -top-2 -right-2 bg-[#6d4c2c] rounded-full px-1.5 py-0.5 text-xs text-white/90">
-          {totalItems}/100
-        </div>
       </motion.button>
     </div>
   );

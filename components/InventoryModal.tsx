@@ -8,12 +8,6 @@ import { SeedType } from "@/types/game";
 
 export default function InventoryModal({ onClose }: { onClose: () => void }) {
   const { state, setSelectedSeed, setSelectedFertilizer } = useGame();
-  const totalSeeds = state.seeds.reduce((a, b) => a + b.quantity, 0);
-  const totalCrops = state.crops.reduce((a, b) => a + b.quantity, 0);
-  const totalFertilizers = state.perks
-    .filter((perk) => perk.item.name === "Fertilizer")
-    .reduce((sum, perk) => sum + (perk.quantity || 0), 0);
-  const totalItems = totalSeeds + totalCrops + totalFertilizers;
   const { safeAreaInsets } = useFrameContext();
 
   const handlePerkClick = (perk: UserItem) => {
@@ -48,20 +42,6 @@ export default function InventoryModal({ onClose }: { onClose: () => void }) {
               >
                 <span className="text-3xl">📦</span> Inventory
               </motion.h2>
-              <p className="text-white/70 text-sm flex items-center gap-1">
-                <span>Storage:</span>
-                <motion.span
-                  className={`font-bold ${
-                    totalItems >= 100 ? "text-red-400" : "text-green-400"
-                  }`}
-                  animate={{ scale: [1, 1.2, 1] }}
-                  transition={{ duration: 0.3 }}
-                >
-                  {totalItems}
-                </motion.span>
-                <span>/</span>
-                <span>100</span>
-              </p>
             </div>
             <button
               onClick={onClose}
