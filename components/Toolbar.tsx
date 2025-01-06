@@ -47,7 +47,7 @@ export default function Toolbar({
       const seedIcon = seed.item.icon;
       if (seedIcon) {
         const img = document.createElement("img");
-        img.src = seedIcon;
+        img.src = `/images/seed/${seedIcon}`;
         img.className = "w-8 h-8";
         touchDragIconRef.current.innerHTML = "";
         touchDragIconRef.current.appendChild(img);
@@ -221,7 +221,7 @@ export default function Toolbar({
               `}
               >
                 <motion.img
-                  src={icon}
+                  src={`/images/${icon}`}
                   alt={`${slug} seed`}
                   className="w-8 h-8 object-contain"
                   animate={{ y: [0, -2, 0] }}

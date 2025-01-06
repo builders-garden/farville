@@ -99,7 +99,7 @@ export default function InventoryModal({ onClose }: { onClose: () => void }) {
                         onClick={() => setSelectedSeed(item.slug as SeedType)}
                       >
                         <motion.img
-                          src={item.icon}
+                          src={`/images/${item.icon}`}
                           alt={`${item.name} seed`}
                           className="w-8 h-8 object-contain"
                           animate={{ y: [0, -2, 0] }}
@@ -145,7 +145,7 @@ export default function InventoryModal({ onClose }: { onClose: () => void }) {
                                border-2 border-[#8B5E3C]"
                       >
                         <motion.img
-                          src={item.icon}
+                          src={`/images/${item.icon}`}
                           alt={`${item.name} crop`}
                           className="w-8 h-8 object-contain"
                           animate={{ y: [0, -2, 0] }}

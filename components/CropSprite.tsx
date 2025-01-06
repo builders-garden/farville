@@ -5,6 +5,7 @@ import { CropType } from "../types/game";
 import { formatDistanceStrict } from "date-fns";
 import { useGame } from "../context/GameContext";
 import { GROWTH_TIMES } from "../lib/game-constants";
+import { useEffect, useState } from "react";
 
 interface CropSpriteProps {
   crop: {
@@ -31,11 +32,41 @@ export function EmptyCropSprite() {
 
 export function PlantedCropSprite({ crop, isDemo }: CropSpriteProps) {
   const { state } = useGame();
+  const [, setForceUpdate] = useState(0);
+
+  useEffect(() => {
+    if (isDemo || crop.readyToHarvest) return;
+
+    // Initial update
+    setForceUpdate((prev) => prev + 1);
+
+    const interval = setInterval(() => {
+      const progress = (Date.now() - crop.plantedAt) / GROWTH_TIMES[crop.type];
+      if (progress >= 1) {
+        clearInterval(interval);
+        return;
+      }
+      setForceUpdate((prev) => prev + 1);
+    }, 1000); // Update more frequently for smoother progress
+
+    return () => clearInterval(interval);
+  }, [crop.readyToHarvest, isDemo, crop.plantedAt, crop.type]);
+
   const getGrowthProgress = () => {
     const { plantedAt } = crop;
     const growthTime = GROWTH_TIMES[crop.type];
     const elapsed = Date.now() - plantedAt;
     return Math.min(elapsed / growthTime, 1);
+  };
+
+  const getGrowthStage = () => {
+    const progress = getGrowthProgress();
+    if (crop.readyToHarvest) return 6;
+    if (progress >= 0.8) return 5;
+    if (progress >= 0.6) return 4;
+    if (progress >= 0.4) return 3;
+    if (progress >= 0.2) return 2;
+    return 1;
   };
 
   const getTimeRemaining = () => {
@@ -75,9 +106,9 @@ export function PlantedCropSprite({ crop, isDemo }: CropSpriteProps) {
 
       {/* Progress Bar - Centered and smaller */}
       {!crop.readyToHarvest && (
-        <div className="absolute bottom-[3%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center w-3/4">
+        <div className="absolute bottom-[3%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center w-3/4 z-50">
           {!isDemo && state.gridSize.width < 5 && (
-            <div className="text-[10px] text-white font-medium mb-1 text-center drop-shadow-[0_1px_1px_rgba(0,0,0,0.8)]">
+            <div className="text-[8px] text-white font-medium mb-1 text-center drop-shadow-[0_1px_1px_rgba(0,0,0,0.8)]">
               {getTimeRemaining()}
             </div>
           )}
@@ -109,14 +140,12 @@ export function PlantedCropSprite({ crop, isDemo }: CropSpriteProps) {
         className="crop-sprite absolute inset-0 flex flex-col items-center justify-center"
       >
         <div
-          className="w-full h-full mb-2"
+          className="w-full h-full mb-6"
           style={{
-            backgroundImage: `url('/images/crop/${crop.type}.png')`,
-            backgroundSize: `${
-              crop.readyToHarvest
-                ? "30"
-                : Math.min(getGrowthProgress() * 30, 30)
-            }%`,
+            backgroundImage: `url('/images/growing-crop/${
+              crop.type
+            }-${getGrowthStage()}.png')`,
+            backgroundSize: "40%",
             backgroundPosition: "center",
             backgroundRepeat: "no-repeat",
             imageRendering: "pixelated",
