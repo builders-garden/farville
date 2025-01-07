@@ -9,11 +9,13 @@ export const usePlantSeed = ({
   setIsActionInProgress,
   refetchGridCells,
   refetchUserItems,
+  onSuccess,
 }: {
   isActionInProgress: boolean;
   setIsActionInProgress: (value: boolean) => void;
   refetchGridCells: () => void;
   refetchUserItems: () => void;
+  onSuccess?: () => void;
 }) => {
   const { playSound } = useAudio();
 
@@ -29,6 +31,7 @@ export const usePlantSeed = ({
       refetchGridCells();
       refetchUserItems();
       playSound("plant");
+      onSuccess?.();
     },
     onSettled: () => {
       setIsActionInProgress(false);

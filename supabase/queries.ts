@@ -10,7 +10,10 @@ import {
 
 // Items queries
 export const getItems = async (category?: string): Promise<DbItem[]> => {
-  const query = supabase.from("items").select("*");
+  const query = supabase
+    .from("items")
+    .select("*")
+    .order("id", { ascending: true });
 
   if (category) {
     query.eq("category", category);

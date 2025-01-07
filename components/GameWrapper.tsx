@@ -11,6 +11,8 @@ import SettingsModal from "./SettingsModal";
 import LeaderboardModal from "./LeaderboardModal";
 import FertilizerIndicator from "./FertilizerIndicator";
 import { useFrameContext } from "../context/FrameContext";
+import SeedMenu from "./SeedMenu";
+import PlantingIndicator from "./PlantingIndicator";
 
 // Load GameGrid component dynamically (client-side only)
 const GameGrid = dynamic(() => import("./GameGrid"), {
@@ -54,9 +56,7 @@ function SettingsModalContainer() {
 
   return (
     <AnimatePresence>
-      {showSettings && (
-        <SettingsModal onClose={() => setShowSettings(false)} />
-      )}
+      {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
     </AnimatePresence>
   );
 }
@@ -72,6 +72,12 @@ function LeaderboardModalContainer() {
       )}
     </AnimatePresence>
   );
+}
+
+function SeedMenuContainer() {
+  const { showSeedsMenu } = useGame();
+
+  return <AnimatePresence>{showSeedsMenu && <SeedMenu />}</AnimatePresence>;
 }
 
 // Add this constant at the top of the file after imports
@@ -104,10 +110,12 @@ export default function GameWrapper() {
       </div>
       <Toolbar safeAreaInsets={safeAreaInsets} />
       <FertilizerIndicator />
+      <PlantingIndicator />
       <InventoryModalContainer />
       <MarketplaceModalContainer />
       <SettingsModalContainer />
       <LeaderboardModalContainer />
+      <SeedMenuContainer />
     </div>
   );
 }

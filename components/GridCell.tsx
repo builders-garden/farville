@@ -7,7 +7,7 @@ import CropSprite from "./CropSprite";
 import FloatingNumber from "./animations/FloatingNumber";
 import { useState, useRef } from "react";
 import { DbGridCell } from "@/supabase/types";
-import { GROWTH_TIMES } from "@/lib/game-constants";
+import { CROP_DATA } from "@/lib/game-constants";
 
 interface GridCellProps {
   cell: DbGridCell;
@@ -38,10 +38,12 @@ export default function GridCell({ cell }: GridCellProps) {
     cell.isReadyToHarvest ||
     (cell.plantedAt &&
       new Date(cell.plantedAt).getTime() +
-        GROWTH_TIMES[cell.cropType as CropType] <
+        CROP_DATA[cell.cropType as CropType].growthTime <
         Date.now());
 
   const isValidFertilizerTarget = cell.plantedAt && !isReadyToHarvest;
+
+  const { state } = useGame();
 
   const handleClick = async () => {
     if (isActionInProgress) return;
@@ -56,7 +58,7 @@ export default function GridCell({ cell }: GridCellProps) {
       if (cellRef.current) {
         const rect = cellRef.current.getBoundingClientRect();
         const cropType = cell.cropType as CropType;
-
+        console.log("cropType", cropType);
         const harvestResult = await harvestCrop({
           x: cell.x,
           y: cell.y,
@@ -131,6 +133,12 @@ export default function GridCell({ cell }: GridCellProps) {
             : ""
         }
         ${selectedFertilizer && !isValidFertilizerTarget ? "opacity-50" : ""}
+        ${
+          selectedSeed && !cell.plantedAt
+            ? "border-4 border-green-400 shadow-lg"
+            : ""
+        }
+        ${selectedSeed && cell.plantedAt ? "opacity-50" : ""}
         ${!cell.plantedAt ? "drop-target" : ""}
         ${isDragOver ? "dragover" : ""}
         transition-all duration-200
@@ -167,6 +175,25 @@ export default function GridCell({ cell }: GridCellProps) {
           className="absolute inset-0 bg-yellow-400/20 rounded-lg flex items-center justify-center"
         >
           <span className="text-2xl">🧪</span>
+        </motion.div>
+      )}
+
+      {/* Seed Planting Hover Effect */}
+      {selectedSeed && isHovered && !cell.plantedAt && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="absolute inset-0 bg-green-400/20 rounded-lg flex items-center justify-center"
+        >
+          <motion.img
+            src={`/images/${
+              state.items.find((item) => item.slug === selectedSeed)?.icon
+            }`}
+            alt={selectedSeed}
+            className="w-8 h-8 object-contain opacity-75"
+            animate={{ scale: [0.9, 1.1, 0.9] }}
+            transition={{ duration: 1.5, repeat: Infinity }}
+          />
         </motion.div>
       )}
 

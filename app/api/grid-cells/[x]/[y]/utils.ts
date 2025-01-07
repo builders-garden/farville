@@ -1,4 +1,4 @@
-import { GROWTH_TIMES, REWARD_XP } from "@/lib/game-constants";
+import { CROP_DATA } from "@/lib/game-constants";
 import {
   getUserItemByItemId,
   getGridCell,
@@ -50,7 +50,7 @@ export const harvest = async (fid: number, x: number, y: number) => {
     // Check if enough time has passed since planting for crop to be ready:
     // plantedTime + growthTime < currentTime
     new Date(gridCell.plantedAt).getTime() + // Get plant time in milliseconds
-      GROWTH_TIMES[gridCell.cropType as CropType] > // Add required growth time for this crop
+      CROP_DATA[gridCell.cropType as CropType].growthTime > // Add required growth time for this crop
       Date.now() // Compare against current time
   ) {
     throw new Error("Grid cell is not ready to harvest");
@@ -92,7 +92,7 @@ export const rewardUser = async (
   cropType: string,
   cropId: number
 ) => {
-  const xp = REWARD_XP[cropType as keyof typeof REWARD_XP];
+  const xp = CROP_DATA[cropType].rewardXP;
   const roll = Math.random();
   const cropReward = roll < 0.6 ? 1 : roll < 0.9 ? 2 : 3;
   await addUserItem(fid, cropId, cropReward);

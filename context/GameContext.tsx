@@ -33,10 +33,12 @@ interface GameContextType {
   showMarket: boolean;
   showLeaderboard: boolean;
   showSettings: boolean;
+  showSeedsMenu: boolean;
   setShowInventory: (show: boolean) => void;
   setShowMarket: (show: boolean) => void;
   setShowLeaderboard: (show: boolean) => void;
   setShowSettings: (show: boolean) => void;
+  setShowSeedsMenu: (show: boolean) => void;
   isActionInProgress: boolean;
 }
 
@@ -47,6 +49,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
   const [showMarket, setShowMarket] = useState(false);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [showSeedsMenu, setShowSeedsMenu] = useState(false);
   const { state, refetch } = useGameState();
   const [selectedSeed, setSelectedSeed] = useState<SeedType | null>(null);
   const [selectedFertilizer, setSelectedFertilizer] = useState<UserItem | null>(
@@ -59,6 +62,9 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     refetchUserItems: refetch.userItems,
     setIsActionInProgress,
     isActionInProgress,
+    onSuccess: () => {
+      setSelectedSeed(null);
+    },
   });
   const { mutate: harvestCropMutation } = useHarvestCrop({
     refetchGridCells: refetch.grid,
@@ -124,10 +130,12 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
         showMarket,
         showLeaderboard,
         showSettings,
+        showSeedsMenu,
         setShowInventory,
         setShowMarket,
         setShowLeaderboard,
         setShowSettings,
+        setShowSeedsMenu,
         isActionInProgress,
       }}
     >
