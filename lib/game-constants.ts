@@ -66,7 +66,7 @@ export const CROPS: {
 ];
 
 export const GROWTH_TIMES: { [key: string]: number } = {
-  carrot: 1800000,
+  carrot: 10000,
   pumpkin: 3600000,
   tomato: 7200000,
   potato: 21600000,
