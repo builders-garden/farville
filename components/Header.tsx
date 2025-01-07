@@ -8,11 +8,13 @@ export default function Header() {
   const { state, setShowMarket, setShowSettings, setShowLeaderboard } =
     useGame();
 
-  const progress =
-    ((state.experience - (LEVEL_XP_THRESHOLDS[state.level - 1] || 0)) /
-      (LEVEL_XP_THRESHOLDS[state.level] -
-        (LEVEL_XP_THRESHOLDS[state.level - 1] || 0))) *
-    100;
+  const currentLevel = LEVEL_XP_THRESHOLDS.findIndex(
+    (threshold) => state.experience < threshold
+  );
+  const previousLevelXP = LEVEL_XP_THRESHOLDS[currentLevel - 1] || 0;
+  const nextLevelXP = LEVEL_XP_THRESHOLDS[currentLevel];
+  const progress = ((state.experience - previousLevelXP) / 
+    (nextLevelXP - previousLevelXP)) * 100;
 
   return (
     <div className="bg-[var(--wood)] px-3 py-2 shadow-lg bg-opacity-95 backdrop-blur-sm border-b-2 border-[#6d4c2c] z-30">
