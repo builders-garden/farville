@@ -65,16 +65,66 @@ export const CROPS: {
   },
 ];
 
-export const GROWTH_TIMES: { [key: string]: number } = {
-  carrot: 1800000,
-  pumpkin: 3600000,
-  tomato: 7200000,
-  potato: 21600000,
-};
+export interface Crop {
+  deathTime: number;
+  growthTime: number;
+  rewardXP: number;
+}
 
-export const REWARD_XP = {
-  carrot: 2,
-  pumpkin: 6,
-  tomato: 12,
-  potato: 25,
-} as const;
+export const CROP_DATA: { [key: string]: Crop } = {
+  wheat: {
+    growthTime: 6 * 3600000, // 6h in milliseconds
+    deathTime: 3 * 3600000, // 3h in milliseconds
+    rewardXP: 12,
+  },
+  carrot: {
+    growthTime: 6 * 3600000, // 6h
+    deathTime: 3.3 * 3600000, // 3.3h
+    rewardXP: 10,
+  },
+  radish: {
+    growthTime: 6 * 3600000, // 6h
+    deathTime: 3.6 * 3600000, // 3.6h
+    rewardXP: 14,
+  },
+  lettuce: {
+    growthTime: 10 * 3600000, // 10h
+    deathTime: 6 * 3600000, // 6h
+    rewardXP: 16,
+  },
+  potato: {
+    growthTime: 12 * 3600000, // 12h
+    deathTime: 7.8 * 3600000, // 7.8h
+    rewardXP: 25,
+  },
+  corn: {
+    growthTime: 12 * 3600000, // 12h
+    deathTime: 8.4 * 3600000, // 8.4h
+    rewardXP: 30,
+  },
+  eggplant: {
+    growthTime: 16 * 3600000, // 16h
+    deathTime: 12 * 3600000, // 12h
+    rewardXP: 35,
+  },
+  tomato: {
+    growthTime: 16 * 3600000, // 16h
+    deathTime: 12.8 * 3600000, // 12.8h
+    rewardXP: 45,
+  },
+  strawberry: {
+    growthTime: 24 * 3600000, // 24h
+    deathTime: 19.2 * 3600000, // 19.2h
+    rewardXP: 55,
+  },
+  watermelon: {
+    growthTime: 36 * 3600000, // 36h
+    deathTime: 32.4 * 3600000, // 32.4h
+    rewardXP: 120,
+  },
+  pumpkin: {
+    growthTime: 48 * 3600000, // 48h
+    deathTime: 48 * 3600000, // 48h
+    rewardXP: 180,
+  },
+};

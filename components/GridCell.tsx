@@ -7,7 +7,7 @@ import CropSprite from "./CropSprite";
 import FloatingNumber from "./animations/FloatingNumber";
 import { useState, useRef } from "react";
 import { DbGridCell } from "@/supabase/types";
-import { GROWTH_TIMES } from "@/lib/game-constants";
+import { CROP_DATA } from "@/lib/game-constants";
 
 interface GridCellProps {
   cell: DbGridCell;
@@ -38,7 +38,7 @@ export default function GridCell({ cell }: GridCellProps) {
     cell.isReadyToHarvest ||
     (cell.plantedAt &&
       new Date(cell.plantedAt).getTime() +
-        GROWTH_TIMES[cell.cropType as CropType] <
+        CROP_DATA[cell.cropType as CropType].growthTime <
         Date.now());
 
   const isValidFertilizerTarget = cell.plantedAt && !isReadyToHarvest;

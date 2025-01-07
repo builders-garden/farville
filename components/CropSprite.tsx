@@ -4,8 +4,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { CropType } from "../types/game";
 import { formatDistanceStrict } from "date-fns";
 import { useGame } from "../context/GameContext";
-import { GROWTH_TIMES } from "../lib/game-constants";
 import { useEffect, useState } from "react";
+import { CROP_DATA } from "@/lib/game-constants";
 
 interface CropSpriteProps {
   crop: {
@@ -41,7 +41,8 @@ export function PlantedCropSprite({ crop, isDemo }: CropSpriteProps) {
     setForceUpdate((prev) => prev + 1);
 
     const interval = setInterval(() => {
-      const progress = (Date.now() - crop.plantedAt) / GROWTH_TIMES[crop.type];
+      const progress =
+        (Date.now() - crop.plantedAt) / CROP_DATA[crop.type].growthTime;
       if (progress >= 1) {
         clearInterval(interval);
         return;
@@ -54,7 +55,7 @@ export function PlantedCropSprite({ crop, isDemo }: CropSpriteProps) {
 
   const getGrowthProgress = () => {
     const { plantedAt } = crop;
-    const growthTime = GROWTH_TIMES[crop.type];
+    const growthTime = CROP_DATA[crop.type].growthTime;
     const elapsed = Date.now() - plantedAt;
     return Math.min(elapsed / growthTime, 1);
   };
@@ -71,7 +72,7 @@ export function PlantedCropSprite({ crop, isDemo }: CropSpriteProps) {
 
   const getTimeRemaining = () => {
     const { plantedAt } = crop;
-    const growthTime = GROWTH_TIMES[crop.type];
+    const growthTime = CROP_DATA[crop.type].growthTime;
     const elapsed = Date.now() - plantedAt;
     const remaining = Math.max(growthTime - elapsed, 0);
 
