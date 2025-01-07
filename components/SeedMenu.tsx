@@ -231,7 +231,7 @@ export default function SeedMenu() {
                   whileTap={isAvailable ? { scale: 0.95 } : undefined}
                 >
                   <motion.img
-                    src={`/images/${item.icon}`}
+                    src={`/images${item.icon}`}
                     alt={`${item.slug} seed`}
                     className="w-8 h-8 object-contain"
                     animate={{ y: [0, -2, 0] }}

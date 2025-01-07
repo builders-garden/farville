@@ -135,7 +135,7 @@ export default function MarketplaceModal({
                       <div className="flex items-center gap-3 flex-1">
                         <div className="w-10 h-10 flex items-center justify-center">
                           <motion.img
-                            src={`/images/${item.icon}`}
+                            src={`/images${item.icon}`}
                             alt={`${item.name} seed`}
                             className="w-8 h-8 object-contain"
                             animate={{ y: [0, -2, 0] }}
@@ -224,7 +224,7 @@ export default function MarketplaceModal({
                         <div className="flex items-center gap-3 flex-1">
                           <div className="w-10 h-10 flex items-center justify-center">
                             <motion.img
-                              src={`/images/${item.icon}`}
+                              src={`/images${item.icon}`}
                               alt={item.name}
                               className="w-8 h-8 object-contain"
                               animate={{ y: [0, -2, 0] }}

@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { useState } from "react";
 import { useFrameContext } from "../context/FrameContext";
 import { useLeaderboard } from "@/hooks/use-leadeboard";
-import { LEVEL_XP_THRESHOLDS } from "@/lib/constants";
+import { LEVEL_XP_THRESHOLDS } from "@/lib/game-constants";
 import Image from "next/image";
 
 export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
@@ -161,7 +161,7 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
                             Lvl{" "}
                             {LEVEL_XP_THRESHOLDS.findIndex(
                               (threshold) => entry.xp < threshold
-                            ) + 1}
+                            )}
                           </span>
                           <p className="text-white/60 text-xs">
                             XP:{entry.xp.toLocaleString()}

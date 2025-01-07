@@ -1,6 +1,6 @@
 "use client";
 
-import { LEVEL_XP_THRESHOLDS } from "@/lib/constants";
+import { LEVEL_XP_THRESHOLDS } from "@/lib/game-constants";
 import { useGame } from "../context/GameContext";
 import { motion } from "framer-motion";
 
@@ -8,7 +8,11 @@ export default function Header() {
   const { state, setShowMarket, setShowSettings, setShowLeaderboard } =
     useGame();
 
-  const progress = ((state.experience - (state.level - 1) * 100) / 100) * 100;
+  const progress =
+    ((state.experience - (LEVEL_XP_THRESHOLDS[state.level - 1] || 0)) /
+      (LEVEL_XP_THRESHOLDS[state.level] -
+        (LEVEL_XP_THRESHOLDS[state.level - 1] || 0))) *
+    100;
 
   return (
     <div className="bg-[var(--wood)] px-3 py-2 shadow-lg bg-opacity-95 backdrop-blur-sm border-b-2 border-[#6d4c2c] z-30">
@@ -18,11 +22,22 @@ export default function Header() {
             <div className="w-fit">
               <div className="flex items-center justify-between gap-1">
                 <span className="text-white/90 font-semibold tracking-wide text-xs flex items-center gap-1">
-                  <span className="text-[#FFB938] mb-1">⭐</span> {LEVEL_XP_THRESHOLDS.findIndex(threshold => state.experience < threshold) + 1}
+                  <span className="text-[#FFB938] mb-1">⭐</span>{" "}
+                  {LEVEL_XP_THRESHOLDS.findIndex(
+                    (threshold) => state.experience < threshold
+                  )}
                 </span>
                 <span className="text-white/70 text-[10px]">
                   ({state.experience.toLocaleString()}/
-                  {LEVEL_XP_THRESHOLDS[LEVEL_XP_THRESHOLDS.findIndex(threshold => state.experience < threshold)].toLocaleString()})
+                  {LEVEL_XP_THRESHOLDS[
+                    Math.min(
+                      LEVEL_XP_THRESHOLDS.findIndex(
+                        (threshold) => state.experience < threshold
+                      ),
+                      LEVEL_XP_THRESHOLDS.length - 1
+                    )
+                  ].toLocaleString()}
+                  )
                 </span>
               </div>
               <div className="mt-1.5 h-1.5 w-full bg-[#5d3c1c] rounded-full overflow-hidden">

@@ -22,7 +22,7 @@ export default function PlantingIndicator() {
         whileHover={{ scale: 1.05 }}
       >
         <motion.img
-          src={`/images/${seedItem?.icon}`}
+          src={`/images${seedItem?.icon}`}
           alt={seedItem?.name}
           className="w-6 h-6 object-contain"
           animate={{ y: [0, -2, 0] }}

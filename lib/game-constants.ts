@@ -128,3 +128,26 @@ export const CROP_DATA: { [key: string]: Crop } = {
     rewardXP: 180,
   },
 };
+
+export const LEVEL_XP_THRESHOLDS = [
+  0, // Level 1
+  100, // Level 2
+  300, // Level 3
+  600, // Level 4
+  1000, // Level 5
+  1400, // Level 6
+  1900, // Level 7
+  2500, // Level 8
+  3200, // Level 9
+  4000, // Level 10
+  5000, // Level 11
+  6200, // Level 12
+  7500, // Level 13
+  9000, // Level 14
+  11000, // Level 15
+  13000, // Level 16
+  15000, // Level 17
+  17000, // Level 18
+  19000, // Level 19
+  21000, // Level 20
+];
