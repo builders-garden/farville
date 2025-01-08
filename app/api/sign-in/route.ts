@@ -35,9 +35,6 @@ export const POST = async (req: NextRequest) => {
       await addReferral(referrerFid, fid);
     }
 
-    // Give them a starter pack
-    await giftStarterPack(fid);
-
     trackEvent(fid, "sign_up", {
       fid,
     });
@@ -49,6 +46,8 @@ export const POST = async (req: NextRequest) => {
   const gridCells = await getGridCells(fid);
   if (gridCells.length === 0) {
     await initializeGrid(fid);
+    // Give them a starter pack
+    await giftStarterPack(fid);
   }
 
   // Verify signature matches custody address

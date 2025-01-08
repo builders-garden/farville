@@ -6,6 +6,8 @@ export type SeedType =
   | "tomato-seeds"
   | "potato-seeds";
 
+export type ActionType = "plant" | "harvest" | "fertilize";
+
 export type CropType = "carrot" | "pumpkin" | "tomato" | "potato";
 
 export type Crop = {

@@ -6,6 +6,8 @@ import {
   DbUserHasItem,
   InsertDbUser,
   DbGridCell,
+  DbUserNotification,
+  InsertDbUserNotification,
 } from "./types";
 
 // Items queries
@@ -561,4 +563,100 @@ export const initializeGrid = async (fid: number): Promise<void> => {
   });
 
   if (error) throw error;
+};
+
+// User Notification queries
+export const createUserNotification = async (
+  notification: InsertDbUserNotification
+): Promise<DbUserNotification> => {
+  const { data, error } = await supabase
+    .from("user_notification")
+    .insert(notification)
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+};
+
+export const getUserNotificationById = async (
+  id: string
+): Promise<DbUserNotification | null> => {
+  const { data, error } = await supabase
+    .from("user_notification")
+    .select("*")
+    .eq("id", id)
+    .maybeSingle();
+
+  if (error) throw error;
+  return data;
+};
+
+export const updateUserNotification = async (
+  id: string,
+  updates: Partial<Omit<DbUserNotification, "id" | "created_at">>
+): Promise<DbUserNotification> => {
+  const { data, error } = await supabase
+    .from("user_notification")
+    .update({
+      ...updates,
+      updatedAt: new Date().toISOString(),
+    })
+    .eq("id", id)
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+};
+
+export const deleteUserNotification = async (id: string): Promise<void> => {
+  const { error } = await supabase
+    .from("user_notification")
+    .delete()
+    .eq("id", id);
+
+  if (error) throw error;
+};
+
+export const getUserNotifications = async (
+  fid: number,
+  limit?: number
+): Promise<DbUserNotification[]> => {
+  const query = supabase
+    .from("user_notification")
+    .select("*")
+    .eq("fid", fid)
+    .order("created_at", { ascending: false });
+
+  if (limit) {
+    query.limit(limit);
+  }
+
+  const { data, error } = await query;
+
+  if (error) throw error;
+  return data;
+};
+
+export const getUserNotificationsByCategory = async (
+  fid: number,
+  category: string,
+  limit?: number
+): Promise<DbUserNotification[]> => {
+  const query = supabase
+    .from("user_notification")
+    .select("*")
+    .eq("fid", fid)
+    .eq("category", category)
+    .order("created_at", { ascending: false });
+
+  if (limit) {
+    query.limit(limit);
+  }
+
+  const { data, error } = await query;
+
+  if (error) throw error;
+  return data;
 };

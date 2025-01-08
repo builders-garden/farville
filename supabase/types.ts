@@ -55,3 +55,16 @@ export interface DbGridCell {
 
 // Helper type for inserting new grid cells
 export type InsertDbGridCell = Omit<DbGridCell, "createdAt">;
+
+export interface DbUserNotification {
+  id: string;
+  fid: number;
+  category: string;
+  createdAt: string;
+}
+
+// Helper type for inserting new notifications
+export type InsertDbUserNotification = Omit<
+  DbUserNotification,
+  "createdAt" | "id"
+>;
