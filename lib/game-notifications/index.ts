@@ -41,6 +41,20 @@ export function getCropNameFromSeeds(seedType: SeedType) {
       return "tomatoes";
     case "potato-seeds":
       return "potatoes";
+    case "wheat-seeds":
+      return "wheat";
+    case "corn-seeds":
+      return "corn";
+    case "lettuce-seeds":
+      return "lettuce";
+    case "eggplant-seeds":
+      return "eggplant";
+    case "radish-seeds":
+      return "radishes";
+    case "strawberry-seeds":
+      return "strawberries";
+    case "watermelon-seeds":
+      return "watermelon";
     default:
       throw new Error(`Unknown seed type: ${seedType}`);
   }
