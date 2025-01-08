@@ -101,7 +101,12 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     isActionInProgress,
     setIsActionInProgress,
   });
-  const { mutate: expandGrid } = useExpandGrid();
+  const { mutate: expandGrid } = useExpandGrid({
+    isActionInProgress,
+    setIsActionInProgress,
+    refetchGridCells: refetch.grid,
+    refetchUser: refetch.user,
+  });
 
   if (!state) {
     return (

@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useGridCells } from "./use-grid-cells";
 import { DbGridCell, DbItem } from "@/supabase/types";
 import { useItems } from "./use-items";
+import { getCurrentLevelAndProgress } from "@/lib/utils";
 
 export interface GameState {
   coins: number;
@@ -38,9 +39,10 @@ export const useGameState = () => {
 
   const updateState = useCallback(() => {
     if (userItems && items && user && gridCells) {
+      const { currentLevel } = getCurrentLevelAndProgress(user?.xp);
       setState({
         coins: user.coins,
-        level: user.xp > 0 ? Math.floor(Math.sqrt(user.xp / 100)) + 1 : 1,
+        level: currentLevel,
         experience: user.xp,
         seeds: userItems
           .filter((ui) => ui.item.category === "seed")
