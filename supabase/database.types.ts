@@ -137,6 +137,26 @@ export interface Database {
           createdAt?: string;
         };
       };
+      user_notification: {
+        Row: {
+          id: number;
+          fid: number;
+          category: string;
+          createdAt: string;
+        };
+        Insert: {
+          id?: number;
+          fid: number;
+          category: string;
+          createdAt?: string;
+        };
+        Update: {
+          id?: number;
+          fid?: number;
+          category?: string;
+          createdAt?: string;
+        };
+      };
     };
     Views: {
       [_ in never]: never;

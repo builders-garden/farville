@@ -3,6 +3,7 @@ import { fertilize, harvest, plantSeed } from "./utils";
 import {
   sendDelayedNotification,
   getGrowthTime,
+  getCropNameFromSeeds,
 } from "@/lib/game-notifications";
 import { z } from "zod";
 
@@ -59,7 +60,8 @@ export async function POST(
       await sendDelayedNotification(
         fid,
         `Harvest time! 🌾`,
-        `Your ${seedType} are ready to harvest!`,
+        `Your ${getCropNameFromSeeds(seedType)} are ready to harvest!`,
+        "harvest",
         getGrowthTime(seedType)
       );
       break;
