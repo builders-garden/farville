@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 import { useGame } from "../context/GameContext";
 import { SeedType } from "../types/game";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 
 const CROP_COLORS: Record<SeedType, string> = {
   "carrot-seeds": "border-orange-400",
@@ -20,7 +20,7 @@ const CROP_COLORS: Record<SeedType, string> = {
 };
 
 export default function SeedMenu() {
-  const { selectedSeed, setSelectedSeed, state, setShowSeedsMenu } = useGame();
+  const { selectedSeed, setSelectedSeed, state } = useGame();
 
   const [isDragging, setIsDragging] = useState(false);
   const dragIconRef = useRef<HTMLDivElement>(null);
@@ -63,66 +63,75 @@ export default function SeedMenu() {
   };
 
   // Handle touch move
-  const handleTouchMove = (e: React.TouchEvent) => {
-    if (!isDragging) return;
-    e.preventDefault();
+  const handleTouchMove = useCallback(
+    (e: React.TouchEvent) => {
+      if (!isDragging) return;
+      e.preventDefault();
 
-    const touch = e.touches[0];
-    updateTouchDragIcon(touch.clientX, touch.clientY);
+      const touch = e.touches[0];
+      updateTouchDragIcon(touch.clientX, touch.clientY);
 
-    // Find element under touch point
-    const elemBelow = document.elementFromPoint(touch.clientX, touch.clientY);
-    const dropTarget = elemBelow?.closest(".grid-cell");
+      // Find element under touch point
+      const elemBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+      const dropTarget = elemBelow?.closest(".grid-cell");
 
-    // Remove dragover class from all cells
-    document.querySelectorAll(".grid-cell").forEach((cell) => {
-      cell.classList.remove("dragover");
-    });
+      // Remove dragover class from all cells
+      document.querySelectorAll(".grid-cell").forEach((cell) => {
+        cell.classList.remove("dragover");
+      });
 
-    // Add dragover class to current cell
-    if (dropTarget) {
-      dropTarget.classList.add("dragover");
-    }
-  };
+      // Add dragover class to current cell
+      if (dropTarget) {
+        dropTarget.classList.add("dragover");
+      }
+    },
+    [isDragging]
+  );
 
   // Handle touch end
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    if (!isDragging) return;
+  const handleTouchEnd = useCallback(
+    (e: React.TouchEvent) => {
+      if (!isDragging) return;
 
-    const touch = e.changedTouches[0];
-    const dropTarget = document.elementFromPoint(touch.clientX, touch.clientY);
-    const gridCell = dropTarget?.closest(".grid-cell");
+      const touch = e.changedTouches[0];
+      const dropTarget = document.elementFromPoint(
+        touch.clientX,
+        touch.clientY
+      );
+      const gridCell = dropTarget?.closest(".grid-cell");
 
-    if (gridCell && draggedCropRef.current) {
-      // Get cell coordinates from data attributes
-      const x = parseInt(gridCell.getAttribute("data-x") || "0");
-      const y = parseInt(gridCell.getAttribute("data-y") || "0");
+      if (gridCell && draggedCropRef.current) {
+        // Get cell coordinates from data attributes
+        const x = parseInt(gridCell.getAttribute("data-x") || "0");
+        const y = parseInt(gridCell.getAttribute("data-y") || "0");
 
-      // Attempt to plant the crop
-      const cell = state.grid.find((cell) => cell.x === x && cell.y === y);
+        // Attempt to plant the crop
+        const cell = state.grid.find((cell) => cell.x === x && cell.y === y);
 
-      if (cell && !cell.plantedAt) {
-        setSelectedSeed(draggedCropRef.current as SeedType);
-        // Small delay to ensure selectedCrop is set before clicking
-        setTimeout(() => {
-          (gridCell as HTMLElement).click();
-        }, 50);
+        if (cell && !cell.plantedAt) {
+          setSelectedSeed(draggedCropRef.current as SeedType);
+          // Small delay to ensure selectedCrop is set before clicking
+          setTimeout(() => {
+            (gridCell as HTMLElement).click();
+          }, 50);
+        }
       }
-    }
 
-    // Clean up
-    if (touchDragIconRef.current) {
-      touchDragIconRef.current.style.display = "none";
-    }
-    document.body.classList.remove("dragging");
-    setIsDragging(false);
-    draggedCropRef.current = null;
+      // Clean up
+      if (touchDragIconRef.current) {
+        touchDragIconRef.current.style.display = "none";
+      }
+      document.body.classList.remove("dragging");
+      setIsDragging(false);
+      draggedCropRef.current = null;
 
-    // Remove dragover class from all cells
-    document.querySelectorAll(".grid-cell").forEach((cell) => {
-      cell.classList.remove("dragover");
-    });
-  };
+      // Remove dragover class from all cells
+      document.querySelectorAll(".grid-cell").forEach((cell) => {
+        cell.classList.remove("dragover");
+      });
+    },
+    [isDragging, state.grid]
+  );
 
   // Handle drag start
   const handleDragStart = (e: React.DragEvent, type: SeedType) => {
@@ -169,7 +178,7 @@ export default function SeedMenu() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 20 }}
-      className="fixed bottom-24 right-4 flex items-center gap-2 mx-2 z-50"
+      className="flex items-center gap-2 px-2"
     >
       <div
         ref={dragIconRef}
@@ -183,10 +192,10 @@ export default function SeedMenu() {
       />
 
       <motion.div
-        className="bg-[#7E4E31] p-3 rounded-lg shadow-lg border-2 border-[#8B5E3C]"
-        whileHover={{ scale: 1.05 }}
+        className="bg-[#7E4E31]/40 p-2 rounded-lg shadow-lg border-2 border-[#8B5E3C]/60 w-full"
+        whileHover={{ scale: 1.02 }}
       >
-        <div className="grid grid-cols-6 gap-2 mb-2">
+        <div className="flex gap-2 overflow-x-auto p-2 scrollbar-thin scrollbar-thumb-[#6d4c2c] scrollbar-track-[#8B5E3C]">
           {state.items
             .filter((item) => item.category === "seed")
             .map((item) => {
@@ -204,8 +213,6 @@ export default function SeedMenu() {
                           ? null
                           : (item.slug as SeedType)
                       );
-                      // Hide menu when selecting a seed
-                      setShowSeedsMenu(false);
                     }
                   }}
                   draggable={isAvailable}
@@ -220,7 +227,7 @@ export default function SeedMenu() {
                   }
                   onTouchEnd={handleTouchEnd}
                   className={`
-                    relative w-10 h-10 rounded-lg flex items-center justify-center
+                    relative min-w-[2.5rem] w-10 h-10 rounded-lg flex items-center justify-center
                     ${
                       selectedSeed === item.slug
                         ? "bg-[#6d4c2c]"
@@ -255,14 +262,6 @@ export default function SeedMenu() {
           Select a seed to plant
         </div>
       </motion.div>
-      <motion.button
-        onClick={() => setShowSeedsMenu(false)}
-        className="py-2 px-4 bg-red-500 rounded-lg flex items-center justify-center text-white shadow-lg hover:bg-red-600"
-        whileHover={{ scale: 1.1 }}
-        whileTap={{ scale: 0.95 }}
-      >
-        ✕
-      </motion.button>
     </motion.div>
   );
 }
