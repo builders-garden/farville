@@ -3,18 +3,12 @@
 import { LEVEL_XP_THRESHOLDS } from "@/lib/game-constants";
 import { useGame } from "../context/GameContext";
 import { motion } from "framer-motion";
+import { getCurrentLevelAndProgress } from "@/lib/utils";
 
 export default function Header() {
   const { state, setShowMarket, setShowSettings, setShowLeaderboard } =
     useGame();
-
-  const currentLevel = LEVEL_XP_THRESHOLDS.findIndex(
-    (threshold) => state.experience < threshold
-  );
-  const previousLevelXP = LEVEL_XP_THRESHOLDS[currentLevel - 1] || 0;
-  const nextLevelXP = LEVEL_XP_THRESHOLDS[currentLevel];
-  const progress = ((state.experience - previousLevelXP) / 
-    (nextLevelXP - previousLevelXP)) * 100;
+  const { progress } = getCurrentLevelAndProgress(state.experience);
 
   return (
     <div className="bg-[var(--wood)] px-3 py-2 shadow-lg bg-opacity-95 backdrop-blur-sm border-b-2 border-[#6d4c2c] z-30">
@@ -24,10 +18,7 @@ export default function Header() {
             <div className="w-fit">
               <div className="flex items-center justify-between gap-1">
                 <span className="text-white/90 font-semibold tracking-wide text-xs flex items-center gap-1">
-                  <span className="text-[#FFB938] mb-1">⭐</span>{" "}
-                  {LEVEL_XP_THRESHOLDS.findIndex(
-                    (threshold) => state.experience < threshold
-                  )}
+                  <span className="text-[#FFB938] mb-1">⭐</span> {state.level}
                 </span>
                 <span className="text-white/70 text-[10px]">
                   ({state.experience.toLocaleString()}/
