@@ -10,6 +10,13 @@ const CROP_COLORS: Record<SeedType, string> = {
   "pumpkin-seeds": "border-yellow-400",
   "tomato-seeds": "border-red-400",
   "potato-seeds": "border-yellow-400",
+  "wheat-seeds": "border-orange-400",
+  "corn-seeds": "border-yellow-400",
+  "lettuce-seeds": "border-green-400",
+  "eggplant-seeds": "border-purple-400",
+  "radish-seeds": "border-red-400",
+  "strawberry-seeds": "border-red-400",
+  "watermelon-seeds": "border-red-400",
 };
 
 export default function SeedMenu() {

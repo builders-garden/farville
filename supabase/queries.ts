@@ -12,14 +12,15 @@ import {
 
 // Items queries
 export const getItems = async (category?: string): Promise<DbItem[]> => {
-  const query = supabase
-    .from("items")
-    .select("*")
-    .order("id", { ascending: true });
+  const query = supabase.from("items").select("*");
 
   if (category) {
     query.eq("category", category);
   }
+
+  query.order("requiredLevel", { ascending: true });
+  query.order("buyPrice", { ascending: true });
+  query.order("sellPrice", { ascending: true });
 
   const { data, error } = await query;
 
@@ -44,7 +45,8 @@ export const getItemsByCategory = async (
   const { data, error } = await supabase
     .from("items")
     .select("*")
-    .eq("category", category);
+    .eq("category", category)
+    .order("requiredLevel", { ascending: true });
 
   if (error) throw error;
   return data;

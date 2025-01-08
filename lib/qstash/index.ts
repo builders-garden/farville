@@ -1,4 +1,5 @@
 import { Client } from "@upstash/qstash";
+import * as jose from "jose";
 
 if (!process.env.QSTASH_TOKEN) {
   throw new Error("QSTASH_TOKEN is required");
@@ -33,4 +34,38 @@ export const qstashPublishJSON = async (req: QStashPublishJSONRequest) => {
   });
 
   return res;
+};
+
+export const validateQstashRequest = async (upstashSignature: string, path: string) => {
+  // verify the signature
+  if (!upstashSignature) {
+    console.error(
+      `[QSTASH-${new Date().toISOString()}]`,
+      "No Upstash signature provided"
+    );
+    throw new Error("No Upstash signature provided");
+  }
+
+  const verificationResult = await jose.jwtVerify(
+    upstashSignature,
+    new TextEncoder().encode(process.env.QSTASH_CURRENT_SIGNING_KEY),
+    {
+      issuer: "Upstash",
+      subject: `${process.env.NEXT_PUBLIC_URL}${path}`,
+    }
+  );
+
+  // if the verification fails, return an error
+  if (!verificationResult) {
+    console.error(
+      `[QSTASH-${new Date().toISOString()}]`,
+      "Invalid Upstash signature"
+    );
+    throw new Error("Invalid Upstash signature");
+  }
+
+  console.log(
+    `[QSTASH-${new Date().toISOString()}]`,
+    "Upstash signature verified"
+  );
 };

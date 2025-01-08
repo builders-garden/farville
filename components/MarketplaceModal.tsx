@@ -111,7 +111,6 @@ export default function MarketplaceModal({
               >
                 {state.items
                   .filter((item) => item.category === "seed")
-                  .sort((a, b) => a.buyPrice - b.buyPrice)
                   .map((item, index) => (
                     <motion.div
                       key={item.slug}
@@ -207,7 +206,6 @@ export default function MarketplaceModal({
               >
                 {state.items
                   .filter((item) => item.category === "crop")
-                  .sort((a, b) => a.sellPrice - b.sellPrice)
                   .map((item) => {
                     const amount =
                       state.crops.find((crop) => crop.itemId === item.id)

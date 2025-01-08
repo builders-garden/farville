@@ -6,19 +6,7 @@ import {
   getCropNameFromSeeds,
 } from "@/lib/game-notifications";
 import { z } from "zod";
-
-enum ActionType {
-  Plant = "plant",
-  Harvest = "harvest",
-  Fertilize = "fertilize",
-}
-
-enum SeedType {
-  CarrotSeeds = "carrot-seeds",
-  PumpkinSeeds = "pumpkin-seeds",
-  TomatoSeeds = "tomato-seeds",
-  PotatoSeeds = "potato-seeds",
-}
+import { ActionType, SeedType } from "@/types/game";
 
 const requestSchema = z.object({
   action: z.nativeEnum(ActionType),

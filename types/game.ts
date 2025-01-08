@@ -1,14 +1,39 @@
 import type { Perk } from "./perks";
 
-export type SeedType =
-  | "carrot-seeds"
-  | "pumpkin-seeds"
-  | "tomato-seeds"
-  | "potato-seeds";
+export enum SeedType {
+  CarrotSeeds = "carrot-seeds",
+  PumpkinSeeds = "pumpkin-seeds",
+  TomatoSeeds = "tomato-seeds",
+  PotatoSeeds = "potato-seeds",
+  WheatSeeds = "wheat-seeds",
+  CornSeeds = "corn-seeds",
+  LettuceSeeds = "lettuce-seeds",
+  EggplantSeeds = "eggplant-seeds",
+  RadishSeeds = "radish-seeds",
+  StrawberrySeeds = "strawberry-seeds",
+  WatermelonSeeds = "watermelon-seeds",
+}
 
-export type ActionType = "plant" | "harvest" | "fertilize";
+export enum ActionType {
+  Plant = "plant",
+  Harvest = "harvest",
+  Fertilize = "fertilize",
+}
 
-export type CropType = "carrot" | "pumpkin" | "tomato" | "potato";
+export enum CropType {
+  Carrot = "carrot",
+  Pumpkin = "pumpkin",
+  Tomato = "tomato",
+  Potato = "potato",
+  Watermelon = "watermelon",
+  Strawberry = "strawberry",
+  Eggplant = "eggplant",
+  Onion = "onion",
+  Radish = "radish",
+  Lettuce = "lettuce",
+  Corn = "corn",
+  Wheat = "wheat",
+}
 
 export type Crop = {
   type: CropType;

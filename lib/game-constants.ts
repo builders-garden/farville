@@ -21,7 +21,7 @@ export const CROPS: {
 }[] = [
   {
     name: "Carrot",
-    type: "carrot",
+    type: CropType.Carrot,
     sellPrice: 8,
     buyPrice: 5,
     icon: "/images/crop/carrot.png",
@@ -32,7 +32,7 @@ export const CROPS: {
   },
   {
     name: "Pumpkin",
-    type: "pumpkin",
+    type: CropType.Pumpkin,
     sellPrice: 25,
     buyPrice: 15,
     icon: "/images/crop/pumpkin.png",
@@ -43,7 +43,7 @@ export const CROPS: {
   },
   {
     name: "Tomato",
-    type: "tomato",
+    type: CropType.Tomato,
     sellPrice: 50,
     buyPrice: 30,
     icon: "/images/crop/tomato.png",
@@ -54,7 +54,7 @@ export const CROPS: {
   },
   {
     name: "Potato",
-    type: "potato",
+    type: CropType.Potato,
     sellPrice: 100,
     buyPrice: 60,
     icon: "/images/crop/potato.png",

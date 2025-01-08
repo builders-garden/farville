@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import * as jose from "jose";
+import { validateQstashRequest } from "./lib/qstash";
 
 export const config = {
   matcher: ["/api/:path*"],
@@ -7,10 +8,23 @@ export const config = {
 
 export default async function middleware(req: NextRequest) {
   // Skip auth check for sign-in endpoint
-  if (
-    req.nextUrl.pathname === "/api/sign-in" ||
-    req.nextUrl.pathname === "/api/send-notification"
-  ) {
+  console.log(req.nextUrl.pathname);
+  if (req.nextUrl.pathname === "/api/sign-in") {
+    return NextResponse.next();
+  }
+
+  if (req.nextUrl.pathname.includes("qstash")) {
+    try {
+      await validateQstashRequest(
+        req.headers.get("Upstash-Signature")!,
+        req.nextUrl.pathname
+      );
+    } catch (error) {
+      if (error instanceof Error) {
+        return NextResponse.json({ error: error.toString() }, { status: 401 });
+      }
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
     return NextResponse.next();
   }
 

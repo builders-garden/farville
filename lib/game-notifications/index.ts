@@ -10,8 +10,11 @@ export async function sendDelayedNotification(
   category: string,
   delay?: number | `${bigint}s` | `${bigint}m` | `${bigint}h` | `${bigint}d`
 ) {
+  if (process.env.NEXT_PUBLIC_URL === "http://localhost:3000") {
+    return;
+  }
   const res = await qstashPublishJSON({
-    url: `${process.env.NEXT_PUBLIC_URL}/api/send-notification`,
+    url: `${process.env.NEXT_PUBLIC_URL}/api/qstash/send-notification`,
     body: {
       fid,
       title,

@@ -211,7 +211,7 @@ export default function GridCell({ cell }: GridCellProps) {
             x={floatingPosition.x}
             y={floatingPosition.y + 20}
             type="crop"
-            cropType={harvestedCropType || "carrot"}
+            cropType={harvestedCropType!}
           />
         </>
       )}
