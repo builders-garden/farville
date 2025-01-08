@@ -13,6 +13,7 @@ import FertilizerIndicator from "./FertilizerIndicator";
 import { useFrameContext } from "../context/FrameContext";
 import SeedMenu from "./SeedMenu";
 import PlantingIndicator from "./PlantingIndicator";
+import QuestsModal from "./QuestsModal";
 
 // Load GameGrid component dynamically (client-side only)
 const GameGrid = dynamic(() => import("./GameGrid"), {
@@ -88,6 +89,17 @@ const BACKGROUND_PATTERN = `
   linear-gradient(-45deg, transparent 75%, #386A48 75%)
 `;
 
+// Add new container component
+function QuestsModalContainer() {
+  const { showQuests, setShowQuests } = useGame();
+
+  return (
+    <AnimatePresence>
+      {showQuests && <QuestsModal onClose={() => setShowQuests(false)} />}
+    </AnimatePresence>
+  );
+}
+
 export default function GameWrapper() {
   const { safeAreaInsets } = useFrameContext();
   return (
@@ -116,6 +128,7 @@ export default function GameWrapper() {
       <SettingsModalContainer />
       <LeaderboardModalContainer />
       <SeedMenuContainer />
+      <QuestsModalContainer />
     </div>
   );
 }

@@ -6,8 +6,13 @@ import { motion } from "framer-motion";
 import { getCurrentLevelAndProgress } from "@/lib/utils";
 
 export default function Header() {
-  const { state, setShowMarket, setShowSettings, setShowLeaderboard } =
-    useGame();
+  const {
+    state,
+    setShowMarket,
+    setShowSettings,
+    setShowLeaderboard,
+    setShowQuests,
+  } = useGame();
   const { progress } = getCurrentLevelAndProgress(state.experience);
 
   return (
@@ -55,6 +60,16 @@ export default function Header() {
                      shadow-lg border-2 border-[#6d4c2c] text-lg font-medium"
           >
             🏪
+          </motion.button>
+
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => setShowQuests(true)}
+            className="bg-[#8B5E3C] h-[42px] w-[42px] flex items-center justify-center text-white/90 rounded-xl hover:bg-[#9b6e4c] 
+                     shadow-lg border-2 border-[#6d4c2c] text-lg font-medium"
+          >
+            📜
           </motion.button>
 
           <motion.button

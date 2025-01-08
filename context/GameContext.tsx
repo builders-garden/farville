@@ -34,11 +34,13 @@ interface GameContextType {
   showLeaderboard: boolean;
   showSettings: boolean;
   showSeedsMenu: boolean;
+  showQuests: boolean;
   setShowInventory: (show: boolean) => void;
   setShowMarket: (show: boolean) => void;
   setShowLeaderboard: (show: boolean) => void;
   setShowSettings: (show: boolean) => void;
   setShowSeedsMenu: (show: boolean) => void;
+  setShowQuests: (show: boolean) => void;
   isActionInProgress: boolean;
 }
 
@@ -50,6 +52,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showSeedsMenu, setShowSeedsMenu] = useState(false);
+  const [showQuests, setShowQuests] = useState(false);
   const { state, refetch } = useGameState();
   const [selectedSeed, setSelectedSeed] = useState<SeedType | null>(null);
   const [selectedFertilizer, setSelectedFertilizer] = useState<UserItem | null>(
@@ -136,11 +139,13 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
         showLeaderboard,
         showSettings,
         showSeedsMenu,
+        showQuests,
         setShowInventory,
         setShowMarket,
         setShowLeaderboard,
         setShowSettings,
         setShowSeedsMenu,
+        setShowQuests,
         isActionInProgress,
       }}
     >
