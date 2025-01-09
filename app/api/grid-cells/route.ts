@@ -35,7 +35,7 @@ export const POST = async (req: NextRequest) => {
     );
   }
 
-  const nextExpansion = EXPANSION_COSTS[user.expansions];
+  const nextExpansion = EXPANSION_COSTS[user.expansions - 1];
   if (user.coins < nextExpansion.coins) {
     console.log("Insufficient funds");
     return NextResponse.json({ error: "Insufficient funds" }, { status: 400 });

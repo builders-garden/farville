@@ -56,7 +56,7 @@ export const useGameState = () => {
           height: Math.max(...gridCells.map((cell) => cell.y)),
         },
         perks: userItems.filter((item) => item.item.category === "perk"),
-        expansionLevel: user.expansions,
+        expansionLevel: user.expansions - 1,
         items: items,
       });
     }
