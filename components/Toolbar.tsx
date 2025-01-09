@@ -1,6 +1,7 @@
 "use client";
 
 import { useGame } from "../context/GameContext";
+import Image from "next/image";
 import { motion } from "framer-motion";
 
 export default function Toolbar({
@@ -43,7 +44,12 @@ export default function Toolbar({
         data-tutorial="marketplace"
         className="w-12 h-12 rounded-lg flex items-center justify-center bg-[#8B5E3C] hover:bg-[#6d4c2c] transition-colors"
       >
-        🏪
+        <Image
+          src="/images/icons/market.png"
+          alt="Marketplace"
+          width={24}
+          height={24}
+        />
       </motion.button>
 
       <motion.button
@@ -52,7 +58,12 @@ export default function Toolbar({
         onClick={() => setShowQuests(true)}
         className="w-12 h-12 rounded-lg flex items-center justify-center bg-[#8B5E3C] hover:bg-[#6d4c2c] transition-colors"
       >
-        📜
+        <Image
+          src="/images/icons/quests.png"
+          alt="Quests"
+          width={24}
+          height={24}
+        />
       </motion.button>
 
       <motion.button
@@ -61,7 +72,12 @@ export default function Toolbar({
         onClick={() => setShowLeaderboard(true)}
         className="w-12 h-12 rounded-lg flex items-center justify-center bg-[#8B5E3C] hover:bg-[#6d4c2c] transition-colors"
       >
-        🏆
+        <Image
+          src="/images/icons/experience.png"
+          alt="Leaderboard"
+          width={24}
+          height={24}
+        />
       </motion.button>
 
       <motion.button
@@ -70,7 +86,12 @@ export default function Toolbar({
         whileTap={{ scale: 0.95 }}
         className="relative w-12 h-12 rounded-lg flex items-center justify-center bg-[#8B5E3C] hover:bg-[#6d4c2c] transition-colors"
       >
-        <span className="text-xl">📦</span>
+        <Image
+          src="/images/icons/inventory.png"
+          alt="Inventory"
+          width={24}
+          height={24}
+        />
       </motion.button>
 
       <motion.button
@@ -79,7 +100,12 @@ export default function Toolbar({
         onClick={() => setShowSettings(true)}
         className="w-12 h-12 rounded-lg flex items-center justify-center bg-[#8B5E3C] hover:bg-[#6d4c2c] transition-colors"
       >
-        ⚙️
+        <Image
+          src="/images/icons/settings.png"
+          alt="Settings"
+          width={24}
+          height={24}
+        />
       </motion.button>
     </div>
   );

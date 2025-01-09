@@ -51,7 +51,13 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
                     repeatDelay: 5,
                   }}
                 >
-                  <span className="text-3xl">🏆</span> Leaderboard
+                  <Image
+                    src="/images/icons/experience.png"
+                    alt="Leaderboard"
+                    width={24}
+                    height={24}
+                  />
+                  Leaderboard
                 </motion.h2>
               </div>
               <button

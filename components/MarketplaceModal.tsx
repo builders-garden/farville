@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { useState } from "react";
 import { useGame } from "../context/GameContext";
 import { EXPANSION_COSTS } from "../lib/game-constants";
+import Image from "next/image";
 
 type Tab = "seeds" | "crops" | "perks" | "expansions";
 
@@ -20,7 +21,7 @@ export default function MarketplaceModal({
   const tabs: { id: Tab; label: string; icon: string }[] = [
     { id: "seeds", label: "Seeds", icon: "🌱" },
     { id: "crops", label: "Crops", icon: "🌾" },
-    { id: "perks", label: "Perks", icon: "⭐" },
+    { id: "perks", label: "Perks", icon: "✨" },
     { id: "expansions", label: "Expand", icon: "🗺️" },
   ];
 
@@ -46,7 +47,13 @@ export default function MarketplaceModal({
                 animate={{ rotate: [0, -3, 3, 0] }}
                 transition={{ duration: 0.5, repeat: Infinity, repeatDelay: 5 }}
               >
-                <span className="text-3xl mb-2">🏪</span> Market
+                <Image
+                  src="/images/icons/market.png"
+                  alt="Market"
+                  width={24}
+                  height={24}
+                />
+                Market
               </motion.h2>
               <motion.p
                 className="text-white/70 text-sm flex items-center gap-1"

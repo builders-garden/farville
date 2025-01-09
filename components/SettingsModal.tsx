@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { useAudio } from "../context/AudioContext";
-
+import Image from "next/image";
 export default function SettingsModal({ onClose }: { onClose: () => void }) {
   const {
     volume,
@@ -31,7 +31,13 @@ export default function SettingsModal({ onClose }: { onClose: () => void }) {
                 animate={{ rotate: [0, -3, 3, 0] }}
                 transition={{ duration: 0.5, repeat: Infinity, repeatDelay: 5 }}
               >
-                <span className="text-3xl">⚙️</span> Settings
+                    <Image
+                      src="/images/icons/settings.png"
+                      alt="Settings"
+                      width={24}
+                      height={24}
+                    />
+                Settings
               </motion.h2>
             </div>
             <button

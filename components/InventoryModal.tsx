@@ -5,7 +5,7 @@ import { useGame } from "../context/GameContext";
 import { useFrameContext } from "../context/FrameContext";
 import { UserItem } from "@/hooks/use-user-items";
 import { SeedType } from "@/types/game";
-
+import Image from "next/image";
 export default function InventoryModal({ onClose }: { onClose: () => void }) {
   const { state, setSelectedSeed, setSelectedFertilizer } = useGame();
   const { safeAreaInsets } = useFrameContext();
@@ -40,7 +40,13 @@ export default function InventoryModal({ onClose }: { onClose: () => void }) {
                 animate={{ rotate: [0, -3, 3, 0] }}
                 transition={{ duration: 0.5, repeat: Infinity, repeatDelay: 5 }}
               >
-                <span className="text-3xl">📦</span> Inventory
+                <Image
+                  src="/images/icons/inventory.png"
+                  alt="Inventory"
+                  width={24}
+                  height={24}
+                />
+                Inventory
               </motion.h2>
             </div>
             <button
@@ -156,7 +162,7 @@ export default function InventoryModal({ onClose }: { onClose: () => void }) {
                   initial={{ x: -20, opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
                 >
-                  <span className="text-2xl">⭐</span> Perks
+                  <span className="text-2xl">✨</span> Perks
                 </motion.h3>
                 <div className="grid grid-cols-6 gap-4 md:grid-cols-8">
                   {state.items
