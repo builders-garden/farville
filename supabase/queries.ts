@@ -8,6 +8,9 @@ import {
   DbGridCell,
   DbUserNotification,
   InsertDbUserNotification,
+  DbQuest,
+  InsertDbQuest,
+  DbQuestWithItem,
 } from "./types";
 
 // Items queries
@@ -661,4 +664,83 @@ export const getUserNotificationsByCategory = async (
 
   if (error) throw error;
   return data;
+};
+
+// Quest queries
+export const getQuests = async (): Promise<DbQuestWithItem[]> => {
+  const { data, error } = await supabase
+    .from("quests")
+    .select(
+      `
+      *,
+      items (
+        *)
+      `
+    )
+    .order("createdAt", { ascending: false });
+
+  if (error) throw error;
+  return data;
+};
+
+export const getActiveQuests = async (): Promise<DbQuestWithItem[]> => {
+  const now = new Date().toISOString();
+  const { data, error } = await supabase
+    .from("quests")
+    .select(
+      `
+      *,
+      items (
+        *)
+      `
+    )
+    .lte("startAt", now)
+    .gt("endAt", now)
+    .order("endAt", { ascending: true });
+
+  if (error) throw error;
+  return data;
+};
+
+export const getQuestById = async (id: number): Promise<DbQuest | null> => {
+  const { data, error } = await supabase
+    .from("quests")
+    .select("*")
+    .eq("id", id)
+    .maybeSingle();
+
+  if (error) throw error;
+  return data;
+};
+
+export const createQuest = async (quest: InsertDbQuest): Promise<DbQuest> => {
+  const { data, error } = await supabase
+    .from("quests")
+    .insert(quest)
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+};
+
+export const updateQuest = async (
+  id: number,
+  updates: Partial<InsertDbQuest>
+): Promise<DbQuest> => {
+  const { data, error } = await supabase
+    .from("quests")
+    .update(updates)
+    .eq("id", id)
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+};
+
+export const deleteQuest = async (id: number): Promise<void> => {
+  const { error } = await supabase.from("quests").delete().eq("id", id);
+
+  if (error) throw error;
 };

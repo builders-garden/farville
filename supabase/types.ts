@@ -68,3 +68,20 @@ export type InsertDbUserNotification = Omit<
   DbUserNotification,
   "createdAt" | "id"
 >;
+
+export interface DbQuest {
+  id: number;
+  category: string;
+  itemId: number | null;
+  amount: number | null;
+  xp: number | null;
+  coins: number | null;
+  startAt: string | null;
+  endAt: string | null;
+  createdAt: string;
+}
+
+// Helper type for inserting new quests
+export type InsertDbQuest = Omit<DbQuest, "id" | "createdAt">;
+
+export type DbQuestWithItem = DbQuest & { items: DbItem | null };

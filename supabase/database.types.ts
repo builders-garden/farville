@@ -157,6 +157,41 @@ export interface Database {
           createdAt?: string;
         };
       };
+      quests: {
+        Row: {
+          id: number;
+          category: string;
+          itemId: number | null;
+          amount: number | null;
+          xp: number | null;
+          coins: number | null;
+          startAt: string | null;
+          endAt: string | null;
+          createdAt: string;
+        };
+        Insert: {
+          id?: number;
+          category: string;
+          itemId?: number | null;
+          amount?: number | null;
+          xp?: number | null;
+          coins?: number | null;
+          startAt?: string | null;
+          endAt?: string | null;
+          createdAt?: string;
+        };
+        Update: {
+          id?: number;
+          category?: string;
+          itemId?: number | null;
+          amount?: number | null;
+          xp?: number | null;
+          coins?: number | null;
+          startAt?: string | null;
+          endAt?: string | null;
+          createdAt?: string;
+        };
+      };
     };
     Views: {
       [_ in never]: never;
