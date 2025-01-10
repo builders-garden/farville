@@ -9,6 +9,10 @@ import {
   harvestGridCell,
   addUserItem,
   updateUserXP,
+  getUserQuests,
+  updateUserQuest,
+  updateUser,
+  getUser,
 } from "@/supabase/queries";
 import { CropType, SeedType } from "@/types/game";
 
@@ -61,7 +65,70 @@ export const harvest = async (fid: number, x: number, y: number) => {
   }
   await harvestGridCell(fid, x, y);
   const rewards = await rewardUser(fid, gridCell.cropType!, crop.id);
-  return { rewards };
+  return {
+    crop,
+    rewards,
+  };
+};
+
+export const calculateHarvestQuestsProgress = async (
+  fid: number,
+  itemId: number,
+  itemAmount: number
+) => {
+  // Get all quests that require harvesting this crop
+  const quests = await getUserQuests(fid, true, "harvest");
+  if (!quests) {
+    return null;
+  }
+  console.log(
+    `[${new Date().toISOString()}] found ${
+      quests.length
+    } quests for user ${fid}`
+  );
+
+  // Update progress for each quest
+  const updatedQuests = await Promise.all(
+    quests.map(async (quest) => {
+      if (
+        quest.quest &&
+        (quest.quest.itemId === null || quest.quest?.itemId === itemId)
+      ) {
+        const completed =
+          quest.progress + itemAmount >= (quest.quest?.amount || 1);
+
+        const updatedQuest = await updateUserQuest(fid, quest.questId, {
+          progress: quest.progress + itemAmount,
+          status: completed ? "complete" : "incomplete",
+          completedAt: completed ? new Date().toISOString() : null,
+        });
+        console.log(
+          `[${new Date().toISOString()}] updated quest with id ${
+            quest.questId
+          } for user ${fid}`
+        );
+        if (completed) {
+          console.log(
+            `[${new Date().toISOString()}] completed quest with id ${
+              quest.questId
+            } for user ${fid}`
+          );
+          if (quest.quest?.xp || quest.quest?.coins) {
+            const currentUser = await getUser(fid);
+            await updateUser(fid, {
+              xp: (currentUser?.xp || 0) + (quest.quest.xp || 0),
+              coins: (currentUser?.coins || 0) + (quest.quest.coins || 0),
+            });
+          }
+        }
+        return updatedQuest;
+      } else {
+        return quest;
+      }
+    })
+  );
+
+  return updatedQuests;
 };
 
 export const fertilize = async (fid: number, x: number, y: number) => {

@@ -50,7 +50,7 @@ export default function SeedMenu() {
       const seedIcon = seed.item.icon;
       if (seedIcon) {
         const img = document.createElement("img");
-        img.src = `/images/seed/${seedIcon}`;
+        img.src = `/images/${seedIcon}`;
         img.className = "w-8 h-8";
         touchDragIconRef.current.innerHTML = "";
         touchDragIconRef.current.appendChild(img);

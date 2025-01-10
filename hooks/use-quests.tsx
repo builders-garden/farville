@@ -1,4 +1,4 @@
-import { DbQuestWithItem } from "@/supabase/types";
+import { DbQuestWithItem, DbUserHasQuestWithQuest } from "@/supabase/types";
 import { useApiQuery } from "./use-api-query";
 
 export const useQuests = () => {
@@ -39,6 +39,41 @@ export const useQuest = (id: number) => {
     url: `/api/quests/${id}`,
     isProtected: true,
   });
+
+  return {
+    quest: data,
+    isLoading,
+    refetch,
+  };
+};
+
+export const useUserQuests = (fid: number | undefined, active = true) => {
+  const {
+    data: quests,
+    isLoading,
+    refetch,
+  } = useApiQuery<DbUserHasQuestWithQuest[]>({
+    queryKey: ["users", fid, "quests", active],
+    url: `/api/users/${fid}/quests?active=${active}`,
+    isProtected: true,
+    enabled: !!fid,
+  });
+
+  return {
+    quests,
+    isLoading,
+    refetch,
+  };
+};
+
+export const useUserQuest = (fid: number | undefined, questId: number) => {
+  const { data, isLoading, refetch } =
+    useApiQuery<DbUserHasQuestWithQuest | null>({
+      queryKey: ["users", fid, "quests", questId],
+      url: `/api/users/${fid}/quests/${questId}`,
+      isProtected: true,
+      enabled: !!fid,
+    });
 
   return {
     quest: data,

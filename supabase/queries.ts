@@ -11,6 +11,9 @@ import {
   DbQuest,
   InsertDbQuest,
   DbQuestWithItem,
+  DbUserHasQuest,
+  DbUserHasQuestWithQuest,
+  InsertDbUserHasQuest,
 } from "./types";
 
 // Items queries
@@ -743,4 +746,162 @@ export const deleteQuest = async (id: number): Promise<void> => {
   const { error } = await supabase.from("quests").delete().eq("id", id);
 
   if (error) throw error;
+};
+
+// User Quests queries
+// export const getUserQuests = async (
+//   fid: number
+// ): Promise<DbUserHasQuestWithQuest[]> => {
+//   const { data, error } = await supabase
+//     .from("user_has_quests")
+//     .select(
+//       `
+//       *,
+//       quest:quests (
+//         *,
+//         items (*)
+//       )
+//     `
+//     )
+//     .eq("fid", fid)
+//     .order("createdAt", { ascending: false });
+
+//   if (error) throw error;
+//   return data;
+// };
+
+export const getUserQuestById = async (
+  fid: number,
+  questId: number
+): Promise<DbUserHasQuestWithQuest | null> => {
+  const { data, error } = await supabase
+    .from("user_has_quests")
+    .select(
+      `
+      *,
+      quest:quests (
+        *,
+        items (*)
+      )
+    `
+    )
+    .eq("fid", fid)
+    .eq("questId", questId)
+    .maybeSingle();
+
+  if (error) throw error;
+  return data;
+};
+
+export const createUserQuest = async (
+  userQuest: InsertDbUserHasQuest
+): Promise<DbUserHasQuest> => {
+  const { data, error } = await supabase
+    .from("user_has_quests")
+    .insert({ ...userQuest, status: "incomplete", progress: 0 })
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+};
+
+export const updateUserQuest = async (
+  fid: number,
+  questId: number,
+  updates: Partial<DbUserHasQuest>
+): Promise<DbUserHasQuest> => {
+  const { data, error } = await supabase
+    .from("user_has_quests")
+    .update(updates)
+    .eq("fid", fid)
+    .eq("questId", questId)
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+};
+
+export const getActiveUserQuests = async (
+  fid: number
+): Promise<DbUserHasQuestWithQuest[]> => {
+  const { data, error } = await supabase
+    .from("user_has_quests")
+    .select(
+      `
+      *,
+      quest:quests (
+        *,
+        items (*)
+      )
+    `
+    )
+    .eq("fid", fid)
+    .eq("status", "incomplete")
+    .order("createdAt", { ascending: false });
+
+  if (error) throw error;
+  return data;
+};
+
+export const getQuestsByItemId = async (
+  itemId: number,
+  active: boolean = true
+): Promise<DbQuestWithItem[]> => {
+  const query = supabase
+    .from("quests")
+    .select(
+      `
+      *,
+      items (*)
+    `
+    )
+    .eq("itemId", itemId);
+
+  if (active) {
+    const now = new Date().toISOString();
+    query.lte("startAt", now).gt("endAt", now);
+  }
+
+  const { data, error } = await query;
+
+  if (error) throw error;
+  return data;
+};
+
+export const getUserQuests = async (
+  fid: number,
+  active: boolean = true,
+  category?: string,
+  itemId?: number
+): Promise<DbUserHasQuestWithQuest[]> => {
+  const query = supabase
+    .from("user_has_quests")
+    .select(
+      `
+      *,
+      quest:quests (
+        *,
+        items (*)
+      )
+    `
+    )
+    .eq("fid", fid);
+
+  if (itemId) {
+    query.eq("quest.itemId", itemId);
+  }
+
+  if (active !== undefined) {
+    query.eq("status", active ? "incomplete" : "complete");
+  }
+  if (category) {
+    query.eq("quest.category", category);
+  }
+
+  const { data, error } = await query;
+
+  if (error) throw error;
+  return data;
 };

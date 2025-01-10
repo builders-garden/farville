@@ -192,6 +192,35 @@ export interface Database {
           createdAt?: string;
         };
       };
+      user_has_quests: {
+        Row: {
+          id: number;
+          fid: number;
+          questId: number;
+          status: "incomplete" | "complete";
+          completedAt: string | null;
+          createdAt: string;
+          progress: number;
+        };
+        Insert: {
+          id?: number;
+          fid: number;
+          questId: number;
+          status?: "incomplete" | "complete";
+          completedAt?: string | null;
+          createdAt?: string;
+          progress?: number;
+        };
+        Update: {
+          id?: number;
+          fid?: number;
+          questId?: number;
+          status?: "incomplete" | "complete";
+          completedAt?: string | null;
+          createdAt?: string;
+          progress?: number;
+        };
+      };
     };
     Views: {
       [_ in never]: never;

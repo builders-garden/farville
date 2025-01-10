@@ -85,3 +85,20 @@ export interface DbQuest {
 export type InsertDbQuest = Omit<DbQuest, "id" | "createdAt">;
 
 export type DbQuestWithItem = DbQuest & { items: DbItem | null };
+
+export interface DbUserHasQuest {
+  id: number;
+  fid: number;
+  questId: number;
+  status: "incomplete" | "complete";
+  completedAt: string | null;
+  createdAt: string;
+  progress: number;
+}
+
+export type DbUserHasQuestWithQuest = DbUserHasQuest & {
+  quest: DbQuestWithItem;
+};
+
+// Helper type for inserting new user quests
+export type InsertDbUserHasQuest = Omit<DbUserHasQuest, "id" | "createdAt">;
