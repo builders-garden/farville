@@ -192,7 +192,7 @@ export default function SeedMenu() {
       />
 
       <motion.div
-        className="bg-[#7E4E31]/40 p-2 rounded-lg shadow-lg border-2 border-[#8B5E3C]/60 w-full"
+        className="bg-[#7E4E31]/40 p-4 rounded-lg shadow-lg border-2 border-[#8B5E3C]/60 w-full"
         whileHover={{ scale: 1.02 }}
       >
         <div className="flex gap-2 overflow-x-auto p-2 scrollbar-thin scrollbar-thumb-[#6d4c2c] scrollbar-track-[#8B5E3C]">
