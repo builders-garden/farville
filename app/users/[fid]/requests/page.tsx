@@ -6,11 +6,23 @@ const appUrl = process.env.NEXT_PUBLIC_URL;
 
 export async function generateMetadata({
   params,
+  searchParams,
 }: {
   params: Promise<{ fid: string }>;
+  searchParams?: { [key: string]: string | string[] | undefined };
 }): Promise<Metadata> {
   const fid = (await params).fid;
   const user = await getUser(Number(fid));
+
+  const itemId = searchParams?.itemId;
+  const quantity = searchParams?.quantity;
+
+  // Construct the dynamic image URL
+  const imageUrl = new URL(`${appUrl}/api/og/requests`);
+  imageUrl.searchParams.set("fid", fid);
+  if (itemId) imageUrl.searchParams.set("itemId", String(itemId));
+  if (quantity) imageUrl.searchParams.set("quantity", String(quantity));
+
   if (!user) {
     return {
       title: "FarVille",
@@ -20,9 +32,10 @@ export async function generateMetadata({
       },
     };
   }
+
   const frame = {
     version: "next",
-    imageUrl: `${appUrl}/images/feed.png`,
+    imageUrl: imageUrl.toString(),
     button: {
       title: `Donate to ${user.username} 🧑‍🌾`,
       action: {
@@ -34,11 +47,13 @@ export async function generateMetadata({
       },
     },
   };
+
   return {
     title: `FarVille - Donate to ${user.username} 🧑‍🌾`,
     openGraph: {
       title: `FarVille - Donate to ${user.username} 🧑‍🌾`,
       description: "Plant, grow, and harvest crops with your friends.",
+      images: [{ url: imageUrl.toString() }],
     },
     other: {
       "fc:frame": JSON.stringify(frame),
