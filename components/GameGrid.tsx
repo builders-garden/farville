@@ -27,7 +27,7 @@ export default function GameGrid() {
           ))
         )}
       </div>
-      <div className="w-full mt-4 overflow-x-auto">
+      <div className="w-full overflow-x-auto">
         <SeedMenu />
       </div>
     </div>

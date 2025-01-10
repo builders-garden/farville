@@ -533,16 +533,6 @@
     "@farcaster/frame-core" "0.0.21"
     ox "^0.4.0"
 
-"@farcaster/frame-sdk@^0.0.22":
-  version "0.0.22"
-  resolved "https://registry.yarnpkg.com/@farcaster/frame-sdk/-/frame-sdk-0.0.22.tgz#109ff6b021cba7dab83c23763add1b9768a10b09"
-  integrity sha512-SeErhH85chPTz00fbRfRyHMeYTnedjOTTno8gNr+2qfcGC2lisukYaY9nY1so2SM7R3J3bQ8xVo35gq8AUI36Q==
-  dependencies:
-    "@farcaster/frame-core" "0.0.21"
-    comlink "^4.4.2"
-    eventemitter3 "^5.0.1"
-    ox "^0.4.0"
-
 "@farcaster/frame-sdk@^0.0.26":
   version "0.0.26"
   resolved "https://registry.yarnpkg.com/@farcaster/frame-sdk/-/frame-sdk-0.0.26.tgz#2cf5c5e9e8ecdbdbc244e55f41129fc1caa9b88c"

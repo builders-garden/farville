@@ -6,6 +6,7 @@ import { useFrameContext } from "../context/FrameContext";
 import { useLeaderboard } from "@/hooks/use-leadeboard";
 import { LEVEL_XP_THRESHOLDS } from "@/lib/game-constants";
 import Image from "next/image";
+import sdk from "@farcaster/frame-sdk";
 
 export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
   const { users } = useLeaderboard();
@@ -51,7 +52,13 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
                     repeatDelay: 5,
                   }}
                 >
-                  <span className="text-3xl">🏆</span> Leaderboard
+                  <Image
+                    src="/images/icons/experience.png"
+                    alt="Leaderboard"
+                    width={24}
+                    height={24}
+                  />
+                  Leaderboard
                 </motion.h2>
               </div>
               <button
@@ -126,6 +133,11 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: index * 0.05 }}
+                    onClick={async () => {
+                      await sdk.actions.viewProfile({
+                        fid: entry.fid,
+                      });
+                    }}
                     className="bg-[#6d4c2c] px-4 py-3 rounded-lg flex items-center gap-3
                            border border-[#8B5E3C]/50 shadow-md"
                   >

@@ -4,6 +4,7 @@ import { LEVEL_XP_THRESHOLDS } from "@/lib/game-constants";
 import { useGame } from "../context/GameContext";
 import { motion } from "framer-motion";
 import { getCurrentLevelAndProgress } from "@/lib/utils";
+import Image from "next/image";
 
 export default function Header() {
   const { state } = useGame();
@@ -17,7 +18,13 @@ export default function Header() {
             <div className="w-fit">
               <div className="flex items-center justify-between gap-1">
                 <span className="text-white/90 font-semibold tracking-wide text-xs flex items-center gap-1">
-                  <span className="text-[#FFB938] mb-1">⭐</span> {state.level}
+                  <Image
+                    src="/images/icons/experience.png"
+                    alt="Level"
+                    width={16}
+                    height={16}
+                  />
+                  {state.level}
                 </span>
                 <span className="text-white/70 text-[10px]">
                   ({state.experience.toLocaleString()}/
