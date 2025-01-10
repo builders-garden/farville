@@ -14,6 +14,12 @@ import { useFrameContext } from "../context/FrameContext";
 import SeedMenu from "./SeedMenu";
 import PlantingIndicator from "./PlantingIndicator";
 import QuestsModal from "./QuestsModal";
+import { useAudio } from "@/context/AudioContext";
+import RequestModal from "./RequestModal";
+
+const WelcomeOverlay = dynamic(() => import("./../components/WelcomeOverlay"), {
+  ssr: false,
+});
 
 // Load GameGrid component dynamically (client-side only)
 const GameGrid = dynamic(() => import("./GameGrid"), {
@@ -101,34 +107,65 @@ function QuestsModalContainer() {
 }
 
 export default function GameWrapper() {
+  const { startBackgroundMusic } = useAudio();
+  const { activeOverlay, setActiveOverlay } = useGame();
   const { safeAreaInsets } = useFrameContext();
+
+  const handleOverlayComplete = () => {
+    setActiveOverlay(null);
+    startBackgroundMusic();
+  };
+
   return (
-    <div
-      style={{
-        backgroundColor: "#255F37",
-        backgroundImage: BACKGROUND_PATTERN,
-        backgroundSize: "160px 160px",
-        backgroundPosition: "0 0, 0 80px, 80px -80px, -80px 0px",
-        marginTop: safeAreaInsets.top,
-        marginBottom: safeAreaInsets.bottom,
-        marginLeft: safeAreaInsets.left,
-        marginRight: safeAreaInsets.right,
-      }}
-      className="flex flex-col h-[100dvh] w-full overflow-hidden"
-    >
-      <Header />
-      <div className="flex-1 relative min-h-0">
-        <GameGrid />
-      </div>
-      <Toolbar safeAreaInsets={safeAreaInsets} />
-      <FertilizerIndicator />
-      <PlantingIndicator />
-      <InventoryModalContainer />
-      <MarketplaceModalContainer />
-      <SettingsModalContainer />
-      <LeaderboardModalContainer />
-      <SeedMenuContainer />
-      <QuestsModalContainer />
+    <div className="relative z-10">
+      {/* Render active overlay with parameters */}
+      {activeOverlay?.type === "welcome" && (
+        <AnimatePresence>
+          <WelcomeOverlay onComplete={handleOverlayComplete} />
+        </AnimatePresence>
+      )}
+
+      {activeOverlay?.type === "requests" && (
+        <AnimatePresence>
+          <RequestModal
+            onClose={handleOverlayComplete}
+            fid={activeOverlay.fid}
+            itemId={activeOverlay.itemId}
+            quantity={activeOverlay.quantity}
+          />
+        </AnimatePresence>
+      )}
+
+      {/* Main game content */}
+      {!activeOverlay && (
+        <div
+          style={{
+            backgroundColor: "#255F37",
+            backgroundImage: BACKGROUND_PATTERN,
+            backgroundSize: "160px 160px",
+            backgroundPosition: "0 0, 0 80px, 80px -80px, -80px 0px",
+            marginTop: safeAreaInsets.top,
+            marginBottom: safeAreaInsets.bottom,
+            marginLeft: safeAreaInsets.left,
+            marginRight: safeAreaInsets.right,
+          }}
+          className="flex flex-col h-[100dvh] w-full overflow-hidden"
+        >
+          <Header />
+          <div className="flex-1 relative min-h-0">
+            <GameGrid />
+          </div>
+          <Toolbar safeAreaInsets={safeAreaInsets} />
+          <FertilizerIndicator />
+          <PlantingIndicator />
+          <InventoryModalContainer />
+          <MarketplaceModalContainer />
+          <SettingsModalContainer />
+          <LeaderboardModalContainer />
+          <SeedMenuContainer />
+          <QuestsModalContainer />
+        </div>
+      )}
     </div>
   );
 }

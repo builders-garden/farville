@@ -12,7 +12,14 @@ import { useExpandGrid } from "@/hooks/game-actions/use-expand-grid";
 import { useSellItem } from "@/hooks/game-actions/use-sell-item";
 import { UserItem } from "@/hooks/use-user-items";
 
-// Update context type to match actual implementation
+// Update the OverlayType to be more flexible with parameters
+export type OverlayConfig =
+  | { type: "welcome" }
+  | { type: "requests"; fid: number; itemId?: number; quantity?: number }
+  | { type: "tutorial"; step?: number }
+  | null;
+
+// Update the context type
 interface GameContextType {
   state: GameState;
   selectedSeed: SeedType | null;
@@ -35,22 +42,33 @@ interface GameContextType {
   showSettings: boolean;
   showSeedsMenu: boolean;
   showQuests: boolean;
+  showRequests: boolean;
   setShowInventory: (show: boolean) => void;
   setShowMarket: (show: boolean) => void;
   setShowLeaderboard: (show: boolean) => void;
   setShowSettings: (show: boolean) => void;
   setShowSeedsMenu: (show: boolean) => void;
   setShowQuests: (show: boolean) => void;
+  setShowRequests: (show: boolean) => void;
   isActionInProgress: boolean;
+  activeOverlay: OverlayConfig;
+  setActiveOverlay: (overlay: OverlayConfig) => void;
 }
 
 export const GameContext = createContext<GameContextType | null>(null);
 
-export function GameProvider({ children }: { children: React.ReactNode }) {
+export function GameProvider({
+  children,
+  initialOverlay = null,
+}: {
+  children: React.ReactNode;
+  initialOverlay?: OverlayConfig;
+}) {
   const [showInventory, setShowInventory] = useState(false);
   const [showMarket, setShowMarket] = useState(false);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [showRequests, setShowRequests] = useState(false);
   const [showSeedsMenu, setShowSeedsMenu] = useState(false);
   const [showQuests, setShowQuests] = useState(false);
   const { state, refetch } = useGameState();
@@ -59,6 +77,9 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     null
   );
   const [isActionInProgress, setIsActionInProgress] = useState(false);
+  const [activeOverlay, setActiveOverlay] =
+    useState<OverlayConfig>(initialOverlay);
+  console.log("activeOverlay", activeOverlay);
 
   const { mutate: plantSeed } = usePlantSeed({
     refetchGridCells: refetch.grid,
@@ -140,13 +161,17 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
         showSettings,
         showSeedsMenu,
         showQuests,
+        showRequests,
         setShowInventory,
         setShowMarket,
         setShowLeaderboard,
         setShowSettings,
         setShowSeedsMenu,
         setShowQuests,
+        setShowRequests,
         isActionInProgress,
+        activeOverlay,
+        setActiveOverlay,
       }}
     >
       {children}

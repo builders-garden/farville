@@ -32,5 +32,5 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default function Home() {
-  return <App />;
+  return <App initialOverlay={{ type: "welcome" }} />;
 }

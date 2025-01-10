@@ -1,8 +1,20 @@
+import { DbItem } from "@/supabase/types";
 import { LEVEL_XP_THRESHOLDS } from "./game-constants";
 
 export const warpcastComposeCastUrl = () => {
   const frameUrl = `https://farville.farm`;
   const text = `I'm tired of touching grass IRL, and I can't wait to touch PIXEL grass in /farville...\n\nBuild my dream farm and grow quirky crops. It's honest work, but way more fun than real farming!🧑‍🌾`;
+  const urlFriendlyText = encodeURIComponent(text);
+  return `https://warpcast.com/~/compose?text=${urlFriendlyText}&embeds[]=${frameUrl}`;
+};
+
+export const requestItemComposeCastUrl = (
+  fid: number,
+  item: DbItem,
+  quantity: number
+) => {
+  const frameUrl = `https://farville.farm/users/${fid}/requests?itemId=${item.id}&quantity=${quantity}`;
+  const text = `I'm looking for ${quantity} ${item.name} on /farville🧑‍🌾`;
   const urlFriendlyText = encodeURIComponent(text);
   return `https://warpcast.com/~/compose?text=${urlFriendlyText}&embeds[]=${frameUrl}`;
 };

@@ -1,10 +1,10 @@
 import { useUserItems, UserItem } from "./use-user-items";
-import { useUser } from "./use-user";
 import { useEffect, useState, useCallback } from "react";
 import { useGridCells } from "./use-grid-cells";
 import { DbGridCell, DbItem } from "@/supabase/types";
 import { useItems } from "./use-items";
 import { getCurrentLevelAndProgress } from "@/lib/utils";
+import { useUserMe } from "./use-user-me";
 
 export interface GameState {
   coins: number;
@@ -20,6 +20,7 @@ export interface GameState {
   perks: UserItem[];
   expansionLevel: number;
   items: DbItem[];
+  inventory: UserItem[];
 }
 
 export const useGameState = () => {
@@ -29,7 +30,7 @@ export const useGameState = () => {
     isLoading: userItemsLoading,
     refetch: refetchUserItems,
   } = useUserItems();
-  const { user, isLoading: userLoading, refetch: refetchUser } = useUser();
+  const { user, isLoading: userLoading, refetch: refetchUser } = useUserMe();
   const {
     gridCells,
     isLoading: gridCellsLoading,
@@ -58,6 +59,7 @@ export const useGameState = () => {
         perks: userItems.filter((item) => item.item.category === "perk"),
         expansionLevel: user.expansions - 1,
         items: items,
+        inventory: userItems,
       });
     }
   }, [userItems, items, user, gridCells]);

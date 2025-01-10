@@ -58,7 +58,6 @@ export default function GridCell({ cell }: GridCellProps) {
       if (cellRef.current) {
         const rect = cellRef.current.getBoundingClientRect();
         const cropType = cell.cropType as CropType;
-        console.log("cropType", cropType);
         const harvestResult = await harvestCrop({
           x: cell.x,
           y: cell.y,

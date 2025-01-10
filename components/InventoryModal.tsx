@@ -4,11 +4,18 @@ import { motion } from "framer-motion";
 import { useGame } from "../context/GameContext";
 import { useFrameContext } from "../context/FrameContext";
 import { UserItem } from "@/hooks/use-user-items";
-import { SeedType } from "@/types/game";
 import Image from "next/image";
+import ItemDetailsPopup from "./ItemDetailsPopup";
+import { useState } from "react";
+import { DbItem } from "@/supabase/types";
+import { requestItemComposeCastUrl } from "@/lib/utils";
+import sdk from "@farcaster/frame-sdk";
+
 export default function InventoryModal({ onClose }: { onClose: () => void }) {
   const { state, setSelectedSeed, setSelectedFertilizer } = useGame();
-  const { safeAreaInsets } = useFrameContext();
+  const { safeAreaInsets, context } = useFrameContext();
+  const [selectedItem, setSelectedItem] = useState<DbItem | null>(null);
+  const [requestQuantity, setRequestQuantity] = useState(1);
 
   const handlePerkClick = (perk: UserItem) => {
     if (perk.item.name === "Fertilizer" && perk.quantity && perk.quantity > 0) {
@@ -16,6 +23,32 @@ export default function InventoryModal({ onClose }: { onClose: () => void }) {
       setSelectedSeed(null);
       onClose();
     }
+  };
+
+  const handleItemClick = (item: DbItem) => {
+    setSelectedItem(item);
+  };
+
+  const handleUseItem = (item: DbItem) => {
+    if (item.category === "perk") {
+      const userPerk = state.perks.find((p) => p.item.slug === item.slug);
+      if (userPerk) {
+        handlePerkClick(userPerk);
+      }
+    }
+    setSelectedItem(null);
+  };
+
+  const handleRequestItem = async (item: DbItem) => {
+    if (!context?.user.fid) return;
+    const url = requestItemComposeCastUrl(
+      context?.user.fid,
+      item,
+      requestQuantity
+    );
+    await sdk.actions.openUrl(url);
+    setSelectedItem(null);
+    setRequestQuantity(1); // Reset quantity after request
   };
 
   return (
@@ -85,7 +118,7 @@ export default function InventoryModal({ onClose }: { onClose: () => void }) {
                                  shadow-lg hover:shadow-xl transition-shadow duration-200
                                  border-2 border-[#8B5E3C]"
                           whileHover={{ scale: 1.02 }}
-                          onClick={() => setSelectedSeed(item.slug as SeedType)}
+                          onClick={() => handleItemClick(item)}
                         >
                           <motion.img
                             src={`/images${item.icon}`}
@@ -132,6 +165,7 @@ export default function InventoryModal({ onClose }: { onClose: () => void }) {
                           className="bg-[#6d4c2c] aspect-square rounded-lg relative flex items-center justify-center
                                  shadow-lg hover:shadow-xl transition-shadow duration-200
                                  border-2 border-[#8B5E3C]"
+                          onClick={() => handleItemClick(item)}
                         >
                           <motion.img
                             src={`/images${item.icon}`}
@@ -181,11 +215,7 @@ export default function InventoryModal({ onClose }: { onClose: () => void }) {
                                  border-2 border-[#8B5E3C]"
                           whileHover={{ scale: 1.05 }}
                           title={perk.description}
-                          onClick={() => {
-                            if (userPerk) {
-                              handlePerkClick(userPerk);
-                            }
-                          }}
+                          onClick={() => handleItemClick(perk)}
                         >
                           <motion.span
                             className="text-2xl"
@@ -214,6 +244,31 @@ export default function InventoryModal({ onClose }: { onClose: () => void }) {
           </div>
         </div>
       </motion.div>
+
+      {selectedItem && (
+        <ItemDetailsPopup
+          item={selectedItem}
+          userItem={
+            selectedItem.category === "seed"
+              ? state.seeds.find((s) => s.item.slug === selectedItem.slug)
+              : selectedItem.category === "crop"
+              ? state.crops.find((c) => c.item.slug === selectedItem.slug)
+              : state.perks.find((p) => p.item.slug === selectedItem.slug)
+          }
+          onClose={() => {
+            setSelectedItem(null);
+            setRequestQuantity(1); // Reset quantity when closing
+          }}
+          requestQuantity={requestQuantity}
+          onRequestQuantityChange={setRequestQuantity}
+          onRequest={() => handleRequestItem(selectedItem)}
+          onUse={
+            selectedItem.category === "perk"
+              ? () => handleUseItem(selectedItem)
+              : undefined
+          }
+        />
+      )}
     </div>
   );
 }

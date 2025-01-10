@@ -37,8 +37,6 @@ export default function FloatingNumber({
     if (type === "coins") return `+${number} 🪙`;
     if (type === "crop" && cropType) {
       const crop = state.items.find((item) => item.slug === cropType)!;
-      console.log("crop", crop);
-      console.log("cropType", `/images/${crop.icon}`);
       return (
         <>
           +{number} {cropType.toUpperCase()}{" "}

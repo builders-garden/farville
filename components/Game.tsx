@@ -1,32 +1,21 @@
 "use client";
 
-import React, { useState } from "react";
-import { AnimatePresence } from "framer-motion";
-import dynamic from "next/dynamic";
+import React from "react";
 import { GameProvider } from "./../context/GameContext";
 import { useSignIn } from "@/hooks/use-sign-in";
 import Image from "next/image";
 import { useFrameContext } from "@/context/FrameContext";
-import { useAudio } from "@/context/AudioContext";
+import { OverlayConfig } from "@/context/GameContext";
 
-const GameWrapper = dynamic(() => import("./../components/GameWrapper"), {
-  ssr: false,
-});
-
-const WelcomeOverlay = dynamic(() => import("./../components/WelcomeOverlay"), {
-  ssr: false,
-});
-
-export default function Game() {
-  const [showWelcome, setShowWelcome] = useState(true);
+export default function Game({
+  children,
+  initialOverlay = { type: "welcome" },
+}: {
+  children?: React.ReactNode;
+  initialOverlay?: OverlayConfig;
+}) {
   const { isSDKLoaded, context } = useFrameContext();
   const { isSignedIn, isLoading, error } = useSignIn();
-  const { startBackgroundMusic } = useAudio();
-
-  const handleWelcomeComplete = () => {
-    setShowWelcome(false);
-    startBackgroundMusic();
-  };
 
   if (!context && isSDKLoaded && !isLoading) {
     return (
@@ -93,16 +82,7 @@ export default function Game() {
         </div>
       )}
       {isSignedIn && (
-        <GameProvider>
-          <div className="relative z-10">
-            <AnimatePresence>
-              {showWelcome && (
-                <WelcomeOverlay onComplete={handleWelcomeComplete} />
-              )}
-            </AnimatePresence>
-            <GameWrapper />
-          </div>
-        </GameProvider>
+        <GameProvider initialOverlay={initialOverlay}>{children}</GameProvider>
       )}
     </main>
   );
