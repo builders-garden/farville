@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
-  calculateHarvestQuestsProgress,
+  calculateUserQuestsProgress,
   fertilize,
   harvest,
   plantSeed,
@@ -49,7 +49,12 @@ export async function POST(
           { status: 400 }
         );
       }
-      await plantSeed(parseInt(fid), parseInt(x), parseInt(y), seedType);
+      const plantedItem = await plantSeed(
+        parseInt(fid),
+        parseInt(x),
+        parseInt(y),
+        seedType
+      );
       await sendDelayedNotification(
         fid,
         `Harvest time! 🌾`,
@@ -57,6 +62,7 @@ export async function POST(
         "harvest",
         getGrowthTime(seedType)
       );
+      await calculateUserQuestsProgress(parseInt(fid), "plant", plantedItem.id);
       break;
     case "harvest":
       const harvestResult = await harvest(
@@ -67,14 +73,16 @@ export async function POST(
       result = {
         rewards: harvestResult.rewards,
       };
-      await calculateHarvestQuestsProgress(
+      await calculateUserQuestsProgress(
         parseInt(fid),
+        "harvest",
         harvestResult.crop.id,
         harvestResult.rewards.amount
       );
       break;
     case "fertilize":
       await fertilize(parseInt(fid), parseInt(x), parseInt(y));
+      await calculateUserQuestsProgress(parseInt(fid), "fertilize");
       break;
   }
   return NextResponse.json(result);

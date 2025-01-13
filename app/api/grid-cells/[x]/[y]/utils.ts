@@ -38,6 +38,7 @@ export const plantSeed = async (
   await plantGridCell(fid, x, y, item.slug.replace("-seeds", ""));
 
   await removeUserItem(fid, item.id, 1);
+  return item;
 };
 
 export const harvest = async (fid: number, x: number, y: number) => {
@@ -71,13 +72,14 @@ export const harvest = async (fid: number, x: number, y: number) => {
   };
 };
 
-export const calculateHarvestQuestsProgress = async (
+export const calculateUserQuestsProgress = async (
   fid: number,
-  itemId: number,
-  itemAmount: number
+  category: string,
+  itemId?: number,
+  itemAmount: number = 1
 ) => {
   // Get all quests that require harvesting this crop
-  const quests = await getUserQuests(fid, true, "harvest");
+  const quests = await getUserQuests(fid, true, category);
   if (!quests) {
     return null;
   }

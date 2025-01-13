@@ -26,7 +26,7 @@ export default function QuestsModal({ onClose }: { onClose: () => void }) {
   ];
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-start z-50">
+    <div className="fixed inset-0 bg-black/50 flex items-start z-50 mb-4">
       <motion.div
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
@@ -117,12 +117,12 @@ export default function QuestsModal({ onClose }: { onClose: () => void }) {
               <div className="space-y-3">
                 {activeTab === "active" &&
                   quests?.map((quest) => (
-                    <Quest quest={quest} key={quest.id} />
+                    <Quest quest={quest} key={quest.id} completed={false} />
                   ))}
 
                 {activeTab === "completed" &&
                   completedQuests?.map((quest) => (
-                    <Quest quest={quest} key={quest.id} />
+                    <Quest quest={quest} key={quest.id} completed={true} />
                   ))}
 
                 {quests?.length === 0 && activeTab === "active" && (

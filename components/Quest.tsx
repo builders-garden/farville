@@ -8,6 +8,7 @@ import Image from "next/image";
 
 interface QuestProps {
   quest: DbUserHasQuestWithQuest;
+  completed: boolean;
 }
 
 const renderQuestRewards = (quest: DbQuest) => (
@@ -36,12 +37,19 @@ const renderQuestRewards = (quest: DbQuest) => (
   </div>
 );
 
-const renderQuestProgress = (quest: DbUserHasQuestWithQuest) => {
+const renderQuestProgress = (
+  quest: DbUserHasQuestWithQuest,
+  completed: boolean = false
+) => {
   const progress = quest.progress || 0;
   const target = quest.quest.amount || 1;
 
   return (
-    <div className="relative w-full bg-[#5c4121] rounded-full h-5 my-2">
+    <div
+      className={`relative w-full bg-[#5c4121] rounded-full h-5 my-2 ${
+        completed && "opacity-60"
+      }`}
+    >
       <div
         className="bg-[#f2a311] h-5 rounded-full transition-all duration-300"
         style={{ width: `${(progress / target) * 100}%` }}
@@ -55,75 +63,67 @@ const renderQuestProgress = (quest: DbUserHasQuestWithQuest) => {
 };
 
 const questDescription = (quest: DbQuestWithItem) => {
-  if (quest.amount && quest.itemId) {
-    return `${quest.category === "harvest" ? "Harvest" : "Collect"} ${
-      quest.amount
-    } ${quest.items?.name.toLowerCase()}`;
-  } else if (quest.amount) {
-    let start = "";
-    switch (quest.category) {
-      case "harvest":
-        start = "Harvest";
-        break;
-      case "plant":
-        start = "Plant";
-        break;
-      case "fertilize":
-        start = "Fertilize";
-        break;
-      case "donate":
-        start = "Donate";
-        break;
-      default:
-        start = "Complete";
-        break;
-    }
-    let end = "";
-    switch (quest.category) {
-      case "harvest":
-        end = "crops";
-        break;
-      case "plant":
-        end = "seeds";
-        break;
-      case "fertilize":
-        end = "crops";
-        break;
-      case "donate":
-        end = "items";
-        break;
-      default:
-        end = "the quest";
-        break;
-    }
-    return `${start} ${quest.amount} ${end}`;
-  } else {
-    return "Complete the quest";
+  let start = "";
+  let end = "";
+  switch (quest.category) {
+    case "harvest":
+      start = "Harvest";
+      end = "crops";
+      break;
+    case "plant":
+      start = "Plant";
+      end = "seeds";
+      break;
+    case "fertilize":
+      start = "Fertilize";
+      end = "crops";
+      break;
+    case "donate":
+      start = "Donate";
+      end = "items";
+      break;
+    default:
+      start = "Complete";
+      end = "the quest";
+      break;
   }
+  if (quest.amount && quest.itemId) {
+    end = quest.items?.name.toLowerCase() || end;
+  }
+  return `${start} ${quest.amount} ${end}`;
 };
 
-export default function Quest({ quest }: QuestProps) {
+export default function Quest({ quest, completed }: QuestProps) {
   return (
     <motion.div
       key={quest.id}
       initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}
-      className="bg-[#6d4c2c] px-4 py-3 rounded-lg flex flex-col gap-2
-                               border border-[#8B5E3C]/50 shadow-lg"
+      className={`bg-[#6d4c2c] px-4 py-3 rounded-lg flex flex-col gap-2
+                               border border-[#8B5E3C]/50 shadow-lg ${
+                                 completed && "opacity-30"
+                               }`}
     >
-      <div className="flex items-center gap-3">
+      <div className={`flex items-center gap-3 ${completed && "opacity-60"}`}>
         <div className="w-10 h-10 flex items-center justify-center">
           <motion.div
             className="text-2xl"
             animate={{ y: [0, -3, 0] }}
             transition={{ duration: 1.5, repeat: Infinity }}
           >
-            <Image
-              src={`/images${quest.quest.items?.icon}` || "/icons/quest.svg"}
-              width={40}
-              height={40}
-              alt={`Quest icon for ${quest.quest.category}`}
-            />
+            {(quest.quest.category === "plant" ||
+              quest.quest.category === "harvest") && (
+              <Image
+                src={
+                  `/images${quest.quest.items?.icon}` || "/images/default.png"
+                }
+                width={40}
+                height={40}
+                alt={`Quest icon for ${quest.quest.category}`}
+              />
+            )}
+            {quest.quest.category === "fertilize" && "🧪"}
+            {quest.quest.category === "donate" && "🎁"}
           </motion.div>
         </div>
         <div className="flex flex-col gap-2">
@@ -138,7 +138,7 @@ export default function Quest({ quest }: QuestProps) {
           {renderQuestRewards(quest.quest)}
         </div>
       </div>
-      {renderQuestProgress(quest)}
+      {renderQuestProgress(quest, completed)}
       <div className="flex items-center justify-between">
         <span className="text-white/60 text-xs">
           {quest.quest.endAt && (
