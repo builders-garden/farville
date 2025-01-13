@@ -59,7 +59,7 @@ export async function GET(request: Request) {
 
     const fontData = await loadGoogleFont(
       "Press+Start+2P",
-      text + secondaryText + user?.username || ""
+      "FarVille" + text + secondaryText + user?.username || ""
     );
 
     const ensName = user?.username || "";
@@ -92,6 +92,19 @@ export async function GET(request: Request) {
               backgroundColor: "rgba(0, 0, 0, 0.4)",
             }}
           />
+
+          <div
+            style={{
+              position: "absolute",
+              top: "32px",
+              fontSize: "24px",
+              color: "#ffffff",
+              fontFamily: "PressStart2P",
+              textShadow: "0px 2px 4px rgba(0, 0, 0, 0.5)",
+            }}
+          >
+            FarVille
+          </div>
 
           <div
             style={{
