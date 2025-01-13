@@ -1,10 +1,31 @@
 import { ImageResponse } from "next/og";
-import { getUser } from "@/supabase/queries";
-import { getItemById } from "@/supabase/queries";
-
-export const runtime = "edge";
+import { getItemById, getUser } from "@/supabase/queries";
 
 export const dynamic = "force-dynamic";
+export const contentType = "image/png";
+export const size = {
+  width: 1200,
+  height: 800,
+};
+
+async function loadGoogleFont(font: string, text: string) {
+  const url = `https://fonts.googleapis.com/css2?family=${font}&text=${encodeURIComponent(
+    text
+  )}`;
+  const css = await (await fetch(url)).text();
+  const resource = css.match(
+    /src: url\((.+)\) format\('(opentype|truetype)'\)/
+  );
+
+  if (resource) {
+    const response = await fetch(resource[1]);
+    if (response.status == 200) {
+      return await response.arrayBuffer();
+    }
+  }
+
+  throw new Error("failed to load font data");
+}
 
 export async function GET(request: Request) {
   try {
@@ -13,159 +34,200 @@ export async function GET(request: Request) {
     const itemId = searchParams.get("itemId");
     const quantity = searchParams.get("quantity");
 
-    const user = await getUser(Number(fid));
-    const item = itemId ? await getItemById(Number(itemId)) : null;
+    const [user, item] = await Promise.all([
+      fid ? await getUser(Number(fid)) : null,
+      itemId ? await getItemById(Number(itemId)) : null,
+    ]);
+
+    const text = user ? `is looking for` : "FarVille";
+    const secondaryText = item && quantity ? `${quantity} ${item.name}` : "";
+
+    const appUrl = process.env.NEXT_PUBLIC_URL;
+    const [bgImage, profilePic, itemIcon] = await Promise.all([
+      fetch(new URL(`${appUrl}/images/bg-empty.png`, import.meta.url)).then(
+        (res) => res.arrayBuffer()
+      ),
+      user?.avatarUrl
+        ? fetch(user.avatarUrl).then((res) => res.arrayBuffer())
+        : null,
+      item?.icon
+        ? fetch(new URL(`${appUrl}/images${item.icon}`, import.meta.url)).then(
+            (res) => res.arrayBuffer()
+          )
+        : null,
+    ]);
+
+    const fontData = await loadGoogleFont(
+      "Press+Start+2P",
+      text + secondaryText + user?.username || ""
+    );
+
+    const ensName = user?.username || "";
 
     return new ImageResponse(
       (
         <div
           style={{
-            display: "flex",
-            width: "100%",
             height: "100%",
+            width: "100%",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+            alignItems: "center",
             position: "relative",
+            backgroundImage: `url(data:image/png;base64,${Buffer.from(
+              bgImage
+            ).toString("base64")})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
           }}
         >
-          {/* Background Image */}
-          <img
-            src={`${process.env.NEXT_PUBLIC_URL}/images/bg-empty.png`}
-            alt="Farm background"
-            style={{
-              width: "100%",
-              height: "100%",
-              objectFit: "cover",
-              position: "absolute",
-            }}
-            width={1200}
-            height={630}
-          />
-
-          {/* Dark Overlay */}
           <div
             style={{
               position: "absolute",
-              width: "100%",
-              height: "100%",
-              background: "rgba(0, 0, 0, 0.6)",
-              display: "flex",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: "rgba(0, 0, 0, 0.4)",
             }}
           />
 
-          {/* Content */}
           <div
             style={{
               display: "flex",
               flexDirection: "column",
-              alignItems: "center",
               justifyContent: "center",
-              width: "100%",
-              height: "100%",
-              padding: "40px",
+              alignItems: "center",
+              padding: "1rem",
+              borderRadius: "1rem",
               position: "relative",
-              color: "white",
-              textAlign: "center",
-              gap: "20px",
             }}
           >
-            {/* User Avatar */}
-            {user?.avatarUrl && (
-              <div style={{ display: "flex" }}>
-                <img
-                  src={user.avatarUrl}
-                  alt="User avatar"
+            {profilePic && (
+              <>
+                <div
                   style={{
-                    width: "120px",
-                    height: "120px",
-                    borderRadius: "60px",
-                    border: "4px solid white",
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    gap: "6px",
                   }}
-                />
-              </div>
-            )}
-
-            {/* Username */}
-            <div
-              style={{
-                fontSize: 32,
-                marginTop: "20px",
-                display: "flex",
-                fontFamily: "Inter",
-              }}
-            >
-              {user?.username || "User"}
-            </div>
-
-            {/* Request Details */}
-            <div
-              style={{
-                fontSize: 48,
-                fontWeight: "bold",
-                marginTop: "20px",
-                display: "flex",
-                flexDirection: "column",
-                gap: "10px",
-                alignItems: "center",
-              }}
-            >
-              <div style={{ display: "flex" }}>is looking for</div>
-              <div
-                style={{
-                  color: "#FFD700",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "20px",
-                }}
-              >
-                {item?.icon && (
+                >
                   <div
                     style={{
-                      backgroundColor: "#8B4513",
-                      padding: "8px",
-                      borderRadius: "8px",
-                      border: "2px solid #5C2E0B",
-                      boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
+                      width: "100px",
+                      height: "100px",
+                      borderRadius: "50px",
+                      border: "4px solid #fff",
+                      overflow: "hidden",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
                     }}
                   >
                     <img
-                      src={`${process.env.NEXT_PUBLIC_URL}/images${item.icon}`}
-                      alt={item?.name}
+                      src={`data:image/png;base64,${Buffer.from(
+                        profilePic
+                      ).toString("base64")}`}
+                      width="100"
+                      height="100"
                       style={{
-                        width: "48px",
-                        height: "48px",
+                        objectFit: "cover",
+                      }}
+                    />
+                  </div>
+                  <p
+                    style={{
+                      fontSize: "20px",
+                      color: "rgba(255, 255, 255, 0.75)",
+                      textShadow: "0px 2px 4px rgba(0, 0, 0, 0.5)",
+                      fontFamily: "PressStart2P",
+                      marginBottom: "32px",
+                      textAlign: "center",
+                    }}
+                  >
+                    {ensName}
+                  </p>
+                </div>
+              </>
+            )}
+            <p
+              style={{
+                fontSize: "32px",
+                fontWeight: "bold",
+                textAlign: "center",
+                color: "#fff",
+                textShadow: "0px 4px 8px rgba(0, 0, 0, 0.5)",
+              }}
+            >
+              {text}
+            </p>
+            {itemId && quantity && item && (
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: "12px",
+                }}
+              >
+                <p
+                  style={{
+                    fontSize: "48px",
+                    marginTop: "32px",
+                    color: "#fff",
+                    textShadow: "0px 2px 4px rgba(0, 0, 0, 0.5)",
+                    fontFamily: "PressStart2P",
+                  }}
+                >
+                  {secondaryText}
+                </p>
+                {item.icon && (
+                  <div
+                    style={{
+                      marginTop: "24px",
+                      width: "48px",
+                      height: "48px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <img
+                      src={
+                        itemIcon
+                          ? `data:image/png;base64,${Buffer.from(
+                              itemIcon
+                            ).toString("base64")}`
+                          : undefined
+                      }
+                      width="48"
+                      height="48"
+                      style={{
                         objectFit: "contain",
                       }}
                     />
                   </div>
                 )}
-                {quantity} {item?.name || "items"}
               </div>
-            </div>
-
-            {/* Game Title */}
-            <div
-              style={{
-                position: "absolute",
-                bottom: "30px",
-                fontSize: "24px",
-                opacity: 0.8,
-                display: "flex",
-              }}
-            >
-              FarVille
-            </div>
+            )}
           </div>
         </div>
       ),
       {
-        width: 1200,
-        height: 630,
+        ...size,
+        fonts: [
+          {
+            name: "PressStart2P",
+            data: fontData,
+            style: "normal",
+          },
+        ],
       }
     );
-  } catch (error) {
-    console.error("Error generating image:", error);
+  } catch (e) {
+    console.log(`Failed to generate image`, e);
     return new Response(`Failed to generate image`, {
       status: 500,
     });

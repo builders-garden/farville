@@ -41,7 +41,7 @@ export async function generateMetadata({
       action: {
         type: "launch_frame",
         name: "FarVille",
-        url: appUrl,
+        url: `${appUrl}/users/${fid}/requests?itemId=${itemId}&quantity=${quantity}`,
         splashImageUrl: `${appUrl}/images/splash.png`,
         splashBackgroundColor: "#f7f7f7",
       },
