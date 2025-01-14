@@ -60,12 +60,24 @@ export default function RequestModal({
     }
   };
 
-  if (!request) {
+  if (!request && !isLoading) {
     return (
       <div className="bg-white text-red-500 rounded-lg text-center p-4 fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
         Error: Request not found
       </div>
     );
+  }
+
+  if (!request && isLoading) {
+    return (
+      <div className="bg-white text-emerald-500 rounded-lg text-center p-4 fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+        Loading Request...
+      </div>
+    );
+  }
+
+  if (!request) {
+    return <></>;
   }
 
   return (
