@@ -68,3 +68,17 @@ export type InsertDbUserNotification = Omit<
   DbUserNotification,
   "createdAt" | "id"
 >;
+
+export interface DbRequest {
+  id: number;
+  fid: number;
+  itemId: number;
+  quantity: number;
+  filledQuantity: number;
+  createdAt: string;
+}
+
+export type InsertDbRequest = Omit<
+  DbRequest,
+  "id" | "createdAt" | "filledQuantity"
+>;

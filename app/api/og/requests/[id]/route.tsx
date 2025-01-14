@@ -1,5 +1,5 @@
 import { ImageResponse } from "next/og";
-import { getItemById, getUser } from "@/supabase/queries";
+import { getRequestById } from "@/supabase/queries";
 
 export const dynamic = "force-dynamic";
 export const contentType = "image/png";
@@ -27,17 +27,25 @@ async function loadGoogleFont(font: string, text: string) {
   throw new Error("failed to load font data");
 }
 
-export async function GET(request: Request) {
+export async function GET(request: Request, {
+    params
+}: {
+    params: {
+        id: string
+    }
+}) {
   try {
-    const { searchParams } = new URL(request.url);
-    const fid = searchParams.get("fid");
-    const itemId = searchParams.get("itemId");
-    const quantity = searchParams.get("quantity");
+    const { id } = params;
 
-    const [user, item] = await Promise.all([
-      fid ? await getUser(Number(fid)) : null,
-      itemId ? await getItemById(Number(itemId)) : null,
-    ]);
+    const request = await getRequestById(Number(id));
+
+    if (!request) {
+      return new Response("Request not found", {
+        status: 404,
+      });
+    }
+
+    const {user, item, quantity} = request;
 
     const text = user ? `is looking for` : "FarVille";
     const secondaryText = item && quantity ? `${quantity} ${item.name}` : "";
@@ -176,7 +184,7 @@ export async function GET(request: Request) {
             >
               {text}
             </p>
-            {itemId && quantity && item && (
+            {request.itemId && quantity && item && (
               <div
                 style={{
                   display: "flex",

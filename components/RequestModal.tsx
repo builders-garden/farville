@@ -3,40 +3,42 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { useFrameContext } from "../context/FrameContext";
-import { useUser } from "@/hooks/use-user";
-import { useItem } from "@/hooks/use-item";
 import Image from "next/image";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useDonate } from "@/hooks/game-actions/use-donate";
 import { useGame } from "@/context/GameContext";
+import { useRequest } from "@/hooks/use-request";
 
 export default function RequestModal({
   onClose,
-  fid,
-  itemId,
-  quantity,
+  id,
 }: {
   onClose: () => void;
-  fid: number;
-  itemId?: number;
-  quantity?: number;
+  id: number;
 }) {
+  console.log("RequestModal", id);
   const { safeAreaInsets } = useFrameContext();
-  const { user } = useUser({ fid });
-  const { data: item, isLoading } = useItem(itemId!);
+  const { request, isLoading } = useRequest(id);
   const { donate } = useDonate();
   const { state } = useGame();
   const currentQuantity =
-    state.inventory.find((seed) => seed.itemId === itemId)?.quantity || 0;
+    state.inventory.find((seed) => seed.itemId === request?.itemId)?.quantity ||
+    0;
+
+  // Calculate remaining quantity needed
+  const remainingQuantity = request
+    ? request.quantity - (request.filledQuantity || 0)
+    : 0;
+
   const [selectedQuantity, setSelectedQuantity] = useState(() => {
     if (currentQuantity > 0) {
-      return Math.min(currentQuantity, quantity || 0);
+      return Math.min(currentQuantity, remainingQuantity);
     }
     return 0;
   });
 
   const handleMaxQuantity = () => {
-    setSelectedQuantity(Math.min(currentQuantity, quantity!));
+    setSelectedQuantity(Math.min(currentQuantity, remainingQuantity));
   };
 
   const handleQuantityChange = (value: string) => {
@@ -57,6 +59,14 @@ export default function RequestModal({
       setSelectedQuantity(newQuantity);
     }
   };
+
+  if (!request) {
+    return (
+      <div className="bg-white text-red-500 rounded-lg text-center p-4 fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+        Error: Request not found
+      </div>
+    );
+  }
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
@@ -97,26 +107,26 @@ export default function RequestModal({
                 </div>
               </div>
             ) : (
-              user &&
-              item && (
+              request?.user &&
+              request?.item && (
                 <>
                   {/* Profile Picture - Reduced size on mobile */}
-                  {user.avatarUrl && (
+                  {request?.user?.avatarUrl && (
                     <div className="relative w-16 h-16 sm:w-20 sm:h-20 mb-2 sm:mb-4">
                       <Image
-                        src={user.avatarUrl}
-                        alt={user.username || "User"}
+                        src={request?.user?.avatarUrl}
+                        alt={request?.user?.username || "User"}
                         fill
                         className="rounded-full object-cover"
                       />
                     </div>
                   )}
 
-                  {/* Request Text - Reduced text sizes and spacing */}
+                  {/* Updated Request Text */}
                   <div className="flex flex-col items-center text-center text-white/90 gap-4">
                     <div className="flex flex-col gap-1 items-center">
                       <p className="text-base sm:text-lg font-medium text-white/80">
-                        {user.username}
+                        {request?.user?.username}
                       </p>
                       <p className="text-sm sm:text-base text-white/60">
                         is looking for
@@ -126,20 +136,26 @@ export default function RequestModal({
                     <div className="flex flex-col gap-2 items-center">
                       <div className="flex flex-row gap-2 items-center">
                         <p className="text-xl sm:text-2xl font-semibold text-white">
-                          {quantity}x
+                          {remainingQuantity}x
                         </p>
                         <div className="relative w-8 h-8 sm:w-10 sm:h-10">
                           <Image
-                            src={`/images${item.icon}`}
-                            alt={item.name}
+                            src={`/images${request?.item?.icon}`}
+                            alt={request?.item?.name}
                             fill
                             className="object-contain"
                           />
                         </div>
                       </div>
                       <p className="text-2xl sm:text-3xl font-bold text-white">
-                        {item.name}
+                        {request?.item?.name}
                       </p>
+                      {request.filledQuantity > 0 && (
+                        <p className="text-sm text-white/60">
+                          ({request.filledQuantity} of {request.quantity}{" "}
+                          received)
+                        </p>
+                      )}
                     </div>
                   </div>
 
@@ -153,37 +169,47 @@ export default function RequestModal({
                           </span>{" "}
                           in inventory
                         </p>
-                        <div className="flex flex-col items-center gap-2">
-                          <p className="text-white/80 text-[10px] sm:text-sm text-center">
-                            Enter amount to donate
-                          </p>
-                          <div className="flex items-center gap-3">
-                            <input
-                              type="number"
-                              inputMode="numeric"
-                              pattern="[0-9]*"
-                              value={selectedQuantity || ""}
-                              onChange={(e) =>
-                                handleQuantityChange(e.target.value)
-                              }
-                              min="0"
-                              max={Math.min(currentQuantity, quantity!)}
-                              className="w-16 sm:w-20 px-2 py-1.5 bg-white/20 rounded-lg text-white text-center 
-                                       focus:outline-none focus:ring-2 focus:ring-white/20"
-                            />
-                            <button
-                              onClick={handleMaxQuantity}
-                              className="px-3 py-1.5 border border-white/90 rounded-lg text-white/90 
-                                       transition-colors text-xs sm:text-sm font-medium"
-                            >
-                              Max
-                            </button>
+                        {remainingQuantity > 0 ? (
+                          <div className="flex flex-col items-center gap-2">
+                            <p className="text-white/80 text-[10px] sm:text-sm text-center">
+                              Enter amount to donate
+                            </p>
+                            <div className="flex items-center gap-3">
+                              <input
+                                type="number"
+                                inputMode="numeric"
+                                pattern="[0-9]*"
+                                value={selectedQuantity || ""}
+                                onChange={(e) =>
+                                  handleQuantityChange(e.target.value)
+                                }
+                                min="0"
+                                max={Math.min(
+                                  currentQuantity,
+                                  remainingQuantity
+                                )}
+                                className="w-16 sm:w-20 px-2 py-1.5 bg-white/20 rounded-lg text-white text-center 
+                                         focus:outline-none focus:ring-2 focus:ring-white/20"
+                              />
+                              <button
+                                onClick={handleMaxQuantity}
+                                className="px-3 py-1.5 border border-white/90 rounded-lg text-white/90 
+                                         transition-colors text-xs sm:text-sm font-medium"
+                              >
+                                Max
+                              </button>
+                            </div>
                           </div>
-                        </div>
+                        ) : (
+                          <p className="text-green-400/90 text-sm text-center">
+                            This request has been fully filled!
+                          </p>
+                        )}
                       </>
                     ) : (
                       <p className="text-amber-500/90 text-sm text-center">
-                        You don&apos;t have any {item.name} in your inventory
+                        You don&apos;t have any {request?.item?.name} in your
+                        inventory
                       </p>
                     )}
                   </div>
@@ -204,17 +230,26 @@ export default function RequestModal({
               </button>
               <button
                 disabled={
-                  selectedQuantity === 0 || selectedQuantity > currentQuantity
+                  selectedQuantity === 0 ||
+                  selectedQuantity > currentQuantity ||
+                  remainingQuantity === 0
                 }
                 onClick={() => {
-                  donate({ itemId, quantity: selectedQuantity, toFid: fid });
+                  donate({
+                    itemId: request?.itemId,
+                    quantity: selectedQuantity,
+                    toFid: request?.fid,
+                    requestId: request?.id,
+                  });
                   onClose();
                 }}
                 className="px-6 sm:px-8 py-2.5 bg-green-600/80 hover:bg-green-600 disabled:bg-green-600/20 
                          disabled:text-white/50 disabled:cursor-not-allowed rounded-lg text-white transition-colors 
                          font-medium text-sm sm:text-base"
               >
-                Donate {selectedQuantity}
+                {remainingQuantity === 0
+                  ? "Request Filled"
+                  : `Donate ${selectedQuantity}`}
               </button>
             </div>
           </div>

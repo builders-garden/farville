@@ -1,15 +1,15 @@
-import { getItemById, getUserItemByItemId, removeUserItem, addUserItem } from "@/supabase/queries";
+import { getItemById, getUserItemByItemId, removeUserItem, addUserItem, incrementRequestFilledQuantity } from "@/supabase/queries";
 
 export const POST = async (
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) => {
-  const fid = req.headers.get("fid");
+  const fid = req.headers.get("x-user-fid");
   if (!fid) {
     return new Response("Fid not found", { status: 404 });
   }
   const itemId = Number((await params).id);
-  const { quantity, toFid } = await req.json();
+  const { quantity, toFid, requestId } = await req.json();
 
   const item = await getItemById(itemId);
 
@@ -23,8 +23,14 @@ export const POST = async (
     return new Response("User item not found", { status: 404 });
   }
 
+  console.log("donating", quantity, toFid, requestId, itemId);
+
   await removeUserItem(Number(fid), itemId, quantity);
   await addUserItem(Number(toFid), itemId, quantity);
+
+  if (requestId) {
+    await incrementRequestFilledQuantity(Number(requestId), quantity);
+  }
 
   // TODO: update quest progress if present 
 

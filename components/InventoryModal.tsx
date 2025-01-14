@@ -10,12 +10,14 @@ import { useState } from "react";
 import { DbItem } from "@/supabase/types";
 import { requestItemComposeCastUrl } from "@/lib/utils";
 import sdk from "@farcaster/frame-sdk";
+import { useCreateRequest } from "@/hooks/game-actions/use-create-request";
 
 export default function InventoryModal({ onClose }: { onClose: () => void }) {
   const { state, setSelectedSeed, setSelectedFertilizer } = useGame();
   const { safeAreaInsets, context } = useFrameContext();
   const [selectedItem, setSelectedItem] = useState<DbItem | null>(null);
   const [requestQuantity, setRequestQuantity] = useState(1);
+  const { mutate: createRequest, isError: createRequestError, data: createRequestData } = useCreateRequest();
 
   const handlePerkClick = (perk: UserItem) => {
     if (perk.item.name === "Fertilizer" && perk.quantity && perk.quantity > 0) {
@@ -41,14 +43,31 @@ export default function InventoryModal({ onClose }: { onClose: () => void }) {
 
   const handleRequestItem = async (item: DbItem) => {
     if (!context?.user.fid) return;
-    const url = requestItemComposeCastUrl(
-      context?.user.fid,
-      item,
-      requestQuantity
-    );
-    await sdk.actions.openUrl(url);
-    setSelectedItem(null);
-    setRequestQuantity(1); // Reset quantity after request
+    
+    try {
+      await createRequest({
+        itemId: item.id,
+        quantity: requestQuantity,
+      }, {
+        onSuccess: async (data) => {
+          const url = requestItemComposeCastUrl(
+            data.id,
+            item,
+            requestQuantity
+          );
+          await sdk.actions.openUrl(url);
+          setSelectedItem(null);
+          setRequestQuantity(1); // Reset quantity after request
+        }
+      });
+
+      if (createRequestError || !createRequestData) {
+        console.error('Error creating request');
+        return;
+      }
+    } catch (error) {
+      console.error('Error handling request:', error);
+    }
   };
 
   return (

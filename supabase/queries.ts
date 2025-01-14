@@ -8,6 +8,8 @@ import {
   DbGridCell,
   DbUserNotification,
   InsertDbUserNotification,
+  DbRequest,
+  InsertDbRequest,
 } from "./types";
 
 // Items queries
@@ -253,7 +255,9 @@ export const removeUserItem = async (
     .select("*")
     .eq("userFid", userFid)
     .eq("itemId", itemId)
-    .single();
+    .maybeSingle();
+
+  console.log(existing);
 
   if (!existing) return;
 
@@ -271,6 +275,8 @@ export const removeUserItem = async (
       .update({ quantity: existing.quantity - quantity })
       .eq("userFid", userFid)
       .eq("itemId", itemId);
+
+    console.log("updated", existing.quantity - quantity);
 
     if (error) throw error;
   }
@@ -661,4 +667,96 @@ export const getUserNotificationsByCategory = async (
 
   if (error) throw error;
   return data;
+};
+
+// Request queries
+export const createRequest = async (
+  request: InsertDbRequest
+): Promise<DbRequest> => {
+  const { data, error } = await supabase
+    .from("requests")
+    .insert({ ...request, filledQuantity: 0 })
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+};
+
+export const getRequestById = async (
+  id: number
+): Promise<(DbRequest & { item: DbItem; user: DbUser }) | null> => {
+  const { data, error } = await supabase
+    .from("requests")
+    .select("*, item:items (*), user:users (*)")
+    .eq("id", id)
+    .maybeSingle();
+
+  if (error) throw error;
+  return data;
+};
+
+export const getUserRequests = async (
+  fid: number
+): Promise<(DbRequest & { item: DbItem })[]> => {
+  const { data, error } = await supabase
+    .from("requests")
+    .select(
+      `
+      *,
+      item:items (*)
+    `
+    )
+    .eq("fid", fid)
+    .order("createdAt", { ascending: false });
+
+  if (error) throw error;
+  return data;
+};
+
+export const getAllRequests = async (): Promise<
+  (DbRequest & { item: DbItem; user: DbUser })[]
+> => {
+  const { data, error } = await supabase
+    .from("requests")
+    .select(
+      `
+      *,
+      item:items (*),
+      user:users (*)
+    `
+    )
+    .order("createdAt", { ascending: false });
+
+  if (error) throw error;
+  return data;
+};
+
+export const incrementRequestFilledQuantity = async (
+  id: number,
+  amount: number = 1
+): Promise<DbRequest> => {
+  // First fetch the current request
+  const { data: request } = await supabase
+    .from("requests")
+    .select("filledQuantity")
+    .eq("id", id)
+    .single();
+
+  // Then update with the new total
+  const { data, error } = await supabase
+    .from("requests")
+    .update({ filledQuantity: (request?.filledQuantity || 0) + amount })
+    .eq("id", id)
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+};
+
+export const deleteRequest = async (id: number): Promise<void> => {
+  const { error } = await supabase.from("requests").delete().eq("id", id);
+
+  if (error) throw error;
 };

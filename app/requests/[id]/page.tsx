@@ -1,27 +1,26 @@
 import { Metadata } from "next";
-import { getUser } from "@/supabase/queries";
+import { getRequestById, getUser } from "@/supabase/queries";
 import App from "@/app/app";
 
 const appUrl = process.env.NEXT_PUBLIC_URL;
 
 export async function generateMetadata({
   params,
-  searchParams,
 }: {
-  params: Promise<{ fid: string }>;
-  searchParams?: { [key: string]: string | string[] | undefined };
+  params: Promise<{ id: string }>;
 }): Promise<Metadata> {
-  const fid = (await params).fid;
+  const requestId = (await params).id;
+  const request = await getRequestById(Number(requestId));
+  if (!request) {
+    return {
+      title: "FarVille",
+    };
+  }
+  const fid = request.fid;
   const user = await getUser(Number(fid));
 
-  const itemId = searchParams?.itemId;
-  const quantity = searchParams?.quantity;
-
   // Construct the dynamic image URL
-  const imageUrl = new URL(`${appUrl}/api/og/requests`);
-  imageUrl.searchParams.set("fid", fid);
-  if (itemId) imageUrl.searchParams.set("itemId", String(itemId));
-  if (quantity) imageUrl.searchParams.set("quantity", String(quantity));
+  const imageUrl = new URL(`${appUrl}/api/og/requests/${requestId}`);
 
   if (!user) {
     return {
@@ -41,7 +40,7 @@ export async function generateMetadata({
       action: {
         type: "launch_frame",
         name: "FarVille",
-        url: `${appUrl}/users/${fid}/requests?itemId=${itemId}&quantity=${quantity}`,
+        url: `${appUrl}/requests/${requestId}`,
         splashImageUrl: `${appUrl}/images/splash.png`,
         splashBackgroundColor: "#f7f7f7",
       },
@@ -63,22 +62,12 @@ export async function generateMetadata({
 
 export default async function RequestsPage({
   params,
-  searchParams,
 }: {
-  params: Promise<{ fid: string }>;
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+  params: Promise<{ id: string }>;
 }) {
-  const fid = (await params).fid;
-  const itemId = (await searchParams).itemId
-    ? Number((await searchParams).itemId)
-    : undefined;
-  const quantity = (await searchParams).quantity
-    ? Number((await searchParams).quantity)
-    : undefined;
+  const requestId = (await params).id;
 
   return (
-    <App
-      initialOverlay={{ type: "requests", fid: Number(fid), itemId, quantity }}
-    />
+    <App initialOverlay={{ type: "requests", id: Number(requestId) }} />
   );
 }

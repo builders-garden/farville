@@ -129,9 +129,7 @@ export default function GameWrapper() {
         <AnimatePresence>
           <RequestModal
             onClose={handleOverlayComplete}
-            fid={activeOverlay.fid}
-            itemId={activeOverlay.itemId}
-            quantity={activeOverlay.quantity}
+            id={activeOverlay.id}
           />
         </AnimatePresence>
       )}

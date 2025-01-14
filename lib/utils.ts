@@ -9,11 +9,11 @@ export const warpcastComposeCastUrl = () => {
 };
 
 export const requestItemComposeCastUrl = (
-  fid: number,
+  requestId: number,
   item: DbItem,
   quantity: number
 ) => {
-  const frameUrl = `https://farville.farm/users/${fid}/requests?itemId=${item.id}&quantity=${quantity}`;
+  const frameUrl = `https://farville.farm/requests/${requestId}`;
   const text = `I'm looking for ${quantity} ${item.name} on /farville🧑‍🌾`;
   const urlFriendlyText = encodeURIComponent(text);
   return `https://warpcast.com/~/compose?text=${urlFriendlyText}&embeds[]=${frameUrl}`;

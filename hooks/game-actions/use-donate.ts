@@ -4,6 +4,7 @@ interface DonateVariables {
   itemId?: number;
   quantity?: number;
   toFid: number;
+  requestId?: number;
 }
 
 interface DonateResponse {
@@ -19,6 +20,7 @@ export const useDonate = () => {
     body: (variables) => ({
       quantity: variables.quantity,
       toFid: variables.toFid,
+      requestId: variables.requestId,
     }),
   });
 
