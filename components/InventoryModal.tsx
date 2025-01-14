@@ -17,7 +17,11 @@ export default function InventoryModal({ onClose }: { onClose: () => void }) {
   const { safeAreaInsets, context } = useFrameContext();
   const [selectedItem, setSelectedItem] = useState<DbItem | null>(null);
   const [requestQuantity, setRequestQuantity] = useState(1);
-  const { mutate: createRequest, isError: createRequestError, data: createRequestData } = useCreateRequest();
+  const {
+    mutate: createRequest,
+    isError: createRequestError,
+    data: createRequestData,
+  } = useCreateRequest();
 
   const handlePerkClick = (perk: UserItem) => {
     if (perk.item.name === "Fertilizer" && perk.quantity && perk.quantity > 0) {
@@ -43,30 +47,33 @@ export default function InventoryModal({ onClose }: { onClose: () => void }) {
 
   const handleRequestItem = async (item: DbItem) => {
     if (!context?.user.fid) return;
-    
+
     try {
-      await createRequest({
-        itemId: item.id,
-        quantity: requestQuantity,
-      }, {
-        onSuccess: async (data) => {
-          const url = requestItemComposeCastUrl(
-            data.id,
-            item,
-            requestQuantity
-          );
-          await sdk.actions.openUrl(url);
-          setSelectedItem(null);
-          setRequestQuantity(1); // Reset quantity after request
+      await createRequest(
+        {
+          itemId: item.id,
+          quantity: requestQuantity,
+        },
+        {
+          onSuccess: async (data) => {
+            const url = requestItemComposeCastUrl(
+              data.id,
+              item,
+              requestQuantity
+            );
+            await sdk.actions.openUrl(url);
+            setSelectedItem(null);
+            setRequestQuantity(1); // Reset quantity after request
+          },
         }
-      });
+      );
 
       if (createRequestError || !createRequestData) {
-        console.error('Error creating request');
+        console.error("Error creating request");
         return;
       }
     } catch (error) {
-      console.error('Error handling request:', error);
+      console.error("Error handling request:", error);
     }
   };
 
@@ -85,8 +92,8 @@ export default function InventoryModal({ onClose }: { onClose: () => void }) {
         className="bg-[#7E4E31] w-full h-full flex flex-col"
       >
         <div className="p-6 border-b border-[#8B5E3C]">
-          <div className="flex justify-between items-center max-w-4xl mx-auto w-full">
-            <div>
+          <div className="flex justify-between max-w-4xl mx-auto w-full">
+            <div className="flex flex-col gap-1">
               <motion.h2
                 className="text-white/90 font-bold text-2xl mb-1 flex items-center gap-2"
                 animate={{ rotate: [0, -3, 3, 0] }}
@@ -100,6 +107,9 @@ export default function InventoryModal({ onClose }: { onClose: () => void }) {
                 />
                 Inventory
               </motion.h2>
+              <p className="text-white/60 text-[10px]">
+                Click an item to see details
+              </p>
             </div>
             <button
               onClick={onClose}
