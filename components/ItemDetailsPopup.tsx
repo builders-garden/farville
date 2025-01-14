@@ -39,8 +39,8 @@ export default function ItemDetailsPopup({
             <Image
               src={`/images${item.icon}`}
               alt={item.name}
-              width={48}
-              height={48}
+              width={36}
+              height={36}
               className="object-contain"
             />
           ) : (
@@ -85,7 +85,7 @@ export default function ItemDetailsPopup({
             className="flex-1 bg-[#FFB938] text-[#7E4E31] px-4 py-2 rounded-lg font-bold 
                      hover:bg-[#ffc661] transition-colors"
           >
-            Request
+            Request on FC
           </button>
           {onUse && (
             <button
