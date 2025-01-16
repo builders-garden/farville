@@ -5,14 +5,14 @@ import {
   updateUserQuest,
 } from "@/supabase/queries";
 
-export async function GET({ params }: { params: { id: string } }) {
+export async function GET({ params }: { params: Promise<{ id: string }> }) {
   try {
-    const questId = parseInt(params.id);
-    if (isNaN(questId)) {
+    const { id } = await params;
+    if (isNaN(Number(id))) {
       return NextResponse.json({ error: "Invalid quest ID" }, { status: 400 });
     }
 
-    const quest = await getQuestById(questId);
+    const quest = await getQuestById(Number(id));
     if (!quest) {
       return NextResponse.json({ error: "Quest not found" }, { status: 404 });
     }
@@ -29,9 +29,9 @@ export async function GET({ params }: { params: { id: string } }) {
 
 export async function POST(
   req: NextRequest,
-  context: { params: { id: string } }
+  params: Promise<{ id: string }>
 ) {
-  const { id } = await Promise.resolve(context.params);
+  const { id } = await params;
   const { status } = await req.json();
   const fid = req.headers.get("x-user-fid");
   if (!fid) {
