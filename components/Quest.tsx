@@ -98,7 +98,11 @@ export default function Quest({
   onClaim,
 }: QuestProps) {
   const { mutate: updateUserQuest } = useUpdateUserQuest();
-
+  console.log(
+    quest.quest.items?.icon,
+    `/images${quest.quest.items?.icon}`,
+    quest.quest.category
+  );
   return (
     <motion.div
       key={quest.id}
@@ -119,9 +123,7 @@ export default function Quest({
             {(quest.quest.category === "plant" ||
               quest.quest.category === "harvest") && (
               <Image
-                src={
-                  `/images${quest.quest.items?.icon}` || "/images/default.png"
-                }
+                src={`/images${quest.quest.items?.icon}` || "🧑‍🌾"}
                 width={40}
                 height={40}
                 alt={`Quest icon for ${quest.quest.category}`}
@@ -130,6 +132,7 @@ export default function Quest({
             {quest.quest.category === "fertilize" && "🧪"}
             {quest.quest.category === "donate" && "🎁"}
             {quest.quest.category === "sell" && "💰"}
+            {quest.quest.category === "receive" && "🤝"}
           </motion.div>
         </div>
         <div className="flex flex-col gap-2">
