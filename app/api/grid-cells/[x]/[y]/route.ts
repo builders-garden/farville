@@ -74,6 +74,8 @@ export async function POST(
       await calculateUserQuestsProgress(parseInt(fid), "plant", plantedItem.id);
       trackEvent(Number(fid), "planted-seed", {
         seedType: plantedItem.id,
+        cropSlug: plantedItem.slug,
+        cellId: `${x}/${y}`,
       });
       break;
     case "harvest":
@@ -94,6 +96,8 @@ export async function POST(
       };
       trackEvent(Number(fid), "harvested-crop", {
         cropId: harvestResult.crop.id,
+        cropSlug: harvestResult.crop.slug,
+        cellId: `${x}/${y}`,
       });
       break;
     case "fertilize":

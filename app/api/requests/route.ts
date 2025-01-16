@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createRequest } from "@/supabase/queries";
+import { createRequest, getItemById } from "@/supabase/queries";
 import { trackEvent } from "@/lib/posthog/server";
 
 export const POST = async (request: NextRequest) => {
@@ -20,6 +20,15 @@ export const POST = async (request: NextRequest) => {
     );
   }
 
+  const item = await getItemById(itemId);
+
+  if (!item) {
+    return NextResponse.json(
+      { error: "Item not found" },
+      { status: 404 }
+    );
+  }
+
   try {
     const newRequest = await createRequest({
       fid: Number(fid),
@@ -28,6 +37,7 @@ export const POST = async (request: NextRequest) => {
     });
     trackEvent(Number(fid), "created-request", {
       itemId: itemId,
+      itemSlug: item.slug,
       quantity: quantity,
     });
     return NextResponse.json(newRequest);

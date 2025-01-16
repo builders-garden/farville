@@ -49,6 +49,7 @@ export const POST = async (
 
   trackEvent(Number(fid), "donated-item", {
     itemId: itemId,
+    itemSlug: item.slug,
     quantity: quantity,
     toFid: toFid,
   });

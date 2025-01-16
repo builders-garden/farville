@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { buyItem, sellItem } from "./utils";
 import { calculateUserQuestsProgress } from "@/app/api/grid-cells/[x]/[y]/utils";
 import { trackEvent } from "@/lib/posthog/server";
-
+import { getItemById } from "@/supabase/queries";
 export const POST = async (req: NextRequest) => {
   const { action, itemId, quantity } = await req.json();
   const fid = req.headers.get("x-user-fid");
@@ -10,11 +10,18 @@ export const POST = async (req: NextRequest) => {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const item = await getItemById(itemId);
+  if (!item) {
+    return NextResponse.json({ error: "Item not found" }, { status: 404 });
+  }
+
   switch (action) {
     case "buy":
       await buyItem(Number(fid), Number(itemId), Number(quantity));
       trackEvent(Number(fid), "bought-item", {
         itemId: itemId,
+        itemSlug: item.slug,
+        coinsSpent: item.buyPrice * quantity,
         quantity: quantity,
       });
       return NextResponse.json({ message: "Item bought" }, { status: 200 });
@@ -22,6 +29,8 @@ export const POST = async (req: NextRequest) => {
       await sellItem(Number(fid), Number(itemId), Number(quantity));
       trackEvent(Number(fid), "sold-item", {
         itemId: itemId,
+        itemSlug: item.slug,
+        coinsEarned: item.sellPrice * quantity,
         quantity: quantity,
       });
       const updatedQuests = await calculateUserQuestsProgress(
