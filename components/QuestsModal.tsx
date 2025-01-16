@@ -65,7 +65,7 @@ export default function QuestsModal({ onClose }: { onClose: () => void }) {
         coins: quest.quest.coins || undefined,
       });
 
-      setTimeout(() => setRewardAnimation(null), 2000);
+      setTimeout(() => setRewardAnimation(null), 5000);
       refetchClaimableQuests();
       refetchUser();
     }
