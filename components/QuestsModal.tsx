@@ -19,8 +19,11 @@ export default function QuestsModal({ onClose }: { onClose: () => void }) {
     state?.user?.fid,
     "incomplete"
   );
-  const { quests: claimableQuests, isLoading: isLoadingClaimableQuests } =
-    useUserQuests(state?.user?.fid, "completed");
+  const {
+    quests: claimableQuests,
+    isLoading: isLoadingClaimableQuests,
+    refetch: refetchClaimableQuests,
+  } = useUserQuests(state?.user?.fid, "completed");
 
   const isLoading = isLoadingActiveQuests || isLoadingClaimableQuests;
 
@@ -209,16 +212,36 @@ export default function QuestsModal({ onClose }: { onClose: () => void }) {
                 {activeTab === "claimable" && (
                   <div className="flex flex-col gap-2">
                     {claimableQuests?.daily.map((quest) => (
-                      <Quest quest={quest} key={quest.id} claimable={true} />
+                      <Quest
+                        quest={quest}
+                        key={quest.id}
+                        claimable={true}
+                        onClaim={() => refetchClaimableQuests()}
+                      />
                     ))}
                     {claimableQuests?.weekly.map((quest) => (
-                      <Quest quest={quest} key={quest.id} claimable={true} />
+                      <Quest
+                        quest={quest}
+                        key={quest.id}
+                        claimable={true}
+                        onClaim={() => refetchClaimableQuests()}
+                      />
                     ))}
                     {claimableQuests?.monthly.map((quest) => (
-                      <Quest quest={quest} key={quest.id} claimable={true} />
+                      <Quest
+                        quest={quest}
+                        key={quest.id}
+                        claimable={true}
+                        onClaim={() => refetchClaimableQuests()}
+                      />
                     ))}
                     {claimableQuests?.farmer.map((quest) => (
-                      <Quest quest={quest} key={quest.id} claimable={true} />
+                      <Quest
+                        quest={quest}
+                        key={quest.id}
+                        claimable={true}
+                        onClaim={() => refetchClaimableQuests()}
+                      />
                     ))}
                   </div>
                 )}

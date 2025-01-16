@@ -93,7 +93,7 @@ export async function POST(
       await fertilize(parseInt(fid), parseInt(x), parseInt(y));
       result = {
         quests:
-          (await calculateUserQuestsProgress(parseInt(fid), "fertilize")) || [],
+          (await calculateUserQuestsProgress(parseInt(fid), "fertilize", 9)) || [],
       };
       break;
   }

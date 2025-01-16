@@ -113,8 +113,6 @@ export default function GridCell({ cell }: GridCellProps) {
       onClick={handleClick}
       onDragOver={handleDragOver}
       onDrop={handleDrop}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
       data-x={cell.x}
       data-y={cell.y}
       className={`

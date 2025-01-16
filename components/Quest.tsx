@@ -12,6 +12,7 @@ import { useState } from "react";
 interface QuestProps {
   quest: DbUserHasQuestWithQuest;
   claimable: boolean;
+  onClaim?: (questId: number) => void;
 }
 
 const renderQuestRewards = (quest: DbQuest) => (
@@ -25,8 +26,8 @@ const renderQuestRewards = (quest: DbQuest) => (
         </span>
       </span>
     )}
-    {quest.coins && (
-      <>
+    {quest.coins !== null && quest.coins !== undefined && quest.coins > 0 && (
+      <div className="flex items-center gap-2 text-xs mt-2">
         <span className="text-white/40">•</span>
         <span className="text-white/60 flex items-center">
           Coins{" "}
@@ -35,7 +36,7 @@ const renderQuestRewards = (quest: DbQuest) => (
             {quest.coins}
           </span>
         </span>
-      </>
+      </div>
     )}
   </div>
 );
@@ -93,7 +94,11 @@ const questDescription = (quest: DbQuestWithItem) => {
   return `${start} ${quest.amount} ${end}`;
 };
 
-export default function Quest({ quest, claimable = false }: QuestProps) {
+export default function Quest({
+  quest,
+  claimable = false,
+  onClaim,
+}: QuestProps) {
   const { mutate: updateUserQuest } = useUpdateUserQuest();
   const [showRewards, setShowRewards] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
@@ -195,6 +200,7 @@ export default function Quest({ quest, claimable = false }: QuestProps) {
                 {
                   onSuccess: () => {
                     setShowRewards(true);
+                    onClaim?.(quest.questId);
                     setTimeout(() => setShowRewards(false), 5000);
                   },
                 }
