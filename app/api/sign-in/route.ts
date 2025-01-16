@@ -7,8 +7,10 @@ import {
   createUser,
   getGridCells,
   getUser,
+  getUserQuests,
   giftStarterPack,
   initializeGrid,
+  initializeUserQuest,
 } from "@/supabase/queries";
 import { trackEvent } from "@/lib/posthog/server";
 
@@ -48,6 +50,13 @@ export const POST = async (req: NextRequest) => {
     await initializeGrid(fid);
     // Give them a starter pack
     await giftStarterPack(fid);
+    await initializeUserQuest(fid);
+  }
+
+  const userQuests = await getUserQuests(fid);
+  console.log("user quests", userQuests);
+  if (!userQuests || userQuests?.length === 0) {
+    await initializeUserQuest(fid);
   }
 
   // Verify signature matches custody address

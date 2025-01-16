@@ -30,10 +30,10 @@ export default function QuestsModal({ onClose }: { onClose: () => void }) {
   ];
 
   const subTabs = [
-    { id: "daily", label: "D", icon: "📅" },
-    { id: "weekly", label: "W", icon: "📅" },
-    { id: "monthly", label: "M", icon: "📆" },
-    { id: "farmer", label: "G", icon: "🌾" },
+    { id: "daily", label: "daily", icon: "📅" },
+    { id: "weekly", label: "weekly", icon: "📅" },
+    { id: "monthly", label: "monthly", icon: "📆" },
+    { id: "generic", label: "generic", icon: "🌾" },
   ];
 
   return (
@@ -132,20 +132,7 @@ export default function QuestsModal({ onClose }: { onClose: () => void }) {
                     }}
                     whileTap={{ scale: 0.98 }}
                   >
-                    <motion.span
-                      animate={{
-                        rotate: activeSubTab === tab.id ? [0, -5, 5, 0] : 0,
-                      }}
-                      transition={{
-                        duration: 0.5,
-                        repeat: Infinity,
-                        repeatDelay: 2,
-                      }}
-                      className="mt-[-10px]"
-                    >
-                      {tab.icon}
-                    </motion.span>
-                    <span className="text-sm font-medium">{tab.label}</span>
+                    <span className="text-[8px] font-medium">{tab.label}</span>
                   </motion.button>
                 ))}
               </div>
