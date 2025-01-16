@@ -101,10 +101,8 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
         .play()
         .then(() => {
           setIsMusicPlaying(true);
-          console.log("Music started successfully");
         })
         .catch((error) => {
-          console.error("Failed to start music:", error);
           if (error.name === "NotAllowedError") {
             console.log("Autoplay prevented - waiting for user interaction");
           }

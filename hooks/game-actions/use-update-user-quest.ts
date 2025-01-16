@@ -17,7 +17,6 @@ export const useUpdateUserQuest = () => {
     method: "POST",
     body: (variables) => ({ status: variables.status }),
     onSuccess: (variables) => {
-      console.log(variables);
       if (variables.status === "claimed") {
         playSound("claimQuest");
       }

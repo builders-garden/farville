@@ -151,30 +151,27 @@ export default function Quest({ quest, claimable = false }: QuestProps) {
               <span className="ml-auto">
                 Ends in:{" "}
                 {(() => {
-                  const timeRemaining =
-                    new Date(quest.quest.endAt).getTime() - Date.now();
+                  const endTime = new Date(quest.quest.endAt).getTime();
+                  const timeRemaining = endTime - Date.now();
                   if (timeRemaining <= 0) return "";
 
-                  const days = Math.floor(
-                    timeRemaining / (1000 * 60 * 60 * 24)
-                  );
-                  const hours = Math.floor(
-                    (timeRemaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
-                  );
-                  const minutes = Math.floor(
-                    (timeRemaining % (1000 * 60 * 60)) / (1000 * 60)
-                  );
-                  const seconds = Math.floor(
-                    (timeRemaining % (1000 * 60)) / 1000
-                  );
+                  const SECOND = 1000;
+                  const MINUTE = SECOND * 60;
+                  const HOUR = MINUTE * 60;
+                  const DAY = HOUR * 24;
 
-                  return `${days > 0 ? `${days}d ` : ""}
-                                  ${hours > 0 ? `${hours}h ` : ""}
-                                    ${
-                                      minutes > 0
-                                        ? `${minutes}m`
-                                        : `${seconds}s`
-                                    }`;
+                  const days = Math.floor(timeRemaining / DAY);
+                  const hours = Math.floor((timeRemaining % DAY) / HOUR);
+                  const minutes = Math.floor((timeRemaining % HOUR) / MINUTE);
+                  const seconds = Math.floor((timeRemaining % MINUTE) / SECOND);
+
+                  const parts = [];
+                  if (days > 0) parts.push(`${days}d`);
+                  if (hours > 0) parts.push(`${hours}h`);
+                  if (minutes > 0) parts.push(`${minutes}m`);
+                  else parts.push(`${seconds}s`);
+
+                  return parts.join(" ");
                 })()}
               </span>
             )}

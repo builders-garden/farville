@@ -119,13 +119,6 @@ export const calculateUserQuestsProgress = async (
               quest.questId
             } for user ${fid}, setting status to claimable`
           );
-          // if (quest.quest?.xp || quest.quest?.coins) {
-          //   const currentUser = await getUser(fid);
-          //   await updateUser(fid, {
-          //     xp: (currentUser?.xp || 0) + (quest.quest.xp || 0),
-          //     coins: (currentUser?.coins || 0) + (quest.quest.coins || 0),
-          //   });
-          // }
         }
         return updatedQuest;
       } else {

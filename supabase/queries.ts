@@ -885,13 +885,17 @@ export const getUserQuests = async (
     .select(
       `
       *,
-      quest:quests (
+      quest:quests!inner (
         *,
         items (*)
       )
     `
     )
     .eq("fid", fid);
+
+  if (filter?.status === "incomplete") {
+    query.gte("quest.endAt", new Date().toISOString());
+  }
 
   if (filter?.itemId) {
     query.eq("quest.itemId", filter.itemId);
@@ -935,4 +939,25 @@ export const getQuestsByType = async (
 
   if (error) throw error;
   return data;
+};
+
+export const initializeUserQuest = async (fid: number): Promise<void> => {
+  const { data, error } = await supabase
+    .from("quests")
+    .select("id")
+    .order("createdAt", { ascending: false });
+  if (!data || error) {
+    throw error;
+  }
+  await Promise.all(
+    data.map((quest) =>
+      createUserQuest({
+        fid,
+        questId: quest.id,
+        completedAt: null,
+        status: "incomplete",
+        progress: 0,
+      })
+    )
+  );
 };
