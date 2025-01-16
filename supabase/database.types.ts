@@ -183,6 +183,73 @@ export interface Database {
           createdAt?: string;
         };
       };
+      quests: {
+        Row: {
+          id: number;
+          category: string;
+          type: "daily" | "weekly" | "monthly" | null;
+          itemId: number | null;
+          amount: number | null;
+          xp: number | null;
+          coins: number | null;
+          startAt: string | null;
+          endAt: string | null;
+          createdAt: string;
+        };
+        Insert: {
+          id?: number;
+          category: string;
+          type?: "daily" | "weekly" | "monthly" | null;
+          itemId?: number | null;
+          amount?: number | null;
+          xp?: number | null;
+          coins?: number | null;
+          startAt?: string | null;
+          endAt?: string | null;
+          createdAt?: string;
+        };
+        Update: {
+          id?: number;
+          category?: string;
+          type?: "daily" | "weekly" | "monthly" | null;
+          itemId?: number | null;
+          amount?: number | null;
+          xp?: number | null;
+          coins?: number | null;
+          startAt?: string | null;
+          endAt?: string | null;
+          createdAt?: string;
+        };
+      };
+      user_has_quests: {
+        Row: {
+          id: number;
+          fid: number;
+          questId: number;
+          status: "incomplete" | "complete";
+          completedAt: string | null;
+          createdAt: string;
+          progress: number;
+        };
+        Insert: {
+          id?: number;
+          fid: number;
+          questId: number;
+          status?: "incomplete" | "complete";
+          completedAt?: string | null;
+          createdAt?: string;
+          progress?: number;
+        };
+        Update: {
+          id?: number;
+          fid?: number;
+          questId?: number;
+          status?: "incomplete" | "complete";
+          completedAt?: string | null;
+          createdAt?: string;
+          progress?: number;
+        };
+      };
     };
     Views: {
       [_ in never]: never;

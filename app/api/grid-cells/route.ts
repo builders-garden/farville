@@ -28,7 +28,6 @@ export const POST = async (req: NextRequest) => {
   }
 
   if (user.expansions >= EXPANSION_COSTS.length) {
-    console.log("No more expansions available");
     return NextResponse.json(
       { error: "No more expansions available" },
       { status: 400 }
@@ -37,17 +36,14 @@ export const POST = async (req: NextRequest) => {
 
   const nextExpansion = EXPANSION_COSTS[user.expansions - 1];
   if (user.coins < nextExpansion.coins) {
-    console.log("Insufficient funds");
     return NextResponse.json({ error: "Insufficient funds" }, { status: 400 });
   }
 
   const { nextSize } = nextExpansion;
   for (let i = 1; i <= nextSize.width; i++) {
     if (i < nextSize.width) {
-      console.log("Creating new cell:", i, nextSize.height);
       await createGridCell(Number(fid), i, nextSize.height);
     }
-    console.log("Creating new cell:", nextSize.width, i);
     await createGridCell(Number(fid), nextSize.width, i);
   }
 

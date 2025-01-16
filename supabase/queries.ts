@@ -10,6 +10,13 @@ import {
   InsertDbUserNotification,
   DbRequest,
   InsertDbRequest,
+  DbQuest,
+  InsertDbQuest,
+  DbQuestWithItem,
+  DbUserHasQuest,
+  DbUserHasQuestWithQuest,
+  InsertDbUserHasQuest,
+  DbUserHasQuestStatus,
 } from "./types";
 
 // Items queries
@@ -759,4 +766,296 @@ export const deleteRequest = async (id: number): Promise<void> => {
   const { error } = await supabase.from("requests").delete().eq("id", id);
 
   if (error) throw error;
+};
+
+// Quest queries
+export const getQuests = async (): Promise<DbQuestWithItem[]> => {
+  const { data, error } = await supabase
+    .from("quests")
+    .select(
+      `
+      *,
+      items (
+        *)
+      `
+    )
+    .order("createdAt", { ascending: false });
+
+  if (error) throw error;
+  return data;
+};
+
+export const getActiveQuests = async (): Promise<DbQuestWithItem[]> => {
+  const now = new Date().toISOString();
+  const { data, error } = await supabase
+    .from("quests")
+    .select(
+      `
+      *,
+      items (
+        *)
+      `
+    )
+    .lte("startAt", now)
+    .gt("endAt", now)
+    .order("endAt", { ascending: true });
+
+  if (error) throw error;
+  return data;
+};
+
+export const getQuestById = async (id: number): Promise<DbQuest | null> => {
+  const { data, error } = await supabase
+    .from("quests")
+    .select("*")
+    .eq("id", id)
+    .maybeSingle();
+
+  if (error) throw error;
+  return data;
+};
+
+export const createQuest = async (quest: InsertDbQuest): Promise<DbQuest> => {
+  const { data, error } = await supabase
+    .from("quests")
+    .insert(quest)
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+};
+
+export const updateQuest = async (
+  id: number,
+  updates: Partial<InsertDbQuest>
+): Promise<DbQuest> => {
+  const { data, error } = await supabase
+    .from("quests")
+    .update(updates)
+    .eq("id", id)
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+};
+
+export const deleteQuest = async (id: number): Promise<void> => {
+  const { error } = await supabase.from("quests").delete().eq("id", id);
+
+  if (error) throw error;
+};
+
+// User Quests queries
+// export const getUserQuests = async (
+//   fid: number
+// ): Promise<DbUserHasQuestWithQuest[]> => {
+//   const { data, error } = await supabase
+//     .from("user_has_quests")
+//     .select(
+//       `
+//       *,
+//       quest:quests (
+//         *,
+//         items (*)
+//       )
+//     `
+//     )
+//     .eq("fid", fid)
+//     .order("createdAt", { ascending: false });
+
+//   if (error) throw error;
+//   return data;
+// };
+
+export const getUserQuestById = async (
+  fid: number,
+  questId: number
+): Promise<DbUserHasQuestWithQuest | null> => {
+  const { data, error } = await supabase
+    .from("user_has_quests")
+    .select(
+      `
+      *,
+      quest:quests (
+        *,
+        items (*)
+      )
+    `
+    )
+    .eq("fid", fid)
+    .eq("questId", questId)
+    .maybeSingle();
+
+  if (error) throw error;
+  return data;
+};
+
+export const createUserQuest = async (
+  userQuest: InsertDbUserHasQuest
+): Promise<DbUserHasQuest> => {
+  const { data, error } = await supabase
+    .from("user_has_quests")
+    .insert({ ...userQuest, status: "incomplete", progress: 0 })
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+};
+
+export const updateUserQuest = async (
+  fid: number,
+  questId: number,
+  updates: Partial<DbUserHasQuest>
+): Promise<DbUserHasQuest> => {
+  const { data, error } = await supabase
+    .from("user_has_quests")
+    .update(updates)
+    .eq("fid", fid)
+    .eq("questId", questId)
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+};
+
+export const getActiveUserQuests = async (
+  fid: number
+): Promise<DbUserHasQuestWithQuest[]> => {
+  const { data, error } = await supabase
+    .from("user_has_quests")
+    .select(
+      `
+      *,
+      quest:quests (
+        *,
+        items (*)
+      )
+    `
+    )
+    .eq("fid", fid)
+    .eq("status", "incomplete")
+    .order("createdAt", { ascending: false });
+
+  if (error) throw error;
+  return data;
+};
+
+export const getQuestsByItemId = async (
+  itemId: number,
+  active: boolean = true
+): Promise<DbQuestWithItem[]> => {
+  const query = supabase
+    .from("quests")
+    .select(
+      `
+      *,
+      items (*)
+    `
+    )
+    .eq("itemId", itemId);
+
+  if (active) {
+    const now = new Date().toISOString();
+    query.lte("startAt", now).gt("endAt", now);
+  }
+
+  const { data, error } = await query;
+
+  if (error) throw error;
+  return data;
+};
+
+export const getUserQuests = async (
+  fid: number,
+  filter?: {
+    category?: string;
+    itemId?: number;
+    type?: "daily" | "weekly" | "monthly";
+    status?: DbUserHasQuestStatus;
+  }
+): Promise<DbUserHasQuestWithQuest[]> => {
+  const query = supabase
+    .from("user_has_quests")
+    .select(
+      `
+      *,
+      quest:quests!inner (
+        *,
+        items (*)
+      )
+    `
+    )
+    .eq("fid", fid);
+
+  if (filter?.status === "incomplete") {
+    query.gte("quest.endAt", new Date().toISOString());
+  }
+
+  if (filter?.itemId) {
+    query.eq("quest.itemId", filter.itemId);
+  }
+
+  if (filter?.category) {
+    query.eq("quest.category", filter.category);
+  }
+
+  if (filter?.type) {
+    query.eq("quest.type", filter?.type);
+  }
+
+  if (filter?.status) {
+    query.eq("status", filter.status);
+  }
+
+  const { data, error } = await query;
+
+  if (error) throw error;
+  return data;
+};
+
+export const getQuestsByType = async (
+  type: "daily" | "weekly" | "monthly"
+): Promise<DbQuestWithItem[]> => {
+  const now = new Date().toISOString();
+  const { data, error } = await supabase
+    .from("quests")
+    .select(
+      `
+      *,
+      items (
+        *)
+      `
+    )
+    .eq("type", type)
+    .lte("startAt", now)
+    .gt("endAt", now)
+    .order("endAt", { ascending: true });
+
+  if (error) throw error;
+  return data;
+};
+
+export const initializeUserQuest = async (fid: number): Promise<void> => {
+  const { data, error } = await supabase
+    .from("quests")
+    .select("id")
+    .order("createdAt", { ascending: false });
+  if (!data || error) {
+    throw error;
+  }
+  await Promise.all(
+    data.map((quest) =>
+      createUserQuest({
+        fid,
+        questId: quest.id,
+        completedAt: null,
+        status: "incomplete",
+        progress: 0,
+      })
+    )
+  );
 };

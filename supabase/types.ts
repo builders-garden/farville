@@ -82,3 +82,40 @@ export type InsertDbRequest = Omit<
   DbRequest,
   "id" | "createdAt" | "filledQuantity"
 >;
+
+export interface DbQuest {
+  id: number;
+  category: string;
+  type: "daily" | "weekly" | "monthly" | null;
+  itemId: number | null;
+  amount: number | null;
+  xp: number | null;
+  coins: number | null;
+  startAt: string | null;
+  endAt: string | null;
+  createdAt: string;
+}
+
+// Helper type for inserting new quests
+export type InsertDbQuest = Omit<DbQuest, "id" | "createdAt">;
+
+export type DbQuestWithItem = DbQuest & { items: DbItem | null };
+
+export type DbUserHasQuestStatus = "incomplete" | "completed" | "claimed";
+
+export interface DbUserHasQuest {
+  id: number;
+  fid: number;
+  questId: number;
+  status: DbUserHasQuestStatus;
+  completedAt: string | null;
+  createdAt: string;
+  progress: number;
+}
+
+export type DbUserHasQuestWithQuest = DbUserHasQuest & {
+  quest: DbQuestWithItem;
+};
+
+// Helper type for inserting new user quests
+export type InsertDbUserHasQuest = Omit<DbUserHasQuest, "id" | "createdAt">;

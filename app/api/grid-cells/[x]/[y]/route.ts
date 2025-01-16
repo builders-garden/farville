@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { fertilize, harvest, plantSeed } from "./utils";
+import {
+  calculateUserQuestsProgress,
+  fertilize,
+  harvest,
+  plantSeed,
+} from "./utils";
 import {
   sendDelayedNotification,
   getGrowthTime,
@@ -7,6 +12,7 @@ import {
 } from "@/lib/game-notifications";
 import { z } from "zod";
 import { ActionType, SeedType } from "@/types/game";
+import { DbUserHasQuest } from "@/supabase/types";
 
 const requestSchema = z.object({
   action: z.nativeEnum(ActionType),
@@ -34,7 +40,10 @@ export async function POST(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  let result: { rewards?: { xp: number; amount: number } } | null = null;
+  let result: {
+    rewards?: { xp: number; amount: number };
+    quests: DbUserHasQuest[];
+  } | null = null;
 
   switch (action) {
     case "plant":
@@ -44,7 +53,12 @@ export async function POST(
           { status: 400 }
         );
       }
-      await plantSeed(parseInt(fid), parseInt(x), parseInt(y), seedType);
+      const plantedItem = await plantSeed(
+        parseInt(fid),
+        parseInt(x),
+        parseInt(y),
+        seedType
+      );
       await sendDelayedNotification(
         fid,
         `Harvest time! 🌾`,
@@ -52,12 +66,31 @@ export async function POST(
         "harvest",
         getGrowthTime(seedType)
       );
+      await calculateUserQuestsProgress(parseInt(fid), "plant", plantedItem.id);
       break;
     case "harvest":
-      result = await harvest(parseInt(fid), parseInt(x), parseInt(y));
+      const harvestResult = await harvest(
+        parseInt(fid),
+        parseInt(x),
+        parseInt(y)
+      );
+      result = {
+        rewards: harvestResult.rewards,
+        quests:
+          (await calculateUserQuestsProgress(
+            parseInt(fid),
+            "harvest",
+            harvestResult.crop.id,
+            harvestResult.rewards.amount
+          )) || [],
+      };
       break;
     case "fertilize":
       await fertilize(parseInt(fid), parseInt(x), parseInt(y));
+      result = {
+        quests:
+          (await calculateUserQuestsProgress(parseInt(fid), "fertilize")) || [],
+      };
       break;
   }
   return NextResponse.json(result);

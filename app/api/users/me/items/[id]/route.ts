@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { buyItem, sellItem } from "./utils";
+import { calculateUserQuestsProgress } from "@/app/api/grid-cells/[x]/[y]/utils";
 
 export const POST = async (req: NextRequest) => {
   const { action, itemId, quantity } = await req.json();
@@ -14,7 +15,16 @@ export const POST = async (req: NextRequest) => {
       return NextResponse.json({ message: "Item bought" }, { status: 200 });
     case "sell":
       await sellItem(Number(fid), Number(itemId), Number(quantity));
-      return NextResponse.json({ message: "Item sold" }, { status: 200 });
+      const updatedQuests = await calculateUserQuestsProgress(
+        Number(fid),
+        "sell",
+        Number(itemId),
+        Number(quantity)
+      );
+      return NextResponse.json(
+        { message: "Item sold", quests: updatedQuests },
+        { status: 200 }
+      );
   }
   return NextResponse.json({ error: "Invalid action" }, { status: 400 });
 };
