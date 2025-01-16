@@ -134,9 +134,6 @@ export const calculateUserQuestsProgress = async (
     })
   );
 
-  console.log({
-    updatedQuests,
-  });
   return updatedQuests;
 };
 

@@ -75,6 +75,10 @@ const questDescription = (quest: DbQuestWithItem) => {
       start = "Donate";
       end = "items";
       break;
+    case "sell":
+      start = "Sell";
+      end = "crops";
+      break;
     default:
       start = "Complete";
       end = "the quest";
@@ -86,7 +90,7 @@ const questDescription = (quest: DbQuestWithItem) => {
   return `${start} ${quest.amount} ${end}`;
 };
 
-export default function Quest({ quest, claimable }: QuestProps) {
+export default function Quest({ quest, claimable = false }: QuestProps) {
   return (
     <motion.div
       key={quest.id}
@@ -117,6 +121,7 @@ export default function Quest({ quest, claimable }: QuestProps) {
             )}
             {quest.quest.category === "fertilize" && "🧪"}
             {quest.quest.category === "donate" && "🎁"}
+            {quest.quest.category === "sell" && "💰"}
           </motion.div>
         </div>
         <div className="flex flex-col gap-2">
