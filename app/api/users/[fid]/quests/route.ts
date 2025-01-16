@@ -4,7 +4,7 @@ import { DbUserHasQuestStatus, InsertDbUserHasQuest } from "@/supabase/types";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { fid: string } }
+  { params }: { params: Promise<{ fid: string }> }
 ) {
   try {
     const { fid: stringFid } = await params; // keep this await
@@ -49,18 +49,18 @@ export async function GET(
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { fid: string } }
+  { params }: { params: Promise<{ fid: string }> }
 ) {
   try {
-    const fid = parseInt(params.fid);
-    if (isNaN(fid)) {
+    const { fid } = await params;
+    if (isNaN(Number(fid))) {
       return NextResponse.json({ error: "Invalid FID" }, { status: 400 });
     }
 
     const questData: Omit<InsertDbUserHasQuest, "fid"> = await request.json();
     const userQuest = await createUserQuest({
       ...questData,
-      fid,
+      fid: Number(fid),
     });
 
     return NextResponse.json(userQuest, { status: 201 });

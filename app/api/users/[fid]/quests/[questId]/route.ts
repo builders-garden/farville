@@ -4,19 +4,18 @@ import { getUserQuestById } from "@/supabase/queries";
 export async function GET({
   params,
 }: {
-  params: { fid: string; questId: string };
+  params: Promise<{ fid: string; questId: string }>;
 }) {
   try {
-    const fid = parseInt(params.fid);
-    const questId = parseInt(params.questId);
-    if (isNaN(fid) || isNaN(questId)) {
+    const { fid, questId } = await params;
+    if (isNaN(Number(fid)) || isNaN(Number(questId))) {
       return NextResponse.json(
         { error: "Invalid parameters" },
         { status: 400 }
       );
     }
 
-    const quest = await getUserQuestById(fid, questId);
+    const quest = await getUserQuestById(Number(fid), Number(questId));
     if (!quest) {
       return NextResponse.json({ error: "Quest not found" }, { status: 404 });
     }

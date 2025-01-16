@@ -21,10 +21,14 @@ const requestSchema = z.object({
 
 export async function POST(
   req: NextRequest,
-  context: { params: { x: string; y: string } }
+  {
+    params,
+  }: {
+    params: Promise<{ x: string; y: string }>;
+  }
 ) {
   // Await the params
-  const { x, y } = await Promise.resolve(context.params);
+  const { x, y } = await Promise.resolve(params);
   const requestJson = await req.json();
   const requestBody = requestSchema.safeParse(requestJson);
   if (requestBody.success === false) {
