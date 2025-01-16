@@ -8,7 +8,11 @@ export const config = {
 
 export default async function middleware(req: NextRequest) {
   // Skip auth check for sign-in endpoint
-  if (req.nextUrl.pathname === "/api/sign-in") {
+  if (
+    req.nextUrl.pathname === "/api/sign-in" ||
+    req.nextUrl.pathname.includes("/api/og") ||
+    req.nextUrl.pathname.includes("/api/webhook")
+  ) {
     return NextResponse.next();
   }
 

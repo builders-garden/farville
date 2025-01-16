@@ -1,5 +1,6 @@
 "use client";
-import sdk, { FrameContext, SafeAreaInsets } from "@farcaster/frame-sdk";
+import { FrameContext, SafeAreaInsets } from "@farcaster/frame-node";
+import sdk from "@farcaster/frame-sdk";
 import { useEffect, useState } from "react";
 
 export const useFrameContext = () => {
@@ -21,7 +22,7 @@ export const useFrameContext = () => {
           if (context.client?.safeAreaInsets) {
             setSafeAreaInsets(context.client.safeAreaInsets);
           }
-          setContext(context);
+          setContext(context as FrameContext);
         } else {
           setError("Failed to load Farcaster context");
         }

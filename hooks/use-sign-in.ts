@@ -3,6 +3,7 @@ import { useFrameContext } from "@/context/FrameContext";
 import { useCallback, useEffect, useState } from "react";
 import { MESSAGE_EXPIRATION_TIME } from "@/lib/constants";
 import posthog from "posthog-js";
+import * as Sentry from "@sentry/nextjs";
 
 export const useSignIn = () => {
   const { isSDKLoaded, context, error: contextError } = useFrameContext();
@@ -64,6 +65,9 @@ export const useSignIn = () => {
       localStorage.setItem("token", data.token);
       setIsSignedIn(true);
       posthog.identify(context.user.fid.toString());
+      Sentry.setUser({
+        id: context.user.fid.toString(),
+      });
       return data;
     } catch (err) {
       const errorMessage =

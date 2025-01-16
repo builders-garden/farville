@@ -157,6 +157,32 @@ export interface Database {
           createdAt?: string;
         };
       };
+      requests: {
+        Row: {
+          id: number;
+          fid: number;
+          itemId: number;
+          quantity: number;
+          filledQuantity: number;
+          createdAt: string;
+        };
+        Insert: {
+          id?: number;
+          fid: number;
+          itemId: number;
+          quantity: number;
+          filledQuantity?: number;
+          createdAt?: string;
+        };
+        Update: {
+          id?: number;
+          fid?: number;
+          itemId?: number;
+          quantity?: number;
+          filledQuantity?: number;
+          createdAt?: string;
+        };
+      };
       quests: {
         Row: {
           id: number;

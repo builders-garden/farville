@@ -4,17 +4,76 @@ import { motion } from "framer-motion";
 import { useGame } from "../context/GameContext";
 import { useFrameContext } from "../context/FrameContext";
 import { UserItem } from "@/hooks/use-user-items";
-import { SeedType } from "@/types/game";
 import Image from "next/image";
+import ItemDetailsPopup from "./ItemDetailsPopup";
+import { useState } from "react";
+import { DbItem } from "@/supabase/types";
+import { requestItemComposeCastUrl } from "@/lib/utils";
+import sdk from "@farcaster/frame-sdk";
+import { useCreateRequest } from "@/hooks/game-actions/use-create-request";
+
 export default function InventoryModal({ onClose }: { onClose: () => void }) {
   const { state, setSelectedSeed, setSelectedFertilizer } = useGame();
-  const { safeAreaInsets } = useFrameContext();
+  const { safeAreaInsets, context } = useFrameContext();
+  const [selectedItem, setSelectedItem] = useState<DbItem | null>(null);
+  const [requestQuantity, setRequestQuantity] = useState(1);
+  const {
+    mutate: createRequest,
+    isError: createRequestError,
+    data: createRequestData,
+  } = useCreateRequest();
 
   const handlePerkClick = (perk: UserItem) => {
     if (perk.item.name === "Fertilizer" && perk.quantity && perk.quantity > 0) {
       setSelectedFertilizer(perk);
       setSelectedSeed(null);
       onClose();
+    }
+  };
+
+  const handleItemClick = (item: DbItem) => {
+    setSelectedItem(item);
+  };
+
+  const handleUseItem = (item: DbItem) => {
+    if (item.category === "perk") {
+      const userPerk = state.perks.find((p) => p.item.slug === item.slug);
+      if (userPerk) {
+        handlePerkClick(userPerk);
+      }
+    }
+    setSelectedItem(null);
+  };
+
+  const handleRequestItem = async (item: DbItem) => {
+    if (!context?.user.fid) return;
+
+    try {
+      await createRequest(
+        {
+          itemId: item.id,
+          quantity: requestQuantity,
+        },
+        {
+          onSuccess: async (data) => {
+            const url = requestItemComposeCastUrl(
+              data.id,
+              item,
+              requestQuantity
+            );
+            await sdk.actions.openUrl(url);
+            setSelectedItem(null);
+            setRequestQuantity(1); // Reset quantity after request
+          },
+        }
+      );
+
+      if (createRequestError || !createRequestData) {
+        console.error("Error creating request");
+        return;
+      }
+    } catch (error) {
+      console.error("Error handling request:", error);
     }
   };
 
@@ -33,8 +92,8 @@ export default function InventoryModal({ onClose }: { onClose: () => void }) {
         className="bg-[#7E4E31] w-full h-full flex flex-col"
       >
         <div className="p-6 border-b border-[#8B5E3C]">
-          <div className="flex justify-between items-center max-w-4xl mx-auto w-full">
-            <div>
+          <div className="flex justify-between max-w-4xl mx-auto w-full">
+            <div className="flex flex-col gap-1">
               <motion.h2
                 className="text-white/90 font-bold text-2xl mb-1 flex items-center gap-2"
                 animate={{ rotate: [0, -3, 3, 0] }}
@@ -48,6 +107,9 @@ export default function InventoryModal({ onClose }: { onClose: () => void }) {
                 />
                 Inventory
               </motion.h2>
+              <p className="text-white/60 text-[10px]">
+                Click an item to see details
+              </p>
             </div>
             <button
               onClick={onClose}
@@ -85,7 +147,7 @@ export default function InventoryModal({ onClose }: { onClose: () => void }) {
                                  shadow-lg hover:shadow-xl transition-shadow duration-200
                                  border-2 border-[#8B5E3C]"
                           whileHover={{ scale: 1.02 }}
-                          onClick={() => setSelectedSeed(item.slug as SeedType)}
+                          onClick={() => handleItemClick(item)}
                         >
                           <motion.img
                             src={`/images${item.icon}`}
@@ -132,6 +194,7 @@ export default function InventoryModal({ onClose }: { onClose: () => void }) {
                           className="bg-[#6d4c2c] aspect-square rounded-lg relative flex items-center justify-center
                                  shadow-lg hover:shadow-xl transition-shadow duration-200
                                  border-2 border-[#8B5E3C]"
+                          onClick={() => handleItemClick(item)}
                         >
                           <motion.img
                             src={`/images${item.icon}`}
@@ -181,11 +244,7 @@ export default function InventoryModal({ onClose }: { onClose: () => void }) {
                                  border-2 border-[#8B5E3C]"
                           whileHover={{ scale: 1.05 }}
                           title={perk.description}
-                          onClick={() => {
-                            if (userPerk) {
-                              handlePerkClick(userPerk);
-                            }
-                          }}
+                          onClick={() => handleItemClick(perk)}
                         >
                           <motion.span
                             className="text-2xl"
@@ -214,6 +273,31 @@ export default function InventoryModal({ onClose }: { onClose: () => void }) {
           </div>
         </div>
       </motion.div>
+
+      {selectedItem && (
+        <ItemDetailsPopup
+          item={selectedItem}
+          userItem={
+            selectedItem.category === "seed"
+              ? state.seeds.find((s) => s.item.slug === selectedItem.slug)
+              : selectedItem.category === "crop"
+              ? state.crops.find((c) => c.item.slug === selectedItem.slug)
+              : state.perks.find((p) => p.item.slug === selectedItem.slug)
+          }
+          onClose={() => {
+            setSelectedItem(null);
+            setRequestQuantity(1); // Reset quantity when closing
+          }}
+          requestQuantity={requestQuantity}
+          onRequestQuantityChange={setRequestQuantity}
+          onRequest={() => handleRequestItem(selectedItem)}
+          onUse={
+            selectedItem.category === "perk"
+              ? () => handleUseItem(selectedItem)
+              : undefined
+          }
+        />
+      )}
     </div>
   );
 }
