@@ -1,0 +1,45 @@
+import { motion } from "framer-motion";
+
+interface ConfirmationModalProps {
+  title: string;
+  message: string;
+  onConfirm: () => void;
+  onCancel: () => void;
+}
+
+export default function ConfirmationModal({
+  title,
+  message,
+  onConfirm,
+  onCancel,
+}: ConfirmationModalProps) {
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60]">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.95 }}
+        className="bg-[#7E4E31] p-6 rounded-lg max-w-sm w-full mx-4 border border-[#8B5E3C]/50"
+      >
+        <h3 className="text-white/90 font-bold text-lg mb-2">{title}</h3>
+        <p className="text-white/70 text-sm mb-6">{message}</p>
+        <div className="flex gap-3">
+          <button
+            onClick={onCancel}
+            className="flex-1 py-2 px-4 rounded bg-white/10 text-white/90 hover:bg-white/20 
+                     transition-colors text-sm font-medium"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={onConfirm}
+            className="flex-1 py-2 px-4 rounded bg-[#FFB938] text-[#7E4E31] hover:bg-[#ffc65c] 
+                     transition-colors text-sm font-medium"
+          >
+            Confirm
+          </button>
+        </div>
+      </motion.div>
+    </div>
+  );
+}

@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useGame } from "../context/GameContext";
 import { EXPANSION_COSTS } from "../lib/game-constants";
 import Image from "next/image";
+import ConfirmationModal from "./ConfirmationModal";
 
 type Tab = "seeds" | "crops" | "perks" | "expansions";
 
@@ -18,6 +19,13 @@ export default function MarketplaceModal({
   const { state, buyItem, sellItem, expandGrid, isActionInProgress } =
     useGame();
   const [activeTab, setActiveTab] = useState<Tab>("seeds");
+  const [confirmAction, setConfirmAction] = useState<{
+    type: "buy" | "sell";
+    itemId: number;
+    quantity: number;
+    itemName: string;
+    price: number;
+  } | null>(null);
 
   const tabs: { id: Tab; label: string; icon: string }[] = [
     { id: "seeds", label: "Seeds", icon: "🌱" },
@@ -189,9 +197,12 @@ export default function MarketplaceModal({
                               whileHover={{ scale: 1.03 }}
                               whileTap={{ scale: 0.97 }}
                               onClick={() =>
-                                buyItem({
+                                setConfirmAction({
+                                  type: "buy",
                                   itemId: item.id,
                                   quantity: amount,
+                                  itemName: item.name,
+                                  price: item.buyPrice * amount,
                                 })
                               }
                               disabled={state.coins < item.buyPrice * amount}
@@ -267,9 +278,12 @@ export default function MarketplaceModal({
                               whileHover={{ scale: 1.03 }}
                               whileTap={{ scale: 0.97 }}
                               onClick={() =>
-                                sellItem({
+                                setConfirmAction({
+                                  type: "sell",
                                   itemId: item.id,
                                   quantity: sellAmount,
+                                  itemName: item.name,
+                                  price: item.sellPrice * sellAmount,
                                 })
                               }
                               disabled={amount < sellAmount}
@@ -433,7 +447,13 @@ export default function MarketplaceModal({
                               whileHover={{ scale: 1.03 }}
                               whileTap={{ scale: 0.97 }}
                               onClick={() =>
-                                buyItem({ itemId: perk.id, quantity: 1 })
+                                setConfirmAction({
+                                  type: "buy",
+                                  itemId: perk.id,
+                                  quantity: 1,
+                                  itemName: perk.name,
+                                  price: perk.buyPrice,
+                                })
                               }
                               disabled={state.coins < perk.buyPrice}
                               className="min-w-[100px] py-2 px-4 rounded text-sm font-medium
@@ -458,6 +478,33 @@ export default function MarketplaceModal({
           </div>
         </div>
       </motion.div>
+      {confirmAction && (
+        <ConfirmationModal
+          title={`${confirmAction.type === "buy" ? "Buy" : "Sell"} ${
+            confirmAction.itemName
+          }`}
+          message={`Are you sure you want to ${
+            confirmAction.type === "buy" ? "buy" : "sell"
+          } ${confirmAction.quantity}x ${confirmAction.itemName} for 🪙 ${
+            confirmAction.price
+          }?`}
+          onConfirm={() => {
+            if (confirmAction.type === "buy") {
+              buyItem({
+                itemId: confirmAction.itemId,
+                quantity: confirmAction.quantity,
+              });
+            } else {
+              sellItem({
+                itemId: confirmAction.itemId,
+                quantity: confirmAction.quantity,
+              });
+            }
+            setConfirmAction(null);
+          }}
+          onCancel={() => setConfirmAction(null)}
+        />
+      )}
       {isActionInProgress && (
         <div className="absolute inset-0 bg-black/60 flex items-center justify-center z-50 rounded-lg">
           <motion.div
