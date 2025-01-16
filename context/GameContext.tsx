@@ -15,7 +15,7 @@ import { UserItem } from "@/hooks/use-user-items";
 // Update the OverlayType to be more flexible with parameters
 export type OverlayConfig =
   | { type: "welcome" }
-  | { type: "requests"; id: number  }
+  | { type: "requests"; id: number }
   | { type: "tutorial"; step?: number }
   | null;
 

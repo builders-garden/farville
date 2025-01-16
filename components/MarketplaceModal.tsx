@@ -15,7 +15,8 @@ export default function MarketplaceModal({
   onClose: () => void;
   safeAreaInsets: { top: number; bottom: number; left: number; right: number };
 }) {
-  const { state, buyItem, sellItem, expandGrid } = useGame();
+  const { state, buyItem, sellItem, expandGrid, isActionInProgress } =
+    useGame();
   const [activeTab, setActiveTab] = useState<Tab>("seeds");
 
   const tabs: { id: Tab; label: string; icon: string }[] = [
@@ -188,7 +189,10 @@ export default function MarketplaceModal({
                               whileHover={{ scale: 1.03 }}
                               whileTap={{ scale: 0.97 }}
                               onClick={() =>
-                                buyItem({ itemId: item.id, quantity: amount })
+                                buyItem({
+                                  itemId: item.id,
+                                  quantity: amount,
+                                })
                               }
                               disabled={state.coins < item.buyPrice * amount}
                               className="min-w-[70px] px-2 py-1.5 bg-[#2B593B] text-white/90 rounded hover:bg-[#346344] 
@@ -340,7 +344,7 @@ export default function MarketplaceModal({
                     <motion.button
                       whileHover={{ scale: 1.03 }}
                       whileTap={{ scale: 0.97 }}
-                      onClick={() => expandGrid()}
+                      onClick={expandGrid}
                       disabled={
                         state.coins <
                           EXPANSION_COSTS[state.expansionLevel].coins ||
@@ -454,6 +458,15 @@ export default function MarketplaceModal({
           </div>
         </div>
       </motion.div>
+      {isActionInProgress && (
+        <div className="absolute inset-0 bg-black/60 flex items-center justify-center z-50 rounded-lg">
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+            className="w-12 h-12 border-4 border-white/20 border-t-white/90 rounded-full"
+          />
+        </div>
+      )}
     </div>
   );
 }
