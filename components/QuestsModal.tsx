@@ -36,7 +36,7 @@ export default function QuestsModal({ onClose }: { onClose: () => void }) {
     { id: "daily", label: "daily", icon: "📅" },
     { id: "weekly", label: "weekly", icon: "📅" },
     { id: "monthly", label: "monthly", icon: "📆" },
-    { id: "generic", label: "generic", icon: "🌾" },
+    { id: "∞", label: "∞", icon: "🌾" },
   ];
 
   return (
