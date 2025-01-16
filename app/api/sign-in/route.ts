@@ -13,6 +13,7 @@ import {
   initializeUserQuest,
 } from "@/supabase/queries";
 import { trackEvent } from "@/lib/posthog/server";
+import { WHITELISTED_FIDS } from "@/lib/whitelist";
 
 export const POST = async (req: NextRequest) => {
   const { fid, referrerFid, signature, message } = await req.json();
@@ -50,11 +51,15 @@ export const POST = async (req: NextRequest) => {
     await initializeGrid(fid);
     // Give them a starter pack
     await giftStarterPack(fid);
-    await initializeUserQuest(fid);
+    // await initializeUserQuest(fid);
   }
 
   const userQuests = await getUserQuests(fid);
-  if (!userQuests || userQuests?.length === 0) {
+  if (
+    (!userQuests || userQuests?.length === 0) &&
+    (Date.now() >= new Date("2024-01-18T15:00:00Z").getTime() ||
+      WHITELISTED_FIDS.includes(fid))
+  ) {
     await initializeUserQuest(fid);
   }
 
