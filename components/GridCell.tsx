@@ -32,7 +32,6 @@ export default function GridCell({ cell }: GridCellProps) {
   );
   const cellRef = useRef<HTMLDivElement>(null);
   const [isDragOver] = useState(false);
-  const [isHovered, setIsHovered] = useState(false);
 
   const isReadyToHarvest =
     cell.isReadyToHarvest ||
@@ -167,7 +166,7 @@ export default function GridCell({ cell }: GridCellProps) {
       />
 
       {/* Fertilizer Hover Effect */}
-      {selectedFertilizer && isHovered && isValidFertilizerTarget && (
+      {selectedFertilizer && isValidFertilizerTarget && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -178,7 +177,7 @@ export default function GridCell({ cell }: GridCellProps) {
       )}
 
       {/* Seed Planting Hover Effect */}
-      {selectedSeed && isHovered && !cell.plantedAt && (
+      {selectedSeed && !cell.plantedAt && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
