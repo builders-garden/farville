@@ -54,7 +54,6 @@ export const POST = async (req: NextRequest) => {
   }
 
   const userQuests = await getUserQuests(fid);
-  console.log("user quests", userQuests);
   if (!userQuests || userQuests?.length === 0) {
     await initializeUserQuest(fid);
   }
