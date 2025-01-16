@@ -5,7 +5,10 @@ import {
   updateUserQuest,
 } from "@/supabase/queries";
 
-export async function GET({ params }: { params: Promise<{ id: string }> }) {
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
     const { id } = await params;
     if (isNaN(Number(id))) {
@@ -27,10 +30,7 @@ export async function GET({ params }: { params: Promise<{ id: string }> }) {
   }
 }
 
-export async function POST(
-  req: NextRequest,
-  params: Promise<{ id: string }>
-) {
+export async function POST(req: NextRequest, params: Promise<{ id: string }>) {
   const { id } = await params;
   const { status } = await req.json();
   const fid = req.headers.get("x-user-fid");

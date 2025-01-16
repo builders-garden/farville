@@ -1,11 +1,10 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getUserQuestById } from "@/supabase/queries";
 
-export async function GET({
-  params,
-}: {
-  params: Promise<{ fid: string; questId: string }>;
-}) {
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ fid: string; questId: string }> }
+) {
   try {
     const { fid, questId } = await params;
     if (isNaN(Number(fid)) || isNaN(Number(questId))) {
