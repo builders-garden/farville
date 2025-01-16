@@ -53,6 +53,29 @@ export default function GridCell({ cell }: GridCellProps) {
       return;
     }
 
+    if (cell.plantedAt && !isReadyToHarvest) {
+      setSelectedFertilizer({
+        itemId: 9,
+        quantity: 1,
+        userFid: state.user.fid,
+        id: 9,
+        item: {
+          id: 9,
+          name: "Fertilizer",
+          icon: "fertilizer.png",
+          description: "Fertilizer",
+          category: "fertilizer",
+          buyPrice: 0,
+          sellPrice: 0,
+          createdAt: new Date().toISOString(),
+          requiredLevel: 1,
+          slug: "fertilizer",
+        },
+        createdAt: new Date().toISOString(),
+      });
+      return;
+    }
+
     if (cell.plantedAt && isReadyToHarvest) {
       if (cellRef.current) {
         const rect = cellRef.current.getBoundingClientRect();
