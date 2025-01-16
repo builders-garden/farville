@@ -217,9 +217,9 @@ export default function Quest({ quest, claimable = false }: QuestProps) {
             )}
             {showRewards && quest.quest.coins && (
               <FloatingNumber
-                number={10}
+                number={quest.quest.coins}
                 x={mousePosition.x}
-                y={mousePosition.y + 80}
+                y={mousePosition.y + 40}
                 type="coins"
               />
             )}
