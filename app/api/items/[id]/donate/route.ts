@@ -1,4 +1,12 @@
-import { getItemById, getUserItemByItemId, removeUserItem, addUserItem, incrementRequestFilledQuantity } from "@/supabase/queries";
+import { calculateUserQuestsProgress } from "@/app/api/grid-cells/[x]/[y]/utils";
+import { trackEvent } from "@/lib/posthog/server";
+import {
+  getItemById,
+  getUserItemByItemId,
+  removeUserItem,
+  addUserItem,
+  incrementRequestFilledQuantity,
+} from "@/supabase/queries";
 
 export const POST = async (
   req: Request,
@@ -32,7 +40,18 @@ export const POST = async (
     await incrementRequestFilledQuantity(Number(requestId), quantity);
   }
 
-  // TODO: update quest progress if present 
+  await calculateUserQuestsProgress(
+    Number(fid),
+    "donate",
+    Number(itemId),
+    Number(quantity)
+  );
+
+  trackEvent(Number(fid), "donated-item", {
+    itemId: itemId,
+    quantity: quantity,
+    toFid: toFid,
+  });
 
   return new Response("Item donated", { status: 200 });
 };

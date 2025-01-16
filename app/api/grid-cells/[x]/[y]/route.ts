@@ -13,6 +13,7 @@ import {
 import { z } from "zod";
 import { ActionType, SeedType } from "@/types/game";
 import { DbUserHasQuest } from "@/supabase/types";
+import { trackEvent } from "@/lib/posthog/server";
 
 const requestSchema = z.object({
   action: z.nativeEnum(ActionType),
@@ -71,6 +72,9 @@ export async function POST(
         getGrowthTime(seedType)
       );
       await calculateUserQuestsProgress(parseInt(fid), "plant", plantedItem.id);
+      trackEvent(Number(fid), "planted-seed", {
+        seedType: plantedItem.id,
+      });
       break;
     case "harvest":
       const harvestResult = await harvest(
@@ -88,6 +92,9 @@ export async function POST(
             harvestResult.rewards.amount
           )) || [],
       };
+      trackEvent(Number(fid), "harvested-crop", {
+        cropId: harvestResult.crop.id,
+      });
       break;
     case "fertilize":
       await fertilize(parseInt(fid), parseInt(x), parseInt(y));
@@ -95,6 +102,9 @@ export async function POST(
         quests:
           (await calculateUserQuestsProgress(parseInt(fid), "fertilize", 9)) || [],
       };
+      trackEvent(Number(fid), "fertilized-cell", {
+        cellId: `${x}/${y}`,
+      });
       break;
   }
   return NextResponse.json(result);

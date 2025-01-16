@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { buyItem, sellItem } from "./utils";
 import { calculateUserQuestsProgress } from "@/app/api/grid-cells/[x]/[y]/utils";
+import { trackEvent } from "@/lib/posthog/server";
 
 export const POST = async (req: NextRequest) => {
   const { action, itemId, quantity } = await req.json();
@@ -12,9 +13,17 @@ export const POST = async (req: NextRequest) => {
   switch (action) {
     case "buy":
       await buyItem(Number(fid), Number(itemId), Number(quantity));
+      trackEvent(Number(fid), "bought-item", {
+        itemId: itemId,
+        quantity: quantity,
+      });
       return NextResponse.json({ message: "Item bought" }, { status: 200 });
     case "sell":
       await sellItem(Number(fid), Number(itemId), Number(quantity));
+      trackEvent(Number(fid), "sold-item", {
+        itemId: itemId,
+        quantity: quantity,
+      });
       const updatedQuests = await calculateUserQuestsProgress(
         Number(fid),
         "sell",

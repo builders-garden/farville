@@ -1,4 +1,5 @@
 import { EXPANSION_COSTS } from "@/lib/game-constants";
+import { trackEvent } from "@/lib/posthog/server";
 import {
   getUser,
   getGridCells,
@@ -53,5 +54,8 @@ export const POST = async (req: NextRequest) => {
   });
 
   const gridCells = await getGridCells(Number(fid));
+  trackEvent(Number(fid), "grid-cells-expanded", {
+    nextSize: nextSize,
+  });
   return NextResponse.json(gridCells);
 };

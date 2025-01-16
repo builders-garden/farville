@@ -6,6 +6,7 @@ import {
   updateUserQuest,
   updateUserXP,
 } from "@/supabase/queries";
+import { trackEvent } from "@/lib/posthog/server";
 
 export async function GET(
   request: NextRequest,
@@ -56,6 +57,11 @@ export async function POST(
         updateUserCoins(Number(fid), userQuest.quest.coins),
       userQuest.quest.xp && updateUserXP(Number(fid), userQuest.quest.xp),
     ]);
+    trackEvent(Number(fid), "claimed-quest", {
+      questId: Number(id),
+      status: status,
+    });
   }
+  
   return NextResponse.json({ success: true, status });
 }

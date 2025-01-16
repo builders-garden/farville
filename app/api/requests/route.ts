@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createRequest } from "@/supabase/queries";
+import { trackEvent } from "@/lib/posthog/server";
 
 export const POST = async (request: NextRequest) => {
   const { itemId, quantity } = await request.json();
@@ -25,7 +26,10 @@ export const POST = async (request: NextRequest) => {
       itemId,
       quantity,
     });
-
+    trackEvent(Number(fid), "created-request", {
+      itemId: itemId,
+      quantity: quantity,
+    });
     return NextResponse.json(newRequest);
   } catch (error) {
     console.error("Error creating request:", error);
