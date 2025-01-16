@@ -993,6 +993,7 @@ export const getUserQuests = async (
 
   if (filter?.status === "incomplete") {
     query.gte("quest.endAt", new Date().toISOString());
+    query.lte("quest.startAt", new Date().toISOString());
   }
 
   if (filter?.itemId) {
