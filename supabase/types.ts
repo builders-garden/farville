@@ -87,11 +87,13 @@ export type InsertDbQuest = Omit<DbQuest, "id" | "createdAt">;
 
 export type DbQuestWithItem = DbQuest & { items: DbItem | null };
 
+export type DbUserHasQuestStatus = "incomplete" | "completed" | "claimed";
+
 export interface DbUserHasQuest {
   id: number;
   fid: number;
   questId: number;
-  status: "incomplete" | "complete" | "claimable";
+  status: DbUserHasQuestStatus;
   completedAt: string | null;
   createdAt: string;
   progress: number;

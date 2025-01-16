@@ -20,7 +20,7 @@ export default function QuestsModal({ onClose }: { onClose: () => void }) {
     "incomplete"
   );
   const { quests: claimableQuests, isLoading: isLoadingClaimableQuests } =
-    useUserQuests(user?.fid, "claimable");
+    useUserQuests(user?.fid, "completed");
 
   const isLoading =
     isLoadingUser || isLoadingActiveQuests || isLoadingClaimableQuests;
@@ -38,7 +38,7 @@ export default function QuestsModal({ onClose }: { onClose: () => void }) {
   ];
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-start z-50 mb-4">
+    <div className="fixed inset-0 bg-black/50 flex items-start z-50">
       <motion.div
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
@@ -51,7 +51,7 @@ export default function QuestsModal({ onClose }: { onClose: () => void }) {
         }}
         className="bg-[#7E4E31] w-full h-full"
       >
-        <div className="max-w-4xl mx-auto w-full h-full p-6 flex flex-col">
+        <div className="w-full h-full p-6 flex flex-col">
           {/* Header */}
           <div className="flex-none">
             <div className="flex justify-between items-center mb-6">

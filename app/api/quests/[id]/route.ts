@@ -1,5 +1,9 @@
-import { NextResponse } from "next/server";
-import { getQuestById } from "@/supabase/queries";
+import { NextRequest, NextResponse } from "next/server";
+import {
+  getQuestById,
+  getUserQuestById,
+  updateUserQuest,
+} from "@/supabase/queries";
 
 export async function GET({ params }: { params: { id: string } }) {
   try {
@@ -21,4 +25,25 @@ export async function GET({ params }: { params: { id: string } }) {
       { status: 500 }
     );
   }
+}
+
+export async function POST(
+  req: NextRequest,
+  context: { params: { id: string } }
+) {
+  const { id } = await Promise.resolve(context.params);
+  const { status } = await req.json();
+  const fid = req.headers.get("x-user-fid");
+  if (!fid) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  const userQuest = await getUserQuestById(Number(fid), Number(id));
+  if (!userQuest) {
+    return NextResponse.json(
+      { error: "User quest not found" },
+      { status: 404 }
+    );
+  }
+  await updateUserQuest(Number(fid), Number(id), { status });
+  return NextResponse.json({ success: true, status });
 }

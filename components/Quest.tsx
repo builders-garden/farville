@@ -1,3 +1,4 @@
+import { useUpdateUserQuest } from "@/hooks/game-actions/use-update-user-quest";
 import {
   DbQuest,
   DbQuestWithItem,
@@ -5,6 +6,8 @@ import {
 } from "@/supabase/types";
 import { motion } from "framer-motion";
 import Image from "next/image";
+import FloatingNumber from "@/components/animations/FloatingNumber";
+import { useState } from "react";
 
 interface QuestProps {
   quest: DbUserHasQuestWithQuest;
@@ -91,6 +94,10 @@ const questDescription = (quest: DbQuestWithItem) => {
 };
 
 export default function Quest({ quest, claimable = false }: QuestProps) {
+  const { mutate: updateUserQuest } = useUpdateUserQuest();
+  const [showRewards, setShowRewards] = useState(false);
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+
   return (
     <motion.div
       key={quest.id}
@@ -133,7 +140,7 @@ export default function Quest({ quest, claimable = false }: QuestProps) {
           <p className="text-white/60 text-xs">
             {questDescription(quest.quest)}
           </p>
-          {!claimable && renderQuestRewards(quest.quest)}
+          {renderQuestRewards(quest.quest)}
         </div>
       </div>
       {!claimable && renderQuestProgress(quest)}
@@ -175,30 +182,49 @@ export default function Quest({ quest, claimable = false }: QuestProps) {
         </div>
       )}
       {claimable && (
-        <motion.button
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          className="bg-[#8B5E3C] hover:bg-[#9d6b45] text-white/90 text-sm font-medium px-4 py-2.5 my-2 rounded-lg 
+        <div className="flex flex-col items-center justify-center">
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={(e) => {
+              const rect = e.currentTarget.getBoundingClientRect();
+              setMousePosition({
+                x: rect.x + rect.width / 2,
+                y: rect.y + rect.height / 2,
+              });
+
+              updateUserQuest(
+                { questId: quest.questId, status: "claimed" },
+                {
+                  onSuccess: () => {
+                    setShowRewards(true);
+                    setTimeout(() => setShowRewards(false), 5000);
+                  },
+                }
+              );
+            }}
+            className="bg-[#8B5E3C] hover:bg-[#9d6b45] text-white/90 text-sm font-medium px-4 py-2.5 my-2 rounded-lg 
                shadow-lg transition-colors duration-200 border border-[#a17347]/30 w-full"
-        >
-          <div className="flex items-center justify-center gap-2">
-            {quest.quest.xp && (
-              <span className="flex items-center">
-                <span className="text-yellow-400 mt-[-5px] mx-2">⭐</span>
-                {quest.quest.xp} XP
-              </span>
+          >
+            CLAIM
+            {showRewards && quest.quest.xp && (
+              <FloatingNumber
+                number={quest.quest.xp}
+                x={mousePosition.x}
+                y={mousePosition.y}
+                type="xp"
+              />
             )}
-            {quest.quest.xp && quest.quest.coins && (
-              <span className="text-white/40">•</span>
+            {showRewards && quest.quest.coins && (
+              <FloatingNumber
+                number={10}
+                x={mousePosition.x}
+                y={mousePosition.y + 80}
+                type="coins"
+              />
             )}
-            {quest.quest.coins && (
-              <span className="flex items-center">
-                <span className="text-[#FFB938] mt-[-5px] mx-2">🪙</span>
-                {quest.quest.coins} Coins
-              </span>
-            )}
-          </div>
-        </motion.button>
+          </motion.button>
+        </div>
       )}
     </motion.div>
   );

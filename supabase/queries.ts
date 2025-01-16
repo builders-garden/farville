@@ -14,6 +14,7 @@ import {
   DbUserHasQuest,
   DbUserHasQuestWithQuest,
   InsertDbUserHasQuest,
+  DbUserHasQuestStatus,
 } from "./types";
 
 // Items queries
@@ -876,7 +877,7 @@ export const getUserQuests = async (
     category?: string;
     itemId?: number;
     type?: "daily" | "weekly" | "monthly";
-    status?: "incomplete" | "complete" | "claimable";
+    status?: DbUserHasQuestStatus;
   }
 ): Promise<DbUserHasQuestWithQuest[]> => {
   const query = supabase

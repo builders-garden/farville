@@ -104,7 +104,7 @@ export const calculateUserQuestsProgress = async (
 
         const updatedQuest = await updateUserQuest(fid, quest.questId, {
           progress: quest.progress + itemAmount,
-          status: completed ? "claimable" : "incomplete",
+          status: completed ? "completed" : "incomplete",
           completedAt: completed ? new Date().toISOString() : null,
         });
         updatedQuests.push(updatedQuest);

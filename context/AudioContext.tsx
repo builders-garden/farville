@@ -42,6 +42,7 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
       levelUp: new Audio("/sounds/level-up.mp3"),
       click: new Audio("/sounds/click.mp3"),
       fertilize: new Audio("/sounds/fertilize.mp3"),
+      claimQuest: new Audio("/sounds/claim-quest.mp3"),
     };
   };
 

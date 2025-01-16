@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getUserQuests, createUserQuest } from "@/supabase/queries";
-import { InsertDbUserHasQuest } from "@/supabase/types";
+import { DbUserHasQuestStatus, InsertDbUserHasQuest } from "@/supabase/types";
 
 export async function GET(
   request: NextRequest,
@@ -20,7 +20,7 @@ export async function GET(
     const itemId = searchParams.get("itemId");
 
     const quests = await getUserQuests(fid, {
-      status: status as "incomplete" | "complete" | "claimable" | undefined,
+      status: status as DbUserHasQuestStatus,
       category: category || undefined,
       type: type as "daily" | "weekly" | "monthly" | undefined,
       itemId: itemId ? parseInt(itemId) : undefined,
