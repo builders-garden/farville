@@ -98,11 +98,6 @@ export default function Quest({
   onClaim,
 }: QuestProps) {
   const { mutate: updateUserQuest } = useUpdateUserQuest();
-  console.log(
-    quest.quest.items?.icon,
-    `/images${quest.quest.items?.icon}`,
-    quest.quest.category
-  );
   return (
     <motion.div
       key={quest.id}

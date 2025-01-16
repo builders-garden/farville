@@ -110,6 +110,13 @@ export default function InventoryModal({ onClose }: { onClose: () => void }) {
               <p className="text-white/60 text-[10px]">
                 Click an item to see details
               </p>
+              <motion.p 
+                className="text-amber-500/90 text-[8px] drop-shadow-[0_0_3px_rgba(251,191,36,0.7)]"
+                animate={{ opacity: [0.6, 1, 0.6], scale: [1, 1.02, 1] }}
+                transition={{ duration: 2, repeat: Infinity }}
+              >
+                or to request them from other users!
+              </motion.p>
             </div>
             <button
               onClick={onClose}
