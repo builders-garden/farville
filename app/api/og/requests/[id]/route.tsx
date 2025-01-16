@@ -29,12 +29,12 @@ async function loadGoogleFont(font: string, text: string) {
 export async function GET(request: Request, {
     params
 }: {
-    params: {
-        id: string
-    }
+  params: Promise<{
+    id: string;
+  }>;
 }) {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     const request = await getRequestById(Number(id));
 
