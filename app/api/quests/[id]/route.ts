@@ -30,7 +30,10 @@ export async function GET(
   }
 }
 
-export async function POST(req: NextRequest, params: Promise<{ id: string }>) {
+export async function POST(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   const { id } = await params;
   const { status } = await req.json();
   const fid = req.headers.get("x-user-fid");
