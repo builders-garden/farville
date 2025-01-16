@@ -57,8 +57,7 @@ export const POST = async (req: NextRequest) => {
   const userQuests = await getUserQuests(fid);
   if (
     (!userQuests || userQuests?.length === 0) &&
-    (Date.now() >= new Date("2024-01-18T15:00:00Z").getTime() ||
-      WHITELISTED_FIDS.includes(fid))
+    WHITELISTED_FIDS.includes(fid)
   ) {
     await initializeUserQuest(fid);
   }
