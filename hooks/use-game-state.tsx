@@ -1,7 +1,7 @@
 import { useUserItems, UserItem } from "./use-user-items";
 import { useEffect, useState, useCallback } from "react";
 import { useGridCells } from "./use-grid-cells";
-import { DbGridCell, DbItem } from "@/supabase/types";
+import { DbGridCell, DbItem, DbUser } from "@/supabase/types";
 import { useItems } from "./use-items";
 import { getCurrentLevelAndProgress } from "@/lib/utils";
 import { useUserMe } from "./use-user-me";
@@ -21,6 +21,7 @@ export interface GameState {
   expansionLevel: number;
   items: DbItem[];
   inventory: UserItem[];
+  user: DbUser;
 }
 
 export const useGameState = () => {
@@ -60,6 +61,7 @@ export const useGameState = () => {
         expansionLevel: user.expansions - 1,
         items: items,
         inventory: userItems,
+        user: user,
       });
     }
   }, [userItems, items, user, gridCells]);

@@ -5,7 +5,7 @@ import { useState } from "react";
 import { useFrameContext } from "../context/FrameContext";
 import { useUserQuests } from "@/hooks/use-quests";
 import Quest from "./Quest";
-import { useUser } from "@/hooks/use-user";
+import { useGame } from "@/context/GameContext";
 
 type Tab = "active" | "claimable" | "expired";
 type SubTab = "daily" | "weekly" | "monthly" | "farmer";
@@ -14,16 +14,15 @@ export default function QuestsModal({ onClose }: { onClose: () => void }) {
   const { safeAreaInsets } = useFrameContext();
   const [activeTab, setActiveTab] = useState<Tab>("active");
   const [activeSubTab, setActiveSubTab] = useState<SubTab>("daily");
-  const { user, isLoading: isLoadingUser } = useUser();
+  const { state } = useGame();
   const { quests, isLoading: isLoadingActiveQuests } = useUserQuests(
-    user?.fid,
+    state?.user?.fid,
     "incomplete"
   );
   const { quests: claimableQuests, isLoading: isLoadingClaimableQuests } =
-    useUserQuests(user?.fid, "completed");
+    useUserQuests(state?.user?.fid, "completed");
 
-  const isLoading =
-    isLoadingUser || isLoadingActiveQuests || isLoadingClaimableQuests;
+  const isLoading = isLoadingActiveQuests || isLoadingClaimableQuests;
 
   const tabs: { id: Tab; label: string; icon: string }[] = [
     { id: "active", label: "Active", icon: "⏰" },
