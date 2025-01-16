@@ -72,6 +72,7 @@ export type InsertDbUserNotification = Omit<
 export interface DbQuest {
   id: number;
   category: string;
+  type: "daily" | "weekly" | "monthly" | null;
   itemId: number | null;
   amount: number | null;
   xp: number | null;
@@ -90,7 +91,7 @@ export interface DbUserHasQuest {
   id: number;
   fid: number;
   questId: number;
-  status: "incomplete" | "complete";
+  status: "incomplete" | "complete" | "claimable";
   completedAt: string | null;
   createdAt: string;
   progress: number;

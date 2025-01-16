@@ -161,6 +161,7 @@ export interface Database {
         Row: {
           id: number;
           category: string;
+          type: "daily" | "weekly" | "monthly" | null;
           itemId: number | null;
           amount: number | null;
           xp: number | null;
@@ -172,6 +173,7 @@ export interface Database {
         Insert: {
           id?: number;
           category: string;
+          type?: "daily" | "weekly" | "monthly" | null;
           itemId?: number | null;
           amount?: number | null;
           xp?: number | null;
@@ -183,6 +185,7 @@ export interface Database {
         Update: {
           id?: number;
           category?: string;
+          type?: "daily" | "weekly" | "monthly" | null;
           itemId?: number | null;
           amount?: number | null;
           xp?: number | null;

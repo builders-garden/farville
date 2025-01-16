@@ -11,9 +11,8 @@ import {
   updateUserXP,
   getUserQuests,
   updateUserQuest,
-  updateUser,
-  getUser,
 } from "@/supabase/queries";
+import { DbUserHasQuest } from "@/supabase/types";
 import { CropType, SeedType } from "@/types/game";
 
 export const plantSeed = async (
@@ -79,7 +78,10 @@ export const calculateUserQuestsProgress = async (
   itemAmount: number = 1
 ) => {
   // Get all quests that require harvesting this crop
-  const quests = await getUserQuests(fid, true, category);
+  const quests = await getUserQuests(fid, {
+    status: "incomplete",
+    category,
+  });
   if (!quests) {
     return null;
   }
@@ -89,8 +91,9 @@ export const calculateUserQuestsProgress = async (
     } quests for user ${fid}`
   );
 
+  const updatedQuests: DbUserHasQuest[] = [];
   // Update progress for each quest
-  const updatedQuests = await Promise.all(
+  await Promise.all(
     quests.map(async (quest) => {
       if (
         quest.quest &&
@@ -101,9 +104,10 @@ export const calculateUserQuestsProgress = async (
 
         const updatedQuest = await updateUserQuest(fid, quest.questId, {
           progress: quest.progress + itemAmount,
-          status: completed ? "complete" : "incomplete",
+          status: completed ? "claimable" : "incomplete",
           completedAt: completed ? new Date().toISOString() : null,
         });
+        updatedQuests.push(updatedQuest);
         console.log(
           `[${new Date().toISOString()}] updated quest with id ${
             quest.questId
@@ -113,15 +117,15 @@ export const calculateUserQuestsProgress = async (
           console.log(
             `[${new Date().toISOString()}] completed quest with id ${
               quest.questId
-            } for user ${fid}`
+            } for user ${fid}, setting status to claimable`
           );
-          if (quest.quest?.xp || quest.quest?.coins) {
-            const currentUser = await getUser(fid);
-            await updateUser(fid, {
-              xp: (currentUser?.xp || 0) + (quest.quest.xp || 0),
-              coins: (currentUser?.coins || 0) + (quest.quest.coins || 0),
-            });
-          }
+          // if (quest.quest?.xp || quest.quest?.coins) {
+          //   const currentUser = await getUser(fid);
+          //   await updateUser(fid, {
+          //     xp: (currentUser?.xp || 0) + (quest.quest.xp || 0),
+          //     coins: (currentUser?.coins || 0) + (quest.quest.coins || 0),
+          //   });
+          // }
         }
         return updatedQuest;
       } else {
@@ -130,6 +134,9 @@ export const calculateUserQuestsProgress = async (
     })
   );
 
+  console.log({
+    updatedQuests,
+  });
   return updatedQuests;
 };
 

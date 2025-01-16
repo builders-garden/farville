@@ -872,9 +872,12 @@ export const getQuestsByItemId = async (
 
 export const getUserQuests = async (
   fid: number,
-  active: boolean = true,
-  category?: string,
-  itemId?: number
+  filter?: {
+    category?: string;
+    itemId?: number;
+    type?: "daily" | "weekly" | "monthly";
+    status?: "incomplete" | "complete" | "claimable";
+  }
 ): Promise<DbUserHasQuestWithQuest[]> => {
   const query = supabase
     .from("user_has_quests")
@@ -889,18 +892,45 @@ export const getUserQuests = async (
     )
     .eq("fid", fid);
 
-  if (itemId) {
-    query.eq("quest.itemId", itemId);
+  if (filter?.itemId) {
+    query.eq("quest.itemId", filter.itemId);
   }
 
-  if (active !== undefined) {
-    query.eq("status", active ? "incomplete" : "complete");
+  if (filter?.category) {
+    query.eq("quest.category", filter.category);
   }
-  if (category) {
-    query.eq("quest.category", category);
+
+  if (filter?.type) {
+    query.eq("quest.type", filter?.type);
+  }
+
+  if (filter?.status) {
+    query.eq("status", filter.status);
   }
 
   const { data, error } = await query;
+
+  if (error) throw error;
+  return data;
+};
+
+export const getQuestsByType = async (
+  type: "daily" | "weekly" | "monthly"
+): Promise<DbQuestWithItem[]> => {
+  const now = new Date().toISOString();
+  const { data, error } = await supabase
+    .from("quests")
+    .select(
+      `
+      *,
+      items (
+        *)
+      `
+    )
+    .eq("type", type)
+    .lte("startAt", now)
+    .gt("endAt", now)
+    .order("endAt", { ascending: true });
 
   if (error) throw error;
   return data;

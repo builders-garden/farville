@@ -12,6 +12,7 @@ import {
 } from "@/lib/game-notifications";
 import { z } from "zod";
 import { ActionType, SeedType } from "@/types/game";
+import { DbUserHasQuest } from "@/supabase/types";
 
 const requestSchema = z.object({
   action: z.nativeEnum(ActionType),
@@ -39,7 +40,10 @@ export async function POST(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  let result: { rewards?: { xp: number; amount: number } } | null = null;
+  let result: {
+    rewards?: { xp: number; amount: number };
+    quests: DbUserHasQuest[];
+  } | null = null;
 
   switch (action) {
     case "plant":
@@ -72,17 +76,21 @@ export async function POST(
       );
       result = {
         rewards: harvestResult.rewards,
+        quests:
+          (await calculateUserQuestsProgress(
+            parseInt(fid),
+            "harvest",
+            harvestResult.crop.id,
+            harvestResult.rewards.amount
+          )) || [],
       };
-      await calculateUserQuestsProgress(
-        parseInt(fid),
-        "harvest",
-        harvestResult.crop.id,
-        harvestResult.rewards.amount
-      );
       break;
     case "fertilize":
       await fertilize(parseInt(fid), parseInt(x), parseInt(y));
-      await calculateUserQuestsProgress(parseInt(fid), "fertilize");
+      result = {
+        quests:
+          (await calculateUserQuestsProgress(parseInt(fid), "fertilize")) || [],
+      };
       break;
   }
   return NextResponse.json(result);

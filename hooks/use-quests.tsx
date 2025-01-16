@@ -47,14 +47,19 @@ export const useQuest = (id: number) => {
   };
 };
 
-export const useUserQuests = (fid: number | undefined, active = true) => {
+export const useUserQuests = (fid: number | undefined, status: string) => {
   const {
     data: quests,
     isLoading,
     refetch,
-  } = useApiQuery<DbUserHasQuestWithQuest[]>({
-    queryKey: ["users", fid, "quests", active],
-    url: `/api/users/${fid}/quests?active=${active}`,
+  } = useApiQuery<{
+    daily: DbUserHasQuestWithQuest[];
+    weekly: DbUserHasQuestWithQuest[];
+    monthly: DbUserHasQuestWithQuest[];
+    farmer: DbUserHasQuestWithQuest[];
+  }>({
+    queryKey: ["users", fid, "quests", status],
+    url: `/api/users/${fid}/quests?status=${status}`,
     isProtected: true,
     enabled: !!fid,
   });

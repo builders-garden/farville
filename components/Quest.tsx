@@ -8,7 +8,7 @@ import Image from "next/image";
 
 interface QuestProps {
   quest: DbUserHasQuestWithQuest;
-  completed: boolean;
+  claimable: boolean;
 }
 
 const renderQuestRewards = (quest: DbQuest) => (
@@ -37,19 +37,12 @@ const renderQuestRewards = (quest: DbQuest) => (
   </div>
 );
 
-const renderQuestProgress = (
-  quest: DbUserHasQuestWithQuest,
-  completed: boolean = false
-) => {
+const renderQuestProgress = (quest: DbUserHasQuestWithQuest) => {
   const progress = quest.progress || 0;
   const target = quest.quest.amount || 1;
 
   return (
-    <div
-      className={`relative w-full bg-[#5c4121] rounded-full h-5 my-2 ${
-        completed && "opacity-60"
-      }`}
-    >
+    <div className={`relative w-full bg-[#5c4121] rounded-full h-5 my-2`}>
       <div
         className="bg-[#f2a311] h-5 rounded-full transition-all duration-300"
         style={{ width: `${(progress / target) * 100}%` }}
@@ -93,7 +86,7 @@ const questDescription = (quest: DbQuestWithItem) => {
   return `${start} ${quest.amount} ${end}`;
 };
 
-export default function Quest({ quest, completed }: QuestProps) {
+export default function Quest({ quest, claimable }: QuestProps) {
   return (
     <motion.div
       key={quest.id}
@@ -101,10 +94,10 @@ export default function Quest({ quest, completed }: QuestProps) {
       animate={{ opacity: 1, x: 0 }}
       className={`bg-[#6d4c2c] px-4 py-3 rounded-lg flex flex-col gap-2
                                border border-[#8B5E3C]/50 shadow-lg ${
-                                 completed && "opacity-30"
+                                 claimable && "bg-[#db9d00]"
                                }`}
     >
-      <div className={`flex items-center gap-3 ${completed && "opacity-60"}`}>
+      <div className={`flex items-center gap-3`}>
         <div className="w-10 h-10 flex items-center justify-center">
           <motion.div
             className="text-2xl"
@@ -135,43 +128,73 @@ export default function Quest({ quest, completed }: QuestProps) {
           <p className="text-white/60 text-xs">
             {questDescription(quest.quest)}
           </p>
-          {renderQuestRewards(quest.quest)}
+          {!claimable && renderQuestRewards(quest.quest)}
         </div>
       </div>
-      {renderQuestProgress(quest, completed)}
-      <div className="flex items-center justify-between">
-        <span className="text-white/60 text-xs">
-          {quest.quest.endAt && (
-            <span className="ml-auto">
-              Ends in:{" "}
-              {(() => {
-                const timeRemaining =
-                  new Date(quest.quest.endAt).getTime() - Date.now();
-                if (timeRemaining <= 0) return "";
+      {!claimable && renderQuestProgress(quest)}
+      {!claimable && (
+        <div className="flex items-center justify-between">
+          <span className="text-white/60 text-xs">
+            {quest.quest.endAt && (
+              <span className="ml-auto">
+                Ends in:{" "}
+                {(() => {
+                  const timeRemaining =
+                    new Date(quest.quest.endAt).getTime() - Date.now();
+                  if (timeRemaining <= 0) return "";
 
-                const days = Math.floor(timeRemaining / (1000 * 60 * 60 * 24));
-                const hours = Math.floor(
-                  (timeRemaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
-                );
-                const minutes = Math.floor(
-                  (timeRemaining % (1000 * 60 * 60)) / (1000 * 60)
-                );
-                const seconds = Math.floor(
-                  (timeRemaining % (1000 * 60)) / 1000
-                );
+                  const days = Math.floor(
+                    timeRemaining / (1000 * 60 * 60 * 24)
+                  );
+                  const hours = Math.floor(
+                    (timeRemaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
+                  );
+                  const minutes = Math.floor(
+                    (timeRemaining % (1000 * 60 * 60)) / (1000 * 60)
+                  );
+                  const seconds = Math.floor(
+                    (timeRemaining % (1000 * 60)) / 1000
+                  );
 
-                return `${days > 0 ? `${days}d ` : ""}
+                  return `${days > 0 ? `${days}d ` : ""}
                                   ${hours > 0 ? `${hours}h ` : ""}
                                     ${
                                       minutes > 0
                                         ? `${minutes}m`
                                         : `${seconds}s`
                                     }`;
-              })()}
-            </span>
-          )}
-        </span>
-      </div>
+                })()}
+              </span>
+            )}
+          </span>
+        </div>
+      )}
+      {claimable && (
+        <motion.button
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          className="bg-[#8B5E3C] hover:bg-[#9d6b45] text-white/90 text-sm font-medium px-4 py-2.5 my-2 rounded-lg 
+               shadow-lg transition-colors duration-200 border border-[#a17347]/30 w-full"
+        >
+          <div className="flex items-center justify-center gap-2">
+            {quest.quest.xp && (
+              <span className="flex items-center">
+                <span className="text-yellow-400 mt-[-5px] mx-2">⭐</span>
+                {quest.quest.xp} XP
+              </span>
+            )}
+            {quest.quest.xp && quest.quest.coins && (
+              <span className="text-white/40">•</span>
+            )}
+            {quest.quest.coins && (
+              <span className="flex items-center">
+                <span className="text-[#FFB938] mt-[-5px] mx-2">🪙</span>
+                {quest.quest.coins} Coins
+              </span>
+            )}
+          </div>
+        </motion.button>
+      )}
     </motion.div>
   );
 }
