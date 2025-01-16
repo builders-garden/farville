@@ -36,6 +36,7 @@ interface GameContextType {
   sellItem: (params: { itemId: number; quantity: number }) => void;
   expandGrid: () => void;
   refetchState: () => Promise<void>;
+  refetchUser: () => Promise<void>;
   showInventory: boolean;
   showMarket: boolean;
   showLeaderboard: boolean;
@@ -155,6 +156,7 @@ export function GameProvider({
         sellItem,
         expandGrid,
         refetchState: refetch.all,
+        refetchUser: refetch.user,
         showInventory,
         showMarket,
         showLeaderboard,

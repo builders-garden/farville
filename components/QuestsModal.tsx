@@ -6,6 +6,7 @@ import { useFrameContext } from "../context/FrameContext";
 import { useUserQuests } from "@/hooks/use-quests";
 import Quest from "./Quest";
 import { useGame } from "@/context/GameContext";
+import FloatingNumber from "@/components/animations/FloatingNumber";
 
 type Tab = "active" | "claimable" | "expired";
 type SubTab = "daily" | "weekly" | "monthly" | "farmer";
@@ -14,7 +15,7 @@ export default function QuestsModal({ onClose }: { onClose: () => void }) {
   const { safeAreaInsets } = useFrameContext();
   const [activeTab, setActiveTab] = useState<Tab>("active");
   const [activeSubTab, setActiveSubTab] = useState<SubTab>("daily");
-  const { state } = useGame();
+  const { state, refetchUser } = useGame();
   const { quests, isLoading: isLoadingActiveQuests } = useUserQuests(
     state?.user?.fid,
     "incomplete"
@@ -38,6 +39,37 @@ export default function QuestsModal({ onClose }: { onClose: () => void }) {
     { id: "monthly", label: "monthly", icon: "📆" },
     { id: "∞", label: "∞", icon: "🌾" },
   ];
+
+  const [rewardAnimation, setRewardAnimation] = useState<{
+    questId: number;
+    x: number;
+    y: number;
+    xp?: number;
+    coins?: number;
+  } | null>(null);
+
+  const handleQuestClaim = (questId: number, x: number, y: number) => {
+    const quest = [
+      ...(claimableQuests?.daily || []),
+      ...(claimableQuests?.weekly || []),
+      ...(claimableQuests?.monthly || []),
+      ...(claimableQuests?.farmer || []),
+    ].find((q) => q.questId === questId);
+
+    if (quest) {
+      setRewardAnimation({
+        questId,
+        x,
+        y,
+        xp: quest.quest.xp || undefined,
+        coins: quest.quest.coins || undefined,
+      });
+
+      setTimeout(() => setRewardAnimation(null), 2000);
+      refetchClaimableQuests();
+      refetchUser();
+    }
+  };
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-start z-50">
@@ -216,7 +248,7 @@ export default function QuestsModal({ onClose }: { onClose: () => void }) {
                         quest={quest}
                         key={quest.id}
                         claimable={true}
-                        onClaim={() => refetchClaimableQuests()}
+                        onClaim={handleQuestClaim}
                       />
                     ))}
                     {claimableQuests?.weekly.map((quest) => (
@@ -224,7 +256,7 @@ export default function QuestsModal({ onClose }: { onClose: () => void }) {
                         quest={quest}
                         key={quest.id}
                         claimable={true}
-                        onClaim={() => refetchClaimableQuests()}
+                        onClaim={handleQuestClaim}
                       />
                     ))}
                     {claimableQuests?.monthly.map((quest) => (
@@ -232,7 +264,7 @@ export default function QuestsModal({ onClose }: { onClose: () => void }) {
                         quest={quest}
                         key={quest.id}
                         claimable={true}
-                        onClaim={() => refetchClaimableQuests()}
+                        onClaim={handleQuestClaim}
                       />
                     ))}
                     {claimableQuests?.farmer.map((quest) => (
@@ -240,7 +272,7 @@ export default function QuestsModal({ onClose }: { onClose: () => void }) {
                         quest={quest}
                         key={quest.id}
                         claimable={true}
-                        onClaim={() => refetchClaimableQuests()}
+                        onClaim={handleQuestClaim}
                       />
                     ))}
                   </div>
@@ -250,6 +282,23 @@ export default function QuestsModal({ onClose }: { onClose: () => void }) {
           </div>
         </div>
       </motion.div>
+
+      {rewardAnimation && rewardAnimation.xp && (
+        <FloatingNumber
+          number={rewardAnimation.xp}
+          x={rewardAnimation.x}
+          y={rewardAnimation.y}
+          type="xp"
+        />
+      )}
+      {rewardAnimation && rewardAnimation.coins && (
+        <FloatingNumber
+          number={rewardAnimation.coins}
+          x={rewardAnimation.x}
+          y={rewardAnimation.y + 40}
+          type="coins"
+        />
+      )}
     </div>
   );
 }

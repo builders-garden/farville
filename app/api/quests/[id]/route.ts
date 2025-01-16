@@ -2,7 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import {
   getQuestById,
   getUserQuestById,
+  updateUserCoins,
   updateUserQuest,
+  updateUserXP,
 } from "@/supabase/queries";
 
 export async function GET(
@@ -48,5 +50,12 @@ export async function POST(
     );
   }
   await updateUserQuest(Number(fid), Number(id), { status });
+  if (status === "claimed") {
+    await Promise.all([
+      userQuest.quest.coins &&
+        updateUserCoins(Number(fid), userQuest.quest.coins),
+      userQuest.quest.xp && updateUserXP(Number(fid), userQuest.quest.xp),
+    ]);
+  }
   return NextResponse.json({ success: true, status });
 }

@@ -6,13 +6,11 @@ import {
 } from "@/supabase/types";
 import { motion } from "framer-motion";
 import Image from "next/image";
-import FloatingNumber from "@/components/animations/FloatingNumber";
-import { useState } from "react";
 
 interface QuestProps {
   quest: DbUserHasQuestWithQuest;
   claimable: boolean;
-  onClaim?: (questId: number) => void;
+  onClaim?: (questId: number, x: number, y: number) => void;
 }
 
 const renderQuestRewards = (quest: DbQuest) => (
@@ -100,8 +98,6 @@ export default function Quest({
   onClaim,
 }: QuestProps) {
   const { mutate: updateUserQuest } = useUpdateUserQuest();
-  const [showRewards, setShowRewards] = useState(false);
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
   return (
     <motion.div
@@ -190,18 +186,14 @@ export default function Quest({
             whileTap={{ scale: 0.98 }}
             onClick={(e) => {
               const rect = e.currentTarget.getBoundingClientRect();
-              setMousePosition({
-                x: rect.x + rect.width / 2,
-                y: rect.y + rect.height / 2,
-              });
+              const x = rect.x + rect.width / 2;
+              const y = rect.y + rect.height / 2;
 
               updateUserQuest(
                 { questId: quest.questId, status: "claimed" },
                 {
                   onSuccess: () => {
-                    setShowRewards(true);
-                    onClaim?.(quest.questId);
-                    setTimeout(() => setShowRewards(false), 5000);
+                    onClaim?.(quest.questId, x, y);
                   },
                 }
               );
@@ -210,22 +202,6 @@ export default function Quest({
                shadow-lg transition-colors duration-200 border border-[#a17347]/30 w-full"
           >
             CLAIM
-            {showRewards && quest.quest.xp && (
-              <FloatingNumber
-                number={quest.quest.xp}
-                x={mousePosition.x}
-                y={mousePosition.y}
-                type="xp"
-              />
-            )}
-            {showRewards && quest.quest.coins && (
-              <FloatingNumber
-                number={quest.quest.coins}
-                x={mousePosition.x}
-                y={mousePosition.y + 40}
-                type="coins"
-              />
-            )}
           </motion.button>
         </div>
       )}
