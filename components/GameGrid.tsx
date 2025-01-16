@@ -2,12 +2,18 @@
 
 import { useGame } from "../context/GameContext";
 import GridCell from "./GridCell";
+import SeedMenu from "./SeedMenu";
 
 export default function GameGrid() {
   const { state } = useGame();
 
+  // Create a 2D grid from the flat array
+  const grid = Array.from({ length: state.gridSize.height }, (_, i) =>
+    state.grid.slice(i * state.gridSize.width, (i + 1) * state.gridSize.width)
+  );
+
   return (
-    <div className="h-full w-full flex items-center p-4 justify-center overflow-hidden">
+    <div className="flex flex-col h-full w-full items-start p-4 justify-start overflow-hidden gap-8">
       <div
         className="grid gap-1 aspect-square w-full"
         style={{
@@ -15,9 +21,14 @@ export default function GameGrid() {
           gridTemplateRows: `repeat(${state.gridSize.height}, 1fr)`,
         }}
       >
-        {state.grid.map((row) =>
-          row.map((cell) => <GridCell key={cell.id} cell={cell} />)
+        {grid.map((row) =>
+          row.map((cell) => (
+            <GridCell key={`${cell.fid}-${cell.x}-${cell.y}`} cell={cell} />
+          ))
         )}
+      </div>
+      <div className="w-full overflow-x-auto">
+        <SeedMenu />
       </div>
     </div>
   );

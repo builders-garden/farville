@@ -20,9 +20,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <PostHogProvider client={posthog}>
       <WagmiProvider>
-        <AudioProvider>
-          {children}
-        </AudioProvider>
+        <AudioProvider>{children}</AudioProvider>
       </WagmiProvider>
     </PostHogProvider>
   );

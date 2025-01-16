@@ -1,27 +1,42 @@
 "use client";
 
+import { LEVEL_XP_THRESHOLDS } from "@/lib/game-constants";
 import { useGame } from "../context/GameContext";
 import { motion } from "framer-motion";
+import { getCurrentLevelAndProgress } from "@/lib/utils";
+import Image from "next/image";
 
 export default function Header() {
-  const { state, toggleMarketplace, toggleSettings, toggleLeaderboard } =
-    useGame();
-
-  const progress = ((state.experience - (state.level - 1) * 100) / 100) * 100;
+  const { state } = useGame();
+  const { progress } = getCurrentLevelAndProgress(state.experience);
 
   return (
-    <div className="bg-[var(--wood)] px-3 py-2 shadow-lg bg-opacity-95 backdrop-blur-sm border-b-2 border-[#6d4c2c] z-30">
+    <div className="bg-[#8B5E3C]/40 px-3 py-2 shadow-lg bg-opacity-95 backdrop-blur-sm border-b-2 border-[#6d4c2c]/50 z-30">
       <div className="flex justify-between items-center max-w-4xl mx-auto">
         <div className="relative">
-          <div className="bg-[#7E4E31] h-[42px] px-4 rounded-xl shadow-lg border-2 border-[#6d4c2c] flex items-center">
+          <div className="h-[42px] px-4 rounded-xl flex items-center">
             <div className="w-fit">
               <div className="flex items-center justify-between gap-1">
                 <span className="text-white/90 font-semibold tracking-wide text-xs flex items-center gap-1">
-                  <span className="text-[#FFB938] mb-1">⭐</span> {state.level}
+                  <Image
+                    src="/images/icons/experience.png"
+                    alt="Level"
+                    width={16}
+                    height={16}
+                  />
+                  {state.level}
                 </span>
                 <span className="text-white/70 text-[10px]">
-                  ({state.experience - (state.level - 1) * 100}/
-                  {state.level * 100})
+                  ({state.experience.toLocaleString()}/
+                  {LEVEL_XP_THRESHOLDS[
+                    Math.min(
+                      LEVEL_XP_THRESHOLDS.findIndex(
+                        (threshold) => state.experience < threshold
+                      ),
+                      LEVEL_XP_THRESHOLDS.length - 1
+                    )
+                  ].toLocaleString()}
+                  <span className="ml-0.5 text-[8px]">XP</span>)
                 </span>
               </div>
               <div className="mt-1.5 h-1.5 w-full bg-[#5d3c1c] rounded-full overflow-hidden">
@@ -36,38 +51,17 @@ export default function Header() {
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={toggleMarketplace}
-            data-tutorial="marketplace"
-            className="bg-[#8B5E3C] h-[42px] w-[42px] flex items-center justify-center text-white/90 rounded-xl hover:bg-[#9b6e4c] 
-                     shadow-lg border-2 border-[#6d4c2c] text-lg font-medium"
-          >
-            🏪
-          </motion.button>
-
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={toggleLeaderboard}
-            className="bg-[#8B5E3C] h-[42px] w-[42px] flex items-center justify-center text-white/90 rounded-xl hover:bg-[#9b6e4c] 
-                     shadow-lg border-2 border-[#6d4c2c] text-lg font-medium"
-          >
-            🏆
-          </motion.button>
-
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={toggleSettings}
-            className="bg-[#8B5E3C] h-[42px] w-[42px] flex items-center justify-center text-white/90 rounded-xl hover:bg-[#9b6e4c] 
-                     shadow-lg border-2 border-[#6d4c2c] text-lg font-medium"
-          >
-            ⚙️
-          </motion.button>
-        </div>
+        <motion.div
+          className="h-[42px] px-3 flex items-center"
+          whileHover={{ scale: 1.02 }}
+          animate={{ rotate: [0, -1, 1, -1, 1, 0] }}
+          transition={{ duration: 0.5, repeat: Infinity, repeatDelay: 5 }}
+        >
+          <span className="text-white/90 font-bold text-sm tracking-wide">
+            <span className="text-lg mb-1 mr-1">🪙</span>
+            {state.coins}
+          </span>
+        </motion.div>
       </div>
     </div>
   );

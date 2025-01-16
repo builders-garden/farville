@@ -3,10 +3,10 @@ import { motion } from "framer-motion";
 import { useFrameContext } from "../context/FrameContext";
 import Image from "next/image";
 import Link from "next/link";
-import { LeaderboardEntry } from "../supabase/queries";
+import { ReferralLeaderboardEntry } from "../supabase/queries";
 
 interface LeaderboardPageProps {
-  leaderboard: LeaderboardEntry[];
+  leaderboard: ReferralLeaderboardEntry[];
 }
 
 export default function LeaderboardPage({ leaderboard }: LeaderboardPageProps) {

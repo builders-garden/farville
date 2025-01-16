@@ -2,8 +2,18 @@ import { fetchUser } from "@/lib/neynar";
 import { NextRequest, NextResponse } from "next/server";
 import { verifyMessage } from "viem";
 import * as jose from "jose";
-import { addReferral, createUser, getUser } from "@/supabase/queries";
+import {
+  addReferral,
+  createUser,
+  getGridCells,
+  getUser,
+  getUserQuests,
+  giftStarterPack,
+  initializeGrid,
+  initializeUserQuest,
+} from "@/supabase/queries";
 import { trackEvent } from "@/lib/posthog/server";
+import { WHITELISTED_FIDS } from "@/lib/whitelist";
 
 export const POST = async (req: NextRequest) => {
   const { fid, referrerFid, signature, message } = await req.json();
@@ -11,7 +21,6 @@ export const POST = async (req: NextRequest) => {
   let user = await getUser(fid);
 
   if (!user) {
-    console.log({ fid });
     const newUser = await fetchUser(fid);
     user = await createUser({
       fid: fid,
@@ -32,6 +41,25 @@ export const POST = async (req: NextRequest) => {
     trackEvent(fid, "sign_up", {
       fid,
     });
+  }
+  // POST: the user exists
+
+  // check if the user has already the grid cells
+  // if not, initialize the grid
+  const gridCells = await getGridCells(fid);
+  if (gridCells.length === 0) {
+    await initializeGrid(fid);
+    // Give them a starter pack
+    await giftStarterPack(fid);
+    // await initializeUserQuest(fid);
+  }
+
+  const userQuests = await getUserQuests(fid);
+  if (
+    (!userQuests || userQuests?.length === 0) &&
+    WHITELISTED_FIDS.includes(fid)
+  ) {
+    await initializeUserQuest(fid);
   }
 
   // Verify signature matches custody address
@@ -54,6 +82,16 @@ export const POST = async (req: NextRequest) => {
     .sign(new TextEncoder().encode(process.env.JWT_SECRET));
 
   const response = NextResponse.json({ success: true, token: jwtToken });
+
+  // response.cookies.set({
+  //   name: "token",
+  //   value: jwtToken,
+  //   httpOnly: true,
+  //   secure: process.env.NODE_ENV === "production",
+  //   sameSite: "strict",
+  //   path: "/",
+  //   maxAge: COOKIE_AGE,
+  // });
 
   trackEvent(fid, "sign_in", {
     fid,

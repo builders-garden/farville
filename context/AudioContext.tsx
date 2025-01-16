@@ -21,7 +21,7 @@ const AudioContext = createContext<AudioContextType | null>(null);
 export function AudioProvider({ children }: { children: React.ReactNode }) {
   const [isMusicPlaying, setIsMusicPlaying] = useState(false);
   const [volume, setVolume] = useState(0.8);
-  const [musicVolume, setMusicVolume] = useState(0.05);
+  const [musicVolume, setMusicVolume] = useState(0.02);
   const [isSoundEnabled, setIsSoundEnabled] = useState(true);
   const audioRefs = useRef<{ [key: string]: HTMLAudioElement }>({});
   const musicRef = useRef<HTMLAudioElement | null>(null);
@@ -41,6 +41,8 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
       coins: new Audio("/sounds/coins.mp3"),
       levelUp: new Audio("/sounds/level-up.mp3"),
       click: new Audio("/sounds/click.mp3"),
+      fertilize: new Audio("/sounds/fertilize.mp3"),
+      claimQuest: new Audio("/sounds/claim-quest.mp3"),
     };
   };
 
@@ -94,12 +96,17 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
 
   const startBackgroundMusic = () => {
     if (musicRef.current && !isMusicPlaying) {
+      musicRef.current.volume = musicVolume;
       musicRef.current
         .play()
         .then(() => {
           setIsMusicPlaying(true);
         })
-        .catch(console.error);
+        .catch((error) => {
+          if (error.name === "NotAllowedError") {
+            console.log("Autoplay prevented - waiting for user interaction");
+          }
+        });
     }
   };
 

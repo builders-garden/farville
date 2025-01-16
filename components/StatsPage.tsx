@@ -2,10 +2,10 @@
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
-import { GameStats, LeaderboardEntry } from "../supabase/queries";
+import { GameStats, ReferralLeaderboardEntry } from "../supabase/queries";
 
 interface StatsPageProps {
-  referralLeaderboard: LeaderboardEntry[];
+  referralLeaderboard: ReferralLeaderboardEntry[];
   gameStats: GameStats;
 }
 

@@ -1,26 +1,27 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { CROPS, useGame } from "../context/GameContext";
-import { CropType, GridCell as GridCellType } from "../types/game";
+import { useGame } from "../context/GameContext";
+import { CropType, SeedType } from "../types/game";
 import CropSprite from "./CropSprite";
 import FloatingNumber from "./animations/FloatingNumber";
 import { useState, useRef } from "react";
+import { DbGridCell } from "@/supabase/types";
+import { CROP_DATA } from "@/lib/game-constants";
 
 interface GridCellProps {
-  cell: GridCellType;
+  cell: DbGridCell;
 }
 
 export default function GridCell({ cell }: GridCellProps) {
   const {
-    tillSoil,
-    plantCrop,
+    plantSeed,
     harvestCrop,
-    selectedCrop,
+    fertilize,
+    selectedSeed,
     selectedFertilizer,
-    state,
-    dispatch,
     setSelectedFertilizer,
+    isActionInProgress,
   } = useGame();
   const [showFloating, setShowFloating] = useState(false);
   const [floatingPosition, setFloatingPosition] = useState({ x: 0, y: 0 });
@@ -33,57 +34,48 @@ export default function GridCell({ cell }: GridCellProps) {
   const [isDragOver] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
 
-  const isValidFertilizerTarget = cell.crop && !cell.crop.readyToHarvest;
+  const isReadyToHarvest =
+    cell.isReadyToHarvest ||
+    (cell.plantedAt &&
+      new Date(cell.plantedAt).getTime() +
+        CROP_DATA[cell.cropType as CropType].growthTime <
+        Date.now());
 
-  const getRewards = (type: CropType) => {
-    const crop = CROPS.find((crop) => crop.type === type)!;
+  const isValidFertilizerTarget = cell.plantedAt && !isReadyToHarvest;
 
-    // Get yield multiplier from game state
-    const yieldMultiplier = state.perks.active
-      .filter(
-        (perk) =>
-          perk.type === "YIELD_BOOSTER" &&
-          (!perk.cropType || perk.cropType === type)
-      )
-      .reduce((mult, perk) => mult * perk.multiplier, 1);
+  const { state } = useGame();
 
-    const baseAmount = Math.floor(Math.random() * 2) + 1; // Simplified since all ranges are 1-2
+  const handleClick = async () => {
+    if (isActionInProgress) return;
 
-    return {
-      exp: crop.xp,
-      amount: Math.floor(baseAmount * yieldMultiplier),
-    };
-  };
-
-  const handleClick = () => {
-    if (selectedFertilizer && cell.crop && !cell.crop.readyToHarvest) {
-      dispatch({
-        type: "ACTIVATE_PERK",
-        perk: selectedFertilizer,
-        x: cell.x,
-        y: cell.y,
-      });
+    if (selectedFertilizer && isValidFertilizerTarget) {
+      await fertilize({ x: cell.x, y: cell.y });
       setSelectedFertilizer(null);
       return;
     }
 
-    if (cell.crop?.readyToHarvest) {
+    if (cell.plantedAt && isReadyToHarvest) {
       if (cellRef.current) {
         const rect = cellRef.current.getBoundingClientRect();
-        const cropType = cell.crop.type;
-        const rewards = getRewards(cropType);
+        const cropType = cell.cropType as CropType;
+        const harvestResult = await harvestCrop({
+          x: cell.x,
+          y: cell.y,
+        });
+
+        if (!harvestResult) {
+          return;
+        }
 
         setFloatingPosition({
           x: rect.left + rect.width / 2,
           y: rect.top + rect.height / 2,
         });
 
-        setHarvestedExp(rewards.exp);
-        setHarvestedAmount(rewards.amount);
+        setHarvestedExp(harvestResult.rewards?.xp || 0);
+        setHarvestedAmount(harvestResult.rewards?.amount || 0);
         setHarvestedCropType(cropType);
         setShowFloating(true);
-
-        harvestCrop(cell.x, cell.y, rewards);
 
         setTimeout(() => {
           setShowFloating(false);
@@ -92,25 +84,27 @@ export default function GridCell({ cell }: GridCellProps) {
           setHarvestedCropType(null);
         }, 1500);
       }
-    } else if (!cell.tilled) {
-      tillSoil(cell.x, cell.y);
-    } else if (selectedCrop && !cell.crop) {
-      plantCrop(cell.x, cell.y, selectedCrop);
+    } else if (selectedSeed && !cell.plantedAt) {
+      await plantSeed({
+        x: cell.x,
+        y: cell.y,
+        seedType: selectedSeed,
+      });
     }
   };
 
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
-    if (cell.tilled && !cell.crop) {
+    if (!cell.plantedAt) {
       e.preventDefault();
       e.dataTransfer.dropEffect = "copy";
     }
   };
 
-  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+  const handleDrop = async (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
-    const cropType = e.dataTransfer.getData("cropType") as CropType;
-    if (cell.tilled && !cell.crop) {
-      plantCrop(cell.x, cell.y, cropType);
+    const seedType = e.dataTransfer.getData("seedType") as SeedType;
+    if (!cell.plantedAt) {
+      await plantSeed({ x: cell.x, y: cell.y, seedType });
     }
   };
 
@@ -122,33 +116,55 @@ export default function GridCell({ cell }: GridCellProps) {
       onDrop={handleDrop}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      data-tilled={cell.tilled}
       data-x={cell.x}
       data-y={cell.y}
       className={`
         grid-cell
-        aspect-square rounded-xl relative cursor-pointer
+        aspect-square rounded-xl relative
+        ${
+          isActionInProgress
+            ? "cursor-not-allowed opacity-50"
+            : "cursor-pointer"
+        }
         ${
           selectedFertilizer && isValidFertilizerTarget
             ? "border-4 border-yellow-400 shadow-lg"
             : ""
         }
         ${selectedFertilizer && !isValidFertilizerTarget ? "opacity-50" : ""}
-        ${!cell.crop && cell.tilled ? "drop-target" : ""}
+        ${
+          selectedSeed && !cell.plantedAt
+            ? "border-4 border-green-400 shadow-lg"
+            : ""
+        }
+        ${selectedSeed && cell.plantedAt ? "opacity-50" : ""}
+        ${!cell.plantedAt ? "drop-target" : ""}
         ${isDragOver ? "dragover" : ""}
         transition-all duration-200
       `}
       initial={false}
       animate={{
-        scale: cell.crop?.readyToHarvest ? [1, 1.02, 1] : 1,
+        scale: isReadyToHarvest ? [1, 1.02, 1] : 1,
       }}
       transition={{
         duration: 1,
-        repeat: cell.crop?.readyToHarvest ? Infinity : 0,
+        repeat: isReadyToHarvest ? Infinity : 0,
         repeatType: "reverse",
       }}
     >
-      <CropSprite crop={cell.crop} />
+      <CropSprite
+        crop={
+          cell.cropType
+            ? {
+                type: cell.cropType as CropType,
+                plantedAt: cell.plantedAt
+                  ? new Date(cell.plantedAt).getTime()
+                  : 0,
+                readyToHarvest: !!isReadyToHarvest,
+              }
+            : undefined
+        }
+      />
 
       {/* Fertilizer Hover Effect */}
       {selectedFertilizer && isHovered && isValidFertilizerTarget && (
@@ -158,6 +174,25 @@ export default function GridCell({ cell }: GridCellProps) {
           className="absolute inset-0 bg-yellow-400/20 rounded-lg flex items-center justify-center"
         >
           <span className="text-2xl">🧪</span>
+        </motion.div>
+      )}
+
+      {/* Seed Planting Hover Effect */}
+      {selectedSeed && isHovered && !cell.plantedAt && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="absolute inset-0 bg-green-400/20 rounded-lg flex items-center justify-center"
+        >
+          <motion.img
+            src={`/images/${
+              state.items.find((item) => item.slug === selectedSeed)?.icon
+            }`}
+            alt={selectedSeed}
+            className="w-8 h-8 object-contain opacity-75"
+            animate={{ scale: [0.9, 1.1, 0.9] }}
+            transition={{ duration: 1.5, repeat: Infinity }}
+          />
         </motion.div>
       )}
 
@@ -175,7 +210,7 @@ export default function GridCell({ cell }: GridCellProps) {
             x={floatingPosition.x}
             y={floatingPosition.y + 20}
             type="crop"
-            cropType={harvestedCropType || "carrot"}
+            cropType={harvestedCropType!}
           />
         </>
       )}

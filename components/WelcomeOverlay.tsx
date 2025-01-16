@@ -8,7 +8,7 @@ import CropSprite from "./CropSprite";
 import Image from "next/image";
 import sdk from "@farcaster/frame-sdk";
 import { useFrameContext } from "../context/FrameContext";
-import { CROPS } from "../context/GameContext";
+import { CROPS } from "../lib/game-constants";
 import FloatingNumber from "./animations/FloatingNumber";
 import { warpcastComposeCastUrl } from "../lib/utils";
 import { DbUser } from "../supabase/types";
@@ -82,15 +82,11 @@ export default function WelcomeOverlay({
   useEffect(() => {
     async function getUserIfExist(fid: number) {
       try {
-        const token = localStorage.getItem("token");
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_URL}/api/user?fid=${fid}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+        const res = await fetch(`/api/user?fid=${fid}`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
         const userData = await res.json();
         setUser(userData.data);
       } catch (error) {
@@ -110,7 +106,7 @@ export default function WelcomeOverlay({
 
   // Add helper function to start music
   const startMusic = () => {
-    if (!musicStarted) {
+    if (!musicStarted && !isMuted) {
       startBackgroundMusic();
       setMusicStarted(true);
     }
@@ -217,8 +213,10 @@ export default function WelcomeOverlay({
     setIsMuted(!isMuted);
     if (isMuted) {
       startBackgroundMusic();
+      setMusicStarted(true);
     } else {
       stopBackgroundMusic();
+      setMusicStarted(false);
     }
   };
 
@@ -363,7 +361,7 @@ export default function WelcomeOverlay({
               ease: "easeInOut",
             }}
             onClick={async () => {
-              startBackgroundMusic();
+              startMusic();
               await sdk.actions.addFrame();
               setShowShareButton(true);
               // onStart();

@@ -2,9 +2,8 @@
 
 import { motion } from "framer-motion";
 import { useAudio } from "../context/AudioContext";
-import { useGame } from "../context/GameContext";
-
-export default function SettingsModal() {
+import Image from "next/image";
+export default function SettingsModal({ onClose }: { onClose: () => void }) {
   const {
     volume,
     setVolume,
@@ -15,7 +14,6 @@ export default function SettingsModal() {
     isSoundEnabled,
     toggleSound,
   } = useAudio();
-  const { toggleSettings } = useGame();
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-start z-50">
@@ -33,11 +31,17 @@ export default function SettingsModal() {
                 animate={{ rotate: [0, -3, 3, 0] }}
                 transition={{ duration: 0.5, repeat: Infinity, repeatDelay: 5 }}
               >
-                <span className="text-3xl">⚙️</span> Settings
+                    <Image
+                      src="/images/icons/settings.png"
+                      alt="Settings"
+                      width={24}
+                      height={24}
+                    />
+                Settings
               </motion.h2>
             </div>
             <button
-              onClick={toggleSettings}
+              onClick={onClose}
               className="w-8 h-8 hover:bg-black/20 rounded-full transition-colors text-white/90 
                        flex items-center justify-center hover:rotate-90 transform duration-200"
             >

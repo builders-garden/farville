@@ -1,10 +1,10 @@
 "use client";
 
-import { CROPS } from "@/context/GameContext";
 import { CropType } from "@/types/game";
 import { motion } from "framer-motion";
 import { createPortal } from "react-dom";
 import Image from "next/image";
+import { useGame } from "@/context/GameContext";
 
 interface FloatingNumberProps {
   number: number;
@@ -21,6 +21,7 @@ export default function FloatingNumber({
   type,
   cropType,
 }: FloatingNumberProps) {
+  const { state } = useGame();
   // Only render in browser environment
   if (typeof document === "undefined") return null;
 
@@ -35,15 +36,15 @@ export default function FloatingNumber({
     if (type === "xp") return `+${number} XP ⭐`;
     if (type === "coins") return `+${number} 🪙`;
     if (type === "crop" && cropType) {
-      const crop = CROPS.find((crop) => crop.type === cropType)!;
+      const crop = state.items.find((item) => item.slug === cropType)!;
       return (
         <>
           +{number} {cropType.toUpperCase()}{" "}
           <Image
-            src={crop.icon}
+            src={`/images${crop.icon}`}
             alt={cropType}
-            width={16}
-            height={16}
+            width={24}
+            height={24}
             className="inline-block"
           />
         </>
