@@ -149,6 +149,7 @@ export const updateUserCoins = async (
   fid: number,
   coins: number
 ): Promise<DbUser> => {
+  
   const { data, error } = await supabase
     .from("users")
     .update({ coins })

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
   getQuestById,
+  getUser,
   getUserQuestById,
   updateUserCoins,
   updateUserQuest,
@@ -43,6 +44,10 @@ export async function POST(
   if (!fid) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+  const user = await getUser(Number(fid));
+  if (!user) {
+    return NextResponse.json({ error: "User not found" }, { status: 404 });
+  }
   const userQuest = await getUserQuestById(Number(fid), Number(id));
   if (!userQuest) {
     return NextResponse.json(
@@ -54,7 +59,7 @@ export async function POST(
   let didLevelUp = false;
   if (status === "claimed") {
     if (userQuest.quest.coins) {
-      await updateUserCoins(Number(fid), userQuest.quest.coins);
+      await updateUserCoins(Number(fid), user.coins + userQuest.quest.coins);
     }
     if (userQuest.quest.xp) {
       const xp = await updateUserXP(Number(fid), userQuest.quest.xp);
