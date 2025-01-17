@@ -89,7 +89,12 @@ export function GameProvider({
     setIsActionInProgress,
     isActionInProgress,
     onSuccess: () => {
-      setSelectedSeed(null);
+      const seed = state?.seeds.find(
+        (seed) => seed.item.slug === selectedSeed
+      );
+      if (!seed || seed?.quantity === 0) {
+        setSelectedSeed(null);
+      }
     },
   });
   const { mutate: harvestCropMutation } = useHarvestCrop({
