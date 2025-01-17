@@ -90,6 +90,7 @@ export default function ItemDetailsPopup({
           {onUse && (
             <button
               onClick={onUse}
+              disabled={!userItem?.quantity}
               className="flex-1 bg-[#4CAF50] text-white px-4 py-2 rounded-lg font-bold 
                        hover:bg-[#45a049] transition-colors"
             >
