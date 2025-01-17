@@ -5,6 +5,7 @@ import { useGame } from "../context/GameContext";
 import { motion } from "framer-motion";
 import { getCurrentLevelAndProgress } from "@/lib/utils";
 import Image from "next/image";
+import sdk from "@farcaster/frame-sdk";
 
 export default function Header() {
   const { state } = useGame();
@@ -50,6 +51,15 @@ export default function Header() {
             </div>
           </div>
         </div>
+
+        <p
+          className="text-white/80 hover:text-white text-[8px] font-medium transition-colors"
+          onClick={async () => {
+            await sdk.actions.openUrl("https://docs.farville.farm/gameplay");
+          }}
+        >
+          How to Play
+        </p>
 
         <motion.div
           className="h-[42px] px-3 flex gap-1 items-center text-white/90 tracking-wide font-bold"
