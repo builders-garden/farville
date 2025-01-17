@@ -22,6 +22,8 @@ export default function ItemDetailsPopup({
   requestQuantity,
   onRequestQuantityChange,
 }: ItemDetailsPopupProps) {
+  const maxRequestAmount = item.id === 9 ? 1 : 5;
+
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.9 }}
@@ -71,13 +73,21 @@ export default function ItemDetailsPopup({
             {requestQuantity}
           </span>
           <button
-            onClick={() => onRequestQuantityChange(requestQuantity + 1)}
+            onClick={() =>
+              onRequestQuantityChange(
+                Math.min(maxRequestAmount, requestQuantity + 1)
+              )
+            }
             className="w-8 h-8 bg-[#6d4c2c] rounded-full flex items-center justify-center text-white/90
                      hover:bg-[#5d3c1c] transition-colors"
           >
             +
           </button>
         </div>
+
+        <p className="text-white/70 text-[10px] text-center mb-4">
+          You can request max {maxRequestAmount} {item.name} at a time
+        </p>
 
         <div className="flex flex-col gap-3">
           <button
