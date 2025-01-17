@@ -7,6 +7,7 @@ import { CROP_DATA, EXPANSION_COSTS } from "../lib/game-constants";
 import Image from "next/image";
 import ConfirmationModal from "./ConfirmationModal";
 import { DbItem } from "@/supabase/types";
+import { trackEvent } from "../lib/posthog/client";
 
 type Tab = "seeds" | "crops" | "perks" | "expansions";
 
@@ -84,9 +85,10 @@ export default function MarketplaceModal({
                 transition={{ duration: 1, repeat: Infinity }}
               >
                 Your coins:{" "}
-                <span className="text-[#FFB938] font-bold">
-                  🪙 {state.coins}
-                </span>
+                <p className="flex items-center gap-1 text-[#FFB938] ">
+                  <span className="font-bold mb-1">🪙</span>
+                  {state.coins}
+                </p>
               </motion.p>
             </div>
             <button
@@ -139,6 +141,9 @@ export default function MarketplaceModal({
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 20 }}
               >
+                <div className="text-white/60 text-[8px] text-center mb-1 italic">
+                  Click on any seed to view detailed information
+                </div>
                 {state.items
                   .filter((item) => item.category === "seed")
                   .map((item, index) => (
@@ -151,7 +156,7 @@ export default function MarketplaceModal({
                         const crop = state.items.find(
                           (i) => i.slug === item.slug.replace("-seeds", "")
                         )!;
-                        setSelectedItem({
+                        const itemDetails = {
                           id: item.id,
                           name: item.name,
                           icon: item.icon,
@@ -164,6 +169,13 @@ export default function MarketplaceModal({
                             CROP_DATA[item.slug.replace("-seeds", "")]
                               .growthTime /
                             (60000 * 60),
+                        };
+                        setSelectedItem(itemDetails);
+                        trackEvent("marketplace_item_selected", {
+                          itemId: item.id,
+                          itemName: item.name,
+                          itemCategory: item.category,
+                          buyPrice: item.buyPrice,
                         });
                       }}
                       className={`bg-[#6d4c2c] px-4 py-3 rounded-lg flex flex-col md:flex-row md:items-center gap-3
@@ -196,8 +208,8 @@ export default function MarketplaceModal({
                             <p className="text-white/90 font-medium">
                               {item.name}
                             </p>
-                            <p className="text-white/90">
-                              <span className="mr-1">🪙</span>
+                            <p className="text-white/90 flex items-center">
+                              <span className="pb-1 mr-1">🪙</span>
                               {item.buyPrice}
                             </p>
                           </div>
@@ -280,8 +292,8 @@ export default function MarketplaceModal({
                               <p className="text-white/90 font-medium">
                                 {item.name}
                               </p>
-                              <p className="text-white/90">
-                                <span className="mr-1">🪙</span>
+                              <p className="text-white/90 flex items-center">
+                                <span className="pb-1 mr-1">🪙</span>
                                 {item.sellPrice}
                               </p>
                             </div>
@@ -485,7 +497,10 @@ export default function MarketplaceModal({
                                       transition-colors disabled:opacity-40 disabled:cursor-not-allowed
                                       border border-white/10"
                             >
-                              🪙 {perk.buyPrice}
+                              <div className="flex justify-center items-center gap-1">
+                                <span className="mb-1">🪙</span>
+                                {perk.buyPrice}
+                              </div>
                             </motion.button>
                             {isOwned && (
                               <div className="text-green-400 text-xs font-medium text-center sm:text-right">
