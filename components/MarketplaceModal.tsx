@@ -152,34 +152,8 @@ export default function MarketplaceModal({
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: index * 0.1 }}
-                      onClick={() => {
-                        const crop = state.items.find(
-                          (i) => i.slug === item.slug.replace("-seeds", "")
-                        )!;
-                        const itemDetails = {
-                          id: item.id,
-                          name: item.name,
-                          icon: item.icon,
-                          buyPrice: item.buyPrice,
-                          cropData: crop,
-                          harvestXp:
-                            CROP_DATA[item.slug.replace("-seeds", "")].rewardXP,
-                          description: item.description,
-                          growthTime:
-                            CROP_DATA[item.slug.replace("-seeds", "")]
-                              .growthTime /
-                            (60000 * 60),
-                        };
-                        setSelectedItem(itemDetails);
-                        trackEvent("marketplace_item_selected", {
-                          itemId: item.id,
-                          itemName: item.name,
-                          itemCategory: item.category,
-                          buyPrice: item.buyPrice,
-                        });
-                      }}
                       className={`bg-[#6d4c2c] px-4 py-3 rounded-lg flex flex-col md:flex-row md:items-center gap-3
-                               border border-[#8B5E3C]/50 shadow-md relative cursor-pointer
+                               border border-[#8B5E3C]/50 shadow-md relative
                                hover:bg-[#7d583a] transition-colors ${
                                  state.level < item.requiredLevel
                                    ? "opacity-75"
@@ -193,7 +167,37 @@ export default function MarketplaceModal({
                           </span>
                         </div>
                       )}
-                      <div className="flex items-center gap-3 flex-1">
+                      <div
+                        className="flex items-center gap-3 flex-1"
+                        id="card-header"
+                        onClick={() => {
+                          const crop = state.items.find(
+                            (i) => i.slug === item.slug.replace("-seeds", "")
+                          )!;
+                          const itemDetails = {
+                            id: item.id,
+                            name: item.name,
+                            icon: item.icon,
+                            buyPrice: item.buyPrice,
+                            cropData: crop,
+                            harvestXp:
+                              CROP_DATA[item.slug.replace("-seeds", "")]
+                                .rewardXP,
+                            description: item.description,
+                            growthTime:
+                              CROP_DATA[item.slug.replace("-seeds", "")]
+                                .growthTime /
+                              (60000 * 60),
+                          };
+                          setSelectedItem(itemDetails);
+                          trackEvent("marketplace_item_selected", {
+                            itemId: item.id,
+                            itemName: item.name,
+                            itemCategory: item.category,
+                            buyPrice: item.buyPrice,
+                          });
+                        }}
+                      >
                         <div className="w-10 h-10 flex items-center justify-center">
                           <motion.img
                             src={`/images${item.icon}`}
@@ -205,7 +209,7 @@ export default function MarketplaceModal({
                         </div>
                         <div className="flex-1 flex flex-col gap-2">
                           <div className="flex flex-row gap-1 justify-between">
-                            <p className="text-white/90 font-medium">
+                            <p className="text-white/90 font-medium cursor-pointer hover:text-white">
                               {item.name}
                             </p>
                             <p className="text-white/90 flex items-center">
