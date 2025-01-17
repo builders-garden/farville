@@ -125,8 +125,10 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
   const updateVolume = (newVolume: number) => {
     setVolume(newVolume);
     localStorage.setItem("soundVolume", newVolume.toString());
-    Object.values(audioRefs.current).forEach((audio) => {
-      audio.volume = newVolume;
+    requestAnimationFrame(() => {
+      Object.values(audioRefs.current).forEach((audio) => {
+        audio.volume = newVolume;
+      });
     });
   };
 
@@ -134,7 +136,11 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
     setMusicVolume(newVolume);
     localStorage.setItem("musicVolume", newVolume.toString());
     if (musicRef.current) {
-      musicRef.current.volume = newVolume;
+      requestAnimationFrame(() => {
+        if (musicRef.current) {
+          musicRef.current.volume = newVolume;
+        }
+      });
     }
   };
 

@@ -31,12 +31,12 @@ export default function SettingsModal({ onClose }: { onClose: () => void }) {
                 animate={{ rotate: [0, -3, 3, 0] }}
                 transition={{ duration: 0.5, repeat: Infinity, repeatDelay: 5 }}
               >
-                    <Image
-                      src="/images/icons/settings.png"
-                      alt="Settings"
-                      width={24}
-                      height={24}
-                    />
+                <Image
+                  src="/images/icons/settings.png"
+                  alt="Settings"
+                  width={24}
+                  height={24}
+                />
                 Settings
               </motion.h2>
             </div>
@@ -91,6 +91,15 @@ export default function SettingsModal({ onClose }: { onClose: () => void }) {
                     step="0.01"
                     value={volume}
                     onChange={(e) => setVolume(parseFloat(e.target.value))}
+                    onInput={(e) =>
+                      setVolume(
+                        parseFloat((e.target as HTMLInputElement).value)
+                      )
+                    }
+                    onTouchMove={(e) => {
+                      const input = e.target as HTMLInputElement;
+                      setVolume(parseFloat(input.value));
+                    }}
                     className="w-full accent-[#FFB938] h-2 rounded-lg appearance-none bg-[#5c4121]"
                     disabled={!isSoundEnabled}
                   />
@@ -158,6 +167,15 @@ export default function SettingsModal({ onClose }: { onClose: () => void }) {
                     step="0.01"
                     value={musicVolume}
                     onChange={(e) => setMusicVolume(parseFloat(e.target.value))}
+                    onInput={(e) =>
+                      setMusicVolume(
+                        parseFloat((e.target as HTMLInputElement).value)
+                      )
+                    }
+                    onTouchMove={(e) => {
+                      const input = e.target as HTMLInputElement;
+                      setMusicVolume(parseFloat(input.value));
+                    }}
                     className="w-full accent-[#FFB938] h-2 rounded-lg appearance-none bg-[#5c4121]"
                     disabled={!isMusicPlaying}
                   />
@@ -171,9 +189,7 @@ export default function SettingsModal({ onClose }: { onClose: () => void }) {
                            transition-colors text-sm font-medium border border-white/10 flex items-center justify-center gap-2
                            shadow-md"
                 >
-                  {isMusicPlaying
-                    ? "Stop 🔇"
-                    : "Play 🎵"}
+                  {isMusicPlaying ? "Stop 🔇" : "Play 🎵"}
                 </motion.button>
               </div>
             </motion.div>
