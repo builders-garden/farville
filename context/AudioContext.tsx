@@ -136,11 +136,7 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
     setMusicVolume(newVolume);
     localStorage.setItem("musicVolume", newVolume.toString());
     if (musicRef.current) {
-      requestAnimationFrame(() => {
-        if (musicRef.current) {
-          musicRef.current.volume = newVolume;
-        }
-      });
+      musicRef.current.volume = newVolume;
     }
   };
 
