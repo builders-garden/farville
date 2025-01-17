@@ -19,8 +19,6 @@ export default function InventoryModal({ onClose }: { onClose: () => void }) {
   const [requestQuantity, setRequestQuantity] = useState(1);
   const {
     mutate: createRequest,
-    isError: createRequestError,
-    data: createRequestData,
   } = useCreateRequest();
 
   const handlePerkClick = (perk: UserItem) => {
@@ -65,13 +63,11 @@ export default function InventoryModal({ onClose }: { onClose: () => void }) {
             setSelectedItem(null);
             setRequestQuantity(1); // Reset quantity after request
           },
+          onError: (error) => {
+            console.error("Error creating requestssssss", error);
+          },
         }
       );
-
-      if (createRequestError || !createRequestData) {
-        console.error("Error creating request");
-        return;
-      }
     } catch (error) {
       console.error("Error handling request:", error);
     }
