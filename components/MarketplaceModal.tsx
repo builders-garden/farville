@@ -3,11 +3,24 @@
 import { motion } from "framer-motion";
 import { useState } from "react";
 import { useGame } from "../context/GameContext";
-import { EXPANSION_COSTS } from "../lib/game-constants";
+import { CROP_DATA, EXPANSION_COSTS } from "../lib/game-constants";
 import Image from "next/image";
 import ConfirmationModal from "./ConfirmationModal";
+import { DbItem } from "@/supabase/types";
 
 type Tab = "seeds" | "crops" | "perks" | "expansions";
+
+// Add new type for selected item details
+type SelectedItemDetails = {
+  id: number;
+  name: string;
+  icon: string;
+  buyPrice?: number;
+  harvestXp?: number;
+  description?: string;
+  growthTime?: number;
+  cropData: DbItem;
+} | null;
 
 export default function MarketplaceModal({
   onClose,
@@ -26,6 +39,7 @@ export default function MarketplaceModal({
     itemName: string;
     price: number;
   } | null>(null);
+  const [selectedItem, setSelectedItem] = useState<SelectedItemDetails>(null);
 
   const tabs: { id: Tab; label: string; icon: string }[] = [
     { id: "seeds", label: "Seeds", icon: "🌱" },
@@ -133,8 +147,28 @@ export default function MarketplaceModal({
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: index * 0.1 }}
+                      onClick={() => {
+                        const crop = state.items.find(
+                          (i) => i.slug === item.slug.replace("-seeds", "")
+                        )!;
+                        setSelectedItem({
+                          id: item.id,
+                          name: item.name,
+                          icon: item.icon,
+                          buyPrice: item.buyPrice,
+                          cropData: crop,
+                          harvestXp:
+                            CROP_DATA[item.slug.replace("-seeds", "")].rewardXP,
+                          description: item.description,
+                          growthTime:
+                            CROP_DATA[item.slug.replace("-seeds", "")]
+                              .growthTime /
+                            (60000 * 60),
+                        });
+                      }}
                       className={`bg-[#6d4c2c] px-4 py-3 rounded-lg flex flex-col md:flex-row md:items-center gap-3
-                               border border-[#8B5E3C]/50 shadow-md relative ${
+                               border border-[#8B5E3C]/50 shadow-md relative cursor-pointer
+                               hover:bg-[#7d583a] transition-colors ${
                                  state.level < item.requiredLevel
                                    ? "opacity-75"
                                    : ""
@@ -168,16 +202,6 @@ export default function MarketplaceModal({
                             </p>
                           </div>
                           <div className="flex items-center gap-2 text-[10px]">
-                            <span className="text-white/60 flex items-center">
-                              XP:{" "}
-                              <span className="text-yellow-400 font-medium flex items-center">
-                                <span className="text-sm mb-1 ml-1 mr-0.5">
-                                  ⭐
-                                </span>
-                                10
-                              </span>
-                            </span>
-                            <span className="text-white/40">•</span>
                             <span className="text-white/60">
                               Owned:
                               <span className="text-white/90 font-medium">
@@ -512,6 +536,91 @@ export default function MarketplaceModal({
             transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
             className="w-12 h-12 border-4 border-white/20 border-t-white/90 rounded-full"
           />
+        </div>
+      )}
+      {/* Add Item Details Modal */}
+      {selectedItem && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            className="bg-[#6d4c2c] p-6 rounded-lg max-w-sm w-full mx-4 border border-[#8B5E3C]/50"
+          >
+            <div className="flex justify-between items-start mb-4">
+              <div className="flex items-center gap-3">
+                <motion.img
+                  src={`/images${selectedItem.icon}`}
+                  alt={selectedItem.name}
+                  className="w-12 h-12 object-contain"
+                  animate={{ y: [0, -2, 0] }}
+                  transition={{ duration: 1.5, repeat: Infinity }}
+                />
+                <h3 className="text-white/90 font-bold text-lg">
+                  {selectedItem.name}
+                </h3>
+              </div>
+              <button
+                onClick={() => setSelectedItem(null)}
+                className="text-white/70 hover:text-white/90"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="space-y-3 text-xs">
+              <p className="text-amber-500/90 text-[10px] text-center">
+                Each {selectedItem.cropData.name.slice(0, -1)} sells for{" "}
+                {selectedItem.cropData.sellPrice}
+                <span className="text-sm mb-1">🪙</span>
+              </p>
+
+              <div className="grid grid-cols-2 gap-3">
+                {selectedItem.buyPrice && (
+                  <div className="flex flex-col bg-[#8B5E3C]/30 p-3 rounded gap-2 items-center">
+                    <p className="text-white/60">Buy Price</p>
+                    <p className="flex items-center gap-1 text-white/90 font-medium">
+                      <span className="text-sm mb-1">🪙</span>
+                      {selectedItem.buyPrice}
+                    </p>
+                  </div>
+                )}
+                {selectedItem.cropData.icon && (
+                  <div className="flex flex-col bg-[#8B5E3C]/30 p-3 rounded gap-2 items-center">
+                    <p className="text-white/60">Yield</p>
+                    <div className="flex flex-row items-center gap-1 text-white/90 font-medium">
+                      1-3{" "}
+                      <Image
+                        width={16}
+                        height={16}
+                        src={`/images${selectedItem.cropData.icon}`}
+                        alt={selectedItem.name}
+                        className="w-4 h-4 object-contain"
+                      />
+                    </div>
+                  </div>
+                )}
+                {selectedItem.harvestXp && (
+                  <div className="flex flex-col bg-[#8B5E3C]/30 p-3 rounded gap-2 items-center">
+                    <p className="text-white/60">Harvest XP</p>
+                    <p className="flex items-center gap-1 text-white/90 font-medium">
+                      <span className="text-sm mb-1">⭐</span>
+                      {selectedItem.harvestXp}
+                    </p>
+                  </div>
+                )}
+                {selectedItem.growthTime && (
+                  <div className="flex flex-col bg-[#8B5E3C]/30 p-3 rounded gap-2 items-center">
+                    <p className="text-white/60">Growth Time</p>
+                    <p className="flex items-center gap-1 text-white/90 font-medium">
+                      <span className="text-sm mb-1">⏳</span>
+                      {selectedItem.growthTime}hr
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </motion.div>
         </div>
       )}
     </div>
