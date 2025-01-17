@@ -17,9 +17,9 @@ import QuestsModal from "./QuestsModal";
 import { useAudio } from "@/context/AudioContext";
 import RequestModal from "./RequestModal";
 
-const WelcomeOverlay = dynamic(() => import("./../components/WelcomeOverlay"), {
-  ssr: false,
-});
+// const WelcomeOverlay = dynamic(() => import("./../components/WelcomeOverlay"), {
+//   ssr: false,
+// });
 
 // Load GameGrid component dynamically (client-side only)
 const GameGrid = dynamic(() => import("./GameGrid"), {
@@ -119,11 +119,11 @@ export default function GameWrapper() {
   return (
     <div className="relative z-10">
       {/* Render active overlay with parameters */}
-      {activeOverlay?.type === "welcome" && (
+      {/* {activeOverlay?.type === "welcome" && (
         <AnimatePresence>
           <WelcomeOverlay onComplete={handleOverlayComplete} />
         </AnimatePresence>
-      )}
+      )} */}
 
       {activeOverlay?.type === "requests" && (
         <AnimatePresence>

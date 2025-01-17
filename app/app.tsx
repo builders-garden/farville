@@ -13,7 +13,7 @@ const GameWrapper = dynamic(() => import("./../components/GameWrapper"), {
 });
 
 export default function App({
-  initialOverlay = { type: "welcome" },
+  initialOverlay
 }: {
   initialOverlay?: OverlayConfig;
 }) {

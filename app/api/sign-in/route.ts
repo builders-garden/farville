@@ -13,7 +13,6 @@ import {
   initializeUserQuest,
 } from "@/supabase/queries";
 import { trackEvent } from "@/lib/posthog/server";
-import { WHITELISTED_FIDS } from "@/lib/whitelist";
 
 export const POST = async (req: NextRequest) => {
   const { fid, referrerFid, signature, message } = await req.json();
@@ -55,10 +54,7 @@ export const POST = async (req: NextRequest) => {
   }
 
   const userQuests = await getUserQuests(fid);
-  if (
-    (!userQuests || userQuests?.length === 0) &&
-    WHITELISTED_FIDS.includes(fid)
-  ) {
+  if (!userQuests || userQuests?.length === 0) {
     await initializeUserQuest(fid);
   }
 

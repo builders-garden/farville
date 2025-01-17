@@ -9,7 +9,7 @@ import { OverlayConfig } from "@/context/GameContext";
 
 export default function Game({
   children,
-  initialOverlay = { type: "welcome" },
+  initialOverlay
 }: {
   children?: React.ReactNode;
   initialOverlay?: OverlayConfig;
