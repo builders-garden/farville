@@ -2,7 +2,7 @@ import { CropType, ExpansionCost } from "@/types/game";
 
 // Add EXPANSION_COSTS to the context file
 export const EXPANSION_COSTS: ExpansionCost[] = [
-  { coins: 40, level: 1, nextSize: { width: 3, height: 3 } },
+  { coins: 100, level: 2, nextSize: { width: 3, height: 3 } },
   { coins: 500, level: 5, nextSize: { width: 4, height: 4 } },
   { coins: 1000, level: 10, nextSize: { width: 5, height: 5 } },
   { coins: 2500, level: 15, nextSize: { width: 6, height: 6 } },
