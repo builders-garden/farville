@@ -19,10 +19,34 @@ interface AudioContextType {
 const AudioContext = createContext<AudioContextType | null>(null);
 
 export function AudioProvider({ children }: { children: React.ReactNode }) {
-  const [isMusicPlaying, setIsMusicPlaying] = useState(false);
-  const [volume, setVolume] = useState(0.8);
-  const [musicVolume, setMusicVolume] = useState(0.02);
-  const [isSoundEnabled, setIsSoundEnabled] = useState(true);
+  const [isMusicPlaying, setIsMusicPlaying] = useState(() => {
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("isMusicPlaying");
+      return stored === null ? true : stored === "true";
+    }
+    return false;
+  });
+  const [volume, setVolume] = useState(() => {
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("soundVolume");
+      return stored === null ? 0.8 : parseFloat(stored);
+    }
+    return 0.8;
+  });
+  const [musicVolume, setMusicVolume] = useState(() => {
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("musicVolume");
+      return stored === null ? 0.02 : parseFloat(stored);
+    }
+    return 0.02;
+  });
+  const [isSoundEnabled, setIsSoundEnabled] = useState(() => {
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("isSoundEnabled");
+      return stored === null ? true : stored === "true";
+    }
+    return true;
+  });
   const audioRefs = useRef<{ [key: string]: HTMLAudioElement }>({});
   const musicRef = useRef<HTMLAudioElement | null>(null);
 
@@ -67,17 +91,20 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
       musicRef.current.loop = true;
     }
 
-    if (isMusicPlaying) {
-      musicRef.current.pause();
-    } else {
+    const newValue = !isMusicPlaying;
+    if (newValue) {
       musicRef.current.volume = musicVolume;
       musicRef.current.play().catch(console.error);
+    } else {
+      musicRef.current.pause();
     }
-    setIsMusicPlaying(!isMusicPlaying);
+    setIsMusicPlaying(newValue);
+    localStorage.setItem("isMusicPlaying", newValue.toString());
   };
 
   const updateVolume = (newVolume: number) => {
     setVolume(newVolume);
+    localStorage.setItem("soundVolume", newVolume.toString());
     Object.values(audioRefs.current).forEach((audio) => {
       audio.volume = newVolume;
     });
@@ -85,22 +112,26 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
 
   const updateMusicVolume = (newVolume: number) => {
     setMusicVolume(newVolume);
+    localStorage.setItem("musicVolume", newVolume.toString());
     if (musicRef.current) {
       musicRef.current.volume = newVolume;
     }
   };
 
   const toggleSound = () => {
-    setIsSoundEnabled(!isSoundEnabled);
+    const newValue = !isSoundEnabled;
+    setIsSoundEnabled(newValue);
+    localStorage.setItem("isSoundEnabled", newValue.toString());
   };
 
   const startBackgroundMusic = () => {
-    if (musicRef.current && !isMusicPlaying) {
+    if (musicRef.current && isMusicPlaying) {
       musicRef.current.volume = musicVolume;
       musicRef.current
         .play()
         .then(() => {
           setIsMusicPlaying(true);
+          localStorage.setItem("isMusicPlaying", "true");
         })
         .catch((error) => {
           if (error.name === "NotAllowedError") {
@@ -115,6 +146,7 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
       musicRef.current.pause();
       musicRef.current.currentTime = 0;
       setIsMusicPlaying(false);
+      localStorage.setItem("isMusicPlaying", "false");
     }
   };
 
