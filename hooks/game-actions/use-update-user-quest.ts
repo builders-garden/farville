@@ -5,7 +5,6 @@ import { useAudio } from "@/context/AudioContext";
 type UpdateUserQuestVariables = {
   questId: number;
   status: DbUserHasQuestStatus;
-  didLevelUp: boolean;
 };
 
 export const useUpdateUserQuest = () => {

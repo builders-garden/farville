@@ -35,7 +35,7 @@ export default function GridCell({ cell }: GridCellProps) {
   const cellRef = useRef<HTMLDivElement>(null);
   const [isDragOver] = useState(false);
   const [showToast, setShowToast] = useState(false);
-  const [showLevelUpConfetti, setShowLevelUpConfetti] = useState(true);
+  const [showLevelUpConfetti, setShowLevelUpConfetti] = useState(false);
 
   const isReadyToHarvest =
     cell.isReadyToHarvest ||

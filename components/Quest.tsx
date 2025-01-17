@@ -10,7 +10,7 @@ import Image from "next/image";
 interface QuestProps {
   quest: DbUserHasQuestWithQuest;
   claimable: boolean;
-  onClaim?: (questId: number, x: number, y: number) => void;
+  onClaim?: (questId: number, x: number, y: number, didLevelUp: boolean) => void;
 }
 
 const renderQuestRewards = (quest: DbQuest) => (
@@ -194,8 +194,8 @@ export default function Quest({
               updateUserQuest(
                 { questId: quest.questId, status: "claimed" },
                 {
-                  onSuccess: () => {
-                    onClaim?.(quest.questId, x, y);
+                  onSuccess: (data) => {
+                    onClaim?.(quest.questId, x, y, data.didLevelUp);
                   },
                 }
               );
