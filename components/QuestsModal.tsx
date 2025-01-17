@@ -7,6 +7,7 @@ import { useUserQuests } from "@/hooks/use-quests";
 import Quest from "./Quest";
 import { useGame } from "@/context/GameContext";
 import FloatingNumber from "@/components/animations/FloatingNumber";
+import Confetti from "./animations/Confetti";
 
 type Tab = "active" | "claimable" | "expired";
 type SubTab = "daily" | "weekly" | "monthly" | "farmer";
@@ -52,7 +53,14 @@ export default function QuestsModal({ onClose }: { onClose: () => void }) {
     coins?: number;
   } | null>(null);
 
-  const handleQuestClaim = async (questId: number, x: number, y: number) => {
+  const [showLevelUpConfetti, setShowLevelUpConfetti] = useState(false);
+
+  const handleQuestClaim = async (
+    questId: number,
+    x: number,
+    y: number,
+    didLevelUp: boolean
+  ) => {
     const quest = [
       ...(claimableQuests?.daily || []),
       ...(claimableQuests?.weekly || []),
@@ -69,6 +77,13 @@ export default function QuestsModal({ onClose }: { onClose: () => void }) {
         coins: quest.quest.coins || undefined,
       });
 
+      if (didLevelUp) {
+        setShowLevelUpConfetti(true);
+        setTimeout(() => {
+          setShowLevelUpConfetti(false);
+        }, 3000);
+      }
+
       setTimeout(() => setRewardAnimation(null), 5000);
       refetchClaimableQuests();
       refetchClaimableQuestsState();
@@ -78,6 +93,7 @@ export default function QuestsModal({ onClose }: { onClose: () => void }) {
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-start z-50">
+      {showLevelUpConfetti && <Confetti />}
       <motion.div
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}

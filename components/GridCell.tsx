@@ -9,6 +9,7 @@ import { useState, useRef } from "react";
 import { DbGridCell } from "@/supabase/types";
 import { CROP_DATA } from "@/lib/game-constants";
 import Toast from "./animations/Toast";
+import Confetti from "./animations/Confetti";
 
 interface GridCellProps {
   cell: DbGridCell;
@@ -34,6 +35,7 @@ export default function GridCell({ cell }: GridCellProps) {
   const cellRef = useRef<HTMLDivElement>(null);
   const [isDragOver] = useState(false);
   const [showToast, setShowToast] = useState(false);
+  const [showLevelUpConfetti, setShowLevelUpConfetti] = useState(false);
 
   const isReadyToHarvest =
     cell.isReadyToHarvest ||
@@ -100,6 +102,13 @@ export default function GridCell({ cell }: GridCellProps) {
           return;
         }
 
+        if (harvestResult.rewards?.didLevelUp) {
+          setShowLevelUpConfetti(true);
+          setTimeout(() => {
+            setShowLevelUpConfetti(false);
+          }, 3000);
+        }
+
         setFloatingPosition({
           x: rect.left + rect.width / 2,
           y: rect.top + rect.height / 2,
@@ -142,116 +151,119 @@ export default function GridCell({ cell }: GridCellProps) {
   };
 
   return (
-    <motion.div
-      ref={cellRef}
-      onClick={handleClick}
-      onDragOver={handleDragOver}
-      onDrop={handleDrop}
-      data-x={cell.x}
-      data-y={cell.y}
-      className={`
-        grid-cell
-        aspect-square rounded-xl relative
-        ${
-          isActionInProgress
-            ? "cursor-not-allowed opacity-50"
-            : "cursor-pointer"
-        }
-        ${
-          selectedFertilizer && isValidFertilizerTarget
-            ? "border-4 border-yellow-400 shadow-lg"
-            : ""
-        }
-        ${selectedFertilizer && !isValidFertilizerTarget ? "opacity-50" : ""}
-        ${
-          selectedSeed && !cell.plantedAt
-            ? "border-4 border-green-400 shadow-lg"
-            : ""
-        }
-        ${selectedSeed && cell.plantedAt ? "opacity-50" : ""}
-        ${!cell.plantedAt ? "drop-target" : ""}
-        ${isDragOver ? "dragover" : ""}
-        transition-all duration-200
-      `}
-      initial={false}
-      animate={{
-        scale: isReadyToHarvest ? [1, 1.02, 1] : 1,
-      }}
-      transition={{
-        duration: 1,
-        repeat: isReadyToHarvest ? Infinity : 0,
-        repeatType: "reverse",
-      }}
-    >
-      <CropSprite
-        crop={
-          cell.cropType
-            ? {
-                type: cell.cropType as CropType,
-                plantedAt: cell.plantedAt
-                  ? new Date(cell.plantedAt).getTime()
-                  : 0,
-                readyToHarvest: !!isReadyToHarvest,
-              }
-            : undefined
-        }
-      />
-
-      {/* Fertilizer Hover Effect */}
-      {selectedFertilizer && isValidFertilizerTarget && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="absolute inset-0 bg-yellow-400/20 rounded-lg flex items-center justify-center"
-        >
-          <span className="text-2xl">🧪</span>
-        </motion.div>
-      )}
-
-      {/* Seed Planting Hover Effect */}
-      {selectedSeed && !cell.plantedAt && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="absolute inset-0 bg-green-400/20 rounded-lg flex items-center justify-center"
-        >
-          <motion.img
-            src={`/images/${
-              state.items.find((item) => item.slug === selectedSeed)?.icon
-            }`}
-            alt={selectedSeed}
-            className="w-8 h-8 object-contain opacity-75"
-            animate={{ scale: [0.9, 1.1, 0.9] }}
-            transition={{ duration: 1.5, repeat: Infinity }}
-          />
-        </motion.div>
-      )}
-
-      {/* Floating Numbers */}
-      {showFloating && (
-        <>
-          <FloatingNumber
-            number={harvestedExp || 0}
-            x={floatingPosition.x}
-            y={floatingPosition.y - 20}
-            type="xp"
-          />
-          <FloatingNumber
-            number={harvestedAmount || 0}
-            x={floatingPosition.x}
-            y={floatingPosition.y + 20}
-            type="crop"
-            cropType={harvestedCropType!}
-          />
-        </>
-      )}
-
-      {showToast && (
-        <Toast
-          message="You need fertilizer to speed up growth! Visit the marketplace to buy some."
-          type="warning"
+    <>
+      {showLevelUpConfetti && <Confetti />}
+      <motion.div
+        ref={cellRef}
+        onClick={handleClick}
+        onDragOver={handleDragOver}
+        onDrop={handleDrop}
+        data-x={cell.x}
+        data-y={cell.y}
+        className={`
+          grid-cell
+          aspect-square rounded-xl relative
+          ${
+            isActionInProgress
+              ? "cursor-not-allowed opacity-50"
+              : "cursor-pointer"
+          }
+          ${
+            selectedFertilizer && isValidFertilizerTarget
+              ? "border-4 border-yellow-400 shadow-lg"
+              : ""
+          }
+          ${selectedFertilizer && !isValidFertilizerTarget ? "opacity-50" : ""}
+          ${
+            selectedSeed && !cell.plantedAt
+              ? "border-4 border-green-400 shadow-lg"
+              : ""
+          }
+          ${selectedSeed && cell.plantedAt ? "opacity-50" : ""}
+          ${!cell.plantedAt ? "drop-target" : ""}
+          ${isDragOver ? "dragover" : ""}
+          transition-all duration-200
+        `}
+        initial={false}
+        animate={{
+          scale: isReadyToHarvest ? [1, 1.02, 1] : 1,
+        }}
+        transition={{
+          duration: 1,
+          repeat: isReadyToHarvest ? Infinity : 0,
+          repeatType: "reverse",
+        }}
+      >
+        <CropSprite
+          crop={
+            cell.cropType
+              ? {
+                  type: cell.cropType as CropType,
+                  plantedAt: cell.plantedAt
+                    ? new Date(cell.plantedAt).getTime()
+                    : 0,
+                  readyToHarvest: !!isReadyToHarvest,
+                }
+              : undefined
+          }
         />
-      )}
-    </motion.div>
+
+        {/* Fertilizer Hover Effect */}
+        {selectedFertilizer && isValidFertilizerTarget && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="absolute inset-0 bg-yellow-400/20 rounded-lg flex items-center justify-center"
+          >
+            <span className="text-2xl">🧪</span>
+          </motion.div>
+        )}
+
+        {/* Seed Planting Hover Effect */}
+        {selectedSeed && !cell.plantedAt && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="absolute inset-0 bg-green-400/20 rounded-lg flex items-center justify-center"
+          >
+            <motion.img
+              src={`/images/${
+                state.items.find((item) => item.slug === selectedSeed)?.icon
+              }`}
+              alt={selectedSeed}
+              className="w-8 h-8 object-contain opacity-75"
+              animate={{ scale: [0.9, 1.1, 0.9] }}
+              transition={{ duration: 1.5, repeat: Infinity }}
+            />
+          </motion.div>
+        )}
+
+        {/* Floating Numbers */}
+        {showFloating && (
+          <>
+            <FloatingNumber
+              number={harvestedExp || 0}
+              x={floatingPosition.x}
+              y={floatingPosition.y - 20}
+              type="xp"
+            />
+            <FloatingNumber
+              number={harvestedAmount || 0}
+              x={floatingPosition.x}
+              y={floatingPosition.y + 20}
+              type="crop"
+              cropType={harvestedCropType!}
+            />
+          </>
+        )}
+
+        {showToast && (
+          <Toast
+            message="You need fertilizer to speed up growth! Visit the marketplace to buy some."
+            type="warning"
+          />
+        )}
+      </motion.div>
+    </>
   );
 }

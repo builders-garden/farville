@@ -1,4 +1,5 @@
 import { CROP_DATA } from "@/lib/game-constants";
+import { qstashPublishJSON } from "@/lib/qstash";
 import {
   getUserItemByItemId,
   getGridCell,
@@ -162,6 +163,35 @@ export const rewardUser = async (
   const roll = Math.random();
   const cropReward = roll < 0.6 ? 1 : roll < 0.9 ? 2 : 3;
   await addUserItem(fid, cropId, cropReward);
-  await updateUserXP(fid, xp);
-  return { xp, amount: cropReward };
+  const { didLevelUp, newLevel } = await updateUserXP(fid, xp);
+  return { xp, amount: cropReward, didLevelUp, newLevel };
 };
+
+export async function sendQuestsCalculation(
+  fid: number,
+  category: string,
+  itemId?: number,
+  itemAmount?: number
+) {
+  if (process.env.NEXT_PUBLIC_URL === "http://localhost:3000") {
+    return;
+  }
+
+  const questBody = {
+    fid,
+    category,
+    itemId,
+    itemAmount,
+  };
+
+  const res = await qstashPublishJSON({
+    url: `${process.env.NEXT_PUBLIC_URL}/api/qstash/quest`,
+    body: questBody,
+  });
+
+  console.log(
+    `[QSTASH-${new Date().toISOString()}] - sent quest calculation to QStash with id: ${
+      res.messageId
+    }`
+  );
+}

@@ -151,3 +151,86 @@ export const LEVEL_XP_THRESHOLDS = [
   19000, // Level 19
   21000, // Level 20
 ];
+
+export const LEVEL_REWARDS = [
+  {
+    // level 1
+    coins: 0,
+  },
+  {
+    // level 2
+    coins: 50,
+  },
+  {
+    // level 3
+    coins: 100,
+  },
+  {
+    // level 4
+    coins: 150,
+  },
+  {
+    // level 5
+    coins: 200,
+  },
+  {
+    // level 6
+    coins: 250,
+  },
+  {
+    // level 7
+    coins: 300,
+  },
+  {
+    // level 8
+    coins: 400,
+  },
+  {
+    // level 9
+    coins: 500,
+  },
+  {
+    // level 10
+    coins: 500,
+  },
+  {
+    // level 11
+    coins: 600,
+  },
+  {
+    // level 12
+    coins: 700,
+  },
+  {
+    // level 13
+    coins: 800,
+  },
+  {
+    // level 14
+    coins: 900,
+  },
+  {
+    // level 15
+    coins: 1000,
+  },
+  {
+    // level 16
+    coins: 1200,
+  },
+  {
+    // level 17
+    coins: 1300,
+  },
+  {
+    // level 18
+    coins: 1500,
+  },
+  {
+    // level 19
+    coins: 2000,
+  },
+  {
+    // level 20
+    coins: 3000,
+  },
+];

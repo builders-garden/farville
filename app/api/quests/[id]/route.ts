@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
   getQuestById,
+  getUser,
   getUserQuestById,
   updateUserCoins,
   updateUserQuest,
@@ -43,6 +44,10 @@ export async function POST(
   if (!fid) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+  const user = await getUser(Number(fid));
+  if (!user) {
+    return NextResponse.json({ error: "User not found" }, { status: 404 });
+  }
   const userQuest = await getUserQuestById(Number(fid), Number(id));
   if (!userQuest) {
     return NextResponse.json(
@@ -51,17 +56,21 @@ export async function POST(
     );
   }
   await updateUserQuest(Number(fid), Number(id), { status });
+  let didLevelUp = false;
   if (status === "claimed") {
-    await Promise.all([
-      userQuest.quest.coins &&
-        updateUserCoins(Number(fid), userQuest.quest.coins),
-      userQuest.quest.xp && updateUserXP(Number(fid), userQuest.quest.xp),
-    ]);
+    if (userQuest.quest.coins) {
+      await updateUserCoins(Number(fid), user.coins + userQuest.quest.coins);
+    }
+    if (userQuest.quest.xp) {
+      const xp = await updateUserXP(Number(fid), userQuest.quest.xp);
+      didLevelUp = xp.didLevelUp;
+    }
     trackEvent(Number(fid), "claimed-quest", {
       questId: Number(id),
       status: status,
+      didLevelUp,
     });
   }
-  
-  return NextResponse.json({ success: true, status });
+
+  return NextResponse.json({ success: true, status, didLevelUp });
 }

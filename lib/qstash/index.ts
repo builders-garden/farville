@@ -12,7 +12,7 @@ const qstashClient = new Client({
 export type QStashPublishJSONRequest = {
   url: string;
   body: {
-    [key: string]: string; // TODO: this will be replaced with the actual type
+    [key: string]: string | number | undefined; // TODO: this will be replaced with the actual type
   };
   headers?: {
     [key: string]: string;
@@ -36,7 +36,10 @@ export const qstashPublishJSON = async (req: QStashPublishJSONRequest) => {
   return res;
 };
 
-export const validateQstashRequest = async (upstashSignature: string, path: string) => {
+export const validateQstashRequest = async (
+  upstashSignature: string,
+  path: string
+) => {
   // verify the signature
   if (!upstashSignature) {
     console.error(
