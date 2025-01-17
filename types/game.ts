@@ -121,5 +121,7 @@ export interface HarvestResponse {
   rewards: {
     xp: number;
     amount: number;
+    didLevelUp: boolean;
+    newLevel?: number;
   };
 }

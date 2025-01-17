@@ -18,6 +18,8 @@ import {
   InsertDbUserHasQuest,
   DbUserHasQuestStatus,
 } from "./types";
+import { LEVEL_REWARDS, LEVEL_XP_THRESHOLDS } from "@/lib/game-constants";
+import { trackEvent } from "@/lib/posthog/server";
 
 // Items queries
 export const getItems = async (category?: string): Promise<DbItem[]> => {
@@ -102,21 +104,45 @@ export const updateUser = async (
 export const updateUserXP = async (
   fid: number,
   xp: number
-): Promise<DbUser> => {
+): Promise<{
+  user: DbUser;
+  didLevelUp: boolean;
+  newXP: number;
+  newLevel: number;
+}> => {
   const { data: currentUser } = await supabase
     .from("users")
-    .select("xp")
+    .select("xp,coins")
     .eq("fid", fid)
     .single();
+  const currentXP = currentUser?.xp || 0;
+  const newXP = currentXP + xp;
+  const currentLevel = LEVEL_XP_THRESHOLDS.findIndex(
+    (threshold) => currentXP < threshold
+  );
+  const newLevel = LEVEL_XP_THRESHOLDS.findIndex(
+    (threshold) => newXP < threshold
+  );
+  const didLevelUp = newLevel > currentLevel;
+
   const { data, error } = await supabase
     .from("users")
-    .update({ xp: (currentUser?.xp || 0) + xp })
+    .update({ xp: newXP })
     .eq("fid", fid)
     .select()
     .single();
 
+  if (didLevelUp) {
+    const levelReward = LEVEL_REWARDS[newLevel - 1];
+    await updateUserCoins(fid, currentUser?.coins + levelReward.coins);
+    trackEvent(fid, "leveled-up", {
+      xp: newXP,
+      level: newLevel,
+    });
+  }
+
   if (error) throw error;
-  return data;
+  return { user: data, didLevelUp, newXP: newXP, newLevel: newLevel };
 };
 
 export const updateUserCoins = async (

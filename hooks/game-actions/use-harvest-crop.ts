@@ -7,6 +7,8 @@ interface HarvestResponse {
   rewards: {
     xp: number;
     amount: number;
+    didLevelUp: boolean;
+    newLevel?: number;
   };
 }
 
@@ -32,11 +34,14 @@ export const useHarvestCrop = ({
       if (isActionInProgress) return;
       setIsActionInProgress(true);
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       refetchGridCells();
       refetchUserItems();
       refetchUser();
       playSound("harvest");
+      if (data.rewards.didLevelUp) {
+        playSound("levelUp");
+      }
     },
     onSettled: () => {
       setIsActionInProgress(false);

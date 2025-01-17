@@ -210,3 +210,15 @@ body.dragging {
   animation: pulse-border 1s infinite;
   background-color: rgba(234, 179, 8, 0.2);
 }
+
+@keyframes fadeOut {
+  0% {
+    opacity: 1;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
