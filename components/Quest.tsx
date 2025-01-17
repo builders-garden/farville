@@ -10,7 +10,12 @@ import Image from "next/image";
 interface QuestProps {
   quest: DbUserHasQuestWithQuest;
   claimable: boolean;
-  onClaim?: (questId: number, x: number, y: number, didLevelUp: boolean) => void;
+  onClaim?: (
+    questId: number,
+    x: number,
+    y: number,
+    didLevelUp: boolean
+  ) => void;
 }
 
 const renderQuestRewards = (quest: DbQuest) => (
@@ -101,7 +106,7 @@ export default function Quest({
   claimable = false,
   onClaim,
 }: QuestProps) {
-  const { mutate: updateUserQuest } = useUpdateUserQuest();
+  const { mutate: updateUserQuest, isPending } = useUpdateUserQuest();
   return (
     <motion.div
       key={quest.id}
@@ -186,6 +191,7 @@ export default function Quest({
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
+            disabled={isPending}
             onClick={(e) => {
               const rect = e.currentTarget.getBoundingClientRect();
               const x = rect.x + rect.width / 2;
