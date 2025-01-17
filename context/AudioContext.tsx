@@ -49,6 +49,7 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
   });
   const audioRefs = useRef<{ [key: string]: HTMLAudioElement }>({});
   const musicRef = useRef<HTMLAudioElement | null>(null);
+  const [hasInteracted, setHasInteracted] = useState(false);
 
   useEffect(() => {
     if (!musicRef.current) {
@@ -57,6 +58,25 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
       musicRef.current.volume = 0.05;
     }
   }, []);
+
+  useEffect(() => {
+    const handleFirstInteraction = () => {
+      if (!hasInteracted) {
+        startBackgroundMusic();
+        setHasInteracted(true);
+        document.removeEventListener("click", handleFirstInteraction);
+        document.removeEventListener("touchstart", handleFirstInteraction);
+      }
+    };
+
+    document.addEventListener("click", handleFirstInteraction);
+    document.addEventListener("touchstart", handleFirstInteraction);
+
+    return () => {
+      document.removeEventListener("click", handleFirstInteraction);
+      document.removeEventListener("touchstart", handleFirstInteraction);
+    };
+  }, [hasInteracted]);
 
   const initAudio = () => {
     audioRefs.current = {

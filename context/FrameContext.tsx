@@ -38,7 +38,10 @@ export const useFrameContext = () => {
     if (sdk && !isSDKLoaded) {
       load().then(() => {
         setIsSDKLoaded(true);
-        if (!context?.client.added) {
+        if (
+          !context?.client.added &&
+          !process.env.NEXT_PUBLIC_URL?.includes("localhost")
+        ) {
           sdk.actions.addFrame();
         }
       });
