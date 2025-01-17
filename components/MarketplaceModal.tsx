@@ -45,7 +45,7 @@ export default function MarketplaceModal({
   const tabs: { id: Tab; label: string; icon: string }[] = [
     { id: "seeds", label: "Seeds", icon: "🌱" },
     { id: "crops", label: "Crops", icon: "🌾" },
-    { id: "perks", label: "Perks", icon: "✨" },
+    // { id: "perks", label: "Perks", icon: "✨" },
     { id: "expansions", label: "Expand", icon: "🗺️" },
   ];
 
