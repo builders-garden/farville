@@ -38,7 +38,7 @@ export const useFrameContext = () => {
     if (sdk && !isSDKLoaded) {
       load().then(() => {
         setIsSDKLoaded(true);
-        if (context?.client.added) {
+        if (!context?.client.added) {
           sdk.actions.addFrame();
         }
       });
