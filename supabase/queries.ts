@@ -75,6 +75,32 @@ export const getUser = async (fid: number): Promise<DbUser | null> => {
   return data;
 };
 
+export const getUsers = async (
+  filter: Partial<DbUser> = {},
+  range?: [number, number]
+): Promise<DbUser[]> => {
+  const query = supabase
+    .from("users")
+    .select("*")
+    .neq("notificationDetails", null)
+    .neq("notificationDetails", "");
+
+  // Apply filters from the filter object
+  Object.entries(filter).forEach(([key, value]) => {
+    if (value !== undefined) {
+      query.eq(key, value);
+    }
+  });
+
+  query.order("fid", { ascending: true });
+  query.range(range?.[0] || 0, range?.[1] || 100);
+
+  const { data, error } = await query;
+
+  if (error) throw error;
+  return data;
+};
+
 export const createUser = async (user: InsertDbUser): Promise<DbUser> => {
   const { data, error } = await supabase
     .from("users")
@@ -149,7 +175,6 @@ export const updateUserCoins = async (
   fid: number,
   coins: number
 ): Promise<DbUser> => {
-  
   const { data, error } = await supabase
     .from("users")
     .update({ coins })
