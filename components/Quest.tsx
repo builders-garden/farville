@@ -81,6 +81,10 @@ const questDescription = (quest: DbQuestWithItem) => {
       start = "Sell";
       end = "crops";
       break;
+    case "receive":
+      start = "Receive";
+      end = "items";
+      break;
     default:
       start = "Complete";
       end = "the quest";
