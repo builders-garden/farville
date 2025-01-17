@@ -8,11 +8,96 @@ import FloatingNumber from "./animations/FloatingNumber";
 import { useState, useRef } from "react";
 import { DbGridCell } from "@/supabase/types";
 import { CROP_DATA } from "@/lib/game-constants";
-import Toast from "./animations/Toast";
 import Confetti from "./animations/Confetti";
+import { createPortal } from "react-dom";
 
 interface GridCellProps {
   cell: DbGridCell;
+}
+
+interface SeedDetailPopupProps {
+  cell: DbGridCell;
+  onFertilize: () => void;
+  hasFertilizer: boolean;
+  onClose: () => void;
+}
+
+function SeedDetailPopup({
+  cell,
+  onFertilize,
+  hasFertilizer,
+  onClose,
+}: SeedDetailPopupProps) {
+  const { state } = useGame();
+  const seedData = state.items.find(
+    (seed) => seed.slug === `${cell.cropType}-seeds`
+  );
+  const cropData = CROP_DATA[cell.cropType as CropType];
+  const plantedAt = new Date(cell.plantedAt!);
+  const timeLeft = Math.max(
+    0,
+    (plantedAt.getTime() + cropData.growthTime - Date.now()) / 1000
+  );
+  const minutesLeft = Math.ceil(timeLeft / 60);
+
+  return createPortal(
+    <motion.div
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.9 }}
+      className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+      onClick={onClose}
+    >
+      <div
+        className="bg-[#7E4E31] p-6 rounded-lg max-w-sm w-full mx-4 border-2 border-[#8B5E3C] relative"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onClose();
+          }}
+          className="absolute top-2 right-2 text-white/80 hover:text-white text-xl font-bold"
+        >
+          ×
+        </button>
+
+        <div className="flex items-center gap-4 mb-4">
+          <img
+            src={`/images${seedData?.icon}`}
+            alt={seedData?.name}
+            className="w-9 h-9 object-contain"
+          />
+          <h3 className="text-white/90 font-bold text-xl">{seedData?.name}</h3>
+        </div>
+
+        <div className="space-y-3 text-white/80 text-xs">
+          <p>Growth Time: {cropData.growthTime / 1000 / 60} minutes</p>
+          <p>Planted at: {plantedAt.toLocaleTimeString()}</p>
+          {!cell.isReadyToHarvest && (
+            <p>Harvest at: {minutesLeft} minutes</p>
+          )}
+          {cell.isReadyToHarvest && (
+            <p className="text-[#FFB938] font-medium">Ready to harvest!</p>
+          )}
+        </div>
+
+        {!cell.isReadyToHarvest && hasFertilizer && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onFertilize();
+            }}
+            className="w-full mt-4 bg-[#FFB938] text-[#7E4E31] py-2 px-4 rounded-lg font-bold 
+                     hover:bg-[#ffc661] transition-colors"
+          >
+            Fertilize
+          </button>
+        )}
+      </div>
+    </motion.div>,
+    document.body
+  );
 }
 
 export default function GridCell({ cell }: GridCellProps) {
@@ -34,8 +119,8 @@ export default function GridCell({ cell }: GridCellProps) {
   );
   const cellRef = useRef<HTMLDivElement>(null);
   const [isDragOver] = useState(false);
-  const [showToast, setShowToast] = useState(false);
   const [showLevelUpConfetti, setShowLevelUpConfetti] = useState(false);
+  const [showPopup, setShowPopup] = useState(false);
 
   const isReadyToHarvest =
     cell.isReadyToHarvest ||
@@ -48,6 +133,10 @@ export default function GridCell({ cell }: GridCellProps) {
 
   const { state } = useGame();
 
+  const hasFertilizer = state.inventory.some(
+    (item) => item.item.slug === "fertilizer"
+  );
+
   const handleClick = async () => {
     if (isActionInProgress) return;
 
@@ -58,34 +147,7 @@ export default function GridCell({ cell }: GridCellProps) {
     }
 
     if (cell.plantedAt && !isReadyToHarvest) {
-      const hasFertilizer = state.inventory.find(
-        (item) => item.item.slug === "fertilizer"
-      );
-
-      if (hasFertilizer) {
-        setSelectedFertilizer({
-          itemId: 9,
-          quantity: 1,
-          userFid: state.user.fid,
-          id: 9,
-          item: {
-            id: 9,
-            name: "Fertilizer",
-            icon: "fertilizer.png",
-            description: "Fertilizer",
-            category: "fertilizer",
-            buyPrice: 0,
-            sellPrice: 0,
-            createdAt: new Date().toISOString(),
-            requiredLevel: 1,
-            slug: "fertilizer",
-          },
-          createdAt: new Date().toISOString(),
-        });
-      } else {
-        setShowToast(true);
-        setTimeout(() => setShowToast(false), 5000);
-      }
+      setShowPopup(true);
       return;
     }
 
@@ -150,6 +212,13 @@ export default function GridCell({ cell }: GridCellProps) {
     }
   };
 
+  const handleFertilize = async () => {
+    if (hasFertilizer) {
+      await fertilize({ x: cell.x, y: cell.y });
+      setShowPopup(false);
+    }
+  };
+
   return (
     <>
       {showLevelUpConfetti && <Confetti />}
@@ -194,6 +263,15 @@ export default function GridCell({ cell }: GridCellProps) {
           repeatType: "reverse",
         }}
       >
+        {showPopup && cell.plantedAt && !isReadyToHarvest && (
+          <SeedDetailPopup
+            cell={cell}
+            onFertilize={handleFertilize}
+            hasFertilizer={hasFertilizer}
+            onClose={() => setShowPopup(false)}
+          />
+        )}
+
         <CropSprite
           crop={
             cell.cropType
@@ -255,13 +333,6 @@ export default function GridCell({ cell }: GridCellProps) {
               cropType={harvestedCropType!}
             />
           </>
-        )}
-
-        {showToast && (
-          <Toast
-            message="You need fertilizer to speed up growth! Visit the marketplace to buy some."
-            type="warning"
-          />
         )}
       </motion.div>
     </>
