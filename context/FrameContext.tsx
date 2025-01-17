@@ -27,7 +27,6 @@ export const useFrameContext = () => {
           setError("Failed to load Farcaster context");
         }
         await sdk.actions.ready();
-        await sdk.actions.addFrame();
       } catch (err) {
         setError(
           err instanceof Error ? err.message : "Failed to initialize SDK"
@@ -39,6 +38,9 @@ export const useFrameContext = () => {
     if (sdk && !isSDKLoaded) {
       load().then(() => {
         setIsSDKLoaded(true);
+        if (context?.client.added) {
+          sdk.actions.addFrame();
+        }
       });
     }
   }, [isSDKLoaded]);
