@@ -5,10 +5,6 @@ import { useAudio } from "../context/AudioContext";
 import Image from "next/image";
 export default function SettingsModal({ onClose }: { onClose: () => void }) {
   const {
-    volume,
-    setVolume,
-    musicVolume,
-    setMusicVolume,
     toggleMusic,
     isMusicPlaying,
     isSoundEnabled,
@@ -77,7 +73,7 @@ export default function SettingsModal({ onClose }: { onClose: () => void }) {
               </div>
 
               <div className="mt-5 space-y-4">
-                <div className="space-y-2.5">
+                {/* <div className="space-y-2.5">
                   <div className="flex justify-between items-center">
                     <p className="text-white/60 text-sm font-medium">Volume</p>
                     <p className="text-white/90 text-sm font-semibold">
@@ -103,7 +99,7 @@ export default function SettingsModal({ onClose }: { onClose: () => void }) {
                     className="w-full accent-[#FFB938] h-2 rounded-lg appearance-none bg-[#5c4121]"
                     disabled={!isSoundEnabled}
                   />
-                </div>
+                </div> */}
 
                 <motion.button
                   whileHover={{ scale: 1.03 }}
@@ -153,7 +149,7 @@ export default function SettingsModal({ onClose }: { onClose: () => void }) {
               </div>
 
               <div className="mt-5 space-y-4">
-                <div className="space-y-2.5">
+                {/* <div className="space-y-2.5">
                   <div className="flex justify-between items-center">
                     <p className="text-white/60 text-sm font-medium">Volume</p>
                     <p className="text-white/90 text-sm font-semibold">
@@ -179,7 +175,7 @@ export default function SettingsModal({ onClose }: { onClose: () => void }) {
                     className="w-full accent-[#FFB938] h-2 rounded-lg appearance-none bg-[#5c4121]"
                     disabled={!isMusicPlaying}
                   />
-                </div>
+                </div> */}
 
                 <motion.button
                   whileHover={{ scale: 1.03 }}
