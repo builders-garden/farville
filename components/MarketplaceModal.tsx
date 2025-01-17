@@ -232,15 +232,22 @@ export default function MarketplaceModal({
                               key={amount}
                               whileHover={{ scale: 1.03 }}
                               whileTap={{ scale: 0.97 }}
-                              onClick={() =>
-                                setConfirmAction({
-                                  type: "buy",
-                                  itemId: item.id,
-                                  quantity: amount,
-                                  itemName: item.name,
-                                  price: item.buyPrice * amount,
-                                })
-                              }
+                              onClick={() => {
+                                if (amount >= 5) {
+                                  setConfirmAction({
+                                    type: "buy",
+                                    itemId: item.id,
+                                    quantity: amount,
+                                    itemName: item.name,
+                                    price: item.buyPrice * amount,
+                                  });
+                                } else {
+                                  buyItem({
+                                    itemId: item.id,
+                                    quantity: amount,
+                                  });
+                                }
+                              }}
                               disabled={state.coins < item.buyPrice * amount}
                               className="min-w-[70px] px-2 py-1.5 bg-[#2B593B] text-white/90 rounded hover:bg-[#346344] 
                                     transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-sm font-medium
@@ -313,15 +320,22 @@ export default function MarketplaceModal({
                               key={sellAmount}
                               whileHover={{ scale: 1.03 }}
                               whileTap={{ scale: 0.97 }}
-                              onClick={() =>
-                                setConfirmAction({
-                                  type: "sell",
-                                  itemId: item.id,
-                                  quantity: sellAmount,
-                                  itemName: item.name,
-                                  price: item.sellPrice * sellAmount,
-                                })
-                              }
+                              onClick={() => {
+                                if (sellAmount >= 5) {
+                                  setConfirmAction({
+                                    type: "sell",
+                                    itemId: item.id,
+                                    quantity: sellAmount,
+                                    itemName: item.name,
+                                    price: item.sellPrice * sellAmount,
+                                  });
+                                } else {
+                                  sellItem({
+                                    itemId: item.id,
+                                    quantity: sellAmount,
+                                  });
+                                }
+                              }}
                               disabled={amount < sellAmount}
                               className="min-w-[70px] px-2 py-1.5 bg-[#2B593B] text-white/90 rounded hover:bg-[#346344] 
                                      transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-xs font-medium
