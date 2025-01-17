@@ -40,7 +40,10 @@ export const POST = async (
     await incrementRequestFilledQuantity(Number(requestId), quantity);
   }
 
-  await sendQuestsCalculation(Number(fid), "donate", itemId, quantity);
+  await Promise.all([
+    sendQuestsCalculation(Number(fid), "donate", itemId, quantity),
+    sendQuestsCalculation(Number(toFid), "receive", itemId, quantity)
+  ]);
 
   trackEvent(Number(fid), "donated-item", {
     itemId: itemId,
