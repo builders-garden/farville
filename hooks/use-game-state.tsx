@@ -5,6 +5,7 @@ import { DbGridCell, DbItem, DbUser } from "@/supabase/types";
 import { useItems } from "./use-items";
 import { getCurrentLevelAndProgress } from "@/lib/utils";
 import { useUserMe } from "./use-user-me";
+import { useUserQuests } from "./use-quests";
 
 export interface GameState {
   coins: number;
@@ -22,6 +23,7 @@ export interface GameState {
   items: DbItem[];
   inventory: UserItem[];
   user: DbUser;
+  claimableQuests?: boolean
 }
 
 export const useGameState = () => {
@@ -38,6 +40,11 @@ export const useGameState = () => {
     refetch: refetchGrid,
   } = useGridCells();
   const { items, isLoading: itemsLoading, refetch: refetchItems } = useItems();
+  const {
+    quests: claimableQuests,
+    isLoading: claimableQuestsLoading,
+    refetch: refetchClaimableQuests,
+  } = useUserQuests(state?.user?.fid, "completed");
 
   const updateState = useCallback(() => {
     if (userItems && items && user && gridCells) {
@@ -62,6 +69,11 @@ export const useGameState = () => {
         items: items,
         inventory: userItems,
         user: user,
+        claimableQuests:
+          (claimableQuests?.daily?.length ?? 0) > 0 ||
+          (claimableQuests?.weekly?.length ?? 0) > 0 ||
+          (claimableQuests?.monthly?.length ?? 0) > 0 ||
+          (claimableQuests?.farmer?.length ?? 0) > 0,
       });
     }
   }, [userItems, items, user, gridCells]);
@@ -76,14 +88,15 @@ export const useGameState = () => {
       refetchUser(),
       refetchGrid(),
       refetchItems(),
+      refetchClaimableQuests(),
     ]);
     updateState();
-  }, [refetchUserItems, refetchUser, refetchGrid, refetchItems, updateState]);
+  }, [refetchUserItems, refetchUser, refetchGrid, refetchItems, refetchClaimableQuests, updateState]);
 
   return {
     state,
     loading:
-      userItemsLoading || itemsLoading || userLoading || gridCellsLoading,
+      userItemsLoading || itemsLoading || userLoading || gridCellsLoading || claimableQuestsLoading,
     refetch: {
       all: refetchAll,
       userItems: async () => {
@@ -100,6 +113,10 @@ export const useGameState = () => {
       },
       grid: async () => {
         await refetchGrid();
+        updateState();
+      },
+      claimableQuests: async () => {
+        await refetchClaimableQuests();
         updateState();
       },
     },

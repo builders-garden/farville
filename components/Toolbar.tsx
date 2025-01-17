@@ -15,6 +15,7 @@ export default function Toolbar({
     setShowSettings,
     setShowLeaderboard,
     setShowQuests,
+    state,
   } = useGame();
 
   return (
@@ -52,7 +53,12 @@ export default function Toolbar({
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => setShowQuests(true)}
-            className="w-12 h-12 rounded-lg flex items-center justify-center bg-[#8B5E3C] hover:bg-[#6d4c2c] transition-colors"
+            className={`w-12 h-12 rounded-lg flex items-center justify-center transition-colors
+              ${
+                state.claimableQuests
+                  ? "bg-[#A17449] shadow-lg shadow-[#A17449]/50 animate-pulse"
+                  : "bg-[#8B5E3C] hover:bg-[#6d4c2c]"
+              }`}
           >
             <Image
               src="/images/icons/quests.png"
@@ -61,7 +67,15 @@ export default function Toolbar({
               height={24}
             />
           </motion.button>
-          <span className="text-[6px] text-white mt-1">Quests</span>
+          <span
+            className={`text-[6px] mt-1 ${
+              state.claimableQuests || true
+                ? "text-white drop-shadow-[0_0_3px_rgba(255,255,255,0.7)]"
+                : "text-white"
+            }`}
+          >
+            Quests
+          </span>
         </div>
 
         <div className="flex flex-col items-center w-[48px]">

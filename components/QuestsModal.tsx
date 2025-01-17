@@ -15,7 +15,11 @@ export default function QuestsModal({ onClose }: { onClose: () => void }) {
   const { safeAreaInsets } = useFrameContext();
   const [activeTab, setActiveTab] = useState<Tab>("active");
   const [activeSubTab, setActiveSubTab] = useState<SubTab>("daily");
-  const { state, refetchUser } = useGame();
+  const {
+    state,
+    refetchUser,
+    refetchClaimableQuests: refetchClaimableQuestsState,
+  } = useGame();
   const { quests, isLoading: isLoadingActiveQuests } = useUserQuests(
     state?.user?.fid,
     "incomplete"
@@ -48,7 +52,7 @@ export default function QuestsModal({ onClose }: { onClose: () => void }) {
     coins?: number;
   } | null>(null);
 
-  const handleQuestClaim = (questId: number, x: number, y: number) => {
+  const handleQuestClaim = async (questId: number, x: number, y: number) => {
     const quest = [
       ...(claimableQuests?.daily || []),
       ...(claimableQuests?.weekly || []),
@@ -67,6 +71,7 @@ export default function QuestsModal({ onClose }: { onClose: () => void }) {
 
       setTimeout(() => setRewardAnimation(null), 5000);
       refetchClaimableQuests();
+      refetchClaimableQuestsState();
       refetchUser();
     }
   };
