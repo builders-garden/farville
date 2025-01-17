@@ -3,6 +3,7 @@
 import { useGame } from "../context/GameContext";
 import Image from "next/image";
 import { motion } from "framer-motion";
+import { trackEvent } from "../lib/posthog/client";
 
 export default function Toolbar({
   safeAreaInsets,
@@ -34,7 +35,10 @@ export default function Toolbar({
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            onClick={() => setShowMarket(true)}
+            onClick={() => {
+              trackEvent("open_market", {});
+              setShowMarket(true);
+            }}
             data-tutorial="marketplace"
             className="w-12 h-12 rounded-lg flex items-center justify-center bg-[#8B5E3C] hover:bg-[#6d4c2c] transition-colors"
           >
@@ -52,7 +56,10 @@ export default function Toolbar({
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            onClick={() => setShowQuests(true)}
+            onClick={() => {
+              trackEvent("open_quests", {});
+              setShowQuests(true);
+            }}
             className={`w-12 h-12 rounded-lg flex items-center justify-center transition-colors
               ${
                 state.claimableQuests
@@ -82,7 +89,10 @@ export default function Toolbar({
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            onClick={() => setShowLeaderboard(true)}
+            onClick={() => {
+              trackEvent("open_leaderboard", {});
+              setShowLeaderboard(true);
+            }}
             className="w-12 h-12 rounded-lg flex items-center justify-center bg-[#8B5E3C] hover:bg-[#6d4c2c] transition-colors"
           >
             <Image
@@ -97,7 +107,10 @@ export default function Toolbar({
 
         <div className="flex flex-col items-center w-[48px]">
           <motion.button
-            onClick={() => setShowInventory(true)}
+            onClick={() => {
+              trackEvent("open_inventory", {});
+              setShowInventory(true);
+            }}
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.95 }}
             className="relative w-12 h-12 rounded-lg flex items-center justify-center bg-[#8B5E3C] hover:bg-[#6d4c2c] transition-colors"
@@ -116,7 +129,10 @@ export default function Toolbar({
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            onClick={() => setShowSettings(true)}
+            onClick={() => {
+              trackEvent("open_settings", {});
+              setShowSettings(true);
+            }}
             className="w-12 h-12 rounded-lg flex items-center justify-center bg-[#8B5E3C] hover:bg-[#6d4c2c] transition-colors"
           >
             <Image
