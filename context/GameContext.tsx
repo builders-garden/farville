@@ -89,10 +89,8 @@ export function GameProvider({
     setIsActionInProgress,
     isActionInProgress,
     onSuccess: () => {
-      const seed = state?.seeds.find(
-        (seed) => seed.item.slug === selectedSeed
-      );
-      if (!seed || seed?.quantity === 0) {
+      const seed = state?.seeds.find((seed) => seed.item.slug === selectedSeed);
+      if (!seed || seed?.quantity === 1 || seed?.quantity === 0) {
         setSelectedSeed(null);
       }
     },
