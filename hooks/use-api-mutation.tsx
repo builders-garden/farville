@@ -25,15 +25,14 @@ export const useApiMutation = <TData, TVariables = unknown>(
     mutationFn: async (variables) => {
       const token = localStorage.getItem("token");
       const resolvedUrl = typeof url === "function" ? url(variables) : url;
-      const resolvedBody = options.body ? options.body(variables) : variables;
-
+      const resolvedBody = options.body ? options.body(variables) : null;
       const response = await fetch(resolvedUrl, {
         method,
         headers: {
           "Content-Type": "application/json",
           ...(isProtected && { Authorization: `Bearer ${token}` }),
         },
-        body: JSON.stringify(resolvedBody),
+        ...(resolvedBody ? { body: JSON.stringify(resolvedBody) } : {}),
       });
 
       if (!response.ok) {

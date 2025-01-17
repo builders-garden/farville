@@ -8,6 +8,7 @@ import FloatingNumber from "./animations/FloatingNumber";
 import { useState, useRef } from "react";
 import { DbGridCell } from "@/supabase/types";
 import { CROP_DATA } from "@/lib/game-constants";
+import Toast from "./animations/Toast";
 
 interface GridCellProps {
   cell: DbGridCell;
@@ -32,6 +33,7 @@ export default function GridCell({ cell }: GridCellProps) {
   );
   const cellRef = useRef<HTMLDivElement>(null);
   const [isDragOver] = useState(false);
+  const [showToast, setShowToast] = useState(false);
 
   const isReadyToHarvest =
     cell.isReadyToHarvest ||
@@ -54,25 +56,34 @@ export default function GridCell({ cell }: GridCellProps) {
     }
 
     if (cell.plantedAt && !isReadyToHarvest) {
-      setSelectedFertilizer({
-        itemId: 9,
-        quantity: 1,
-        userFid: state.user.fid,
-        id: 9,
-        item: {
+      const hasFertilizer = state.inventory.find(
+        (item) => item.item.slug === "fertilizer"
+      );
+
+      if (hasFertilizer) {
+        setSelectedFertilizer({
+          itemId: 9,
+          quantity: 1,
+          userFid: state.user.fid,
           id: 9,
-          name: "Fertilizer",
-          icon: "fertilizer.png",
-          description: "Fertilizer",
-          category: "fertilizer",
-          buyPrice: 0,
-          sellPrice: 0,
+          item: {
+            id: 9,
+            name: "Fertilizer",
+            icon: "fertilizer.png",
+            description: "Fertilizer",
+            category: "fertilizer",
+            buyPrice: 0,
+            sellPrice: 0,
+            createdAt: new Date().toISOString(),
+            requiredLevel: 1,
+            slug: "fertilizer",
+          },
           createdAt: new Date().toISOString(),
-          requiredLevel: 1,
-          slug: "fertilizer",
-        },
-        createdAt: new Date().toISOString(),
-      });
+        });
+      } else {
+        setShowToast(true);
+        setTimeout(() => setShowToast(false), 5000);
+      }
       return;
     }
 
@@ -233,6 +244,13 @@ export default function GridCell({ cell }: GridCellProps) {
             cropType={harvestedCropType!}
           />
         </>
+      )}
+
+      {showToast && (
+        <Toast
+          message="You need fertilizer to speed up growth! Visit the marketplace to buy some."
+          type="warning"
+        />
       )}
     </motion.div>
   );
