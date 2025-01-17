@@ -76,9 +76,14 @@ export function PlantedCropSprite({ crop, isDemo }: CropSpriteProps) {
     const elapsed = Date.now() - plantedAt;
     const remaining = Math.max(growthTime - elapsed, 0);
 
-    return formatDistanceStrict(0, remaining, {
-      unit: remaining > 3600000 ? "hour" : "minute",
-    });
+    if (remaining > 3600000) {
+      // If more than 1 hour
+      const hours = Math.floor(remaining / 3600000);
+      const minutes = Math.floor((remaining % 3600000) / 60000);
+      return `${hours}h ${minutes}m`;
+    }
+
+    return formatDistanceStrict(0, remaining, { unit: "minute" });
   };
 
   return (
