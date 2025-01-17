@@ -226,7 +226,7 @@ export interface Database {
           id: number;
           fid: number;
           questId: number;
-          status: "incomplete" | "complete";
+          status: "incomplete" | "completed" | "claimed";
           completedAt: string | null;
           createdAt: string;
           progress: number;
@@ -235,7 +235,7 @@ export interface Database {
           id?: number;
           fid: number;
           questId: number;
-          status?: "incomplete" | "complete";
+          status?: "incomplete" | "completed" | "claimed";
           completedAt?: string | null;
           createdAt?: string;
           progress?: number;
@@ -244,7 +244,7 @@ export interface Database {
           id?: number;
           fid?: number;
           questId?: number;
-          status?: "incomplete" | "complete";
+          status?: "incomplete" | "completed" | "claimed";
           completedAt?: string | null;
           createdAt?: string;
           progress?: number;
