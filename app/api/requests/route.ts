@@ -9,8 +9,6 @@ const requestSchema = z.object({
 });
 
 export const POST = async (request: NextRequest) => {
-  console.log("REQUEST", request);
-
   const requestJson = await request.json();
   const requestBody = requestSchema.safeParse(requestJson);
 
