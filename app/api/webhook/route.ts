@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
         await sendFrameNotification({
           fid,
           title: "Welcome to FarVille 🧑‍🌾",
-          body: "The 1st farming season will begin in January 2025!",
+          body: "Plant, grow, and harvest your crops to earn rewards!",
         });
       } else {
         await deleteUserNotificationDetails(fid);
