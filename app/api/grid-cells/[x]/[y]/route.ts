@@ -66,7 +66,7 @@ export async function POST(
       );
       await sendQuestsCalculation(parseInt(fid), "plant", plantedItem.id);
       trackEvent(Number(fid), "planted-seed", {
-        seedType: plantedItem.id,
+        seedId: plantedItem.id,
         cropType: plantedItem.slug.replace("-seeds", ""),
         cellId: `${x}/${y}`,
       });
