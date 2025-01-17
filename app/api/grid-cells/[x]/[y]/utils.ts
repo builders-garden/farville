@@ -90,6 +90,7 @@ export const fertilize = async (fid: number, x: number, y: number) => {
   }
   await fertilizeGridCell(fid, x, y);
   await removeUserItem(fid, fertilizer.id, 1);
+  return gridCell
 };
 
 export const rewardUser = async (

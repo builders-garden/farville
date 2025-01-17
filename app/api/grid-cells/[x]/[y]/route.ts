@@ -67,7 +67,7 @@ export async function POST(
       await sendQuestsCalculation(parseInt(fid), "plant", plantedItem.id);
       trackEvent(Number(fid), "planted-seed", {
         seedType: plantedItem.id,
-        cropSlug: plantedItem.slug,
+        cropType: plantedItem.slug.replace("-seeds", ""),
         cellId: `${x}/${y}`,
       });
       break;
@@ -88,15 +88,16 @@ export async function POST(
       };
       trackEvent(Number(fid), "harvested-crop", {
         cropId: harvestResult.crop.id,
-        cropSlug: harvestResult.crop.slug,
+        cropType: harvestResult.crop.slug,
         cellId: `${x}/${y}`,
       });
       break;
     case "fertilize":
-      await fertilize(parseInt(fid), parseInt(x), parseInt(y));
+      const cell = await fertilize(parseInt(fid), parseInt(x), parseInt(y));
       await sendQuestsCalculation(parseInt(fid), "fertilize", 9);
       trackEvent(Number(fid), "fertilized-cell", {
         cellId: `${x}/${y}`,
+        cropType: cell?.cropType
       });
       break;
   }
