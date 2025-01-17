@@ -1,4 +1,4 @@
-import { calculateUserQuestsProgress } from "@/app/api/grid-cells/[x]/[y]/utils";
+import { sendQuestsCalculation } from "@/app/api/grid-cells/[x]/[y]/utils";
 import { trackEvent } from "@/lib/posthog/server";
 import {
   getItemById,
@@ -40,12 +40,7 @@ export const POST = async (
     await incrementRequestFilledQuantity(Number(requestId), quantity);
   }
 
-  await calculateUserQuestsProgress(
-    Number(fid),
-    "donate",
-    Number(itemId),
-    Number(quantity)
-  );
+  await sendQuestsCalculation(Number(fid), "donate", itemId, quantity);
 
   trackEvent(Number(fid), "donated-item", {
     itemId: itemId,

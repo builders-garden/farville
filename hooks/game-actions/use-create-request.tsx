@@ -17,6 +17,10 @@ export const useCreateRequest = () => {
   return useApiMutation<CreateRequestResponse, CreateRequestVariables>({
     url: "/api/requests",
     method: "POST",
+    body: (variables) => ({
+      itemId: variables.itemId,
+      quantity: variables.quantity,
+    }),
     isProtected: true,
   });
 };

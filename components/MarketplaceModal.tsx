@@ -85,10 +85,10 @@ export default function MarketplaceModal({
                 transition={{ duration: 1, repeat: Infinity }}
               >
                 Your coins:{" "}
-                <p className="flex items-center gap-1 text-[#FFB938] ">
+                <span className="flex items-center gap-1 text-[#FFB938] ">
                   <span className="font-bold mb-1">🪙</span>
                   {state.coins}
-                </p>
+                </span>
               </motion.p>
             </div>
             <button
