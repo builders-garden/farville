@@ -14,7 +14,7 @@ export const requestItemComposeCastUrl = (
   quantity: number
 ) => {
   const frameUrl = `https://farville.farm/requests/${requestId}`;
-  const text = `I'm looking for ${quantity} ${item.name} on /farville🧑‍🌾`;
+  const text = `I'm looking for ${quantity} ${item.name} on /farville 🧑‍🌾`;
   const urlFriendlyText = encodeURIComponent(text);
   return `https://warpcast.com/~/compose?text=${urlFriendlyText}&embeds[]=${frameUrl}`;
 };
