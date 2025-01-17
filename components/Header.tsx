@@ -52,13 +52,23 @@ export default function Header() {
         </div>
 
         <motion.div
-          className="h-[42px] px-3 flex items-center"
+          className="h-[42px] px-3 flex gap-1 items-center text-white/90 tracking-wide font-bold"
           whileHover={{ scale: 1.02 }}
           animate={{ rotate: [0, -1, 1, -1, 1, 0] }}
           transition={{ duration: 0.5, repeat: Infinity, repeatDelay: 5 }}
         >
-          <span className="text-white/90 font-bold text-sm tracking-wide">
-            <span className="text-lg mb-1 mr-1">🪙</span>
+          <span
+            className={`${
+              state.coins > 9999 ? "text-sm" : "text-lg"
+            } mb-1 mr-1 mt-[-5px]`}
+          >
+            🪙
+          </span>
+          <span
+            className={`${
+              state.coins > 9999 ? "text-xs" : "text-lg"
+            } mb-1 mr-1`}
+          >
             {state.coins}
           </span>
         </motion.div>
