@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { buyItem, sellItem } from "./utils";
-import { calculateUserQuestsProgress } from "@/app/api/grid-cells/[x]/[y]/utils";
+import { sendQuestsCalculation } from "@/app/api/grid-cells/[x]/[y]/utils";
 import { trackEvent } from "@/lib/posthog/server";
 import { getItemById } from "@/supabase/queries";
 export const POST = async (req: NextRequest) => {
@@ -33,16 +33,13 @@ export const POST = async (req: NextRequest) => {
         coinsEarned: item.sellPrice * quantity,
         quantity: quantity,
       });
-      const updatedQuests = await calculateUserQuestsProgress(
+      await sendQuestsCalculation(
         Number(fid),
         "sell",
         Number(itemId),
         Number(quantity)
       );
-      return NextResponse.json(
-        { message: "Item sold", quests: updatedQuests },
-        { status: 200 }
-      );
+      return NextResponse.json({ message: "Item sold" }, { status: 200 });
   }
   return NextResponse.json({ error: "Invalid action" }, { status: 400 });
 };

@@ -1,10 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import {
-  calculateUserQuestsProgress,
-  fertilize,
-  harvest,
-  plantSeed,
-} from "./utils";
+import { fertilize, harvest, plantSeed, sendQuestsCalculation } from "./utils";
 import {
   sendDelayedNotification,
   getGrowthTime,
@@ -12,7 +7,6 @@ import {
 } from "@/lib/game-notifications";
 import { z } from "zod";
 import { ActionType, SeedType } from "@/types/game";
-import { DbUserHasQuest } from "@/supabase/types";
 import { trackEvent } from "@/lib/posthog/server";
 
 const requestSchema = z.object({
@@ -47,7 +41,6 @@ export async function POST(
 
   let result: {
     rewards?: { xp: number; amount: number };
-    quests: DbUserHasQuest[];
   } | null = null;
 
   switch (action) {
@@ -71,7 +64,7 @@ export async function POST(
         "harvest",
         getGrowthTime(seedType)
       );
-      await calculateUserQuestsProgress(parseInt(fid), "plant", plantedItem.id);
+      await sendQuestsCalculation(parseInt(fid), "plant", plantedItem.id);
       trackEvent(Number(fid), "planted-seed", {
         seedType: plantedItem.id,
         cropSlug: plantedItem.slug,
@@ -84,15 +77,14 @@ export async function POST(
         parseInt(x),
         parseInt(y)
       );
+      await sendQuestsCalculation(
+        parseInt(fid),
+        "harvest",
+        harvestResult.crop.id,
+        harvestResult.rewards.amount
+      );
       result = {
         rewards: harvestResult.rewards,
-        quests:
-          (await calculateUserQuestsProgress(
-            parseInt(fid),
-            "harvest",
-            harvestResult.crop.id,
-            harvestResult.rewards.amount
-          )) || [],
       };
       trackEvent(Number(fid), "harvested-crop", {
         cropId: harvestResult.crop.id,
@@ -102,10 +94,7 @@ export async function POST(
       break;
     case "fertilize":
       await fertilize(parseInt(fid), parseInt(x), parseInt(y));
-      result = {
-        quests:
-          (await calculateUserQuestsProgress(parseInt(fid), "fertilize", 9)) || [],
-      };
+      await sendQuestsCalculation(parseInt(fid), "fertilize", 9);
       trackEvent(Number(fid), "fertilized-cell", {
         cellId: `${x}/${y}`,
       });
