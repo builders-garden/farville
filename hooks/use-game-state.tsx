@@ -47,35 +47,62 @@ export const useGameState = () => {
   } = useUserQuests(state?.user?.fid, "completed");
 
   const updateState = useCallback(() => {
-    if (userItems && items && user && gridCells) {
-      const { currentLevel } = getCurrentLevelAndProgress(user?.xp);
-      setState({
-        coins: user.coins,
-        level: currentLevel,
-        experience: user.xp,
-        seeds: userItems
-          .filter((ui) => ui.item.category === "seed")
-          .map((ui) => ui),
-        crops: userItems
-          .filter((ui) => ui.item.category === "crop")
-          .map((ui) => ui),
-        grid: gridCells,
-        gridSize: {
-          width: Math.max(...gridCells.map((cell) => cell.x)),
-          height: Math.max(...gridCells.map((cell) => cell.y)),
-        },
-        perks: userItems.filter((item) => item.item.category === "perk"),
-        expansionLevel: user.expansions - 1,
-        items: items,
-        inventory: userItems,
-        user: user,
-        claimableQuests:
-          (claimableQuests?.daily?.length ?? 0) > 0 ||
-          (claimableQuests?.weekly?.length ?? 0) > 0 ||
-          (claimableQuests?.monthly?.length ?? 0) > 0 ||
-          (claimableQuests?.farmer?.length ?? 0) > 0,
-      });
+    const newState: GameState = {
+      coins: 0,
+      level: 0,
+      experience: 0,
+      seeds: [],
+      crops: [],
+      grid: [],
+      gridSize: { width: 0, height: 0 },
+      perks: [],
+      expansionLevel: 0,
+      items: [],
+      inventory: [],
+      user: {} as DbUser,
+      claimableQuests: false
+    };
+
+    if (user) {
+      const { currentLevel } = getCurrentLevelAndProgress(user.xp);
+      newState.coins = user.coins;
+      newState.level = currentLevel;
+      newState.experience = user.xp;
+      newState.expansionLevel = user.expansions - 1;
+      newState.user = user;
     }
+
+    if (userItems) {
+      newState.seeds = userItems.filter((ui) => ui.item.category === "seed");
+      newState.crops = userItems.filter((ui) => ui.item.category === "crop");
+      newState.perks = userItems.filter((item) => item.item.category === "perk");
+      newState.inventory = userItems;
+    }
+
+    if (gridCells) {
+      newState.grid = gridCells;
+      newState.gridSize = {
+        width: Math.max(...gridCells.map((cell) => cell.x)),
+        height: Math.max(...gridCells.map((cell) => cell.y)),
+      };
+    }
+
+    if (items) {
+      newState.items = items;
+    }
+
+    if (claimableQuests) {
+      newState.claimableQuests = 
+        (claimableQuests?.daily?.length ?? 0) > 0 ||
+        (claimableQuests?.weekly?.length ?? 0) > 0 ||
+        (claimableQuests?.monthly?.length ?? 0) > 0 ||
+        (claimableQuests?.farmer?.length ?? 0) > 0;
+    }
+
+    setState((prevState) => ({
+      ...prevState,
+      ...newState,
+    }));
   }, [userItems, items, user, gridCells]);
 
   useEffect(() => {
