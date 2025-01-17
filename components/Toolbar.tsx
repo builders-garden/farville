@@ -60,13 +60,16 @@ export default function Toolbar({
               trackEvent("open_quests", {});
               setShowQuests(true);
             }}
-            className={`w-12 h-12 rounded-lg flex items-center justify-center transition-colors
+            className={`w-12 h-12 rounded-lg flex items-center justify-center transition-colors relative
               ${
                 state.claimableQuests
                   ? "bg-[#A17449] shadow-lg shadow-[#A17449]/50 animate-pulse"
                   : "bg-[#8B5E3C] hover:bg-[#6d4c2c]"
               }`}
           >
+            {state.claimableQuests && (
+              <div className="absolute -top-1 -right-1 w-3 h-3 bg-[#FFD700] rounded-full" />
+            )}
             <Image
               src="/images/icons/quests.png"
               alt="Quests"
@@ -76,7 +79,7 @@ export default function Toolbar({
           </motion.button>
           <span
             className={`text-[6px] mt-1 ${
-              state.claimableQuests || true
+              state.claimableQuests
                 ? "text-white drop-shadow-[0_0_3px_rgba(255,255,255,0.7)]"
                 : "text-white"
             }`}
