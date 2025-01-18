@@ -75,7 +75,7 @@ function SeedDetailPopup({
           <p>Growth Time: {cropData.growthTime / 1000 / 60} minutes</p>
           <p>Planted at: {plantedAt.toLocaleTimeString()}</p>
           {!cell.isReadyToHarvest && (
-            <p>Harvest at: {minutesLeft} minutes</p>
+            <p>Harvest in: {minutesLeft} minutes</p>
           )}
           {cell.isReadyToHarvest && (
             <p className="text-[#FFB938] font-medium">Ready to harvest!</p>
