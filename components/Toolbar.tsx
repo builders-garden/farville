@@ -105,7 +105,7 @@ export default function Toolbar({
               height={24}
             />
           </motion.button>
-          <span className="text-[6px] text-white mt-1">Leaderboard</span>
+          <span className="text-[6px] text-white mt-1">Ranking</span>
         </div>
 
         <div className="flex flex-col items-center w-[48px]">

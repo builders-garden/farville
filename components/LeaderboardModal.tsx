@@ -58,7 +58,7 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
                     width={24}
                     height={24}
                   />
-                  Leaderboard
+                  Ranking
                 </motion.h2>
               </div>
               <button
