@@ -19,6 +19,10 @@ interface SeedDetailPopupProps {
   cell: DbGridCell;
   onFertilize: () => void;
   hasFertilizer: boolean;
+  onSpeedBoost: () => void;
+  hasSpeedBoost: boolean;
+  onYieldBoost: () => void;
+  hasYieldBoost: boolean;
   onClose: () => void;
 }
 
@@ -26,6 +30,10 @@ function SeedDetailPopup({
   cell,
   onFertilize,
   hasFertilizer,
+  onSpeedBoost,
+  hasSpeedBoost,
+  onYieldBoost,
+  hasYieldBoost,
   onClose,
 }: SeedDetailPopupProps) {
   const { state } = useGame();
@@ -74,9 +82,7 @@ function SeedDetailPopup({
         <div className="space-y-3 text-white/80 text-xs">
           <p>Growth Time: {cropData.growthTime / 1000 / 60} minutes</p>
           <p>Planted at: {plantedAt.toLocaleTimeString()}</p>
-          {!cell.isReadyToHarvest && (
-            <p>Harvest in: {minutesLeft} minutes</p>
-          )}
+          {!cell.isReadyToHarvest && <p>Harvest in: {minutesLeft} minutes</p>}
           {cell.isReadyToHarvest && (
             <p className="text-[#FFB938] font-medium">Ready to harvest!</p>
           )}
@@ -94,6 +100,30 @@ function SeedDetailPopup({
             Fertilize
           </button>
         )}
+        {!cell.isReadyToHarvest && hasSpeedBoost && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onSpeedBoost();
+            }}
+            className="w-full mt-4 bg-[#FFB938] text-[#7E4E31] py-2 px-4 rounded-lg font-bold 
+                     hover:bg-[#ffc661] transition-colors"
+          >
+            Speed-up
+          </button>
+        )}
+        {!cell.isReadyToHarvest && hasYieldBoost && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onYieldBoost();
+            }}
+            className="w-full mt-4 bg-[#FFB938] text-[#7E4E31] py-2 px-4 rounded-lg font-bold 
+                     hover:bg-[#ffc661] transition-colors"
+          >
+            Yield-up
+          </button>
+        )}
       </div>
     </motion.div>,
     document.body
@@ -105,6 +135,8 @@ export default function GridCell({ cell }: GridCellProps) {
     plantSeed,
     harvestCrop,
     fertilize,
+    speedBoost,
+    yieldBoost,
     selectedSeed,
     selectedFertilizer,
     setSelectedFertilizer,
@@ -126,7 +158,8 @@ export default function GridCell({ cell }: GridCellProps) {
     cell.isReadyToHarvest ||
     (cell.plantedAt &&
       new Date(cell.plantedAt).getTime() +
-        CROP_DATA[cell.cropType as CropType].growthTime <
+        CROP_DATA[cell.cropType as CropType].growthTime /
+          (cell.speedBoost || 1) <
         Date.now());
 
   const isValidFertilizerTarget = cell.plantedAt && !isReadyToHarvest;
@@ -137,11 +170,25 @@ export default function GridCell({ cell }: GridCellProps) {
     (item) => item.item.slug === "fertilizer"
   );
 
+  const hasSpeedBoost =
+    state.inventory.some((item) => item.item.slug === "speed-potion") &&
+    !cell.speedBoost;
+
+  const hasYieldBoost =
+    state.inventory.some((item) => item.item.slug === "yield-potion") &&
+    !cell.yieldBoost;
+
   const handleClick = async () => {
     if (isActionInProgress) return;
 
     if (selectedFertilizer && isValidFertilizerTarget) {
-      await fertilize({ x: cell.x, y: cell.y });
+      if (selectedFertilizer.item.slug === "speed-potion") {
+        await speedBoost({ x: cell.x, y: cell.y });
+      } else if (selectedFertilizer.item.slug === "yield-potion") {
+        await yieldBoost({ x: cell.x, y: cell.y });
+      } else {
+        await fertilize({ x: cell.x, y: cell.y });
+      }
       setSelectedFertilizer(null);
       return;
     }
@@ -219,6 +266,16 @@ export default function GridCell({ cell }: GridCellProps) {
     }
   };
 
+  const handleSpeedBoost = async () => {
+    await speedBoost({ x: cell.x, y: cell.y });
+    setShowPopup(false);
+  };
+
+  const handleYieldBoost = async () => {
+    await yieldBoost({ x: cell.x, y: cell.y });
+    setShowPopup(false);
+  };
+
   return (
     <>
       {showLevelUpConfetti && <Confetti />}
@@ -251,6 +308,8 @@ export default function GridCell({ cell }: GridCellProps) {
           ${selectedSeed && cell.plantedAt ? "opacity-50" : ""}
           ${!cell.plantedAt ? "drop-target" : ""}
           ${isDragOver ? "dragover" : ""}
+          ${cell.speedBoost ? "shadow-[0_0_15px_rgba(59,130,246,0.5)]" : ""}
+          ${cell.yieldBoost ? "shadow-[0_0_15px_rgba(168,85,247,0.5)]" : ""}
           transition-all duration-200
         `}
         initial={false}
@@ -268,6 +327,10 @@ export default function GridCell({ cell }: GridCellProps) {
             cell={cell}
             onFertilize={handleFertilize}
             hasFertilizer={hasFertilizer}
+            onSpeedBoost={handleSpeedBoost}
+            hasSpeedBoost={hasSpeedBoost}
+            onYieldBoost={handleYieldBoost}
+            hasYieldBoost={hasYieldBoost}
             onClose={() => setShowPopup(false)}
           />
         )}
@@ -281,6 +344,8 @@ export default function GridCell({ cell }: GridCellProps) {
                     ? new Date(cell.plantedAt).getTime()
                     : 0,
                   readyToHarvest: !!isReadyToHarvest,
+                  speedBoost: cell.speedBoost || undefined,
+                  yieldBoost: cell.yieldBoost || undefined,
                 }
               : undefined
           }
@@ -333,6 +398,21 @@ export default function GridCell({ cell }: GridCellProps) {
               cropType={harvestedCropType!}
             />
           </>
+        )}
+
+        {(cell.speedBoost || cell.yieldBoost) && (
+          <div className="absolute top-1 right-1 flex gap-1">
+            {cell.speedBoost && (
+              <span className="text-xs bg-blue-400/80 text-white px-1 py-0.5 rounded">
+                ⚡
+              </span>
+            )}
+            {cell.yieldBoost && (
+              <span className="text-xs bg-purple-400/80 text-white px-1 py-0.5 rounded">
+                ☀️
+              </span>
+            )}
+          </div>
         )}
       </motion.div>
     </>

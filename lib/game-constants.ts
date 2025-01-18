@@ -234,3 +234,4 @@ export const LEVEL_REWARDS = [
     coins: 3000,
   },
 ];
+

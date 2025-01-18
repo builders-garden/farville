@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { fertilize, harvest, plantSeed, sendQuestsCalculation } from "./utils";
+import { fertilize, harvest, plantSeed, sendQuestsCalculation, speedBoost, yieldBoost } from "./utils";
 import {
   sendDelayedNotification,
   getGrowthTime,
@@ -101,9 +101,25 @@ export async function POST(
           cropType: cell?.cropType,
         });
         break;
+      case "speed-boost":
+        const speedBoostedCell = await speedBoost(parseInt(fid), parseInt(x), parseInt(y), 1.25);
+        trackEvent(Number(fid), "boosted-cell", {
+          cellId: `${x}/${y}`,
+          cropType: speedBoostedCell?.cropType,
+          boostAmount: 1.25,
+        });
+        break;
+      case "yield-boost":
+        const boostedCell = await yieldBoost(parseInt(fid), parseInt(x), parseInt(y), 3);
+        trackEvent(Number(fid), "boosted-cell", {
+          cellId: `${x}/${y}`,
+          cropType: boostedCell?.cropType,
+          boostAmount: 1.25,
+        });
+        break;
     }
     return NextResponse.json(result);
-  } catch (err) { 
+  } catch (err) {
     console.error("Failed to perform action:", err);
     return NextResponse.json(
       { error: "Failed to perform action", message: (err as Error).message },

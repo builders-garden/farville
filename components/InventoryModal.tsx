@@ -22,7 +22,7 @@ export default function InventoryModal({ onClose }: { onClose: () => void }) {
   } = useCreateRequest();
 
   const handlePerkClick = (perk: UserItem) => {
-    if (perk.item.name === "Fertilizer" && perk.quantity && perk.quantity > 0) {
+    if (perk.item.category === "perk" && perk.quantity && perk.quantity > 0) {
       setSelectedFertilizer(perk);
       setSelectedSeed(null);
       onClose();

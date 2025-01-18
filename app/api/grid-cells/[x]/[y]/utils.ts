@@ -10,6 +10,7 @@ import {
   harvestGridCell,
   addUserItem,
   updateUserXP,
+  boostGridCell,
 } from "@/supabase/queries";
 import { CropType, SeedType } from "@/types/game";
 
@@ -62,7 +63,12 @@ export const harvest = async (fid: number, x: number, y: number) => {
     throw new Error("Crop not found");
   }
   await harvestGridCell(fid, x, y);
-  const rewards = await rewardUser(fid, gridCell.cropType!, crop.id);
+  const rewards = await rewardUser(
+    fid,
+    gridCell.cropType!,
+    crop.id,
+    gridCell.yieldBoost || undefined
+  );
   return {
     crop,
     rewards,
@@ -90,17 +96,69 @@ export const fertilize = async (fid: number, x: number, y: number) => {
   }
   await fertilizeGridCell(fid, x, y);
   await removeUserItem(fid, fertilizer.id, 1);
-  return gridCell
+  return gridCell;
+};
+
+export const speedBoost = async (
+  fid: number,
+  x: number,
+  y: number,
+  boostAmount: number
+) => {
+  const booster = await getItemBySlug("speed-potion");
+  if (!booster) {
+    throw new Error("Booster not found");
+  }
+  const boosterItem = await getUserItemByItemId(fid, booster.id);
+  if (!boosterItem) {
+    throw new Error("Player does not have enough booster to boost");
+  }
+  const gridCell = await getGridCell(fid, x, y);
+  if (!gridCell) {
+    throw new Error("Grid cell not found");
+  }
+  if (!gridCell.plantedAt) {
+    throw new Error("Grid cell is not planted");
+  }
+  if (gridCell.isReadyToHarvest) {
+    throw new Error("Grid cell is ready to harvest");
+  }
+  await boostGridCell(fid, x, y, {
+    speedBoost: boostAmount,
+  });
+  await removeUserItem(fid, booster.id, 1);
+  return gridCell;
+};
+
+export const yieldBoost = async (fid: number, x: number, y: number, boostAmount: number) => {
+  const booster = await getItemBySlug("yield-potion");
+  if (!booster) {
+    throw new Error("Booster not found");
+  }
+  const boosterItem = await getUserItemByItemId(fid, booster.id);
+  if (!boosterItem) {
+    throw new Error("Player does not have enough booster to boost");
+  }
+  const gridCell = await getGridCell(fid, x, y);
+  if (!gridCell) {
+    throw new Error("Grid cell not found");
+  }
+  await boostGridCell(fid, x, y, {
+    yieldBoost: boostAmount,
+  });
+  await removeUserItem(fid, booster.id, 1);
+  return gridCell;
 };
 
 export const rewardUser = async (
   fid: number,
   cropType: string,
-  cropId: number
+  cropId: number,
+  yieldBoost?: number
 ) => {
   const xp = CROP_DATA[cropType].rewardXP;
   const roll = Math.random();
-  const cropReward = roll < 0.6 ? 1 : roll < 0.9 ? 2 : 3;
+  const cropReward = yieldBoost ? 3 : (roll < 0.6 ? 1 : roll < 0.9 ? 2 : 3);
   await addUserItem(fid, cropId, cropReward);
   const { didLevelUp, newLevel } = await updateUserXP(fid, xp);
   return { xp, amount: cropReward, didLevelUp, newLevel };

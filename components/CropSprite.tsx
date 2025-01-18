@@ -12,6 +12,8 @@ interface CropSpriteProps {
     type: CropType;
     plantedAt: number;
     readyToHarvest: boolean;
+    speedBoost?: number;
+    yieldBoost?: number;
   };
   isDemo?: boolean;
 }
@@ -71,8 +73,11 @@ export function PlantedCropSprite({ crop, isDemo }: CropSpriteProps) {
   };
 
   const getTimeRemaining = () => {
-    const { plantedAt } = crop;
-    const growthTime = CROP_DATA[crop.type].growthTime;
+    const { plantedAt, speedBoost } = crop;
+    // Get the base growth time for this crop type and divide by any speed boost
+    // If speedBoost is undefined, use 1 as default (no boost)
+    // Example: If growth time is 60000ms and speedBoost is 2, actual growth time will be 30000ms
+    const growthTime = CROP_DATA[crop.type].growthTime / (speedBoost || 1);
     const elapsed = Date.now() - plantedAt;
     const remaining = Math.max(growthTime - elapsed, 0);
 
@@ -171,6 +176,30 @@ export function PlantedCropSprite({ crop, isDemo }: CropSpriteProps) {
           />
         )}
       </AnimatePresence>
+
+      {/* Add boost effect overlays */}
+      <AnimatePresence>
+        {crop.speedBoost && (
+          <motion.div
+            className="absolute inset-0 rounded-xl bg-blue-400/20"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: [0.1, 0.3, 0.1] }}
+            transition={{ duration: 2, repeat: Infinity }}
+          />
+        )}
+        {crop.yieldBoost && (
+          <motion.div
+            className="absolute inset-0 rounded-xl bg-purple-400/20"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: [0.1, 0.3, 0.1] }}
+            transition={{
+              duration: 2,
+              repeat: Infinity,
+              delay: 0.5, // Offset animation to create alternating effect
+            }}
+          />
+        )}
+      </AnimatePresence>
     </>
   );
 }
@@ -183,6 +212,8 @@ export default function CropSprite({
     type: CropType;
     plantedAt: number;
     readyToHarvest: boolean;
+    speedBoost?: number;
+    yieldBoost?: number;
   };
   isDemo?: boolean;
 }) {

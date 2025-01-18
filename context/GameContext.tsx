@@ -11,6 +11,7 @@ import { useBuyItem } from "@/hooks/game-actions/use-buy-item";
 import { useExpandGrid } from "@/hooks/game-actions/use-expand-grid";
 import { useSellItem } from "@/hooks/game-actions/use-sell-item";
 import { UserItem } from "@/hooks/use-user-items";
+import { useBoost } from "@/hooks/game-actions/use-boost";
 
 // Update the OverlayType to be more flexible with parameters
 export type OverlayConfig =
@@ -35,6 +36,8 @@ interface GameContextType {
   buyItem: (params: { itemId: number; quantity: number }) => void;
   sellItem: (params: { itemId: number; quantity: number }) => void;
   expandGrid: () => void;
+  speedBoost: (params: { x: number; y: number }) => void;
+  yieldBoost: (params: { x: number; y: number }) => void;
   refetchState: () => Promise<void>;
   refetchUser: () => Promise<void>;
   refetchClaimableQuests: () => Promise<void>;
@@ -118,6 +121,20 @@ export function GameProvider({
     isActionInProgress,
     setIsActionInProgress,
   });
+  const { mutate: speedBoost } = useBoost({
+    refetchGridCells: refetch.grid,
+    refetchUserItems: refetch.userItems,
+    isActionInProgress,
+    setIsActionInProgress,
+    actionType: "speed-boost",
+  });
+  const { mutate: yieldBoost } = useBoost({
+    refetchGridCells: refetch.grid,
+    refetchUserItems: refetch.userItems,
+    isActionInProgress,
+    setIsActionInProgress,
+    actionType: "yield-boost",
+  });
   const { mutate: buyItem } = useBuyItem({
     refetchUser: refetch.user,
     refetchUserItems: refetch.userItems,
@@ -159,6 +176,8 @@ export function GameProvider({
         buyItem,
         sellItem,
         expandGrid,
+        speedBoost,
+        yieldBoost,
         refetchState: refetch.all,
         refetchUser: refetch.user,
         refetchClaimableQuests: refetch.claimableQuests,
