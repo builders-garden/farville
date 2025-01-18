@@ -161,7 +161,13 @@ export const updateUserCoins = async (
   return data;
 };
 
-export const getUsersByXp = async (limit?: number): Promise<DbUser[]> => {
+export const getUsersByXp = async (
+  limit?: number,
+  targetFid?: number
+): Promise<{
+  users: DbUser[];
+  targetPosition?: number;
+}> => {
   const query = supabase
     .from("users")
     .select("*")
@@ -174,7 +180,24 @@ export const getUsersByXp = async (limit?: number): Promise<DbUser[]> => {
   const { data, error } = await query;
 
   if (error) throw error;
-  return data;
+
+  let targetPosition: number | undefined;
+  if (targetFid) {
+    // Find position of target user in full XP ranking
+    const { count: aboveCount, error: countError } = await supabase
+      .from("users")
+      .select("*", { count: "exact", head: true })
+      .order("xp", { ascending: false })
+      .gt("xp", data.find(u => u.fid === targetFid)?.xp || 0);
+
+    if (countError) throw countError;
+    targetPosition = (aboveCount || 0) + 1;
+  }
+
+  return {
+    users: data,
+    targetPosition
+  };
 };
 
 export const getItemBySlug = async (slug: string): Promise<DbItem | null> => {

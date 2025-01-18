@@ -7,9 +7,18 @@ import { useLeaderboard } from "@/hooks/use-leadeboard";
 import { LEVEL_XP_THRESHOLDS } from "@/lib/game-constants";
 import Image from "next/image";
 import sdk from "@farcaster/frame-sdk";
+import { useGame } from "@/context/GameContext";
+
+const shimmerAnimation = `
+  @keyframes shine {
+    0% { transform: translateX(-100%); }
+    50%, 100% { transform: translateX(100%); }
+  }
+`;
 
 export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
-  const { users } = useLeaderboard();
+  const { state } = useGame();
+  const { data } = useLeaderboard(state?.user.fid);
   const [activeTab, setActiveTab] = useState<"global" | "friends">("global");
   //const [searchQuery, setSearchQuery] = useState("");
   const { safeAreaInsets } = useFrameContext();
@@ -24,6 +33,12 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
   const handleClose = () => {
     onClose();
   };
+
+  if (typeof document !== "undefined") {
+    const style = document.createElement("style");
+    style.textContent = shimmerAnimation;
+    document.head.appendChild(style);
+  }
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-start z-50">
@@ -125,9 +140,67 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
 
           {/* Scrollable leaderboard list */}
           <div className="flex-1 overflow-y-auto min-h-0">
+            {data?.targetPosition && (
+              <motion.div
+                key={state.user.fid}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.02 }}
+                className="bg-gradient-to-r from-[#8B5E3C] to-[#6d4c2c] px-4 py-3 rounded-lg flex items-center gap-3
+                         border-2 border-[#FFB938] shadow-lg mb-4 relative overflow-hidden
+                         hover:scale-[1.02] transition-transform duration-200"
+              >
+                {/* Add subtle shine effect */}
+                <div
+                  className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent 
+                              animate-[shine_3s_ease-in-out_infinite]"
+                />
+
+                {/* Rank */}
+                <div className="flex-none text-center px-2 py-1 bg-[#5c4121] rounded-lg text-white/90 text-xs font-medium">
+                  #{data.targetPosition}
+                </div>
+
+                {/* Avatar */}
+                {state.user.avatarUrl ? (
+                  <Image
+                    src={state.user.avatarUrl}
+                    alt={`${state.user.username}'s avatar`}
+                    className="w-10 h-10 rounded-full object-cover border-2 border-[#FFB938] flex-none"
+                    width={40}
+                    height={40}
+                  />
+                ) : (
+                  <div className="w-10 h-10 rounded-full bg-[#5c4121] flex items-center justify-center text-white/90 flex-none">
+                    👤
+                  </div>
+                )}
+
+                {/* User Info */}
+                <div className="flex-1 min-w-0 flex items-center justify-between gap-4">
+                  {/* Username and XP */}
+                  <div className="min-w-0 flex flex-col gap-1">
+                    <p className="text-white/90 font-medium truncate text-sm">
+                      {state.user.username}
+                    </p>
+                    <div className="flex items-center gap-4">
+                      <span className="text-[#FFB938] rounded-full font-medium text-xs">
+                        Lvl{" "}
+                        {LEVEL_XP_THRESHOLDS.findIndex(
+                          (threshold) => state.user.xp < threshold
+                        )}
+                      </span>
+                      <p className="text-white/60 text-xs">
+                        XP:{state.user.xp.toLocaleString()}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            )}
             <div className="space-y-2">
-              {users &&
-                users.map((entry, index) => (
+              {data?.users &&
+                data.users.map((entry, index) => (
                   <motion.div
                     key={entry.fid}
                     initial={{ opacity: 0, x: -20 }}
