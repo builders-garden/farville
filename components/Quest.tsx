@@ -30,7 +30,7 @@ const renderQuestRewards = (quest: DbQuest) => (
       </span>
     )}
     {quest.coins !== null && quest.coins !== undefined && quest.coins > 0 && (
-      <div className="flex items-center gap-2 text-xs mt-2">
+      <div className="flex items-center gap-2 text-xs">
         <span className="text-white/40">•</span>
         <span className="text-white/60 flex items-center">
           Coins{" "}
