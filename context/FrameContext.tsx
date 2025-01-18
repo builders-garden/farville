@@ -42,7 +42,11 @@ export const useFrameContext = () => {
           !context?.client.added &&
           !process.env.NEXT_PUBLIC_URL?.includes("localhost")
         ) {
-          sdk.actions.addFrame();
+          try {
+            sdk.actions.addFrame();
+          } catch (err) {
+            console.error("Failed to add frame:", err);
+          }
         }
       });
     }
