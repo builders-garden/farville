@@ -43,63 +43,71 @@ export async function POST(
     rewards?: { xp: number; amount: number };
   } | null = null;
 
-  switch (action) {
-    case "plant":
-      if (!seedType) {
-        return NextResponse.json(
-          { error: "Missing seedType for plant action" },
-          { status: 400 }
+  try {
+    switch (action) {
+      case "plant":
+        if (!seedType) {
+          return NextResponse.json(
+            { error: "Missing seedType for plant action" },
+            { status: 400 }
+          );
+        }
+        const plantedItem = await plantSeed(
+          parseInt(fid),
+          parseInt(x),
+          parseInt(y),
+          seedType
         );
-      }
-      const plantedItem = await plantSeed(
-        parseInt(fid),
-        parseInt(x),
-        parseInt(y),
-        seedType
-      );
-      await sendDelayedNotification(
-        fid,
-        `Harvest time! 🌾`,
-        `Your ${getCropNameFromSeeds(seedType)} are ready to harvest!`,
-        "harvest",
-        getGrowthTime(seedType)
-      );
-      await sendQuestsCalculation(parseInt(fid), "plant", plantedItem.id);
-      trackEvent(Number(fid), "planted-seed", {
-        seedId: plantedItem.id,
-        cropType: plantedItem.slug.replace("-seeds", ""),
-        cellId: `${x}/${y}`,
-      });
-      break;
-    case "harvest":
-      const harvestResult = await harvest(
-        parseInt(fid),
-        parseInt(x),
-        parseInt(y)
-      );
-      await sendQuestsCalculation(
-        parseInt(fid),
-        "harvest",
-        harvestResult.crop.id,
-        harvestResult.rewards.amount
-      );
-      result = {
-        rewards: harvestResult.rewards,
-      };
-      trackEvent(Number(fid), "harvested-crop", {
-        cropId: harvestResult.crop.id,
-        cropType: harvestResult.crop.slug,
-        cellId: `${x}/${y}`,
-      });
-      break;
-    case "fertilize":
-      const cell = await fertilize(parseInt(fid), parseInt(x), parseInt(y));
-      await sendQuestsCalculation(parseInt(fid), "fertilize", 9);
-      trackEvent(Number(fid), "fertilized-cell", {
-        cellId: `${x}/${y}`,
-        cropType: cell?.cropType
-      });
-      break;
+        await sendDelayedNotification(
+          fid,
+          `Harvest time! 🌾`,
+          `Your ${getCropNameFromSeeds(seedType)} are ready to harvest!`,
+          "harvest",
+          getGrowthTime(seedType)
+        );
+        await sendQuestsCalculation(parseInt(fid), "plant", plantedItem.id);
+        trackEvent(Number(fid), "planted-seed", {
+          seedId: plantedItem.id,
+          cropType: plantedItem.slug.replace("-seeds", ""),
+          cellId: `${x}/${y}`,
+        });
+        break;
+      case "harvest":
+        const harvestResult = await harvest(
+          parseInt(fid),
+          parseInt(x),
+          parseInt(y)
+        );
+        await sendQuestsCalculation(
+          parseInt(fid),
+          "harvest",
+          harvestResult.crop.id,
+          harvestResult.rewards.amount
+        );
+        result = {
+          rewards: harvestResult.rewards,
+        };
+        trackEvent(Number(fid), "harvested-crop", {
+          cropId: harvestResult.crop.id,
+          cropType: harvestResult.crop.slug,
+          cellId: `${x}/${y}`,
+        });
+        break;
+      case "fertilize":
+        const cell = await fertilize(parseInt(fid), parseInt(x), parseInt(y));
+        await sendQuestsCalculation(parseInt(fid), "fertilize", 9);
+        trackEvent(Number(fid), "fertilized-cell", {
+          cellId: `${x}/${y}`,
+          cropType: cell?.cropType,
+        });
+        break;
+    }
+    return NextResponse.json(result);
+  } catch (err) { 
+    console.error("Failed to perform action:", err);
+    return NextResponse.json(
+      { error: "Failed to perform action", message: (err as Error).message },
+      { status: 400 }
+    );
   }
-  return NextResponse.json(result);
 }
