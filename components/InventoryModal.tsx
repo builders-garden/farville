@@ -232,7 +232,7 @@ export default function InventoryModal({ onClose }: { onClose: () => void }) {
                 </motion.h3>
                 <div className="grid grid-cols-6 gap-4 md:grid-cols-8">
                   {state.items
-                    .filter((item) => item.category === "perk" || [24, 25].includes(item.id))
+                    .filter((item) => item.category === "perk")
                     .map((perk) => {
                       const userPerk = state.perks.find(
                         (p) => p.item.slug === perk.slug
