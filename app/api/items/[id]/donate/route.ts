@@ -9,6 +9,7 @@ import {
   incrementRequestFilledQuantity,
   getUser,
 } from "@/supabase/queries";
+import { NextResponse } from "next/server";
 
 export const POST = async (
   req: Request,
@@ -20,17 +21,19 @@ export const POST = async (
   }
   const itemId = Number((await params).id);
   const { quantity, toFid, requestId } = await req.json();
-
+  if (fid === toFid) {
+    return NextResponse.json({ message: "Cannot donate to yourself" }, { status: 400 });
+  }
   const item = await getItemById(itemId);
 
   if (!item) {
-    return new Response("Item not found", { status: 404 });
+    return NextResponse.json({ message: "Item not found" }, { status: 404 });
   }
 
   const userItem = await getUserItemByItemId(Number(fid), itemId);
 
   if (!userItem) {
-    return new Response("User item not found", { status: 404 });
+    return NextResponse.json({ message: "User item not found" }, { status: 404 });
   }
 
   console.log("donating", quantity, toFid, requestId, itemId);
@@ -63,5 +66,5 @@ export const POST = async (
     toFid: toFid,
   });
 
-  return new Response("Item donated", { status: 200 });
+  return NextResponse.json({ message: "Item donated" }, { status: 200 });
 };
