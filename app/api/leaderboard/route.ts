@@ -5,7 +5,10 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const targetFid = searchParams.get("targetFid");
   try {
-    const users = await getUsersByXp(10, targetFid ? Number(targetFid) : undefined);
+    const users = await getUsersByXp(
+      20,
+      targetFid ? Number(targetFid) : undefined
+    );
     return NextResponse.json(users);
   } catch (error) {
     console.error(error);
