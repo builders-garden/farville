@@ -1,4 +1,5 @@
 import { sendQuestsCalculation } from "@/app/api/grid-cells/[x]/[y]/utils";
+import { sendDelayedNotification } from "@/lib/game-notifications";
 import { trackEvent } from "@/lib/posthog/server";
 import {
   getItemById,
@@ -6,6 +7,7 @@ import {
   removeUserItem,
   addUserItem,
   incrementRequestFilledQuantity,
+  getUser,
 } from "@/supabase/queries";
 
 export const POST = async (
@@ -40,9 +42,18 @@ export const POST = async (
     await incrementRequestFilledQuantity(Number(requestId), quantity);
   }
 
+  const user = await getUser(Number(toFid));
+
   await Promise.all([
     sendQuestsCalculation(Number(fid), "donate", itemId, quantity),
-    sendQuestsCalculation(Number(toFid), "receive", itemId, quantity)
+    sendQuestsCalculation(Number(toFid), "receive", itemId, quantity),
+    sendDelayedNotification(
+      toFid,
+      "New Donation!",
+      `${user?.username} donated ${quantity} ${item.name} to you!`,
+      "donation",
+      0
+    ),
   ]);
 
   trackEvent(Number(fid), "donated-item", {
