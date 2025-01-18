@@ -22,7 +22,7 @@ export default function ItemDetailsPopup({
   requestQuantity,
   onRequestQuantityChange,
 }: ItemDetailsPopupProps) {
-  const maxRequestAmount = item.id === 9 ? 1 : 5;
+  const maxRequestAmount = [9, 24, 25].includes(item.id) ? 1 : 5;
 
   return (
     <motion.div
