@@ -603,7 +603,7 @@ export default function MarketplaceModal({
 
             <div className="space-y-3 text-xs">
               <p className="text-amber-500/90 text-[10px] text-center">
-                Each {selectedItem.cropData.name.slice(0, -1)} sells for{" "}
+                Each {selectedItem.cropData.name} sells for{" "}
                 {selectedItem.cropData.sellPrice}
                 <span className="text-sm mb-1">🪙</span>
               </p>
