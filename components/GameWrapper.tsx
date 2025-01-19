@@ -9,7 +9,7 @@ import InventoryModal from "./InventoryModal";
 import MarketplaceModal from "./MarketplaceModal";
 import SettingsModal from "./SettingsModal";
 import LeaderboardModal from "./LeaderboardModal";
-import PerkIndicator from "./FertilizerIndicator";
+import PerkIndicator from "./PerkIndicator";
 import { useFrameContext } from "../context/FrameContext";
 import SeedMenu from "./SeedMenu";
 import PlantingIndicator from "./PlantingIndicator";

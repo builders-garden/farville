@@ -7,7 +7,7 @@ import CropSprite from "./CropSprite";
 import FloatingNumber from "./animations/FloatingNumber";
 import { useState, useRef } from "react";
 import { DbGridCell } from "@/supabase/types";
-import { CROP_DATA } from "@/lib/game-constants";
+import { CROP_DATA, SPEED_BOOST } from "@/lib/game-constants";
 import Confetti from "./animations/Confetti";
 import { createPortal } from "react-dom";
 
@@ -129,7 +129,10 @@ export default function GridCell({ cell }: GridCellProps) {
         Date.now());
 
   const isValidFertilizerTarget = cell.plantedAt && !isReadyToHarvest;
-  const isValidSpeedBoostTarget = cell.plantedAt && cell.speedBoostedAt && new Date(cell.speedBoostedAt).getTime() + 1000 * 60 * 60 * 2 < Date.now();
+  const isValidSpeedBoostTarget =
+    cell.plantedAt &&
+    cell.speedBoostedAt &&
+    new Date(cell.speedBoostedAt).getTime() + 1000 * 60 * 60 * 2 < Date.now();
 
   const { state } = useGame();
 
@@ -243,11 +246,15 @@ export default function GridCell({ cell }: GridCellProps) {
               : "cursor-pointer"
           }
           ${
-            selectedPerk && isValidFertilizerTarget
+            selectedPerk && (isValidFertilizerTarget || isValidSpeedBoostTarget)
               ? "border-4 border-yellow-400 shadow-lg"
               : ""
           }
-          ${selectedPerk && !isValidFertilizerTarget ? "opacity-50" : ""}
+          ${
+            selectedPerk && !isValidFertilizerTarget && !isValidSpeedBoostTarget
+              ? "opacity-50"
+              : ""
+          }
           ${
             selectedSeed && !cell.plantedAt
               ? "border-4 border-green-400 shadow-lg"
@@ -297,15 +304,20 @@ export default function GridCell({ cell }: GridCellProps) {
         />
 
         {/* Fertilizer Hover Effect */}
-        {selectedPerk && isValidFertilizerTarget && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="absolute inset-0 bg-yellow-400/20 rounded-lg flex items-center justify-center"
-          >
-            <span className="text-2xl">🧪</span>
-          </motion.div>
-        )}
+        {selectedPerk &&
+          (isValidFertilizerTarget ||
+            (isValidSpeedBoostTarget &&
+              SPEED_BOOST[
+                selectedPerk.item.slug as keyof typeof SPEED_BOOST
+              ].applyTo.includes(cell.cropType as CropType))) && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="absolute inset-0 bg-yellow-400/20 rounded-lg flex items-center justify-center"
+            >
+              <img src={`/images${selectedPerk.item.icon}`} className="w-8 h-8" />
+            </motion.div>
+          )}
 
         {/* Seed Planting Hover Effect */}
         {selectedSeed && !cell.plantedAt && (

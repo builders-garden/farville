@@ -234,3 +234,22 @@ export const LEVEL_REWARDS = [
     coins: 3000,
   },
 ];
+
+
+export const SPEED_BOOST = {
+  "nitrogen": {
+    boost: 1.25,
+    duration: 7200000, // 2 hours
+    applyTo: [CropType.Carrot, CropType.Wheat, CropType.Radish],
+  },
+  "potassium": {
+    boost: 1.5,
+    duration: 7200000, // 2 hours
+    applyTo: [CropType.Lettuce, CropType.Tomato, CropType.Potato, CropType.Corn, CropType.Eggplant, CropType.Tomato],
+  },
+  phosphorus: {
+    boost: 2,
+    duration: 7200000, // 2 hours
+    applyTo: [CropType.Strawberry, CropType.Watermelon, CropType.Pumpkin],
+  },
+}
