@@ -45,7 +45,7 @@ export default function MarketplaceModal({
   const tabs: { id: Tab; label: string; icon: string }[] = [
     { id: "seeds", label: "Seeds", icon: "🌱" },
     { id: "crops", label: "Crops", icon: "🌾" },
-    // { id: "perks", label: "Perks", icon: "✨" },
+    { id: "perks", label: "Perks", icon: "✨" },
     { id: "expansions", label: "Expand", icon: "🗺️" },
   ];
 
@@ -454,12 +454,12 @@ export default function MarketplaceModal({
               >
                 <div className="grid gap-3">
                   {state.items
-                    .filter((item) => item.category === "perk")
+                    .filter(
+                      (item) =>
+                        item.category === "perk" && item.slug !== "fertilizer"
+                    )
                     .map((perk) => {
                       const isOwned = state.perks.some((p) => p.id === perk.id);
-                      // const amount =
-                      //   state.perks.find((p) => p.id === perk.id)?.quantity ||
-                      //   0;
 
                       return (
                         <motion.div
@@ -470,16 +470,16 @@ export default function MarketplaceModal({
                           <div className="flex sm:flex-1 items-start gap-4 min-w-0">
                             <div className="flex flex-col items-center gap-2 flex-shrink-0">
                               <div className="w-12 h-12 bg-[#8B5E3C]/30 rounded-lg flex items-center justify-center">
-                                <motion.span
-                                  className="text-2xl"
+                                <motion.img
+                                  src={`/images${perk.icon}`}
+                                  alt={perk.name}
+                                  className="w-8 h-8 object-contain"
                                   animate={{ y: [0, -2, 0] }}
                                   transition={{
                                     duration: 1.5,
                                     repeat: Infinity,
                                   }}
-                                >
-                                  {perk.icon}
-                                </motion.span>
+                                />
                               </div>
                             </div>
                             <div className="flex flex-col min-w-0 gap-2">
