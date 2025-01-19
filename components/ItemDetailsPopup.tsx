@@ -90,13 +90,15 @@ export default function ItemDetailsPopup({
         </p>
 
         <div className="flex flex-col gap-3">
-          <button
-            onClick={onRequest}
-            className="flex-1 bg-[#FFB938] text-[#7E4E31] px-4 py-2 rounded-lg font-bold 
-                     hover:bg-[#ffc661] transition-colors"
-          >
-            Request on FC
-          </button>
+          {(item.category !== "perk" || item.id === 9) && (
+            <button
+              onClick={onRequest}
+              className="flex-1 bg-[#FFB938] text-[#7E4E31] px-4 py-2 rounded-lg font-bold 
+                       hover:bg-[#ffc661] transition-colors"
+            >
+              Request on FC
+            </button>
+          )}
           {onUse && (
             <button
               onClick={onUse}
