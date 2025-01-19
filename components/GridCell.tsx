@@ -74,9 +74,7 @@ function SeedDetailPopup({
         <div className="space-y-3 text-white/80 text-xs">
           <p>Growth Time: {cropData.growthTime / 1000 / 60} minutes</p>
           <p>Planted at: {plantedAt.toLocaleTimeString()}</p>
-          {!cell.isReadyToHarvest && (
-            <p>Harvest in: {minutesLeft} minutes</p>
-          )}
+          {!cell.isReadyToHarvest && <p>Harvest in: {minutesLeft} minutes</p>}
           {cell.isReadyToHarvest && (
             <p className="text-[#FFB938] font-medium">Ready to harvest!</p>
           )}
@@ -105,9 +103,10 @@ export default function GridCell({ cell }: GridCellProps) {
     plantSeed,
     harvestCrop,
     fertilize,
+    applyPerk,
     selectedSeed,
-    selectedFertilizer,
-    setSelectedFertilizer,
+    selectedPerk,
+    setSelectedPerk,
     isActionInProgress,
   } = useGame();
   const [showFloating, setShowFloating] = useState(false);
@@ -130,6 +129,7 @@ export default function GridCell({ cell }: GridCellProps) {
         Date.now());
 
   const isValidFertilizerTarget = cell.plantedAt && !isReadyToHarvest;
+  const isValidSpeedBoostTarget = cell.plantedAt && cell.speedBoostedAt && new Date(cell.speedBoostedAt).getTime() + 1000 * 60 * 60 * 2 < Date.now();
 
   const { state } = useGame();
 
@@ -140,9 +140,14 @@ export default function GridCell({ cell }: GridCellProps) {
   const handleClick = async () => {
     if (isActionInProgress) return;
 
-    if (selectedFertilizer && isValidFertilizerTarget) {
-      await fertilize({ x: cell.x, y: cell.y });
-      setSelectedFertilizer(null);
+    if (selectedPerk && (isValidFertilizerTarget || isValidSpeedBoostTarget)) {
+      await applyPerk({
+        x: cell.x,
+        y: cell.y,
+        itemSlug: selectedPerk.item.slug,
+        itemId: selectedPerk.itemId,
+      });
+      setSelectedPerk(null);
       return;
     }
 
@@ -238,11 +243,11 @@ export default function GridCell({ cell }: GridCellProps) {
               : "cursor-pointer"
           }
           ${
-            selectedFertilizer && isValidFertilizerTarget
+            selectedPerk && isValidFertilizerTarget
               ? "border-4 border-yellow-400 shadow-lg"
               : ""
           }
-          ${selectedFertilizer && !isValidFertilizerTarget ? "opacity-50" : ""}
+          ${selectedPerk && !isValidFertilizerTarget ? "opacity-50" : ""}
           ${
             selectedSeed && !cell.plantedAt
               ? "border-4 border-green-400 shadow-lg"
@@ -281,13 +286,18 @@ export default function GridCell({ cell }: GridCellProps) {
                     ? new Date(cell.plantedAt).getTime()
                     : 0,
                   readyToHarvest: !!isReadyToHarvest,
+                  speedBoost: cell.speedBoost || 0,
+                  speedBoostedAt: cell.speedBoostedAt
+                    ? new Date(cell.speedBoostedAt).getTime()
+                    : 0,
+                  yieldBoost: cell.yieldBoost || 0,
                 }
               : undefined
           }
         />
 
         {/* Fertilizer Hover Effect */}
-        {selectedFertilizer && isValidFertilizerTarget && (
+        {selectedPerk && isValidFertilizerTarget && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}

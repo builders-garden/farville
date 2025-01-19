@@ -570,6 +570,25 @@ export const fertilizeGridCell = async (
   if (error) throw error;
 };
 
+export const speedBoostGridCell = async (
+  fid: number,
+  x: number,
+  y: number,
+  boost: number
+): Promise<DbGridCell | null> => {
+  const { data, error } = await supabase
+    .from("user_grid_cells")
+    .update({ speedBoost: boost, speedBoostedAt: new Date().toISOString() })
+    .eq("fid", fid)
+    .eq("x", x)
+    .eq("y", y)
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+};
+
 export const getGridCell = async (
   fid: number,
   x: number,

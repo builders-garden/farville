@@ -10,6 +10,7 @@ import {
   harvestGridCell,
   addUserItem,
   updateUserXP,
+  speedBoostGridCell,
 } from "@/supabase/queries";
 import { CropType, SeedType } from "@/types/game";
 
@@ -90,7 +91,7 @@ export const fertilize = async (fid: number, x: number, y: number) => {
   }
   await fertilizeGridCell(fid, x, y);
   await removeUserItem(fid, fertilizer.id, 1);
-  return gridCell
+  return gridCell;
 };
 
 export const rewardUser = async (
@@ -134,3 +135,98 @@ export async function sendQuestsCalculation(
     }`
   );
 }
+
+export const handlePerk = async (
+  fid: number,
+  x: number,
+  y: number,
+  itemSlug: string
+) => {
+  const perk = await getItemBySlug(itemSlug);
+  if (!perk) {
+    throw new Error("Perk not found");
+  }
+  const perkItem = await getUserItemByItemId(fid, perk.id);
+  if (!perkItem) {
+    throw new Error("Player does not have enough fertilizer to fertilize");
+  }
+  const gridCell = await getGridCell(fid, x, y);
+  if (!gridCell) {
+    throw new Error("Grid cell not found");
+  }
+  if (!gridCell.plantedAt) {
+    throw new Error("Grid cell is not planted");
+  }
+  if (gridCell.isReadyToHarvest) {
+    throw new Error("Grid cell is ready to harvest");
+  }
+  const cell = await applyPerkOnCell(
+    fid,
+    gridCell.cropType! as CropType,
+    x,
+    y,
+    itemSlug,
+    gridCell.speedBoost ?? undefined
+  );
+  await removeUserItem(fid, perk.id, 1);
+  return cell;
+};
+
+export const applyPerkOnCell = async (
+  fid: number,
+  cropType: CropType,
+  x: number,
+  y: number,
+  itemSlug: string,
+  previousSpeedBoost?: number
+) => {
+  switch (itemSlug) {
+    case "fertilizer":
+      return await fertilizeGridCell(fid, x, y);
+    case "nitrogen": {
+      if (
+        [CropType.Carrot, CropType.Wheat, CropType.Radish].includes(cropType)
+      ) {
+        return await speedBoostGridCell(fid, x, y, previousSpeedBoost ? 1.25 * previousSpeedBoost : 1.25);
+      }
+      break;
+    }
+    case "potassium": {
+      if (
+        [
+          CropType.Lettuce,
+          CropType.Tomato,
+          CropType.Potato,
+          CropType.Corn,
+          CropType.Eggplant,
+          CropType.Tomato,
+        ].includes(cropType)
+      ) {
+        return await speedBoostGridCell(
+          fid,
+          x,
+          y,
+          previousSpeedBoost ? 1.5 * previousSpeedBoost : 1.5
+        );
+      }
+      break;
+    }
+    case "phosphorus": {
+      if (
+        [CropType.Pumpkin, CropType.Watermelon, CropType.Strawberry].includes(
+          cropType
+        )
+      ) {
+        return await speedBoostGridCell(
+          fid,
+          x,
+          y,
+          previousSpeedBoost ? 2 * previousSpeedBoost : 2
+        );
+      }
+      break;
+    }
+    default:
+      throw new Error("Perk not found");
+  }
+};

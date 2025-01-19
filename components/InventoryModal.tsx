@@ -13,7 +13,7 @@ import sdk from "@farcaster/frame-sdk";
 import { useCreateRequest } from "@/hooks/game-actions/use-create-request";
 
 export default function InventoryModal({ onClose }: { onClose: () => void }) {
-  const { state, setSelectedSeed, setSelectedFertilizer } = useGame();
+  const { state, setSelectedSeed, setSelectedPerk } = useGame();
   const { safeAreaInsets, context } = useFrameContext();
   const [selectedItem, setSelectedItem] = useState<DbItem | null>(null);
   const [requestQuantity, setRequestQuantity] = useState(1);
@@ -23,7 +23,7 @@ export default function InventoryModal({ onClose }: { onClose: () => void }) {
 
   const handlePerkClick = (perk: UserItem) => {
     if (perk.item.name === "Fertilizer" && perk.quantity && perk.quantity > 0) {
-      setSelectedFertilizer(perk);
+      setSelectedPerk(perk);
       setSelectedSeed(null);
       onClose();
     }

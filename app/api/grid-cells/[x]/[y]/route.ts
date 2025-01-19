@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { fertilize, harvest, plantSeed, sendQuestsCalculation } from "./utils";
+import { fertilize, handlePerk, harvest, plantSeed, sendQuestsCalculation } from "./utils";
 import {
   sendDelayedNotification,
   getGrowthTime,
@@ -12,6 +12,8 @@ import { trackEvent } from "@/lib/posthog/server";
 const requestSchema = z.object({
   action: z.nativeEnum(ActionType),
   seedType: z.nativeEnum(SeedType).optional(),
+  itemSlug: z.string().optional(),
+  itemId: z.number().optional(),
 });
 
 export async function POST(
@@ -32,7 +34,7 @@ export async function POST(
       { status: 400 }
     );
   }
-  const { action, seedType } = requestBody.data;
+  const { action, seedType, itemSlug, itemId } = requestBody.data;
 
   const fid = req.headers.get("x-user-fid");
   if (!fid) {
@@ -99,6 +101,20 @@ export async function POST(
         trackEvent(Number(fid), "fertilized-cell", {
           cellId: `${x}/${y}`,
           cropType: cell?.cropType,
+        });
+        break;
+      case "apply-perk":
+        const perkCell = await handlePerk(
+          parseInt(fid),
+          parseInt(x),
+          parseInt(y),
+          itemSlug as string
+        );
+        await sendQuestsCalculation(parseInt(fid), "apply-perk", itemId);
+        trackEvent(Number(fid), "applied-perk", {
+          cellId: `${x}/${y}`,
+          cropType: perkCell?.cropType,
+          itemSlug,
         });
         break;
     }

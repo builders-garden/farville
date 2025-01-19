@@ -18,6 +18,7 @@ export enum ActionType {
   Plant = "plant",
   Harvest = "harvest",
   Fertilize = "fertilize",
+  ApplyPerk = "apply-perk",
 }
 
 export enum CropType {

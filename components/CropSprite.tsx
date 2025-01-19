@@ -7,12 +7,16 @@ import { useGame } from "../context/GameContext";
 import { useEffect, useState } from "react";
 import { CROP_DATA } from "@/lib/game-constants";
 
+interface CropSpriteCropProp {
+  type: CropType;
+  plantedAt: number;
+  readyToHarvest: boolean;
+  speedBoost?: number;
+  speedBoostedAt?: number;
+  yieldBoost?: number;
+}
 interface CropSpriteProps {
-  crop: {
-    type: CropType;
-    plantedAt: number;
-    readyToHarvest: boolean;
-  };
+  crop: CropSpriteCropProp;
   isDemo?: boolean;
 }
 
@@ -41,8 +45,28 @@ export function PlantedCropSprite({ crop, isDemo }: CropSpriteProps) {
     setForceUpdate((prev) => prev + 1);
 
     const interval = setInterval(() => {
-      const progress =
-        (Date.now() - crop.plantedAt) / CROP_DATA[crop.type].growthTime;
+      const { plantedAt } = crop;
+      const growthTime = CROP_DATA[crop.type].growthTime;
+
+      // If no speed boost, calculate normal progress
+      if (!crop.speedBoost || !crop.speedBoostedAt) {
+        const progress = (Date.now() - plantedAt) / growthTime;
+        if (progress >= 1) {
+          clearInterval(interval);
+          return;
+        }
+        setForceUpdate((prev) => prev + 1);
+        return;
+      }
+
+      // Calculate time elapsed before and after speed boost
+      const timeBeforeBoost = Math.max(0, crop.speedBoostedAt - plantedAt);
+      const timeAfterBoost = Math.max(0, Date.now() - crop.speedBoostedAt);
+
+      // Calculate effective progress with speed boost
+      const effectiveTime = timeBeforeBoost + timeAfterBoost * crop.speedBoost;
+      const progress = effectiveTime / growthTime;
+
       if (progress >= 1) {
         clearInterval(interval);
         return;
@@ -51,13 +75,25 @@ export function PlantedCropSprite({ crop, isDemo }: CropSpriteProps) {
     }, 1000); // Update more frequently for smoother progress
 
     return () => clearInterval(interval);
-  }, [crop.readyToHarvest, isDemo, crop.plantedAt, crop.type]);
+  }, [isDemo, crop]);
 
   const getGrowthProgress = () => {
     const { plantedAt } = crop;
     const growthTime = CROP_DATA[crop.type].growthTime;
-    const elapsed = Date.now() - plantedAt;
-    return Math.min(elapsed / growthTime, 1);
+
+    // If no speed boost, calculate normal progress
+    if (!crop.speedBoost || !crop.speedBoostedAt) {
+      return Math.min((Date.now() - plantedAt) / growthTime, 1);
+    }
+
+    // Calculate time elapsed before and after speed boost
+    const timeBeforeBoost = Math.max(0, crop.speedBoostedAt - plantedAt);
+    const timeAfterBoost = Math.max(0, Date.now() - crop.speedBoostedAt);
+
+    // Apply speed boost only to time after the boost was applied
+    const effectiveTime = timeBeforeBoost + timeAfterBoost * crop.speedBoost;
+
+    return Math.min(effectiveTime / growthTime, 1);
   };
 
   const getGrowthStage = () => {
@@ -73,17 +109,41 @@ export function PlantedCropSprite({ crop, isDemo }: CropSpriteProps) {
   const getTimeRemaining = () => {
     const { plantedAt } = crop;
     const growthTime = CROP_DATA[crop.type].growthTime;
-    const elapsed = Date.now() - plantedAt;
-    const remaining = Math.max(growthTime - elapsed, 0);
 
-    if (remaining > 3600000) {
+    // If no speed boost, calculate normal remaining time
+    if (!crop.speedBoost || !crop.speedBoostedAt) {
+      const remainingTime = Math.max(growthTime - (Date.now() - plantedAt), 0);
+      if (remainingTime > 3600000) {
+        const hours = Math.floor(remainingTime / 3600000);
+        const minutes = Math.floor((remainingTime % 3600000) / 60000);
+        return `${hours}h ${minutes}m`;
+      }
+      return formatDistanceStrict(0, remainingTime, { unit: "minute" });
+    }
+
+    // Calculate time elapsed before and after speed boost
+    const timeBeforeBoost = Math.max(0, crop.speedBoostedAt - plantedAt);
+    const timeAfterBoost = Math.max(0, Date.now() - crop.speedBoostedAt);
+
+    // Calculate remaining time in effective growth time
+    const effectiveTimeElapsed =
+      timeBeforeBoost + timeAfterBoost * crop.speedBoost;
+    const remainingEffectiveTime = Math.max(
+      growthTime - effectiveTimeElapsed,
+      0
+    );
+
+    // Convert to real time (divide by speed boost since boosted time passes faster)
+    const remainingRealTime = remainingEffectiveTime / crop.speedBoost;
+
+    if (remainingRealTime > 3600000) {
       // If more than 1 hour
-      const hours = Math.floor(remaining / 3600000);
-      const minutes = Math.floor((remaining % 3600000) / 60000);
+      const hours = Math.floor(remainingRealTime / 3600000);
+      const minutes = Math.floor((remainingRealTime % 3600000) / 60000);
       return `${hours}h ${minutes}m`;
     }
 
-    return formatDistanceStrict(0, remaining, { unit: "minute" });
+    return formatDistanceStrict(0, remainingRealTime, { unit: "minute" });
   };
 
   return (
@@ -109,6 +169,23 @@ export function PlantedCropSprite({ crop, isDemo }: CropSpriteProps) {
           }}
         />
       )}
+
+      {/* Speed Boost Indicator */}
+      {crop.speedBoost &&
+        crop.speedBoost > 1 &&
+        crop.speedBoostedAt &&
+        Date.now() - crop.speedBoostedAt < 1000 * 60 * 60 * 2 && (
+          <div className="absolute top-1 right-1 z-50">
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              className="bg-blue-500/80 rounded-full px-1"
+              title={`${crop.speedBoost}x Speed Boost`}
+            >
+              ⚡️
+            </motion.div>
+          </div>
+        )}
 
       {/* Progress Bar - Centered and smaller */}
       {!crop.readyToHarvest && (
@@ -179,11 +256,7 @@ export default function CropSprite({
   crop,
   isDemo,
 }: {
-  crop?: {
-    type: CropType;
-    plantedAt: number;
-    readyToHarvest: boolean;
-  };
+  crop?: CropSpriteCropProp;
   isDemo?: boolean;
 }) {
   return crop ? (
