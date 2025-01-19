@@ -32,6 +32,10 @@ export async function POST(req: NextRequest) {
 
   const notificationDetails = await getUserNotificationDetails(parseInt(fid));
 
+  if (!notificationDetails) {
+    return Response.json({ success: false, error: "User notifications not enabled" }, { status: 404 });
+  }
+
   // before sending the notification, check if the user has already received a notification of this type
   const lastUserNotifications = await getUserNotificationsByCategory(
     parseInt(fid),
