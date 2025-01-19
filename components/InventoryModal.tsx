@@ -22,7 +22,7 @@ export default function InventoryModal({ onClose }: { onClose: () => void }) {
   } = useCreateRequest();
 
   const handlePerkClick = (perk: UserItem) => {
-    if (perk.item.name === "Fertilizer" && perk.quantity && perk.quantity > 0) {
+    if (perk.quantity && perk.quantity > 0) {
       setSelectedPerk(perk);
       setSelectedSeed(null);
       onClose();
@@ -232,7 +232,7 @@ export default function InventoryModal({ onClose }: { onClose: () => void }) {
                 </motion.h3>
                 <div className="grid grid-cols-6 gap-4 md:grid-cols-8">
                   {state.items
-                    .filter((item) => item.category === "perk" && item.id === 9)
+                    .filter((item) => item.category === "perk")
                     .map((perk) => {
                       const userPerk = state.perks.find(
                         (p) => p.item.slug === perk.slug
@@ -249,13 +249,13 @@ export default function InventoryModal({ onClose }: { onClose: () => void }) {
                           title={perk.description}
                           onClick={() => handleItemClick(perk)}
                         >
-                          <motion.span
-                            className="text-2xl"
+                          <motion.img
+                            src={`/images${perk.icon}`}
+                            alt={`${perk.name} perk`}
+                            className="w-8 h-8 object-contain"
                             animate={{ y: [0, -2, 0] }}
                             transition={{ duration: 1.5, repeat: Infinity }}
-                          >
-                            {perk.icon}
-                          </motion.span>
+                          />
 
                           <motion.div
                             className="absolute -top-2 -right-2 bg-[#FFB938] text-[#7E4E31] text-xs px-2 py-0.5 

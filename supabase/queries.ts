@@ -18,7 +18,7 @@ import {
   InsertDbUserHasQuest,
   DbUserHasQuestStatus,
 } from "./types";
-import { LEVEL_REWARDS, LEVEL_XP_THRESHOLDS } from "@/lib/game-constants";
+import { LEVEL_REWARDS, LEVEL_XP_THRESHOLDS, SPEED_BOOST } from "@/lib/game-constants";
 import { trackEvent } from "@/lib/posthog/server";
 
 // Items queries
@@ -149,7 +149,6 @@ export const updateUserCoins = async (
   fid: number,
   coins: number
 ): Promise<DbUser> => {
-  
   const { data, error } = await supabase
     .from("users")
     .update({ coins })
@@ -188,7 +187,7 @@ export const getUsersByXp = async (
       .from("users")
       .select("*", { count: "exact", head: true })
       .order("xp", { ascending: false })
-      .gt("xp", data.find(u => u.fid === targetFid)?.xp || 0);
+      .gt("xp", data.find((u) => u.fid === targetFid)?.xp || 0);
 
     if (countError) throw countError;
     targetPosition = (aboveCount || 0) + 1;
@@ -196,7 +195,7 @@ export const getUsersByXp = async (
 
   return {
     users: data,
-    targetPosition
+    targetPosition,
   };
 };
 
@@ -546,6 +545,8 @@ export const harvestGridCell = async (
       cropType: null,
       plantedAt: null,
       isReadyToHarvest: false,
+      harvestAt: null,
+      speedBoostedAt: null,
     })
     .eq("fid", fid)
     .eq("x", x)
@@ -560,7 +561,7 @@ export const fertilizeGridCell = async (
 ): Promise<void> => {
   const { error } = await supabase
     .from("user_grid_cells")
-    .update({ isReadyToHarvest: true })
+    .update({ isReadyToHarvest: true, harvestAt: new Date().toISOString() })
     .eq("fid", fid)
     .eq("x", x)
     .eq("y", y)
@@ -574,11 +575,17 @@ export const speedBoostGridCell = async (
   fid: number,
   x: number,
   y: number,
-  boost: number
+  boostSlug: "nitrogen" | "potassium" | "phosphorus",
+  harvestAt: Date,
 ): Promise<DbGridCell | null> => {
+  const currentHarvestTime = new Date(harvestAt);
+  const boostTime = SPEED_BOOST[boostSlug].duration / SPEED_BOOST[boostSlug].boost;
   const { data, error } = await supabase
     .from("user_grid_cells")
-    .update({ speedBoost: boost, speedBoostedAt: new Date().toISOString() })
+    .update({
+      harvestAt: new Date(currentHarvestTime.getTime() - boostTime).toISOString(),
+      speedBoostedAt: new Date().toISOString(),
+    })
     .eq("fid", fid)
     .eq("x", x)
     .eq("y", y)

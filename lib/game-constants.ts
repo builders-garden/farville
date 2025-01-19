@@ -243,12 +243,12 @@ export const SPEED_BOOST = {
     applyTo: [CropType.Carrot, CropType.Wheat, CropType.Radish],
   },
   "potassium": {
-    boost: 1.5,
+    boost: 1.25,
     duration: 7200000, // 2 hours
     applyTo: [CropType.Lettuce, CropType.Tomato, CropType.Potato, CropType.Corn, CropType.Eggplant, CropType.Tomato],
   },
   phosphorus: {
-    boost: 2,
+    boost: 1.5,
     duration: 7200000, // 2 hours
     applyTo: [CropType.Strawberry, CropType.Watermelon, CropType.Pumpkin],
   },

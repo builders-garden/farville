@@ -117,7 +117,7 @@ export interface Database {
           plantedAt: string;
           isReadyToHarvest: boolean;
           createdAt: string;
-          speedBoost: number | null;
+          harvestAt: string | null;
           speedBoostedAt: string | null;
           yieldBoost: number | null;
         };
@@ -129,7 +129,7 @@ export interface Database {
           plantedAt: string;
           isReadyToHarvest: boolean;
           createdAt?: string;
-          speedBoost?: number | null;
+          harvestAt?: string | null;
           speedBoostedAt?: string | null;
           yieldBoost?: number | null;
         };
@@ -141,7 +141,7 @@ export interface Database {
           plantedAt?: string;
           isReadyToHarvest?: boolean;
           createdAt?: string;
-          speedBoost?: number | null;
+          harvestAt?: string | null;
           speedBoostedAt?: string | null;
           yieldBoost?: number | null;
         };

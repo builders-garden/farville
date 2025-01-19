@@ -154,7 +154,7 @@ export const handlePerk = async (
   if (!gridCell) {
     throw new Error("Grid cell not found");
   }
-  if (!gridCell.plantedAt) {
+  if (!gridCell.plantedAt || !gridCell.harvestAt) {
     throw new Error("Grid cell is not planted");
   }
   if (gridCell.isReadyToHarvest) {
@@ -166,7 +166,7 @@ export const handlePerk = async (
     x,
     y,
     itemSlug,
-    gridCell.speedBoost ?? undefined
+    gridCell.harvestAt as string
   );
   await removeUserItem(fid, perk.id, 1);
   return cell;
@@ -178,7 +178,7 @@ export const applyPerkOnCell = async (
   x: number,
   y: number,
   itemSlug: string,
-  previousSpeedBoost?: number
+  harvestAt: string
 ) => {
   switch (itemSlug) {
     case "fertilizer":
@@ -187,9 +187,16 @@ export const applyPerkOnCell = async (
       if (
         [CropType.Carrot, CropType.Wheat, CropType.Radish].includes(cropType)
       ) {
-        return await speedBoostGridCell(fid, x, y, previousSpeedBoost ? 1.25 * previousSpeedBoost : 1.25);
+        return await speedBoostGridCell(
+          fid,
+          x,
+          y,
+          "nitrogen",
+          new Date(harvestAt)
+        );
+      } else {
+        throw new Error("Invalid perk on cell");
       }
-      break;
     }
     case "potassium": {
       if (
@@ -206,10 +213,12 @@ export const applyPerkOnCell = async (
           fid,
           x,
           y,
-          previousSpeedBoost ? 1.5 * previousSpeedBoost : 1.5
+          "potassium",
+          new Date(harvestAt)
         );
+      } else {
+        throw new Error("Invalid perk on cell");
       }
-      break;
     }
     case "phosphorus": {
       if (
@@ -221,10 +230,12 @@ export const applyPerkOnCell = async (
           fid,
           x,
           y,
-          previousSpeedBoost ? 2 * previousSpeedBoost : 2
+          "phosphorus",
+          new Date(harvestAt)
         );
+      } else {
+        throw new Error("Invalid perk on cell");
       }
-      break;
     }
     default:
       throw new Error("Perk not found");
