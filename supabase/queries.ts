@@ -210,15 +210,23 @@ export const getUsersByXp = async (
 
   let targetPosition: number | undefined;
   if (targetFid) {
-    // Find position of target user in full XP ranking
-    const { count: aboveCount, error: countError } = await supabase
+    // Get target user's XP
+    const { data: targetUser, error: targetError } = await supabase
+      .from("users")
+      .select("xp")
+      .eq("fid", targetFid)
+      .single();
+
+    if (targetError) throw targetError;
+
+    // Count users with higher or equal XP to get position
+    const { count, error: countError } = await supabase
       .from("users")
       .select("*", { count: "exact", head: true })
-      .order("xp", { ascending: false })
-      .gt("xp", data.find((u) => u.fid === targetFid)?.xp || 0);
+      .gte("xp", targetUser.xp);
 
     if (countError) throw countError;
-    targetPosition = (aboveCount || 0) + 1;
+    targetPosition = count || 0;
   }
 
   return {

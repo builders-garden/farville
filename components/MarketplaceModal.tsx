@@ -319,28 +319,38 @@ export default function MarketplaceModal({
                           </div>
                         </div>
                         <div className="flex gap-2 ml-13 md:ml-0">
-                          {[1, 5, 10].map((sellAmount) => (
+                          {[1, 5, "ALL"].map((sellAmount) => (
                             <motion.button
                               key={sellAmount}
                               whileHover={{ scale: 1.03 }}
                               whileTap={{ scale: 0.97 }}
                               onClick={() => {
-                                if (sellAmount >= 5) {
+                                if (
+                                  sellAmount === "ALL" ||
+                                  Number(sellAmount) > 1
+                                ) {
+                                  const quantityToSell =
+                                    sellAmount === "ALL"
+                                      ? amount
+                                      : Number(sellAmount);
                                   setConfirmAction({
                                     type: "sell",
                                     itemId: item.id,
-                                    quantity: sellAmount,
+                                    quantity: quantityToSell,
                                     itemName: item.name,
-                                    price: item.sellPrice * sellAmount,
+                                    price: item.sellPrice * quantityToSell,
                                   });
                                 } else {
                                   sellItem({
                                     itemId: item.id,
-                                    quantity: sellAmount,
+                                    quantity: 1,
                                   });
                                 }
                               }}
-                              disabled={amount < sellAmount}
+                              disabled={
+                                amount <
+                                (sellAmount === "ALL" ? 1 : Number(sellAmount))
+                              }
                               className="min-w-[70px] px-2 py-1.5 bg-[#2B593B] text-white/90 rounded hover:bg-[#346344] 
                                      transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-xs font-medium
                                      border border-white/10"
