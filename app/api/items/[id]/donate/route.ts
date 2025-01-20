@@ -21,7 +21,7 @@ export const POST = async (
   }
   const itemId = Number((await params).id);
   const { quantity, toFid, requestId } = await req.json();
-  if (fid === toFid) {
+  if (fid.toString() === toFid.toString()) {
     return NextResponse.json({ message: "Cannot donate to yourself" }, { status: 400 });
   }
   const item = await getItemById(itemId);
@@ -45,7 +45,7 @@ export const POST = async (
     await incrementRequestFilledQuantity(Number(requestId), quantity);
   }
 
-  const user = await getUser(Number(toFid));
+  const user = await getUser(Number(fid));
 
   await Promise.all([
     sendQuestsCalculation(Number(fid), "donate", itemId, quantity),

@@ -21,6 +21,10 @@ export default function RequestModal({
   const { request, isLoading } = useRequest(id);
   const { donate } = useDonate();
   const { state } = useGame();
+
+  // Add check for user's own request
+  const isOwnRequest = request?.fid === state.user?.fid;
+
   const currentQuantity =
     state.inventory.find((seed) => seed.itemId === request?.itemId)?.quantity ||
     0;
@@ -172,7 +176,11 @@ export default function RequestModal({
                   </div>
 
                   <div className="flex flex-col items-center gap-2 mt-2">
-                    {currentQuantity > 0 ? (
+                    {isOwnRequest ? (
+                      <p className="text-amber-500/90 text-sm text-center">
+                        You can&apos;t donate to yourself
+                      </p>
+                    ) : currentQuantity > 0 ? (
                       <>
                         <p className="text-white/80 text-xs sm:text-sm">
                           You have{" "}
@@ -240,29 +248,31 @@ export default function RequestModal({
               >
                 Cancel
               </button>
-              <button
-                disabled={
-                  selectedQuantity === 0 ||
-                  selectedQuantity > currentQuantity ||
-                  remainingQuantity === 0
-                }
-                onClick={() => {
-                  donate({
-                    itemId: request?.itemId,
-                    quantity: selectedQuantity,
-                    toFid: request?.fid,
-                    requestId: request?.id,
-                  });
-                  onClose();
-                }}
-                className="px-6 sm:px-8 py-2.5 bg-green-600/80 hover:bg-green-600 disabled:bg-green-600/20 
-                         disabled:text-white/50 disabled:cursor-not-allowed rounded-lg text-white transition-colors 
-                         font-medium text-sm sm:text-base"
-              >
-                {remainingQuantity === 0
-                  ? "Request Filled"
-                  : `Donate ${selectedQuantity}`}
-              </button>
+              {!isOwnRequest && (
+                <button
+                  disabled={
+                    selectedQuantity === 0 ||
+                    selectedQuantity > currentQuantity ||
+                    remainingQuantity === 0
+                  }
+                  onClick={() => {
+                    donate({
+                      itemId: request?.itemId,
+                      quantity: selectedQuantity,
+                      toFid: request?.fid,
+                      requestId: request?.id,
+                    });
+                    onClose();
+                  }}
+                  className="px-6 sm:px-8 py-2.5 bg-green-600/80 hover:bg-green-600 disabled:bg-green-600/20 
+                           disabled:text-white/50 disabled:cursor-not-allowed rounded-lg text-white transition-colors 
+                           font-medium text-sm sm:text-base"
+                >
+                  {remainingQuantity === 0
+                    ? "Request Filled"
+                    : `Donate ${selectedQuantity}`}
+                </button>
+              )}
             </div>
           </div>
         </div>
