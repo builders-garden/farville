@@ -122,9 +122,8 @@ export default function GridCell({ cell }: GridCellProps) {
   const isReadyToHarvest =
     cell.isReadyToHarvest ||
     (cell.plantedAt &&
-      new Date(cell.plantedAt).getTime() +
-        CROP_DATA[cell.cropType as CropType].growthTime <
-        Date.now());
+      cell.harvestAt &&
+      Date.now() > new Date(cell.harvestAt).getTime());
 
   const isValidFertilizerTarget = cell.plantedAt && !isReadyToHarvest;
   const isValidSpeedBoostTarget =
