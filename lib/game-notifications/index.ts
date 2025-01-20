@@ -16,7 +16,7 @@ export async function sendDelayedNotification(
   const res = await qstashPublishJSON({
     url: `${process.env.NEXT_PUBLIC_URL}/api/qstash/send-notification`,
     body: {
-      fid,
+      fid: fid.toString(),
       title,
       text,
       category,

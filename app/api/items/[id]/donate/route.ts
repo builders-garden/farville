@@ -51,7 +51,7 @@ export const POST = async (
     sendQuestsCalculation(Number(fid), "donate", itemId, quantity),
     sendQuestsCalculation(Number(toFid), "receive", itemId, quantity),
     sendDelayedNotification(
-      toFid,
+      toFid.toString(),
       "New Donation!",
       `${user?.username} donated ${quantity} ${item.name} to you!`,
       "donation",

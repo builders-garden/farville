@@ -61,7 +61,7 @@ export async function POST(
           seedType
         );
         await sendDelayedNotification(
-          fid,
+          fid.toString(),
           `Harvest time! 🌾`,
           `Your ${getCropNameFromSeeds(seedType)} are ready to harvest!`,
           "harvest",
