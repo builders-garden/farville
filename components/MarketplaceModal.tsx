@@ -469,7 +469,9 @@ export default function MarketplaceModal({
                         item.category === "perk" && item.slug !== "fertilizer"
                     )
                     .map((perk) => {
-                      const isOwned = state.perks.some((p) => p.id === perk.id);
+                      const ownedQuantity = state.perks.find(
+                        (p) => p.itemId === perk.id
+                      )?.quantity;
 
                       return (
                         <motion.div
@@ -492,49 +494,60 @@ export default function MarketplaceModal({
                                 />
                               </div>
                             </div>
-                            <div className="flex flex-col min-w-0 gap-2">
-                              <div className="flex flex-row justify-between">
-                                <h3 className="text-sm text-white/90 font-medium mb-1">
+                            <div className="flex flex-col min-w-0 gap-1">
+                              <div className="flex flex-row justify-between items-center">
+                                <h3 className="text-sm text-white/90 font-medium">
                                   {perk.name}
                                 </h3>
-                                <div className="h-fit px-2 py-0.5 bg-[#8B5E3C]/50 rounded text-xs text-white/80 font-medium text-center min-w-[24px]">
-                                  1x
-                                </div>
+                                <p className="text-white/90 flex items-center">
+                                  <span className="pb-1 mr-1">🪙</span>
+                                  {perk.buyPrice}
+                                </p>
                               </div>
-                              <p className="text-white/60 text-[10px]">
-                                {perk.description}
-                              </p>
+                              <div className="flex flex-col gap-1">
+                                <p className="text-white/90 text-[10px]">
+                                  Owned: {ownedQuantity ? ownedQuantity : 0}
+                                </p>
+                                <p className="text-white/60 text-[10px]">
+                                  {perk.description}
+                                </p>
+                              </div>
                             </div>
                           </div>
                           <div className="flex flex-col items-stretch sm:items-end gap-2 flex-shrink-0">
-                            <motion.button
-                              whileHover={{ scale: 1.03 }}
-                              whileTap={{ scale: 0.97 }}
-                              onClick={() =>
-                                setConfirmAction({
-                                  type: "buy",
-                                  itemId: perk.id,
-                                  quantity: 1,
-                                  itemName: perk.name,
-                                  price: perk.buyPrice,
-                                })
-                              }
-                              disabled={state.coins < perk.buyPrice}
-                              className="min-w-[100px] py-2 px-4 rounded text-sm font-medium
-                                      bg-[#FFB938] text-[#7E4E31] hover:bg-[#ffc65c]
-                                      transition-colors disabled:opacity-40 disabled:cursor-not-allowed
-                                      border border-white/10"
-                            >
-                              <div className="flex justify-center items-center gap-1">
-                                <span className="mb-1">🪙</span>
-                                {perk.buyPrice}
-                              </div>
-                            </motion.button>
-                            {isOwned && (
-                              <div className="text-green-400 text-xs font-medium text-center sm:text-right">
-                                In inventory
-                              </div>
-                            )}
+                            <div className="flex gap-2">
+                              {[1, 5, 10].map((amount) => (
+                                <motion.button
+                                  key={amount}
+                                  whileHover={{ scale: 1.03 }}
+                                  whileTap={{ scale: 0.97 }}
+                                  onClick={() => {
+                                    if (amount === 1) {
+                                      buyItem({
+                                        itemId: perk.id,
+                                        quantity: amount,
+                                      });
+                                    } else {
+                                      setConfirmAction({
+                                        type: "buy",
+                                        itemId: perk.id,
+                                        quantity: amount,
+                                        itemName: perk.name,
+                                        price: perk.buyPrice * amount,
+                                      });
+                                    }
+                                  }}
+                                  disabled={
+                                    state.coins < perk.buyPrice * amount
+                                  }
+                                  className="min-w-[70px] px-2 py-1.5 bg-[#2B593B] text-white/90 rounded hover:bg-[#346344] 
+                                  transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-sm font-medium
+                                  border border-white/10"
+                                >
+                                  Buy {amount}
+                                </motion.button>
+                              ))}
+                            </div>
                           </div>
                         </motion.div>
                       );
