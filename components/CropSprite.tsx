@@ -2,7 +2,6 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import { CropType } from "../types/game";
-import { formatDistanceStrict } from "date-fns";
 import { useGame } from "../context/GameContext";
 import { useEffect, useState } from "react";
 import { CROP_DATA } from "@/lib/game-constants";
@@ -79,11 +78,12 @@ export function PlantedCropSprite({ crop, isDemo }: CropSpriteProps) {
     if (remaining > 3600000) {
       // If more than 1 hour
       const hours = Math.floor(remaining / 3600000);
-      const minutes = Math.floor((remaining % 3600000) / 60000);
-      return `${hours}h ${minutes}m`;
+      const mins = Math.floor((remaining % 3600000) / 60000);
+      return `${hours}h ${mins}m`;
     }
 
-    return formatDistanceStrict(0, remaining, { unit: "minute" });
+    const mins = Math.floor(remaining / 60000);
+    return `${mins}m`;
   };
 
   return (
