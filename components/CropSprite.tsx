@@ -4,14 +4,18 @@ import { motion, AnimatePresence } from "framer-motion";
 import { CropType } from "../types/game";
 import { useGame } from "../context/GameContext";
 import { useEffect, useState } from "react";
-import { CROP_DATA } from "@/lib/game-constants";
 
+interface CropSpriteCropProp {
+  type: CropType;
+  plantedAt: number;
+  readyToHarvest: boolean;
+  harvestAt?: number;
+  speedBoost?: number;
+  speedBoostedAt?: number;
+  yieldBoost?: number;
+}
 interface CropSpriteProps {
-  crop: {
-    type: CropType;
-    plantedAt: number;
-    readyToHarvest: boolean;
-  };
+  crop: CropSpriteCropProp;
   isDemo?: boolean;
 }
 
@@ -34,29 +38,27 @@ export function PlantedCropSprite({ crop, isDemo }: CropSpriteProps) {
   const [, setForceUpdate] = useState(0);
 
   useEffect(() => {
-    if (isDemo || crop.readyToHarvest) return;
+    if (isDemo || crop.readyToHarvest || !crop.harvestAt) return;
 
     // Initial update
     setForceUpdate((prev) => prev + 1);
 
     const interval = setInterval(() => {
-      const progress =
-        (Date.now() - crop.plantedAt) / CROP_DATA[crop.type].growthTime;
-      if (progress >= 1) {
+      if (Date.now() >= crop.harvestAt!) {
         clearInterval(interval);
         return;
       }
       setForceUpdate((prev) => prev + 1);
-    }, 1000); // Update more frequently for smoother progress
+    }, 1000);
 
     return () => clearInterval(interval);
-  }, [crop.readyToHarvest, isDemo, crop.plantedAt, crop.type]);
+  }, [isDemo, crop]);
 
   const getGrowthProgress = () => {
-    const { plantedAt } = crop;
-    const growthTime = CROP_DATA[crop.type].growthTime;
-    const elapsed = Date.now() - plantedAt;
-    return Math.min(elapsed / growthTime, 1);
+    if (!crop.harvestAt) return 0;
+    const totalTime = crop.harvestAt - crop.plantedAt;
+    const elapsed = Date.now() - crop.plantedAt;
+    return Math.min(elapsed / totalTime, 1);
   };
 
   const getGrowthStage = () => {
@@ -70,19 +72,16 @@ export function PlantedCropSprite({ crop, isDemo }: CropSpriteProps) {
   };
 
   const getTimeRemaining = () => {
-    const { plantedAt } = crop;
-    const growthTime = CROP_DATA[crop.type].growthTime;
-    const elapsed = Date.now() - plantedAt;
-    const remaining = Math.max(growthTime - elapsed, 0);
+    if (!crop.harvestAt) return "...";
 
-    if (remaining > 3600000) {
-      // If more than 1 hour
-      const hours = Math.floor(remaining / 3600000);
-      const mins = Math.floor((remaining % 3600000) / 60000);
+    const remainingTime = Math.max(crop.harvestAt - Date.now(), 0);
+
+    if (remainingTime > 3600000) {
+      const hours = Math.floor(remainingTime / 3600000);
+      const mins = Math.floor((remainingTime % 3600000) / 60000);
       return `${hours}h ${mins}m`;
     }
-
-    const mins = Math.floor(remaining / 60000);
+    const mins = Math.floor(remainingTime / 60000);
     return `${mins}m`;
   };
 
@@ -109,6 +108,21 @@ export function PlantedCropSprite({ crop, isDemo }: CropSpriteProps) {
           }}
         />
       )}
+
+      {/* Speed Boost Indicator */}
+      {crop.speedBoostedAt &&
+        Date.now() - crop.speedBoostedAt < 1000 * 60 * 60 * 2 && (
+          <div className="absolute top-1 right-1 z-50">
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              className="bg-blue-500/80 rounded-full px-1"
+              title={`${crop.speedBoost}x Speed Boost`}
+            >
+              ⚡️
+            </motion.div>
+          </div>
+        )}
 
       {/* Progress Bar - Centered and smaller */}
       {!crop.readyToHarvest && (
@@ -179,11 +193,7 @@ export default function CropSprite({
   crop,
   isDemo,
 }: {
-  crop?: {
-    type: CropType;
-    plantedAt: number;
-    readyToHarvest: boolean;
-  };
+  crop?: CropSpriteCropProp;
   isDemo?: boolean;
 }) {
   return crop ? (

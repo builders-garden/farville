@@ -18,8 +18,36 @@ import {
   InsertDbUserHasQuest,
   DbUserHasQuestStatus,
 } from "./types";
-import { LEVEL_REWARDS, LEVEL_XP_THRESHOLDS } from "@/lib/game-constants";
+import {
+  LEVEL_REWARDS,
+  LEVEL_XP_THRESHOLDS,
+  SPEED_BOOST,
+} from "@/lib/game-constants";
 import { trackEvent } from "@/lib/posthog/server";
+
+export const getUsers = async (
+  offset: number = 0,
+  limit: number = 100
+): Promise<DbUser[]> => {
+  const { data, error } = await supabase
+    .from("users")
+    .select("*")
+    .range(offset, offset + limit);
+  if (error) throw error;
+  return data;
+};
+
+export const getGridCellsBulk = async (
+  offset: number = 0,
+  limit: number = 100
+): Promise<DbGridCell[]> => {
+  const { data, error } = await supabase
+    .from("user_grid_cells")
+    .select("*")
+    .range(offset, offset + limit);
+  if (error) throw error;
+  return data;
+};
 
 // Items queries
 export const getItems = async (category?: string): Promise<DbItem[]> => {
@@ -553,6 +581,8 @@ export const harvestGridCell = async (
       cropType: null,
       plantedAt: null,
       isReadyToHarvest: false,
+      harvestAt: null,
+      speedBoostedAt: null,
     })
     .eq("fid", fid)
     .eq("x", x)
@@ -567,7 +597,7 @@ export const fertilizeGridCell = async (
 ): Promise<void> => {
   const { error } = await supabase
     .from("user_grid_cells")
-    .update({ isReadyToHarvest: true })
+    .update({ isReadyToHarvest: true, harvestAt: new Date().toISOString() })
     .eq("fid", fid)
     .eq("x", x)
     .eq("y", y)
@@ -575,6 +605,34 @@ export const fertilizeGridCell = async (
     .single();
 
   if (error) throw error;
+};
+
+export const speedBoostGridCell = async (
+  fid: number,
+  x: number,
+  y: number,
+  boostSlug: "nitrogen" | "potassium" | "phosphorus",
+  harvestAt: Date
+): Promise<DbGridCell | null> => {
+  const currentHarvestTime = new Date(harvestAt);
+  const boostTime =
+    SPEED_BOOST[boostSlug].duration / SPEED_BOOST[boostSlug].boost;
+  const { data, error } = await supabase
+    .from("user_grid_cells")
+    .update({
+      harvestAt: new Date(
+        currentHarvestTime.getTime() - boostTime
+      ).toISOString(),
+      speedBoostedAt: new Date().toISOString(),
+    })
+    .eq("fid", fid)
+    .eq("x", x)
+    .eq("y", y)
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
 };
 
 export const getGridCell = async (

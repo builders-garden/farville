@@ -9,7 +9,7 @@ import InventoryModal from "./InventoryModal";
 import MarketplaceModal from "./MarketplaceModal";
 import SettingsModal from "./SettingsModal";
 import LeaderboardModal from "./LeaderboardModal";
-import FertilizerIndicator from "./FertilizerIndicator";
+import PerkIndicator from "./PerkIndicator";
 import { useFrameContext } from "../context/FrameContext";
 import SeedMenu from "./SeedMenu";
 import PlantingIndicator from "./PlantingIndicator";
@@ -127,10 +127,7 @@ export default function GameWrapper() {
 
       {activeOverlay?.type === "requests" && (
         <AnimatePresence>
-          <RequestModal
-            onClose={handleOverlayComplete}
-            id={activeOverlay.id}
-          />
+          <RequestModal onClose={handleOverlayComplete} id={activeOverlay.id} />
         </AnimatePresence>
       )}
 
@@ -154,7 +151,7 @@ export default function GameWrapper() {
             <GameGrid />
           </div>
           <Toolbar safeAreaInsets={safeAreaInsets} />
-          <FertilizerIndicator />
+          <PerkIndicator />
           <PlantingIndicator />
           <InventoryModalContainer />
           <MarketplaceModalContainer />

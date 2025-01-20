@@ -11,6 +11,7 @@ import { useBuyItem } from "@/hooks/game-actions/use-buy-item";
 import { useExpandGrid } from "@/hooks/game-actions/use-expand-grid";
 import { useSellItem } from "@/hooks/game-actions/use-sell-item";
 import { UserItem } from "@/hooks/use-user-items";
+import { useApplyPerk } from "@/hooks/game-actions/use-apply-perk";
 
 // Update the OverlayType to be more flexible with parameters
 export type OverlayConfig =
@@ -24,14 +25,15 @@ interface GameContextType {
   state: GameState;
   selectedSeed: SeedType | null;
   setSelectedSeed: (seed: SeedType | null) => void;
-  selectedFertilizer: UserItem | null;
-  setSelectedFertilizer: (perk: UserItem | null) => void;
+  selectedPerk: UserItem | null;
+  setSelectedPerk: (perk: UserItem | null) => void;
   plantSeed: (params: { x: number; y: number; seedType: SeedType }) => void;
   harvestCrop: (params: {
     x: number;
     y: number;
   }) => Promise<HarvestResponse | undefined>;
   fertilize: (params: { x: number; y: number }) => void;
+  applyPerk: (params: { x: number; y: number; itemSlug: string; itemId: number }) => void;
   buyItem: (params: { itemId: number; quantity: number }) => void;
   sellItem: (params: { itemId: number; quantity: number }) => void;
   expandGrid: () => void;
@@ -75,7 +77,7 @@ export function GameProvider({
   const [showQuests, setShowQuests] = useState(false);
   const { state, refetch } = useGameState();
   const [selectedSeed, setSelectedSeed] = useState<SeedType | null>(null);
-  const [selectedFertilizer, setSelectedFertilizer] = useState<UserItem | null>(
+  const [selectedPerk, setSelectedPerk] = useState<UserItem | null>(
     null
   );
   const [isActionInProgress, setIsActionInProgress] = useState(false);
@@ -118,6 +120,12 @@ export function GameProvider({
     isActionInProgress,
     setIsActionInProgress,
   });
+  const { mutate: applyPerk } = useApplyPerk({
+    refetchGridCells: refetch.grid,
+    refetchUserItems: refetch.userItems,
+    isActionInProgress,
+    setIsActionInProgress,
+  });
   const { mutate: buyItem } = useBuyItem({
     refetchUser: refetch.user,
     refetchUserItems: refetch.userItems,
@@ -151,11 +159,12 @@ export function GameProvider({
         state,
         selectedSeed,
         setSelectedSeed,
-        selectedFertilizer,
-        setSelectedFertilizer,
+        selectedPerk: selectedPerk,
+        setSelectedPerk: setSelectedPerk,
         plantSeed,
         harvestCrop,
         fertilize,
+        applyPerk,
         buyItem,
         sellItem,
         expandGrid,
