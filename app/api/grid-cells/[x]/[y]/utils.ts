@@ -44,17 +44,16 @@ export const harvest = async (fid: number, x: number, y: number) => {
   if (!gridCell) {
     throw new Error("Grid cell not found");
   }
-  if (!gridCell.plantedAt) {
+  if (!gridCell.plantedAt && !gridCell.harvestAt) {
     throw new Error("Grid cell is not planted");
   }
 
+  // Check if the grid cell has a harvest time set, is not marked as ready to harvest,
+  // and the current time is before the scheduled harvest time
   if (
     !gridCell.isReadyToHarvest &&
-    // Check if enough time has passed since planting for crop to be ready:
-    // plantedTime + growthTime < currentTime
-    new Date(gridCell.plantedAt).getTime() + // Get plant time in milliseconds
-      CROP_DATA[gridCell.cropType as CropType].growthTime > // Add required growth time for this crop
-      Date.now() // Compare against current time
+    gridCell.harvestAt &&
+    Date.now() < new Date(gridCell.harvestAt).getTime()
   ) {
     throw new Error("Grid cell is not ready to harvest");
   }
