@@ -55,6 +55,9 @@ export async function POST(
       { status: 404 }
     );
   }
+  if (userQuest.status === status) {
+    return NextResponse.json({ error: "Quest already in this status" }, { status: 400 });
+  }
   await updateUserQuest(Number(fid), Number(id), { status });
   let didLevelUp = false;
   if (status === "claimed") {
