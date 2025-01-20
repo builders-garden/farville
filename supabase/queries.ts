@@ -19,6 +19,7 @@ import {
   DbUserHasQuestStatus,
 } from "./types";
 import {
+  CROP_DATA,
   LEVEL_REWARDS,
   LEVEL_XP_THRESHOLDS,
   SPEED_BOOST,
@@ -555,11 +556,15 @@ export const plantGridCell = async (
   y: number,
   cropType: string
 ): Promise<void> => {
+  const plantedAt = new Date();
+  const growthTime = CROP_DATA[cropType].growthTime;
+  const harvestAt = new Date(plantedAt.getTime() + growthTime);
   const { error } = await supabase
     .from("user_grid_cells")
     .update({
       cropType: cropType,
-      plantedAt: new Date().toISOString(),
+      plantedAt: plantedAt.toISOString(),
+      harvestAt: harvestAt.toISOString(),
     })
     .eq("fid", fid)
     .eq("x", x)
