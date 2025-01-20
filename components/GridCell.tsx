@@ -19,6 +19,7 @@ interface SeedDetailPopupProps {
   cell: DbGridCell;
   onFertilize: () => void;
   hasFertilizer: boolean;
+  onBoost: (boostType: string) => void;
   onClose: () => void;
 }
 
@@ -26,6 +27,7 @@ function SeedDetailPopup({
   cell,
   onFertilize,
   hasFertilizer,
+  onBoost,
   onClose,
 }: SeedDetailPopupProps) {
   const { state } = useGame();
@@ -37,6 +39,30 @@ function SeedDetailPopup({
   const harvestAt = new Date(cell.harvestAt!);
   const timeLeft = Math.max(0, (harvestAt.getTime() - Date.now()) / 1000);
   const minutesLeft = Math.ceil(timeLeft / 60);
+
+  const getBoostType = () => {
+    const cropType = cell.cropType as CropType;
+    for (const [boostType, data] of Object.entries(SPEED_BOOST)) {
+      if (data.applyTo.includes(cropType)) {
+        return {
+          type: boostType,
+          multiplier: data.boost,
+          duration: data.duration,
+        };
+      }
+    }
+    return null;
+  };
+
+  const boostData = getBoostType();
+  const hasBoost = state.perks.some((item) =>
+    item.item.slug === boostData?.type
+  );
+  const canBoost =
+    boostData &&
+    (!cell.speedBoostedAt ||
+      new Date(cell.speedBoostedAt).getTime() + boostData?.duration <
+        Date.now());
 
   return createPortal(
     <motion.div
@@ -69,7 +95,7 @@ function SeedDetailPopup({
           <h3 className="text-white/90 font-bold text-xl">{seedData?.name}</h3>
         </div>
 
-        <div className="space-y-3 text-white/80 text-xs">
+        <div className="space-y-3 text-white/80 text-xs mb-2">
           <p>Growth Time: {cropData.growthTime / 1000 / 60} minutes</p>
           <p>Planted at: {plantedAt.toLocaleTimeString()}</p>
           {!cell.isReadyToHarvest && <p>Harvest in: {minutesLeft} minutes</p>}
@@ -88,6 +114,18 @@ function SeedDetailPopup({
                      hover:bg-[#ffc661] transition-colors"
           >
             Fertilize
+          </button>
+        )}
+        {!cell.isReadyToHarvest && hasBoost && canBoost && boostData && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onBoost(boostData.type);
+            }}
+            className="w-full mt-2 bg-[#2196F3] text-white py-2 px-4 rounded-lg font-bold 
+                     hover:bg-[#1976D2] transition-colors"
+          >
+            Boost ({boostData.multiplier}x)
           </button>
         )}
       </div>
@@ -153,6 +191,21 @@ export default function GridCell({ cell }: GridCellProps) {
     (item) => item.item.slug === "fertilizer"
   );
 
+  const handleBoost = async (boostType: string) => {
+    const boostItem = state.inventory.find(
+      (item) => item.item.slug === boostType
+    );
+    if (boostItem) {
+      await applyPerk({
+        x: cell.x,
+        y: cell.y,
+        itemSlug: boostType,
+        itemId: boostItem.itemId,
+      });
+      setShowPopup(false);
+    }
+  };
+
   const handleClick = async () => {
     if (isActionInProgress || isPerkIncompatible) return;
 
@@ -167,7 +220,10 @@ export default function GridCell({ cell }: GridCellProps) {
         itemSlug: selectedPerk.item.slug,
         itemId: selectedPerk.itemId,
       });
-      setSelectedPerk(null);
+      const perk = state.perks.find((item) => item.item.slug === selectedPerk.item.slug);
+      if (!perk || perk.quantity === 0) {
+        setSelectedPerk(null);
+      }
       return;
     }
 
@@ -300,6 +356,7 @@ export default function GridCell({ cell }: GridCellProps) {
             cell={cell}
             onFertilize={handleFertilize}
             hasFertilizer={hasFertilizer}
+            onBoost={handleBoost}
             onClose={() => setShowPopup(false)}
           />
         )}
