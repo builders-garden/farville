@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { useGame } from "../context/GameContext";
 import { SeedType } from "../types/game";
 import { useState, useRef, useEffect, useCallback } from "react";
+import { ArrowRightCircleIcon, ArrowLeftCircleIcon } from "@heroicons/react/24/solid";
 
 const CROP_COLORS: Record<SeedType, string> = {
   "carrot-seeds": "border-orange-400",
@@ -26,6 +27,12 @@ export default function SeedMenu() {
   const dragIconRef = useRef<HTMLDivElement>(null);
   const touchDragIconRef = useRef<HTMLDivElement>(null);
   const draggedCropRef = useRef<SeedType | null>(null);
+
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [showScrollHints, setShowScrollHints] = useState({
+    left: false,
+    right: false,
+  });
 
   // Track touch position
   const updateTouchDragIcon = (x: number, y: number) => {
@@ -173,6 +180,33 @@ export default function SeedMenu() {
     };
   }, [handleTouchEnd, handleTouchMove, isDragging, state.grid]);
 
+  // Add scroll detection
+  const checkScroll = useCallback(() => {
+    if (!scrollContainerRef.current) return;
+
+    const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
+    setShowScrollHints({
+      left: scrollLeft > 0,
+      right: scrollLeft < scrollWidth - clientWidth - 1, // -1 for potential rounding
+    });
+  }, []);
+
+  useEffect(() => {
+    const scrollContainer = scrollContainerRef.current;
+    if (scrollContainer) {
+      checkScroll();
+      scrollContainer.addEventListener("scroll", checkScroll);
+      window.addEventListener("resize", checkScroll);
+    }
+
+    return () => {
+      if (scrollContainer) {
+        scrollContainer.removeEventListener("scroll", checkScroll);
+        window.removeEventListener("resize", checkScroll);
+      }
+    };
+  }, [checkScroll]);
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -190,12 +224,25 @@ export default function SeedMenu() {
         className="fixed top-0 left-0 pointer-events-none w-12 h-12 -translate-x-1/2 -translate-y-1/2 z-50"
         style={{ display: "none" }}
       />
-
+  
       <motion.div
-        className="bg-[#7E4E31]/40 px-4 py-2 rounded-lg shadow-lg border-2 border-[#8B5E3C]/60 w-full"
+        className="bg-[#7E4E31]/40 px-4 py-2 rounded-lg shadow-lg border-2 border-[#8B5E3C]/60 w-full relative"
         whileHover={{ scale: 1.02 }}
       >
-        <div className="flex gap-2 overflow-x-auto py-4 px-2 scrollbar-thin scrollbar-thumb-[#6d4c2c] scrollbar-track-[#8B5E3C]">
+        {showScrollHints.left && (
+          <div className="absolute left-0 top-1/2 -translate-y-1/2 bg-gradient-to-r from-[#7E4E31]/80 to-transparent px-2 h-full flex items-center z-50">
+            <ArrowLeftCircleIcon className="w-4 h-4 text-white/70 animate-pulse" />
+          </div>
+        )}
+        {showScrollHints.right && (
+          <div className="absolute right-0 top-1/2 -translate-y-1/2 bg-gradient-to-l from-[#7E4E31]/80 to-transparent px-2 h-full flex items-center z-50">
+            <ArrowRightCircleIcon className="w-4 h-4 text-white/70 animate-pulse" />
+          </div>
+        )}
+        <div
+          ref={scrollContainerRef}
+          className="flex gap-2 overflow-x-auto py-4 px-2 scrollbar-thin scrollbar-thumb-[#6d4c2c] scrollbar-track-[#8B5E3C]"
+        >
           {state.items
             .filter((item) => item.category === "seed")
             .map((item) => {
