@@ -88,7 +88,7 @@ export function GameProvider({
   const [isActionInProgress, setIsActionInProgress] = useState(false);
   const [activeOverlay, setActiveOverlay] =
     useState<OverlayConfig>(initialOverlay);
-  const [tutorialComplete, setTutorialComplete] = useState(false);
+  const [tutorialComplete, setTutorialComplete] = useState(true);
 
   useEffect(() => {
     if (!loading) {
