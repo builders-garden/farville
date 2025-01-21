@@ -93,9 +93,9 @@ export function GameProvider({
   useEffect(() => {
     const tutorialComplete =
       localStorage.getItem("tutorialComplete") === "true" ||
-      (state?.user.xp && state?.user.xp > 0);
+      state?.user.xp && state?.user.xp > 0;
     setTutorialComplete(!!tutorialComplete);
-  }, []);
+  }, [state?.user.xp]);
 
   const { mutate: plantSeed } = usePlantSeed({
     refetchGridCells: refetch.grid,
