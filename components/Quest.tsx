@@ -1,3 +1,4 @@
+import { useGame } from "@/context/GameContext";
 import { useUpdateUserQuest } from "@/hooks/game-actions/use-update-user-quest";
 import {
   DbQuest,
@@ -106,7 +107,11 @@ export default function Quest({
   claimable = false,
   onClaim,
 }: QuestProps) {
-  const { mutate: updateUserQuest, isPending } = useUpdateUserQuest();
+  const { isActionInProgress, setIsActionInProgress} = useGame();
+  const { mutate: updateUserQuest, isPending } = useUpdateUserQuest({
+    isActionInProgress,
+    setIsActionInProgress,
+  });
   return (
     <motion.div
       key={quest.id}
@@ -191,7 +196,7 @@ export default function Quest({
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            disabled={isPending}
+            disabled={isPending || isActionInProgress}
             onClick={(e) => {
               const rect = e.currentTarget.getBoundingClientRect();
               const x = rect.x + rect.width / 2;

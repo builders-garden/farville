@@ -7,7 +7,13 @@ type UpdateUserQuestVariables = {
   status: DbUserHasQuestStatus;
 };
 
-export const useUpdateUserQuest = () => {
+export const useUpdateUserQuest = ({
+  isActionInProgress,
+  setIsActionInProgress,
+}: {
+  isActionInProgress: boolean;
+  setIsActionInProgress: (value: boolean) => void;
+}) => {
   const { playSound } = useAudio();
   return useApiMutation<
     { success: boolean; status: DbUserHasQuestStatus; didLevelUp: boolean },
@@ -16,6 +22,10 @@ export const useUpdateUserQuest = () => {
     url: (variables) => `/api/quests/${variables.questId}`,
     method: "POST",
     body: (variables) => ({ status: variables.status }),
+    onMutate: () => {
+      if (isActionInProgress) return;
+      setIsActionInProgress(true);
+    },
     onSuccess: (variables) => {
       if (variables.status === "claimed") {
         playSound("claimQuest");
@@ -23,6 +33,9 @@ export const useUpdateUserQuest = () => {
       if (variables.didLevelUp) {
         playSound("levelUp");
       }
+    },
+    onSettled: () => {
+      setIsActionInProgress(false);
     },
   });
 };

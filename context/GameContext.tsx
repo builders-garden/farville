@@ -60,6 +60,7 @@ interface GameContextType {
   setShowQuests: (show: boolean) => void;
   setShowRequests: (show: boolean) => void;
   isActionInProgress: boolean;
+  setIsActionInProgress: (value: boolean) => void;
   activeOverlay: OverlayConfig;
   setActiveOverlay: (overlay: OverlayConfig) => void;
   tutorialComplete: boolean;
@@ -200,6 +201,7 @@ export function GameProvider({
         setShowQuests,
         setShowRequests,
         isActionInProgress,
+        setIsActionInProgress,
         activeOverlay,
         setActiveOverlay,
         tutorialComplete,
