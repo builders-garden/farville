@@ -13,27 +13,41 @@ interface TutorialStep {
 
 const TUTORIAL_STEPS: TutorialStep[] = [
   {
-    title: "Plant Seeds",
+    title: "Welcome to FarVille!",
     description:
-      "Click or drag a seed from the toolbar and tap a tilled plot to plant!",
+      "Click on the carrot seed in your toolbar to plant your first crop.",
     icon: "🌱",
-    targetSelector: "[data-tutorial='toolbar']",
+    targetSelector: "[data-tutorial='seed-menu']",
     position: "bottom",
   },
   {
-    title: "Check Inventory",
+    title: "Plant Your Seeds",
+    description: "Then click any tilled plot to plant your carrot seeds!",
+    icon: "🥕",
+    targetSelector: "[data-tutorial='grid']",
+    position: "top",
+  },
+  {
+    title: "Use Fertilizer",
     description:
-      "View your seeds, crops, and special items. 4 fertilizers are included!",
-    icon: "🎒",
-    targetSelector: "[data-tutorial='inventory']",
-    position: "bottom",
+      "Speed up growth with fertilizer! Click the plot with your planted carrots and then fertilize.",
+    icon: "💨",
+    targetSelector: "[data-tutorial='grid']",
+    position: "top",
+  },
+  {
+    title: "Harvest Your Crops",
+    description: "Once your crops are ready, click them to harvest!",
+    icon: "🥕",
+    targetSelector: "[data-tutorial='grid']",
+    position: "top",
   },
   {
     title: "Visit Market",
-    description: "Buy seeds and sell your crops for coins!",
+    description: "Finally, head to the marketplace to sell your crops!",
     icon: "🏪",
     targetSelector: "[data-tutorial='marketplace']",
-    position: "top",
+    position: "bottom",
   },
 ];
 
@@ -43,25 +57,16 @@ const getMessagePosition = (
   position: "top" | "bottom" | "left" | "right"
 ) => {
   const viewportHeight = window.innerHeight;
-  const viewportWidth = window.innerWidth;
 
   // For bottom position (toolbar), place the message above the element
   if (position === "bottom") {
     return {
-      left: Math.min(
-        Math.max(element.left + element.width / 2, 150),
-        viewportWidth - 150
-      ),
       bottom: viewportHeight - element.top + 20, // Position above the toolbar
     };
   }
 
   // For top position (header buttons), place the message below the element
   return {
-    left: Math.min(
-      Math.max(element.left + element.width / 2, 150),
-      viewportWidth - 150
-    ),
     top: element.bottom + 20, // Position below the header buttons
   };
 };
@@ -75,6 +80,8 @@ export default function TutorialOverlay({
   const [highlightedElement, setHighlightedElement] = useState<DOMRect | null>(
     null
   );
+  const [tutorialComplete, setTutorialComplete] = useState(false);
+  const [isVisible] = useState(true);
 
   // Update highlighted element position when step changes
   const updateHighlight = () => {
@@ -91,9 +98,17 @@ export default function TutorialOverlay({
     if (currentStep < TUTORIAL_STEPS.length - 1) {
       setCurrentStep(currentStep + 1);
     } else {
+      setTutorialComplete(true);
       onComplete();
     }
   };
+
+  useEffect(() => {
+    // Start tutorial automatically when component mounts
+    updateHighlight();
+    window.addEventListener("resize", updateHighlight);
+    return () => window.removeEventListener("resize", updateHighlight);
+  }, []);
 
   // Update highlight when step changes
   useEffect(() => {
@@ -101,6 +116,11 @@ export default function TutorialOverlay({
     window.addEventListener("resize", updateHighlight);
     return () => window.removeEventListener("resize", updateHighlight);
   }, [currentStep]);
+
+  // If tutorial is complete or not visible, don't render anything
+  if (tutorialComplete || !isVisible) {
+    return null;
+  }
 
   const step = TUTORIAL_STEPS[currentStep];
 
@@ -111,13 +131,34 @@ export default function TutorialOverlay({
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
     >
-      {/* Semi-transparent overlay with pointer-events */}
-      <div
-        className="absolute inset-0 bg-black/50"
-        onClick={() => {}} // Prevent clicks from passing through
-      />
+      {/* Semi-transparent overlay with mask */}
+      {highlightedElement && (
+        <div className="absolute inset-0">
+          <svg className="absolute inset-0 w-full h-full">
+            <defs>
+              <mask id="spotlight">
+                <rect width="100%" height="100%" fill="white" />
+                <rect
+                  x={highlightedElement.left - 8}
+                  y={highlightedElement.top - 8}
+                  width={highlightedElement.width + 16}
+                  height={highlightedElement.height + 16}
+                  fill="black"
+                  rx="8"
+                />
+              </mask>
+            </defs>
+            <rect
+              width="100%"
+              height="100%"
+              fill="rgba(0, 0, 0, 0.5)"
+              mask="url(#spotlight)"
+            />
+          </svg>
+        </div>
+      )}
 
-      {/* Highlight current element */}
+      {/* Highlight border */}
       {highlightedElement && (
         <motion.div
           className="absolute border-4 border-yellow-400 rounded-lg pointer-events-none"
@@ -136,32 +177,30 @@ export default function TutorialOverlay({
 
       {/* Tutorial message */}
       {highlightedElement && (
-        <motion.div
-          className="fixed bg-white rounded-xl p-4 shadow-xl mx-4 pointer-events-auto"
-          initial={{ opacity: 0, y: step.position === "bottom" ? 20 : -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          style={{
-            ...getMessagePosition(highlightedElement, step.position),
-            transform: "translateX(-50%)",
-            maxWidth: "min(300px, calc(100vw - 32px))",
-            zIndex: 201,
-          }}
+        <div
+          className="fixed inset-x-0 px-4 z-[201]"
+          style={getMessagePosition(highlightedElement, step.position)}
         >
-          <div className="flex items-center gap-2 mb-2">
-            <span className="text-2xl">{step.icon}</span>
-            <h3 className="font-bold text-lg">{step.title}</h3>
-          </div>
-          <p className="text-gray-600 mb-4 text-sm sm:text-base">
-            {step.description}
-          </p>
-          <button
-            onClick={handleNext}
-            className="w-full py-3 bg-green-500 text-white rounded-lg font-medium
-                     hover:bg-green-600 transition-colors text-sm sm:text-base"
+          <motion.div
+            className="bg-[#7E4E31] rounded-lg p-4 shadow-xl pointer-events-auto border-2 border-[#8B5E3C] max-w-md mx-auto"
+            initial={{ opacity: 0, y: step.position === "bottom" ? 20 : -20 }}
+            animate={{ opacity: 1, y: 0 }}
           >
-            {currentStep < TUTORIAL_STEPS.length - 1 ? "Next" : "Got it!"}
-          </button>
-        </motion.div>
+            <div className="flex items-center gap-2 mb-4">
+              <h3 className="text-white/90 font-bold text-sm">{step.title}</h3>
+            </div>
+            <p className="text-white/80 mb-6 text-xs sm:text-base">
+              {step.description}
+            </p>
+            <button
+              onClick={handleNext}
+              className="w-full py-3 bg-[#FFB938] text-[#7E4E31] rounded-lg font-bold
+                       hover:bg-[#ffc661] transition-colors text-xs sm:text-base"
+            >
+              {currentStep < TUTORIAL_STEPS.length - 1 ? "Next" : "Got it!"}
+            </button>
+          </motion.div>
+        </div>
       )}
     </motion.div>
   );

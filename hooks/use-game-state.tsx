@@ -60,7 +60,7 @@ export const useGameState = () => {
       items: [],
       inventory: [],
       user: {} as DbUser,
-      claimableQuests: false
+      claimableQuests: false,
     };
 
     if (user) {
