@@ -15,14 +15,14 @@ const TUTORIAL_STEPS: TutorialStep[] = [
   {
     title: "Welcome to FarVille!",
     description:
-      "Let's get started by planting your first crop. Click the carrot seed in your toolbar.",
+      "Click on the carrot seed in your toolbar to plant your first crop.",
     icon: "🌱",
-    targetSelector: "[data-tutorial='carrot-seed']",
+    targetSelector: "[data-tutorial='seed-menu']",
     position: "bottom",
   },
   {
     title: "Plant Your Seeds",
-    description: "Now click any tilled plot to plant your carrot seeds!",
+    description: "Then click any tilled plot to plant your carrot seeds!",
     icon: "🥕",
     targetSelector: "[data-tutorial='grid']",
     position: "top",
@@ -44,7 +44,7 @@ const TUTORIAL_STEPS: TutorialStep[] = [
   },
   {
     title: "Visit Market",
-    description: "Once harvested, head to the marketplace to sell your crops!",
+    description: "Finally, head to the marketplace to sell your crops!",
     icon: "🏪",
     targetSelector: "[data-tutorial='marketplace']",
     position: "bottom",
@@ -131,13 +131,34 @@ export default function TutorialOverlay({
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
     >
-      {/* Semi-transparent overlay with pointer-events */}
-      <div
-        className="absolute inset-0 bg-black/50"
-        onClick={() => {}} // Prevent clicks from passing through
-      />
+      {/* Semi-transparent overlay with mask */}
+      {highlightedElement && (
+        <div className="absolute inset-0">
+          <svg className="absolute inset-0 w-full h-full">
+            <defs>
+              <mask id="spotlight">
+                <rect width="100%" height="100%" fill="white" />
+                <rect
+                  x={highlightedElement.left - 8}
+                  y={highlightedElement.top - 8}
+                  width={highlightedElement.width + 16}
+                  height={highlightedElement.height + 16}
+                  fill="black"
+                  rx="8"
+                />
+              </mask>
+            </defs>
+            <rect
+              width="100%"
+              height="100%"
+              fill="rgba(0, 0, 0, 0.5)"
+              mask="url(#spotlight)"
+            />
+          </svg>
+        </div>
+      )}
 
-      {/* Highlight current element */}
+      {/* Highlight border */}
       {highlightedElement && (
         <motion.div
           className="absolute border-4 border-yellow-400 rounded-lg pointer-events-none"
@@ -174,7 +195,7 @@ export default function TutorialOverlay({
             <button
               onClick={handleNext}
               className="w-full py-3 bg-[#FFB938] text-[#7E4E31] rounded-lg font-bold
-                       hover:bg-[#ffc661] transition-colors text-sm sm:text-base"
+                       hover:bg-[#ffc661] transition-colors text-xs sm:text-base"
             >
               {currentStep < TUTORIAL_STEPS.length - 1 ? "Next" : "Got it!"}
             </button>

@@ -216,6 +216,7 @@ export default function SeedMenu() {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 20 }}
       className="flex items-center gap-2 px-2"
+      data-tutorial={"seed-menu"}
     >
       <div
         ref={dragIconRef}
@@ -256,9 +257,6 @@ export default function SeedMenu() {
               return (
                 <motion.button
                   key={item.id}
-                  data-tutorial={
-                    item.slug === "carrot-seeds" ? "carrot-seed" : undefined
-                  }
                   onClick={() => {
                     if (isAvailable) {
                       setSelectedSeed(

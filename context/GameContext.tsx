@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import type { HarvestResponse, SeedType } from "../types/game";
 //import { useAudio } from "./AudioContext";
 import { GameState, useGameState } from "@/hooks/use-game-state";
@@ -88,9 +88,14 @@ export function GameProvider({
   const [isActionInProgress, setIsActionInProgress] = useState(false);
   const [activeOverlay, setActiveOverlay] =
     useState<OverlayConfig>(initialOverlay);
-  const [tutorialComplete, setTutorialComplete] = useState(
-    !!state?.tutorialComplete
-  );
+  const [tutorialComplete, setTutorialComplete] = useState(false);
+
+  useEffect(() => {
+    const tutorialComplete =
+      localStorage.getItem("tutorialComplete") === "true" ||
+      (state?.user.xp && state?.user.xp > 0);
+    setTutorialComplete(!!tutorialComplete);
+  }, []);
 
   const { mutate: plantSeed } = usePlantSeed({
     refetchGridCells: refetch.grid,
