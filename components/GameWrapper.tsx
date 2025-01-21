@@ -120,13 +120,12 @@ export default function GameWrapper() {
 
   // Check if user is new and show tutorial
   useEffect(() => {
-    console.log("tutorialComplete", tutorialComplete);
     if (!tutorialComplete) {
       console.log("Showing tutorial");
       setActiveOverlay({ type: "tutorial" });
       console.log("activeOverlay", activeOverlay);
     }
-  }, []);
+  }, [tutorialComplete]);
 
   const handleOverlayComplete = () => {
     setActiveOverlay(null);
