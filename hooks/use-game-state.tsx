@@ -24,6 +24,7 @@ export interface GameState {
   inventory: UserItem[];
   user: DbUser;
   claimableQuests?: boolean
+  tutorialComplete: boolean;
 }
 
 export const useGameState = () => {
@@ -60,16 +61,19 @@ export const useGameState = () => {
       items: [],
       inventory: [],
       user: {} as DbUser,
-      claimableQuests: false
+      claimableQuests: false,
+      tutorialComplete: false,
     };
 
     if (user) {
       const { currentLevel } = getCurrentLevelAndProgress(user.xp);
+      const tutorialComplete = localStorage.getItem('tutorialComplete') === 'true' || user.xp > 0;
       newState.coins = user.coins;
       newState.level = currentLevel;
       newState.experience = user.xp;
       newState.expansionLevel = user.expansions - 1;
       newState.user = user;
+      newState.tutorialComplete = tutorialComplete;
     }
 
     if (userItems) {

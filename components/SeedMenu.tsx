@@ -4,7 +4,10 @@ import { motion } from "framer-motion";
 import { useGame } from "../context/GameContext";
 import { SeedType } from "../types/game";
 import { useState, useRef, useEffect, useCallback } from "react";
-import { ArrowRightCircleIcon, ArrowLeftCircleIcon } from "@heroicons/react/24/solid";
+import {
+  ArrowRightCircleIcon,
+  ArrowLeftCircleIcon,
+} from "@heroicons/react/24/solid";
 
 const CROP_COLORS: Record<SeedType, string> = {
   "carrot-seeds": "border-orange-400",
@@ -224,7 +227,7 @@ export default function SeedMenu() {
         className="fixed top-0 left-0 pointer-events-none w-12 h-12 -translate-x-1/2 -translate-y-1/2 z-50"
         style={{ display: "none" }}
       />
-  
+
       <motion.div
         className="bg-[#7E4E31]/40 px-4 py-2 rounded-lg shadow-lg border-2 border-[#8B5E3C]/60 w-full relative"
         whileHover={{ scale: 1.02 }}
@@ -253,6 +256,9 @@ export default function SeedMenu() {
               return (
                 <motion.button
                   key={item.id}
+                  data-tutorial={
+                    item.slug === "carrot-seeds" ? "carrot-seed" : undefined
+                  }
                   onClick={() => {
                     if (isAvailable) {
                       setSelectedSeed(

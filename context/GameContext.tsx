@@ -33,7 +33,12 @@ interface GameContextType {
     y: number;
   }) => Promise<HarvestResponse | undefined>;
   fertilize: (params: { x: number; y: number }) => void;
-  applyPerk: (params: { x: number; y: number; itemSlug: string; itemId: number }) => void;
+  applyPerk: (params: {
+    x: number;
+    y: number;
+    itemSlug: string;
+    itemId: number;
+  }) => void;
   buyItem: (params: { itemId: number; quantity: number }) => void;
   sellItem: (params: { itemId: number; quantity: number }) => void;
   expandGrid: () => void;
@@ -57,6 +62,8 @@ interface GameContextType {
   isActionInProgress: boolean;
   activeOverlay: OverlayConfig;
   setActiveOverlay: (overlay: OverlayConfig) => void;
+  tutorialComplete: boolean;
+  setTutorialComplete: (complete: boolean) => void;
 }
 
 export const GameContext = createContext<GameContextType | null>(null);
@@ -77,13 +84,13 @@ export function GameProvider({
   const [showQuests, setShowQuests] = useState(false);
   const { state, refetch } = useGameState();
   const [selectedSeed, setSelectedSeed] = useState<SeedType | null>(null);
-  const [selectedPerk, setSelectedPerk] = useState<UserItem | null>(
-    null
-  );
+  const [selectedPerk, setSelectedPerk] = useState<UserItem | null>(null);
   const [isActionInProgress, setIsActionInProgress] = useState(false);
   const [activeOverlay, setActiveOverlay] =
     useState<OverlayConfig>(initialOverlay);
-  console.log("activeOverlay", activeOverlay);
+  const [tutorialComplete, setTutorialComplete] = useState(
+    !!state?.tutorialComplete
+  );
 
   const { mutate: plantSeed } = usePlantSeed({
     refetchGridCells: refetch.grid,
@@ -188,6 +195,8 @@ export function GameProvider({
         isActionInProgress,
         activeOverlay,
         setActiveOverlay,
+        tutorialComplete,
+        setTutorialComplete,
       }}
     >
       {children}

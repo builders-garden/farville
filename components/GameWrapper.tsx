@@ -16,6 +16,8 @@ import PlantingIndicator from "./PlantingIndicator";
 import QuestsModal from "./QuestsModal";
 import { useAudio } from "@/context/AudioContext";
 import RequestModal from "./RequestModal";
+import TutorialOverlay from "./TutorialOverlay";
+import { useEffect } from "react";
 
 // const WelcomeOverlay = dynamic(() => import("./../components/WelcomeOverlay"), {
 //   ssr: false,
@@ -108,22 +110,39 @@ function QuestsModalContainer() {
 
 export default function GameWrapper() {
   const { startBackgroundMusic } = useAudio();
-  const { activeOverlay, setActiveOverlay } = useGame();
+  const {
+    activeOverlay,
+    setActiveOverlay,
+    tutorialComplete,
+    setTutorialComplete,
+  } = useGame();
   const { safeAreaInsets } = useFrameContext();
+
+  // Check if user is new and show tutorial
+  useEffect(() => {
+    console.log("tutorialComplete", tutorialComplete);
+    if (!tutorialComplete) {
+      console.log("Showing tutorial");
+      setActiveOverlay({ type: "tutorial" });
+      console.log("activeOverlay", activeOverlay);
+    }
+  }, []);
 
   const handleOverlayComplete = () => {
     setActiveOverlay(null);
+    setTutorialComplete(true);
+    localStorage.setItem("tutorialComplete", "true");
     startBackgroundMusic();
   };
 
   return (
     <div className="relative z-10">
-      {/* Render active overlay with parameters */}
-      {/* {activeOverlay?.type === "welcome" && (
+      {/* Render tutorial overlay */}
+      {activeOverlay?.type === "tutorial" && (
         <AnimatePresence>
-          <WelcomeOverlay onComplete={handleOverlayComplete} />
+          <TutorialOverlay onComplete={handleOverlayComplete} />
         </AnimatePresence>
-      )} */}
+      )}
 
       {activeOverlay?.type === "requests" && (
         <AnimatePresence>
@@ -132,7 +151,7 @@ export default function GameWrapper() {
       )}
 
       {/* Main game content */}
-      {!activeOverlay && (
+      {(!activeOverlay || activeOverlay.type === "tutorial") && (
         <div
           style={{
             backgroundColor: "#255F37",

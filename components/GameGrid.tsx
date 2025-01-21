@@ -15,6 +15,7 @@ export default function GameGrid() {
   return (
     <div className="flex flex-col h-full w-full items-start p-4 justify-start overflow-hidden gap-8">
       <div
+        data-tutorial="grid"
         className="grid gap-1 aspect-square w-full"
         style={{
           gridTemplateColumns: `repeat(${state.gridSize.width}, 1fr)`,
