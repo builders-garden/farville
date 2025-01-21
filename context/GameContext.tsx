@@ -82,7 +82,7 @@ export function GameProvider({
   const [showRequests, setShowRequests] = useState(false);
   const [showSeedsMenu, setShowSeedsMenu] = useState(false);
   const [showQuests, setShowQuests] = useState(false);
-  const { state, refetch } = useGameState();
+  const { state, refetch, isLoading } = useGameState();
   const [selectedSeed, setSelectedSeed] = useState<SeedType | null>(null);
   const [selectedPerk, setSelectedPerk] = useState<UserItem | null>(null);
   const [isActionInProgress, setIsActionInProgress] = useState(false);
@@ -91,11 +91,13 @@ export function GameProvider({
   const [tutorialComplete, setTutorialComplete] = useState(false);
 
   useEffect(() => {
-    const tutorialComplete =
-      localStorage.getItem("tutorialComplete") === "true" ||
-      state?.user.xp && state?.user.xp > 0;
-    setTutorialComplete(!!tutorialComplete);
-  }, [state?.user.xp]);
+    if (!isLoading) {
+      const tutorialComplete =
+        localStorage.getItem("tutorialComplete") === "true" ||
+        (state?.user.xp && state?.user.xp > 0);
+      setTutorialComplete(!!tutorialComplete);
+    }
+  }, [state?.user.xp, isLoading]);
 
   const { mutate: plantSeed } = usePlantSeed({
     refetchGridCells: refetch.grid,
