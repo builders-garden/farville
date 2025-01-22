@@ -53,8 +53,15 @@ export const POST = async (req: NextRequest) => {
     // await initializeUserQuest(fid);
   }
 
+  // TODO: add a filter by "today"
+  // we should fetch only the quests that are today and for level {user.level}
+  // if there are no quests today for that level, we should initialize them randomly based on {user.level}
+  // then create user_has_quests rows for the quests
+  // filter by "daily", "fid", "today", "user.level"
+  // fetch random items from the items table filtering by requiredLevel < {user.level} and type = "seed" or "crop"
   const userQuests = await getUserQuests(fid);
   if (!userQuests || userQuests?.length === 0) {
+    // this initializtion should filter quests by "daily", "fid", "today", "user.level"
     await initializeUserQuest(fid);
   }
 
