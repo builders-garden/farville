@@ -59,8 +59,9 @@ export default function RequestModal({
 
     // Only enforce limits if the input is a valid number
     if (!isNaN(newQuantity)) {
-      // Allow typing any number, even if it exceeds the max
-      setSelectedQuantity(newQuantity);
+      // Enforce maximum limit based on both current inventory and remaining quantity needed
+      const maxAllowed = Math.min(currentQuantity, remainingQuantity);
+      setSelectedQuantity(Math.min(newQuantity, maxAllowed));
     }
   };
 
@@ -253,12 +254,19 @@ export default function RequestModal({
                   disabled={
                     selectedQuantity === 0 ||
                     selectedQuantity > currentQuantity ||
+                    selectedQuantity > remainingQuantity ||
                     remainingQuantity === 0
                   }
                   onClick={() => {
+                    // Add safety check here as well
+                    const safeQuantity = Math.min(
+                      selectedQuantity,
+                      remainingQuantity,
+                      currentQuantity
+                    );
                     donate({
                       itemId: request?.itemId,
-                      quantity: selectedQuantity,
+                      quantity: safeQuantity,
                       toFid: request?.fid,
                       requestId: request?.id,
                     });
