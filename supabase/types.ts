@@ -97,6 +97,7 @@ export interface DbQuest {
   startAt: string | null;
   endAt: string | null;
   createdAt: string;
+  level: number | null;
 }
 
 // Helper type for inserting new quests

@@ -10,7 +10,8 @@ import {
   getUserQuests,
   giftStarterPack,
   initializeGrid,
-  initializeUserQuest,
+  initDailyUserQuests,
+  initWeeklyAndMonthlyUserQuests,
 } from "@/supabase/queries";
 import { trackEvent } from "@/lib/posthog/server";
 
@@ -53,16 +54,18 @@ export const POST = async (req: NextRequest) => {
     // await initializeUserQuest(fid);
   }
 
-  // TODO: add a filter by "today"
-  // we should fetch only the quests that are today and for level {user.level}
-  // if there are no quests today for that level, we should initialize them randomly based on {user.level}
-  // then create user_has_quests rows for the quests
-  // filter by "daily", "fid", "today", "user.level"
-  // fetch random items from the items table filtering by requiredLevel < {user.level} and type = "seed" or "crop"
+  // Check if the user has daily, weekly and monthly quests
+  // If not, initialize them
   const userQuests = await getUserQuests(fid);
-  if (!userQuests || userQuests?.length === 0) {
-    // this initializtion should filter quests by "daily", "fid", "today", "user.level"
-    await initializeUserQuest(fid);
+  const dailyQuests = userQuests?.filter((quest) => quest.quest.type === "daily");
+  const weeklyAndMonthlyQuests = userQuests?.filter(
+    (quest) => quest.quest.type === "weekly" || quest.quest.type === "monthly"
+  );
+  if (!dailyQuests || dailyQuests?.length === 0) {
+    await initDailyUserQuests(fid);
+  }
+  if (!weeklyAndMonthlyQuests || weeklyAndMonthlyQuests?.length === 0) {
+    await initWeeklyAndMonthlyUserQuests(fid);
   }
 
   // Verify signature matches custody address
