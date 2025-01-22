@@ -8,6 +8,7 @@ import {
 import { z } from "zod";
 import { ActionType, SeedType } from "@/types/game";
 import { trackEvent } from "@/lib/posthog/server";
+import { SPEED_BOOST } from "@/lib/game-constants";
 
 const requestSchema = z.object({
   action: z.nativeEnum(ActionType),
@@ -118,6 +119,13 @@ export async function POST(
             `Your ${perkCell?.cropType} are ready to harvest!`,
             "harvest",
             new Date(perkCell?.harvestAt as string).getTime() - Date.now()
+          ),
+          sendDelayedNotification(
+            fid.toString(),
+            `Speed boost expired! ⚡️`,
+            `The speed boost on your ${perkCell?.cropType} has worn off.`,
+            "boost-expired",
+            SPEED_BOOST[itemSlug as keyof typeof SPEED_BOOST].duration
           ),
         ]);
         trackEvent(Number(fid), "applied-perk", {

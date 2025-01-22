@@ -637,7 +637,9 @@ export const speedBoostGridCell = async (
     const lastBoostTime = new Date(currentCell.speedBoostedAt);
     const timeSinceBoost = Date.now() - lastBoostTime.getTime();
     if (timeSinceBoost < SPEED_BOOST[boostSlug].duration) {
-      throw new Error("Cannot speed boost yet - must wait for boost duration to expire");
+      throw new Error(
+        "Cannot speed boost yet - must wait for boost duration to expire"
+      );
     }
   }
 
@@ -1224,6 +1226,25 @@ export const getHarvestableCellsCount = async (
     .eq("fid", fid)
     .not("harvestAt", "is", null)
     .lte("harvestAt", threeMinutesFromNow.toISOString());
+
+  if (error) throw error;
+  return count || 0;
+};
+
+export const getExpiredBoostCellsCount = async (
+  fid: number,
+  withinMinutes: number = 3
+): Promise<number> => {
+  const twoHoursThreeMinutesAgo = new Date(
+    Date.now() - (2 * 60 * 60 * 1000 + withinMinutes * 60 * 1000)
+  );
+
+  const { count, error } = await supabase
+    .from("user_grid_cells")
+    .select("*", { count: "exact", head: true })
+    .eq("fid", fid)
+    .not("speedBoostedAt", "is", null)
+    .lte("speedBoostedAt", twoHoursThreeMinutesAgo.toISOString());
 
   if (error) throw error;
   return count || 0;

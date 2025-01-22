@@ -3,6 +3,7 @@ import {
   getUserNotificationDetails,
   getUserNotificationsByCategory,
   getHarvestableCellsCount,
+  getExpiredBoostCellsCount,
 } from "@/supabase/queries";
 import {
   SendNotificationRequest,
@@ -55,7 +56,7 @@ export async function POST(req: NextRequest) {
   const canSendNotification = !lastNotification?.length;
 
   if (canSendNotification) {
-    // Add harvest validation check
+    // Add validation checks for different notification categories
     if (category === "harvest") {
       const harvestableCells = await getHarvestableCellsCount(parseInt(fid));
 
@@ -66,6 +67,18 @@ export async function POST(req: NextRequest) {
         return Response.json({
           success: true,
           message: "Notification skipped - no harvestable cells",
+        });
+      }
+    } else if (category === "boost-expired") {
+      const expiredBoostCells = await getExpiredBoostCellsCount(parseInt(fid));
+
+      if (expiredBoostCells === 0) {
+        console.warn(
+          `[send-notification-${new Date().toISOString()}] user ${fid} has no expired boost cells. Skipping boost-expired notification...`
+        );
+        return Response.json({
+          success: true,
+          message: "Notification skipped - no expired boost cells",
         });
       }
     }
