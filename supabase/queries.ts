@@ -620,8 +620,8 @@ export const speedBoostGridCell = async (
   harvestAt: Date
 ): Promise<DbGridCell | null> => {
   const currentHarvestTime = new Date(harvestAt);
-  const boostTime =
-    SPEED_BOOST[boostSlug].duration / SPEED_BOOST[boostSlug].boost;
+  const boostTime = 
+    SPEED_BOOST[boostSlug].duration * (1 - 1/SPEED_BOOST[boostSlug].boost);
   const { data, error } = await supabase
     .from("user_grid_cells")
     .update({
