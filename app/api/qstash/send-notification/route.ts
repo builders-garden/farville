@@ -39,22 +39,19 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // before sending the notification, check if the user has already received a notification of this type
-  const lastUserNotifications = await getUserNotificationsByCategory(
-    parseInt(fid),
-    category,
-    3
-  );
-
   // Check if the most recent notification was sent more than 3 minutes ago
   const threeMinutesAgo = new Date(Date.now() - 3 * 60 * 1000);
 
-  const mostRecentNotification = lastUserNotifications
-    ? lastUserNotifications[0]
-    : null;
-  const canSendNotification =
-    !mostRecentNotification ||
-    new Date(mostRecentNotification.createdAt) < threeMinutesAgo;
+  const lastNotification = await getUserNotificationsByCategory(
+    parseInt(fid),
+    category,
+    1,
+    {
+      createdBefore: threeMinutesAgo,
+    }
+  );
+
+  const canSendNotification = !lastNotification?.length;
 
   if (canSendNotification) {
     console.log(

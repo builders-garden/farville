@@ -777,7 +777,11 @@ export const getUserNotifications = async (
 export const getUserNotificationsByCategory = async (
   fid: number,
   category: string,
-  limit?: number
+  limit?: number,
+  dates: {
+    createdBefore?: Date;
+    createdAfter?: Date;
+  } = {}
 ): Promise<DbUserNotification[]> => {
   const query = supabase
     .from("user_notification")
@@ -785,6 +789,14 @@ export const getUserNotificationsByCategory = async (
     .eq("fid", fid)
     .eq("category", category)
     .order("created_at", { ascending: false });
+
+  if (dates.createdBefore) {
+    query.lte("created_at", dates.createdBefore.toISOString());
+  }
+
+  if (dates.createdAfter) {
+    query.gte("created_at", dates.createdAfter.toISOString());
+  }
 
   if (limit) {
     query.limit(limit);
