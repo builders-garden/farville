@@ -33,7 +33,10 @@ export async function POST(req: NextRequest) {
   const notificationDetails = await getUserNotificationDetails(parseInt(fid));
 
   if (!notificationDetails) {
-    return Response.json({ success: false, error: "User notifications not enabled" }, { status: 404 });
+    return Response.json(
+      { success: false, error: "User notifications not enabled" },
+      { status: 404 }
+    );
   }
 
   // before sending the notification, check if the user has already received a notification of this type
@@ -43,15 +46,15 @@ export async function POST(req: NextRequest) {
     3
   );
 
-  // check if the last 3 notifications were sent less than 3 minutes ago
-  if (
-    lastUserNotifications.length === 0 ||
-    lastUserNotifications.every(
-      (notification) =>
-        new Date(notification.createdAt).getTime() + 3 * 60 * 1000 >
-        new Date().getTime()
-    )
-  ) {
+  // Check if the most recent notification was sent more than 3 minutes ago
+  const threeMinutesAgo = new Date(Date.now() - 3 * 60 * 1000);
+
+  const mostRecentNotification = lastUserNotifications[0];
+  const canSendNotification =
+    !mostRecentNotification ||
+    new Date(mostRecentNotification.createdAt) < threeMinutesAgo;
+
+  if (canSendNotification) {
     console.log(
       `[send-notification-${new Date().toISOString()}]`,
       `sending "${category}" notification to ${fid}`
@@ -119,7 +122,7 @@ export async function POST(req: NextRequest) {
 
     return Response.json({
       success: true,
-      message: "Notification already sent",
+      message: "Notification skipped due to rate limiting",
     });
   }
 }
