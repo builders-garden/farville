@@ -130,7 +130,7 @@ export async function sendQuestsCalculation(
 
   console.log(
     `[QSTASH-${new Date().toISOString()}] - sent quest calculation to QStash with id: ${
-      res.messageId
+      res?.messageId
     }`
   );
 }

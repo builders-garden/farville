@@ -37,6 +37,7 @@ export const qstashPublishJSON = async (req: QStashPublishJSONRequest) => {
     return res;
   } catch (error) {
     console.error(error);
+    return null;
   }
 };
 

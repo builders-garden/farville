@@ -26,7 +26,7 @@ export async function sendDelayedNotification(
 
   console.log(
     `[QSTASH-${new Date().toISOString()}] - sent delayed notification to QStash with id: ${
-      res.messageId
+      res?.messageId
     }`
   );
 }
