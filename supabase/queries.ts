@@ -622,6 +622,25 @@ export const speedBoostGridCell = async (
   const currentHarvestTime = new Date(harvestAt);
   const boostTime =
     SPEED_BOOST[boostSlug].duration * (1 - 1 / SPEED_BOOST[boostSlug].boost);
+
+  // Get current cell to check speedBoostedAt
+  const { data: currentCell } = await supabase
+    .from("user_grid_cells")
+    .select("speedBoostedAt")
+    .eq("fid", fid)
+    .eq("x", x)
+    .eq("y", y)
+    .single();
+
+  // Check if enough time has passed since last speed boost
+  if (currentCell?.speedBoostedAt) {
+    const lastBoostTime = new Date(currentCell.speedBoostedAt);
+    const timeSinceBoost = Date.now() - lastBoostTime.getTime();
+    if (timeSinceBoost < SPEED_BOOST[boostSlug].duration) {
+      throw new Error("Cannot speed boost yet - must wait for boost duration to expire");
+    }
+  }
+
   const { data, error } = await supabase
     .from("user_grid_cells")
     .update({
