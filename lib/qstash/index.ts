@@ -22,18 +22,22 @@ export type QStashPublishJSONRequest = {
 };
 
 export const qstashPublishJSON = async (req: QStashPublishJSONRequest) => {
-  const res = await qstashClient.publishJSON({
-    url: req.url,
-    body: req.body,
-    headers: {
-      ...req.headers,
-      Authorization: `Bearer ${process.env.QSTASH_TOKEN}`,
-    },
-    delay: req.delay,
-    notBefore: req.notBefore,
-  });
+  try {
+    const res = await qstashClient.publishJSON({
+      url: req.url,
+      body: req.body,
+      headers: {
+        ...req.headers,
+        Authorization: `Bearer ${process.env.QSTASH_TOKEN}`,
+      },
+      delay: req.delay,
+      notBefore: req.notBefore,
+    });
 
-  return res;
+    return res;
+  } catch (error) {
+    console.error(error);
+  }
 };
 
 export const validateQstashRequest = async (
