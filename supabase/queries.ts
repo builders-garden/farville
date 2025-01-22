@@ -620,8 +620,8 @@ export const speedBoostGridCell = async (
   harvestAt: Date
 ): Promise<DbGridCell | null> => {
   const currentHarvestTime = new Date(harvestAt);
-  const boostTime = 
-    SPEED_BOOST[boostSlug].duration * (1 - 1/SPEED_BOOST[boostSlug].boost);
+  const boostTime =
+    SPEED_BOOST[boostSlug].duration * (1 - 1 / SPEED_BOOST[boostSlug].boost);
   const { data, error } = await supabase
     .from("user_grid_cells")
     .update({
@@ -1191,4 +1191,21 @@ export const initializeUserQuest = async (fid: number): Promise<void> => {
       })
     )
   );
+};
+
+export const getHarvestableCellsCount = async (
+  fid: number,
+  withinMinutes: number = 3
+): Promise<number> => {
+  const threeMinutesFromNow = new Date(Date.now() + withinMinutes * 60 * 1000);
+
+  const { count, error } = await supabase
+    .from("user_grid_cells")
+    .select("*", { count: "exact", head: true })
+    .eq("fid", fid)
+    .not("harvestAt", "is", null)
+    .lte("harvestAt", threeMinutesFromNow.toISOString());
+
+  if (error) throw error;
+  return count || 0;
 };

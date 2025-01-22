@@ -2,6 +2,7 @@ import {
   createUserNotification,
   getUserNotificationDetails,
   getUserNotificationsByCategory,
+  getHarvestableCellsCount,
 } from "@/supabase/queries";
 import {
   SendNotificationRequest,
@@ -54,6 +55,21 @@ export async function POST(req: NextRequest) {
   const canSendNotification = !lastNotification?.length;
 
   if (canSendNotification) {
+    // Add harvest validation check
+    if (category === "harvest") {
+      const harvestableCells = await getHarvestableCellsCount(parseInt(fid));
+
+      if (harvestableCells === 0) {
+        console.warn(
+          `[send-notification-${new Date().toISOString()}] user ${fid} has no harvestable cells within 3 minutes. Skipping harvest notification...`
+        );
+        return Response.json({
+          success: true,
+          message: "Notification skipped - no harvestable cells",
+        });
+      }
+    }
+
     console.log(
       `[send-notification-${new Date().toISOString()}]`,
       `sending "${category}" notification to ${fid}`

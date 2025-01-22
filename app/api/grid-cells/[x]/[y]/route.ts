@@ -110,7 +110,16 @@ export async function POST(
           parseInt(y),
           itemSlug as string
         );
-        await sendQuestsCalculation(parseInt(fid), "apply-perk", itemId);
+        await Promise.all([
+          sendQuestsCalculation(parseInt(fid), "apply-perk", itemId),
+          sendDelayedNotification(
+            fid.toString(),
+            `Harvest time! 🌾`,
+            `Your ${perkCell?.cropType} are ready to harvest!`,
+            "harvest",
+            new Date(perkCell?.harvestAt as string).getTime() - Date.now()
+          ),
+        ]);
         trackEvent(Number(fid), "applied-perk", {
           cellId: `${x}/${y}`,
           cropType: perkCell?.cropType,

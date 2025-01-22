@@ -55,14 +55,25 @@ function SeedDetailPopup({
   };
 
   const boostData = getBoostType();
-  const hasBoost = state.perks.some((item) =>
-    item.item.slug === boostData?.type
+  const hasBoost = state.perks.some(
+    (item) => item.item.slug === boostData?.type
   );
   const canBoost =
     boostData &&
     (!cell.speedBoostedAt ||
       new Date(cell.speedBoostedAt).getTime() + boostData?.duration <
         Date.now());
+
+  const boostTimeLeft = cell.speedBoostedAt
+    ? Math.max(
+        0,
+        (new Date(cell.speedBoostedAt).getTime() +
+          (boostData?.duration || 0) -
+          Date.now()) /
+          1000 /
+          60
+      )
+    : 0;
 
   return createPortal(
     <motion.div
@@ -101,6 +112,11 @@ function SeedDetailPopup({
           {!cell.isReadyToHarvest && <p>Harvest in: {minutesLeft} minutes</p>}
           {cell.isReadyToHarvest && (
             <p className="text-[#FFB938] font-medium">Ready to harvest!</p>
+          )}
+          {cell.speedBoostedAt && boostTimeLeft > 0 && (
+            <p className="text-[#2196F3]">
+              Speed boost: {Math.ceil(boostTimeLeft)} minutes remaining
+            </p>
           )}
         </div>
 
@@ -220,7 +236,9 @@ export default function GridCell({ cell }: GridCellProps) {
         itemSlug: selectedPerk.item.slug,
         itemId: selectedPerk.itemId,
       });
-      const perk = state.perks.find((item) => item.item.slug === selectedPerk.item.slug);
+      const perk = state.perks.find(
+        (item) => item.item.slug === selectedPerk.item.slug
+      );
       if (!perk || perk.quantity === 0) {
         setSelectedPerk(null);
       }
