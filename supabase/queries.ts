@@ -899,14 +899,20 @@ export const incrementRequestFilledQuantity = async (
   // First fetch the current request
   const { data: request } = await supabase
     .from("requests")
-    .select("filledQuantity")
+    .select("quantity, filledQuantity")
     .eq("id", id)
     .single();
+
+  if (!request) throw new Error("Request not found");
+
+  // Calculate remaining quantity and adjust amount if needed
+  const remainingQuantity = request.quantity - request.filledQuantity;
+  const adjustedAmount = Math.min(amount, remainingQuantity);
 
   // Then update with the new total
   const { data, error } = await supabase
     .from("requests")
-    .update({ filledQuantity: (request?.filledQuantity || 0) + amount })
+    .update({ filledQuantity: request.filledQuantity + adjustedAmount })
     .eq("id", id)
     .select()
     .single();
