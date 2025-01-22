@@ -49,7 +49,9 @@ export async function POST(req: NextRequest) {
   // Check if the most recent notification was sent more than 3 minutes ago
   const threeMinutesAgo = new Date(Date.now() - 3 * 60 * 1000);
 
-  const mostRecentNotification = lastUserNotifications[0];
+  const mostRecentNotification = lastUserNotifications
+    ? lastUserNotifications[0]
+    : null;
   const canSendNotification =
     !mostRecentNotification ||
     new Date(mostRecentNotification.createdAt) < threeMinutesAgo;
