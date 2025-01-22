@@ -47,7 +47,7 @@ export async function POST(req: NextRequest) {
     category,
     1,
     {
-      createdBefore: threeMinutesAgo,
+      createdAfter: threeMinutesAgo,
     }
   );
 
