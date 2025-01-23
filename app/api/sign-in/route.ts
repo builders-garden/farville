@@ -14,7 +14,6 @@ import {
   initWeeklyAndMonthlyUserQuests,
 } from "@/supabase/queries";
 import { trackEvent } from "@/lib/posthog/server";
-import { getMidnightUTC } from "@/lib/utils";
 
 export const POST = async (req: NextRequest) => {
   const { fid, referrerFid, signature, message } = await req.json();
@@ -57,14 +56,8 @@ export const POST = async (req: NextRequest) => {
 
   // Check if the user has daily, weekly and monthly quests
   // If not, initialize them
-  const userQuests = await getUserQuests(fid);
-  const today = getMidnightUTC().split("T")[0];
-  const dailyQuests = userQuests?.filter(
-    (quest) => quest.quest.type === "daily" && quest.quest.createdAt.startsWith(today)
-  );
-  const weeklyAndMonthlyQuests = userQuests?.filter(
-    (quest) => quest.quest.type === "weekly" || quest.quest.type === "monthly"
-  );
+  const dailyQuests = await getUserQuests(fid, { type: ["daily"], status: "incomplete" });
+  const weeklyAndMonthlyQuests = await getUserQuests(fid, { type: ["weekly", "monthly"] });
   if (!dailyQuests || dailyQuests?.length === 0) {
     await initDailyUserQuests(fid);
   }

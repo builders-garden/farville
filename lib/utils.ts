@@ -39,10 +39,3 @@ export const getUserIsoNowDate = () => {
   const userIsoNowDate = new Date(isoDateString);
   return userIsoNowDate;
 }
-
-export const getMidnightUTC = () => {
-  const today = new Date();
-  today.setUTCHours(0, 0, 0, 0);
-  today.setUTCMinutes(0);
-  return today.toISOString();
-}

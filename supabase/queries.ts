@@ -1140,7 +1140,7 @@ export const getUserQuests = async (
   filter?: {
     category?: string;
     itemId?: number;
-    type?: "daily" | "weekly" | "monthly";
+    type?: ("daily" | "weekly" | "monthly")[];
     status?: DbUserHasQuestStatus;
   }
 ): Promise<DbUserHasQuestWithQuest[]> => {
@@ -1171,7 +1171,7 @@ export const getUserQuests = async (
   }
 
   if (filter?.type) {
-    query.eq("quest.type", filter?.type);
+    query.in("quest.type", filter.type);
   }
 
   if (filter?.status) {
@@ -1184,7 +1184,7 @@ export const getUserQuests = async (
   return data;
 };
 
-export const getQuestsByType = async (
+export const getQuestsByTypeWithItem = async (
   type: "daily" | "weekly" | "monthly"
 ): Promise<DbQuestWithItem[]> => {
   const now = new Date().toISOString();
@@ -1198,6 +1198,24 @@ export const getQuestsByType = async (
       `
     )
     .eq("type", type)
+    .lte("startAt", now)
+    .gt("endAt", now)
+    .order("endAt", { ascending: true });
+
+  if (error) throw error;
+  return data;
+};
+
+export const getQuestsByTypeAndLevel = async (
+  type: "daily" | "weekly" | "monthly",
+  level: number
+): Promise<DbQuest[]> => {
+  const now = new Date().toISOString();
+  const { data, error } = await supabase
+    .from("quests")
+    .select("*")
+    .eq("type", type)
+    .eq("level", level)
     .lte("startAt", now)
     .gt("endAt", now)
     .order("endAt", { ascending: true });
@@ -1294,25 +1312,10 @@ export const initDailyUserQuests = async (fid: number): Promise<void> => {
     (threshold) => userXp < threshold
   );
 
-  // take the daily quests for today, for user's level
-  const { data, error } = await supabase
-    .from("quests")
-    .select("id")
-    .eq("type", "daily")
-    .lte("startAt", new Date().toISOString())
-    .gt("endAt", new Date().toISOString())
-    .eq("level", userLevel);
+  let dailyQuests: DbQuest[] = await getQuestsByTypeAndLevel("daily", userLevel);
 
-  let dailyQuests: DbQuest[];
-
-  // if there are no quests, we have to generate new ones with generateDailyQuests
-  if (error) {
-    throw error;
-  }
-  if (!data || data.length === 0) {
+  if (!dailyQuests || dailyQuests.length === 0) {
     dailyQuests = await generateDailyQuests(userLevel);
-  } else {
-    dailyQuests = data as DbQuest[];
   }
 
   await Promise.all(
