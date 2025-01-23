@@ -350,8 +350,6 @@ export const removeUserItem = async (
     .eq("itemId", itemId)
     .maybeSingle();
 
-  console.log(existing);
-
   if (!existing) return;
 
   if (existing.quantity <= quantity) {
@@ -369,7 +367,6 @@ export const removeUserItem = async (
       .eq("userFid", userFid)
       .eq("itemId", itemId);
 
-    console.log("updated", existing.quantity - quantity);
 
     if (error) throw error;
   }
@@ -899,14 +896,20 @@ export const incrementRequestFilledQuantity = async (
   // First fetch the current request
   const { data: request } = await supabase
     .from("requests")
-    .select("filledQuantity")
+    .select("quantity, filledQuantity")
     .eq("id", id)
     .single();
+
+  if (!request) throw new Error("Request not found");
+
+  // Calculate remaining quantity and adjust amount if needed
+  const remainingQuantity = request.quantity - request.filledQuantity;
+  const adjustedAmount = Math.min(amount, remainingQuantity);
 
   // Then update with the new total
   const { data, error } = await supabase
     .from("requests")
-    .update({ filledQuantity: (request?.filledQuantity || 0) + amount })
+    .update({ filledQuantity: request.filledQuantity + adjustedAmount })
     .eq("id", id)
     .select()
     .single();
@@ -1368,7 +1371,9 @@ export const getExpiredBoostCellsCount = async (
   fid: number,
   withinMinutes: number = 3
 ): Promise<number> => {
-  const twoHoursThreeMinutesAgo = new Date(
+  // Calculate the time window: between (2 hours + withinMinutes) ago and 2 hours ago
+  const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000);
+  const twoHoursPlusMinutesAgo = new Date(
     Date.now() - (2 * 60 * 60 * 1000 + withinMinutes * 60 * 1000)
   );
 
@@ -1377,8 +1382,31 @@ export const getExpiredBoostCellsCount = async (
     .select("*", { count: "exact", head: true })
     .eq("fid", fid)
     .not("speedBoostedAt", "is", null)
-    .lte("speedBoostedAt", twoHoursThreeMinutesAgo.toISOString());
+    .gte("speedBoostedAt", twoHoursPlusMinutesAgo.toISOString())
+    .lt("speedBoostedAt", twoHoursAgo.toISOString());
 
   if (error) throw error;
   return count || 0;
+};
+
+export const getUsersByFids = async (
+  fids: string[]
+): Promise<{
+  users: DbUser[];
+}> => {
+  const { data, error } = await supabase
+    .from("users")
+    .select("*")
+    .in("fid", fids)
+    .gt("xp", 0)
+    .order("xp", { ascending: false });
+
+  if (error) {
+    console.error("Error fetching users by fids:", error);
+    throw error;
+  }
+
+  return {
+    users: data,
+  };
 };
