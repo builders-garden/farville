@@ -29,3 +29,21 @@ export const getCurrentLevelAndProgress = (experience: number) => {
     ((experience - previousLevelXP) / (nextLevelXP - previousLevelXP)) * 100;
   return { currentLevel, progress };
 };
+
+export const getMidnightForUserTimezone = () => {
+  const localDate = new Date().toLocaleString();
+  const [date, time] = localDate.split(", ");
+  const [day, month, year] = date.split("/");
+  const [hour, minute, second] = time.split(":");
+  const isoDateString = `${year}-${month}-${day}T${hour}:${minute}:${second}.124Z`;
+  const userIsoNowDate = new Date(isoDateString);
+
+  const currentDate = new Date();
+  const difference = userIsoNowDate.getTime() - currentDate.getTime();
+
+  const today = new Date();
+  today.setUTCHours(0, 0, 0, 0);
+  today.setUTCMinutes(0);
+  const midnightForUser = new Date(today.getTime() + difference);
+  return midnightForUser.toISOString();
+}
