@@ -204,6 +204,7 @@ export interface Database {
           startAt: string | null;
           endAt: string | null;
           createdAt: string;
+          level: number | null;
         };
         Insert: {
           id?: number;
@@ -216,6 +217,7 @@ export interface Database {
           startAt?: string | null;
           endAt?: string | null;
           createdAt?: string;
+          level?: number | null;
         };
         Update: {
           id?: number;
@@ -228,6 +230,7 @@ export interface Database {
           startAt?: string | null;
           endAt?: string | null;
           createdAt?: string;
+          level?: number | null;
         };
       };
       user_has_quests: {

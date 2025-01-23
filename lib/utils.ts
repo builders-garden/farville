@@ -29,3 +29,13 @@ export const getCurrentLevelAndProgress = (experience: number) => {
     ((experience - previousLevelXP) / (nextLevelXP - previousLevelXP)) * 100;
   return { currentLevel, progress };
 };
+
+export const getUserIsoNowDate = () => {
+  const localDate = new Date().toLocaleString();
+  const [date, time] = localDate.split(", ");
+  const [day, month, year] = date.split("/");
+  const [hour, minute, second] = time.split(":");
+  const isoDateString = `${year}-${month}-${day}T${hour}:${minute}:${second}.000Z`;
+  const userIsoNowDate = new Date(isoDateString);
+  return userIsoNowDate;
+}

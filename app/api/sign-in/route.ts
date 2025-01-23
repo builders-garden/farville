@@ -10,7 +10,8 @@ import {
   getUserQuests,
   giftStarterPack,
   initializeGrid,
-  initializeUserQuest,
+  initDailyUserQuests,
+  initWeeklyAndMonthlyUserQuests,
 } from "@/supabase/queries";
 import { trackEvent } from "@/lib/posthog/server";
 
@@ -53,9 +54,15 @@ export const POST = async (req: NextRequest) => {
     // await initializeUserQuest(fid);
   }
 
-  const userQuests = await getUserQuests(fid);
-  if (!userQuests || userQuests?.length === 0) {
-    await initializeUserQuest(fid);
+  // Check if the user has daily, weekly and monthly quests
+  // If not, initialize them
+  const dailyQuests = await getUserQuests(fid, { type: ["daily"], status: "incomplete" });
+  const weeklyAndMonthlyQuests = await getUserQuests(fid, { type: ["weekly", "monthly"] });
+  if (!dailyQuests || dailyQuests?.length === 0) {
+    await initDailyUserQuests(fid);
+  }
+  if (!weeklyAndMonthlyQuests || weeklyAndMonthlyQuests?.length === 0) {
+    await initWeeklyAndMonthlyUserQuests(fid);
   }
 
   // Verify signature matches custody address
