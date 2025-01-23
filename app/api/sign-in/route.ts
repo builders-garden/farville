@@ -56,7 +56,7 @@ export const POST = async (req: NextRequest) => {
 
   // Check if the user has daily, weekly and monthly quests
   // If not, initialize them
-  const dailyQuests = await getUserQuests(fid, { type: ["daily"], status: "incomplete" });
+  const dailyQuests = await getUserQuests(fid, { type: ["daily"], activeToday: true });
   const weeklyAndMonthlyQuests = await getUserQuests(fid, { type: ["weekly", "monthly"] });
   if (!dailyQuests || dailyQuests?.length === 0) {
     await initDailyUserQuests(fid);

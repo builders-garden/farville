@@ -1142,6 +1142,7 @@ export const getUserQuests = async (
     itemId?: number;
     type?: ("daily" | "weekly" | "monthly")[];
     status?: DbUserHasQuestStatus;
+    activeToday?: boolean;
   }
 ): Promise<DbUserHasQuestWithQuest[]> => {
   const query = supabase
@@ -1157,7 +1158,7 @@ export const getUserQuests = async (
     )
     .eq("fid", fid);
 
-  if (filter?.status === "incomplete") {
+  if (filter?.status === "incomplete" || filter?.activeToday) {
     query.gte("quest.endAt", new Date().toISOString());
     query.lte("quest.startAt", new Date().toISOString());
   }
