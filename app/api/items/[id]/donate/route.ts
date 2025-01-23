@@ -36,7 +36,6 @@ export const POST = async (
     return NextResponse.json({ message: "User item not found" }, { status: 404 });
   }
 
-  console.log("donating", quantity, toFid, requestId, itemId);
 
   await removeUserItem(Number(fid), itemId, quantity);
   await addUserItem(Number(toFid), itemId, quantity);

@@ -36,7 +36,6 @@ export async function POST(
     );
   }
   const { action, seedType, itemSlug, itemId } = requestBody.data;
-  console.log("requestBody", requestBody.data);
   const fid = req.headers.get("x-user-fid");
   if (!fid) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

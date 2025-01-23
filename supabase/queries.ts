@@ -350,8 +350,6 @@ export const removeUserItem = async (
     .eq("itemId", itemId)
     .maybeSingle();
 
-  console.log(existing);
-
   if (!existing) return;
 
   if (existing.quantity <= quantity) {
@@ -369,7 +367,6 @@ export const removeUserItem = async (
       .eq("userFid", userFid)
       .eq("itemId", itemId);
 
-    console.log("updated", existing.quantity - quantity);
 
     if (error) throw error;
   }
@@ -1257,4 +1254,26 @@ export const getExpiredBoostCellsCount = async (
 
   if (error) throw error;
   return count || 0;
+};
+
+export const getUsersByFids = async (
+  fids: string[]
+): Promise<{
+  users: DbUser[];
+}> => {
+  const { data, error } = await supabase
+    .from("users")
+    .select("*")
+    .in("fid", fids)
+    .gt("xp", 0)
+    .order("xp", { ascending: false });
+
+  if (error) {
+    console.error("Error fetching users by fids:", error);
+    throw error;
+  }
+
+  return {
+    users: data,
+  };
 };

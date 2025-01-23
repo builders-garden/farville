@@ -16,7 +16,6 @@ export default function RequestModal({
   onClose: () => void;
   id: number;
 }) {
-  console.log("RequestModal", id);
   const { safeAreaInsets } = useFrameContext();
   const { request, isLoading } = useRequest(id);
   const { donate } = useDonate();

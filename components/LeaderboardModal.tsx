@@ -18,17 +18,10 @@ const shimmerAnimation = `
 
 export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
   const { state } = useGame();
-  const { data } = useLeaderboard(state?.user.fid);
+  const { data: globalData } = useLeaderboard(false, state?.user.fid);
+  const { data: friendsData } = useLeaderboard(true, state?.user.fid);
   const [activeTab, setActiveTab] = useState<"global" | "friends">("global");
-  //const [searchQuery, setSearchQuery] = useState("");
   const { safeAreaInsets } = useFrameContext();
-
-  // const currentLeaderboard =
-  //   activeTab === "global" ? MOCK_GLOBAL_LEADERBOARD : MOCK_FRIENDS;
-
-  // const filteredLeaderboard = users?.filter((entry) =>
-  //   entry.username.toLowerCase().includes(searchQuery.toLowerCase())
-  // );
 
   const handleClose = () => {
     onClose();
@@ -89,7 +82,7 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
             <div className="grid grid-cols-2 gap-2 mb-6">
               {[
                 { id: "global", label: "Global", icon: "🌍" },
-                // { id: "friends", label: "Friends", icon: "👥" },
+                { id: "friends", label: "Friends", icon: "👥" },
               ].map((tab) => (
                 <motion.button
                   key={tab.id}
@@ -123,24 +116,10 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
             </div>
           </div>
 
-          {/* Search Bar */}
-          {/* <div className="relative mb-6">
-            <input
-              type="text"
-              placeholder="Search players..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full px-4 py-2 pl-10 rounded-lg bg-[#6d4c2c] text-white/90 placeholder-white/50
-                       focus:outline-none focus:ring-2 focus:ring-[#FFB938] border border-white/10"
-            />
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/50">
-              🔍
-            </span>
-          </div> */}
-
           {/* Scrollable leaderboard list */}
           <div className="flex-1 overflow-y-auto min-h-0">
-            {data?.targetPosition && (
+            {(activeTab === "global" ? globalData : friendsData)
+              ?.targetPosition && (
               <motion.div
                 key={state.user.fid}
                 initial={{ opacity: 0, x: -20 }}
@@ -158,7 +137,11 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
 
                 {/* Rank */}
                 <div className="flex-none text-center px-2 py-1 bg-[#5c4121] rounded-lg text-white/90 text-xs font-medium">
-                  #{data.targetPosition}
+                  #
+                  {
+                    (activeTab === "global" ? globalData : friendsData)
+                      ?.targetPosition
+                  }
                 </div>
 
                 {/* Avatar */}
@@ -199,63 +182,77 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
               </motion.div>
             )}
             <div className="space-y-2">
-              {data?.users &&
-                data.users.map((entry, index) => (
-                  <motion.div
-                    key={entry.fid}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.05 }}
-                    onClick={async () => {
-                      await sdk.actions.viewProfile({
-                        fid: entry.fid,
-                      });
-                    }}
-                    className="bg-[#6d4c2c] px-4 py-3 rounded-lg flex items-center gap-3
-                           border border-[#8B5E3C]/50 shadow-md"
-                  >
-                    {/* Rank */}
-                    <div className="flex-none text-center px-2 py-1 bg-[#5c4121] rounded-lg text-white/90 text-xs font-medium">
-                      #{index + 1}
+              {(activeTab === "global"
+                ? globalData?.users
+                : friendsData?.users
+              )?.map((entry, index) => (
+                <motion.div
+                  key={entry.fid}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.05 }}
+                  onClick={async () => {
+                    await sdk.actions.viewProfile({
+                      fid: entry.fid,
+                    });
+                  }}
+                  className={`px-4 py-3 rounded-lg flex items-center gap-3 shadow-md
+                      ${
+                        entry.fid === state.user.fid
+                          ? "bg-gradient-to-r from-[#8B5E3C] to-[#6d4c2c] border-2 border-[#FFB938]"
+                          : "bg-[#6d4c2c] border border-[#8B5E3C]/50"
+                      }`}
+                >
+                  {/* Add shine effect for current user */}
+                  {entry.fid === state.user.fid && (
+                    <div
+                      className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent 
+                                  animate-[shine_3s_ease-in-out_infinite]"
+                    />
+                  )}
+
+                  {/* Rank */}
+                  <div className="flex-none text-center px-2 py-1 bg-[#5c4121] rounded-lg text-white/90 text-xs font-medium">
+                    #{index + 1}
+                  </div>
+
+                  {/* Avatar */}
+                  {entry.avatarUrl ? (
+                    <Image
+                      src={entry.avatarUrl}
+                      alt={`${entry.username}'s avatar`}
+                      className="w-10 h-10 rounded-full object-cover border-2 border-[#FFB938] flex-none"
+                      width={40}
+                      height={40}
+                    />
+                  ) : (
+                    <div className="w-10 h-10 rounded-full bg-[#5c4121] flex items-center justify-center text-white/90 flex-none">
+                      👤
                     </div>
+                  )}
 
-                    {/* Avatar */}
-                    {entry.avatarUrl ? (
-                      <Image
-                        src={entry.avatarUrl}
-                        alt={`${entry.username}'s avatar`}
-                        className="w-10 h-10 rounded-full object-cover border-2 border-[#FFB938] flex-none"
-                        width={40}
-                        height={40}
-                      />
-                    ) : (
-                      <div className="w-10 h-10 rounded-full bg-[#5c4121] flex items-center justify-center text-white/90 flex-none">
-                        👤
-                      </div>
-                    )}
-
-                    {/* User Info */}
-                    <div className="flex-1 min-w-0 flex items-center justify-between gap-4">
-                      {/* Username and XP */}
-                      <div className="min-w-0 flex flex-col gap-1">
-                        <p className="text-white/90 font-medium truncate text-sm">
-                          {entry.username}
+                  {/* User Info */}
+                  <div className="flex-1 min-w-0 flex items-center justify-between gap-4">
+                    {/* Username and XP */}
+                    <div className="min-w-0 flex flex-col gap-1">
+                      <p className="text-white/90 font-medium truncate text-sm">
+                        {entry.username}
+                      </p>
+                      <div className="flex items-center gap-4">
+                        <span className="text-[#FFB938] rounded-full font-medium text-xs">
+                          Lvl{" "}
+                          {LEVEL_XP_THRESHOLDS.findIndex(
+                            (threshold) => entry.xp < threshold
+                          )}
+                        </span>
+                        <p className="text-white/60 text-xs">
+                          XP:{entry.xp.toLocaleString()}
                         </p>
-                        <div className="flex items-center gap-4">
-                          <span className="text-[#FFB938] rounded-full font-medium text-xs">
-                            Lvl{" "}
-                            {LEVEL_XP_THRESHOLDS.findIndex(
-                              (threshold) => entry.xp < threshold
-                            )}
-                          </span>
-                          <p className="text-white/60 text-xs">
-                            XP:{entry.xp.toLocaleString()}
-                          </p>
-                        </div>
                       </div>
                     </div>
-                  </motion.div>
-                ))}
+                  </div>
+                </motion.div>
+              ))}
             </div>
           </div>
         </div>
