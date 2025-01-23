@@ -28,7 +28,7 @@ export const POST = async (req: NextRequest) => {
     return NextResponse.json({ error: "User not found" }, { status: 404 });
   }
 
-  if (user.expansions >= EXPANSION_COSTS.length) {
+  if (user.expansions > EXPANSION_COSTS.length) {
     return NextResponse.json(
       { error: "No more expansions available" },
       { status: 400 }
