@@ -1241,7 +1241,9 @@ export const getExpiredBoostCellsCount = async (
   fid: number,
   withinMinutes: number = 3
 ): Promise<number> => {
-  const twoHoursThreeMinutesAgo = new Date(
+  // Calculate the time window: between (2 hours + withinMinutes) ago and 2 hours ago
+  const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000);
+  const twoHoursPlusMinutesAgo = new Date(
     Date.now() - (2 * 60 * 60 * 1000 + withinMinutes * 60 * 1000)
   );
 
@@ -1250,7 +1252,8 @@ export const getExpiredBoostCellsCount = async (
     .select("*", { count: "exact", head: true })
     .eq("fid", fid)
     .not("speedBoostedAt", "is", null)
-    .lte("speedBoostedAt", twoHoursThreeMinutesAgo.toISOString());
+    .gte("speedBoostedAt", twoHoursPlusMinutesAgo.toISOString())
+    .lt("speedBoostedAt", twoHoursAgo.toISOString());
 
   if (error) throw error;
   return count || 0;
