@@ -979,6 +979,16 @@ export const createQuest = async (quest: InsertDbQuest): Promise<DbQuest> => {
   return data;
 };
 
+export const createQuests = async (quests: InsertDbQuest[]): Promise<DbQuest[]> => {
+  const { data, error } = await supabase
+    .from("quests")
+    .insert(quests)
+    .select();
+
+  if (error) throw error;
+  return data;
+}
+
 export const updateQuest = async (
   id: number,
   updates: Partial<InsertDbQuest>
@@ -1226,7 +1236,7 @@ const generateDailyQuests = async (level: number) => {
     10: 45,
   };
 
-  const insertedQuests: DbQuest[] = [];
+  const dailyQuests: InsertDbQuest[] = [];
   for (let i = 0; i < 3; i++) {
     const category = questCategories[Math.floor(Math.random() * questCategories.length)];
     questCategories = questCategories.filter((c) => c !== category);
@@ -1263,10 +1273,10 @@ const generateDailyQuests = async (level: number) => {
       level,
     };
 
-    const quest = await createQuest(dailyQuest);
-    insertedQuests.push(quest);
+    dailyQuests.push(dailyQuest);
   }
 
+  const insertedQuests = await createQuests(dailyQuests);
   return insertedQuests;
 }
 
@@ -1290,36 +1300,29 @@ export const initDailyUserQuests = async (fid: number): Promise<void> => {
     .gt("endAt", new Date().toISOString())
     .eq("level", userLevel);
 
+  let dailyQuests: DbQuest[];
+
   // if there are no quests, we have to generate new ones with generateDailyQuests
   if (error) {
     throw error;
   }
   if (!data || data.length === 0) {
-    const dailyQuests = await generateDailyQuests(userLevel);
-    await Promise.all(
-      dailyQuests.map((quest) =>
-        createUserQuest({
-          fid,
-          questId: quest.id,
-          completedAt: null,
-          status: "incomplete",
-          progress: 0,
-        })
-      )
-    );
+    dailyQuests = await generateDailyQuests(userLevel);
   } else {
-    await Promise.all(
-      data.map((quest) =>
-        createUserQuest({
-          fid,
-          questId: quest.id,
-          completedAt: null,
-          status: "incomplete",
-          progress: 0,
-        })
-      )
-    );
+    dailyQuests = data as DbQuest[];
   }
+
+  await Promise.all(
+    dailyQuests.map((quest) =>
+      createUserQuest({
+        fid,
+        questId: quest.id,
+        completedAt: null,
+        status: "incomplete",
+        progress: 0,
+      })
+    )
+  );
 };
 
 export const initWeeklyAndMonthlyUserQuests = async (fid: number): Promise<void> => {

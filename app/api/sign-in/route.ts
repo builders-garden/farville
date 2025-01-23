@@ -57,7 +57,10 @@ export const POST = async (req: NextRequest) => {
   // Check if the user has daily, weekly and monthly quests
   // If not, initialize them
   const userQuests = await getUserQuests(fid);
-  const dailyQuests = userQuests?.filter((quest) => quest.quest.type === "daily");
+  const today = new Date().toISOString().split("T")[0];
+  const dailyQuests = userQuests?.filter(
+    (quest) => quest.quest.type === "daily" && quest.quest.createdAt.startsWith(today)
+  );
   const weeklyAndMonthlyQuests = userQuests?.filter(
     (quest) => quest.quest.type === "weekly" || quest.quest.type === "monthly"
   );
