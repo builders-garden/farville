@@ -30,20 +30,19 @@ export const getCurrentLevelAndProgress = (experience: number) => {
   return { currentLevel, progress };
 };
 
-export const getMidnightForUserTimezone = () => {
+export const getUserIsoNowDate = () => {
   const localDate = new Date().toLocaleString();
   const [date, time] = localDate.split(", ");
   const [day, month, year] = date.split("/");
   const [hour, minute, second] = time.split(":");
-  const isoDateString = `${year}-${month}-${day}T${hour}:${minute}:${second}.124Z`;
+  const isoDateString = `${year}-${month}-${day}T${hour}:${minute}:${second}.000Z`;
   const userIsoNowDate = new Date(isoDateString);
+  return userIsoNowDate;
+}
 
-  const currentDate = new Date();
-  const difference = userIsoNowDate.getTime() - currentDate.getTime();
-
+export const getMidnightUTC = () => {
   const today = new Date();
   today.setUTCHours(0, 0, 0, 0);
   today.setUTCMinutes(0);
-  const midnightForUser = new Date(today.getTime() + difference);
-  return midnightForUser.toISOString();
+  return today.toISOString();
 }

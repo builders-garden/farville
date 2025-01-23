@@ -122,4 +122,4 @@ export type DbUserHasQuestWithQuest = DbUserHasQuest & {
 };
 
 // Helper type for inserting new user quests
-export type InsertDbUserHasQuest = Omit<DbUserHasQuest, "id">;
+export type InsertDbUserHasQuest = Omit<DbUserHasQuest, "id" | "createdAt">;

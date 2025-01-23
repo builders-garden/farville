@@ -1,5 +1,6 @@
 import { useGame } from "@/context/GameContext";
 import { useUpdateUserQuest } from "@/hooks/game-actions/use-update-user-quest";
+import { getUserIsoNowDate } from "@/lib/utils";
 import {
   DbQuest,
   DbQuestWithItem,
@@ -165,7 +166,7 @@ export default function Quest({
                 Ends in:{" "}
                 {(() => {
                   const endTime = new Date(quest.quest.endAt).getTime();
-                  const timeRemaining = endTime - Date.now();
+                  const timeRemaining = endTime - getUserIsoNowDate().getTime();
                   if (timeRemaining <= 0) return "";
 
                   const SECOND = 1000;

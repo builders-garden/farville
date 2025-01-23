@@ -1280,7 +1280,7 @@ const generateDailyQuests = async (level: number) => {
   return insertedQuests;
 }
 
-export const initDailyUserQuests = async (fid: number, midnightForUser: string): Promise<void> => {
+export const initDailyUserQuests = async (fid: number): Promise<void> => {
   // get user level
   const user = await getUser(fid);
   if (!user) {
@@ -1320,7 +1320,6 @@ export const initDailyUserQuests = async (fid: number, midnightForUser: string):
         completedAt: null,
         status: "incomplete",
         progress: 0,
-        createdAt: midnightForUser
       })
     )
   );
@@ -1343,7 +1342,6 @@ export const initWeeklyAndMonthlyUserQuests = async (fid: number): Promise<void>
         completedAt: null,
         status: "incomplete",
         progress: 0,
-        createdAt: new Date().toISOString()
       })
     )
   );
