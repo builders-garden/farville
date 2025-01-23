@@ -22,7 +22,7 @@ export async function GET(
     const quests = await getUserQuests(fid, {
       status: status as DbUserHasQuestStatus,
       category: category || undefined,
-      type: type as "daily" | "weekly" | "monthly" | undefined,
+      type: type ? [type as "daily" | "weekly" | "monthly"] : undefined,
       itemId: itemId ? parseInt(itemId) : undefined,
     });
 
