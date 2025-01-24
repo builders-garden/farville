@@ -30,7 +30,7 @@ export const getCurrentLevelAndProgress = (experience: number) => {
   return { currentLevel, progress };
 };
 
-export const getUserIsoNowDate = () => {
+export const getUserNowDate = () => {
   const localDate = new Date().toLocaleString();
   const [date, time] = localDate.split(", ");
   const [day, month, year] = date.split("/");
