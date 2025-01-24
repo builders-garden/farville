@@ -5,6 +5,7 @@ import { CropType } from "../types/game";
 import { useGame } from "../context/GameContext";
 import { useEffect, useState } from "react";
 import { formatTime } from "@/lib/utils";
+import clsx from "clsx";
 
 interface CropSpriteCropProp {
   type: CropType;
@@ -83,14 +84,6 @@ export function PlantedCropSprite({ crop, isDemo }: CropSpriteProps) {
 
   const isGridSmall = state.gridSize.width < 4;
 
-  const timeLeftSize = isGridSmall ? "text-[7px]" : "text-[6px]";
-  const mbSoil = isGridSmall ? "mb-2" : "mb-1";
-  const speedBoostProps = {
-    position: isGridSmall ? "top-1 right-1" : "-top-1 -right-1",
-    scale: isGridSmall ? 1 : 0.8,
-  }
-  const progressBarHeight = isGridSmall ? "h-2" : "h-1";
-
   return (
     <>
       {/* Background Image */}
@@ -105,7 +98,7 @@ export function PlantedCropSprite({ crop, isDemo }: CropSpriteProps) {
       />
       {crop.plantedAt && (
         <div
-          className={`absolute inset-[5%] ${mbSoil}`}
+        className={clsx("absolute inset-[5%]", isGridSmall ? "mb-2" : "mb-1")}
           style={{
             backgroundImage: "url('/images/land/soil_big.png')",
             backgroundSize: "100% 100%",
@@ -118,10 +111,10 @@ export function PlantedCropSprite({ crop, isDemo }: CropSpriteProps) {
       {/* Speed Boost Indicator */}
       {crop.speedBoostedAt &&
         Date.now() - crop.speedBoostedAt < 1000 * 60 * 60 * 2 && (
-          <div className={`absolute ${speedBoostProps.position} z-50`}>
+          <div className={clsx("absolute z-50", isGridSmall ? "top-1 right-1" : "-top-1 -right-1")}> 
             <motion.div
               initial={{ scale: 0 }}
-              animate={{ scale: speedBoostProps.scale }}
+              animate={{ scale: isGridSmall ? 1 : 0.8 }}
               className="bg-blue-500/80 rounded-full px-1"
               title={`${crop.speedBoost}x Speed Boost`}
             >
@@ -129,16 +122,17 @@ export function PlantedCropSprite({ crop, isDemo }: CropSpriteProps) {
             </motion.div>
           </div>
         )}
+        
 
       {/* Progress Bar - Centered and smaller */}
       {!crop.readyToHarvest && (
         <div className="absolute bottom-[3%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center w-3/4 z-50">
           {!isDemo && (
-            <div className={`${timeLeftSize} text-white font-medium mb-1 text-center drop-shadow-[0_1px_1px_rgba(0,0,0,0.8)]`}>
+            <div className={clsx("text-white font-medium mb-1 text-center drop-shadow-[0_1px_1px_rgba(0,0,0,0.8)]", isGridSmall ? "text-[7px]" : "text-[6px]")}>
               {getTimeRemaining()}
             </div>
           )}
-          <div className={`w-full ${progressBarHeight} bg-black/50`}>
+          <div className={clsx("w-full bg-black/50", isGridSmall ? "h-2" : "h-1")}> 
             <motion.div
               className="h-full bg-green-400"
               initial={{ width: 0 }}
