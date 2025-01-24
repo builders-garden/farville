@@ -16,7 +16,7 @@ import {
 import { trackEvent } from "@/lib/posthog/server";
 
 export const POST = async (req: NextRequest) => {
-  const { fid, referrerFid, signature, message } = await req.json();
+  const { fid, referrerFid, signature, message, userNow } = await req.json();
 
   let user = await getUser(fid);
 
@@ -56,7 +56,7 @@ export const POST = async (req: NextRequest) => {
 
   // Check if the user has daily, weekly and monthly quests
   // If not, initialize them
-  const dailyQuests = await getUserQuests(fid, { type: ["daily"], activeToday: true });
+  const dailyQuests = await getUserQuests(fid, { type: ["daily"], activeToday: true, timeToCompare: userNow });
   const weeklyAndMonthlyQuests = await getUserQuests(fid, { type: ["weekly", "monthly"] });
   if (!dailyQuests || dailyQuests?.length === 0) {
     await initDailyUserQuests(fid);

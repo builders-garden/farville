@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { MESSAGE_EXPIRATION_TIME } from "@/lib/constants";
 import posthog from "posthog-js";
 import * as Sentry from "@sentry/nextjs";
+import { getUserNowDate } from "@/lib/utils";
 
 export const useSignIn = () => {
   const { isSDKLoaded, context, error: contextError } = useFrameContext();
@@ -43,6 +44,8 @@ export const useSignIn = () => {
           ? context.location.cast.fid
           : null;
 
+      const userNow = getUserNowDate().toISOString();
+
       const res = await fetch("/api/sign-in", {
         method: "POST",
         headers: {
@@ -53,6 +56,7 @@ export const useSignIn = () => {
           message: result.message,
           fid: context.user.fid,
           referrerFid,
+          userNow,
         }),
       });
 

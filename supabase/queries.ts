@@ -1143,6 +1143,7 @@ export const getUserQuests = async (
     type?: ("daily" | "weekly" | "monthly")[];
     status?: DbUserHasQuestStatus;
     activeToday?: boolean;
+    timeToCompare?: string;
   }
 ): Promise<DbUserHasQuestWithQuest[]> => {
   const query = supabase
@@ -1159,8 +1160,8 @@ export const getUserQuests = async (
     .eq("fid", fid);
 
   if (filter?.status === "incomplete" || filter?.activeToday) {
-    query.gte("quest.endAt", new Date().toISOString());
-    query.lte("quest.startAt", new Date().toISOString());
+    query.gte("quest.endAt", filter?.timeToCompare || new Date().toISOString());
+    query.lte("quest.startAt", filter?.timeToCompare || new Date().toISOString());
   }
 
   if (filter?.itemId) {
@@ -1265,7 +1266,7 @@ const generateDailyQuests = async (level: number) => {
     let item: DbItem;
     if (category === "plant") {
       item = seedItems[Math.floor(Math.random() * seedItems.length)];
-    } else if (category === "harvest") {
+    } else if (category === "harvest" || category === "sell") {
       item = cropItems[Math.floor(Math.random() * cropItems.length)];
     } else {
       const allItems = [...seedItems, ...cropItems];
