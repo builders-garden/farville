@@ -54,19 +54,21 @@ export const POST = async (req: NextRequest) => {
     // await initializeUserQuest(fid);
   }
 
-  try {
   // Check if the user has daily, weekly and monthly quests
   // If not, initialize them
-  const dailyQuests = await getUserQuests(fid, { type: ["daily"], activeToday: true, timeToCompare: userNow });
-  const weeklyAndMonthlyQuests = await getUserQuests(fid, { type: ["weekly", "monthly"] });
+  const dailyQuests = await getUserQuests(fid, {
+    type: ["daily"],
+    activeToday: true,
+    timeToCompare: userNow,
+  });
+  const weeklyAndMonthlyQuests = await getUserQuests(fid, {
+    type: ["weekly", "monthly"],
+  });
   if (!dailyQuests || dailyQuests?.length === 0) {
     await initDailyUserQuests(fid);
   }
   if (!weeklyAndMonthlyQuests || weeklyAndMonthlyQuests?.length === 0) {
     await initWeeklyAndMonthlyUserQuests(fid);
-    }
-  } catch (error) {
-    console.error(error);
   }
 
   // Verify signature matches custody address

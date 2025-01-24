@@ -31,11 +31,11 @@ export const getCurrentLevelAndProgress = (experience: number) => {
 };
 
 export const getUserNowDate = () => {
-  const localDate = new Date().toLocaleString();
-  const [date, time] = localDate.split(", ");
-  const [day, month, year] = date.split("/");
-  const [hour, minute, second] = time.split(":");
-  const isoDateString = `${year}-${month}-${day}T${hour}:${minute}:${second}.000Z`;
-  const userIsoNowDate = new Date(isoDateString);
-  return userIsoNowDate;
+  // This implementation is incorrect because:
+  // 1. toLocaleString() output format is locale-dependent and unreliable
+  // 2. Creating date string manually can lead to timezone issues
+  // 3. The .000Z suffix forces UTC which may not match user's timezone
+  
+  // Instead, we should just return the current date:
+  return new Date();
 }
