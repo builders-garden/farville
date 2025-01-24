@@ -39,3 +39,7 @@ export const getUserNowDate = () => {
   // Instead, we should just return the current date:
   return new Date();
 }
+
+export const chooseRandomItem = <T>(items: T[]): T => {
+  return items[Math.floor(Math.random() * items.length)];
+}
