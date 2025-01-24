@@ -5,7 +5,7 @@ import { useGame } from "../context/GameContext";
 import { CropType, SeedType } from "../types/game";
 import CropSprite from "./CropSprite";
 import FloatingNumber from "./animations/FloatingNumber";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { DbGridCell } from "@/supabase/types";
 import { CROP_DATA, SPEED_BOOST } from "@/lib/game-constants";
 import Confetti from "./animations/Confetti";
@@ -36,9 +36,35 @@ function SeedDetailPopup({
   );
   const cropData = CROP_DATA[cell.cropType as CropType];
   const plantedAt = new Date(cell.plantedAt!);
-  const harvestAt = new Date(cell.harvestAt!);
+  const harvestAt = useMemo(() => new Date(cell.harvestAt!), [cell.harvestAt]);
   const timeLeft = Math.max(0, (harvestAt.getTime() - Date.now()) / 1000);
-  const minutesLeft = Math.ceil(timeLeft / 60);
+
+  const formatTime = (seconds: number) => {
+    const days = Math.floor(seconds / (3600 * 24));
+    const hours = Math.floor((seconds % (3600 * 24)) / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const secs = Math.floor(seconds % 60);
+
+    return [
+      days > 0 ? `${days}d` : null,
+      hours > 0 ? `${hours}h` : null,
+      minutes > 0 ? `${minutes}m` : null,
+      secs > 0 ? `${secs}s` : null,
+    ]
+      .filter(Boolean)
+      .join(" ");
+  };
+
+  const [countdown, setCountdown] = useState<string>(formatTime(timeLeft));
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const newTimeLeft = Math.max(0, (harvestAt.getTime() - Date.now()) / 1000);
+      setCountdown(formatTime(newTimeLeft));
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [harvestAt]);
 
   const getBoostType = () => {
     const cropType = cell.cropType as CropType;
@@ -75,6 +101,12 @@ function SeedDetailPopup({
       )
     : 0;
 
+  const formattedGrowthTime = formatTime(cropData.growthTime / 1000);
+  const formattedPlantAt =
+    plantedAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + " " +
+    plantedAt.toLocaleDateString([], { day: '2-digit', month: '2-digit' })
+  const formattedBoostTimeLeft = formatTime(boostTimeLeft * 60);
+
   return createPortal(
     <motion.div
       initial={{ opacity: 0, scale: 0.9 }}
@@ -107,15 +139,15 @@ function SeedDetailPopup({
         </div>
 
         <div className="space-y-3 text-white/80 text-xs mb-2">
-          <p>Growth Time: {cropData.growthTime / 1000 / 60} minutes</p>
-          <p>Planted at: {plantedAt.toLocaleTimeString()}</p>
-          {!cell.isReadyToHarvest && <p>Harvest in: {minutesLeft} minutes</p>}
+          <p>Growth Time: {formattedGrowthTime}</p>
+          <p>Planted at: {formattedPlantAt}</p>
+          {!cell.isReadyToHarvest && <p>Harvest in: {countdown}</p>}
           {cell.isReadyToHarvest && (
             <p className="text-[#FFB938] font-medium">Ready to harvest!</p>
           )}
           {cell.speedBoostedAt && boostTimeLeft > 0 && (
             <p className="text-[#2196F3]">
-              Speed boost: {Math.ceil(boostTimeLeft)} minutes remaining
+              Boost ends in: {formattedBoostTimeLeft}
             </p>
           )}
         </div>
