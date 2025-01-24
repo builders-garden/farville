@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { CropType } from "../types/game";
 import { useGame } from "../context/GameContext";
 import { useEffect, useState } from "react";
+import { formatTime } from "@/lib/utils";
 
 interface CropSpriteCropProp {
   type: CropType;
@@ -75,15 +76,20 @@ export function PlantedCropSprite({ crop, isDemo }: CropSpriteProps) {
     if (!crop.harvestAt) return "...";
 
     const remainingTime = Math.max(crop.harvestAt - Date.now(), 0);
-
-    if (remainingTime > 3600000) {
-      const hours = Math.floor(remainingTime / 3600000);
-      const mins = Math.floor((remainingTime % 3600000) / 60000);
-      return `${hours}h ${mins}m`;
-    }
-    const mins = Math.floor(remainingTime / 60000);
-    return `${mins}m`;
+    const formattedRemainingTime = formatTime(remainingTime / 1000);
+    const parts = formattedRemainingTime.split(" ");
+    return parts.slice(0, 2).join(" ");
   };
+
+  const isGridSmall = state.gridSize.width < 4;
+
+  const timeLeftSize = isGridSmall ? "text-[7px]" : "text-[6px]";
+  const mbSoil = isGridSmall ? "mb-2" : "mb-1";
+  const speedBoostProps = {
+    position: isGridSmall ? "top-1 right-1" : "-top-1 -right-1",
+    scale: isGridSmall ? 1 : 0.8,
+  }
+  const progressBarHeight = isGridSmall ? "h-2" : "h-1";
 
   return (
     <>
@@ -99,7 +105,7 @@ export function PlantedCropSprite({ crop, isDemo }: CropSpriteProps) {
       />
       {crop.plantedAt && (
         <div
-          className="absolute inset-[5%] mb-2"
+          className={`absolute inset-[5%] ${mbSoil}`}
           style={{
             backgroundImage: "url('/images/land/soil_big.png')",
             backgroundSize: "100% 100%",
@@ -112,10 +118,10 @@ export function PlantedCropSprite({ crop, isDemo }: CropSpriteProps) {
       {/* Speed Boost Indicator */}
       {crop.speedBoostedAt &&
         Date.now() - crop.speedBoostedAt < 1000 * 60 * 60 * 2 && (
-          <div className="absolute top-1 right-1 z-50">
+          <div className={`absolute ${speedBoostProps.position} z-50`}>
             <motion.div
               initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
+              animate={{ scale: speedBoostProps.scale }}
               className="bg-blue-500/80 rounded-full px-1"
               title={`${crop.speedBoost}x Speed Boost`}
             >
@@ -127,12 +133,12 @@ export function PlantedCropSprite({ crop, isDemo }: CropSpriteProps) {
       {/* Progress Bar - Centered and smaller */}
       {!crop.readyToHarvest && (
         <div className="absolute bottom-[3%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center w-3/4 z-50">
-          {!isDemo && state.gridSize.width < 5 && (
-            <div className="text-[8px] text-white font-medium mb-1 text-center drop-shadow-[0_1px_1px_rgba(0,0,0,0.8)]">
+          {!isDemo && (
+            <div className={`${timeLeftSize} text-white font-medium mb-1 text-center drop-shadow-[0_1px_1px_rgba(0,0,0,0.8)]`}>
               {getTimeRemaining()}
             </div>
           )}
-          <div className="w-full h-2 bg-black/50">
+          <div className={`w-full ${progressBarHeight} bg-black/50`}>
             <motion.div
               className="h-full bg-green-400"
               initial={{ width: 0 }}

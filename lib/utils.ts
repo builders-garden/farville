@@ -43,3 +43,19 @@ export const getUserNowDate = () => {
 export const chooseRandomItem = <T>(items: T[]): T => {
   return items[Math.floor(Math.random() * items.length)];
 }
+
+export const formatTime = (seconds: number) => {
+  const days = Math.floor(seconds / (3600 * 24));
+  const hours = Math.floor((seconds % (3600 * 24)) / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const secs = Math.floor(seconds % 60);
+
+  return [
+    days > 0 ? `${days}d` : null,
+    hours > 0 ? `${hours}h` : null,
+    minutes > 0 ? `${minutes}m` : null,
+    secs > 0 ? `${secs}s` : `0s`,
+  ]
+    .filter(Boolean)
+    .join(" ");
+};
