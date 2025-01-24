@@ -10,6 +10,7 @@ import { DbGridCell } from "@/supabase/types";
 import { CROP_DATA, SPEED_BOOST } from "@/lib/game-constants";
 import Confetti from "./animations/Confetti";
 import { createPortal } from "react-dom";
+import { formatTime } from "@/lib/utils";
 
 interface GridCellProps {
   cell: DbGridCell;
@@ -38,22 +39,6 @@ function SeedDetailPopup({
   const plantedAt = new Date(cell.plantedAt!);
   const harvestAt = useMemo(() => new Date(cell.harvestAt!), [cell.harvestAt]);
   const timeLeft = Math.max(0, (harvestAt.getTime() - Date.now()) / 1000);
-
-  const formatTime = (seconds: number) => {
-    const days = Math.floor(seconds / (3600 * 24));
-    const hours = Math.floor((seconds % (3600 * 24)) / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
-    const secs = Math.floor(seconds % 60);
-
-    return [
-      days > 0 ? `${days}d` : null,
-      hours > 0 ? `${hours}h` : null,
-      minutes > 0 ? `${minutes}m` : null,
-      secs > 0 ? `${secs}s` : null,
-    ]
-      .filter(Boolean)
-      .join(" ");
-  };
 
   const [countdown, setCountdown] = useState<string>(formatTime(timeLeft));
 
