@@ -25,6 +25,8 @@ import {
   SPEED_BOOST,
 } from "@/lib/game-constants";
 import { trackEvent } from "@/lib/posthog/server";
+import { CropType } from "@/types/game";
+import { chooseRandomItem } from "@/lib/utils";
 
 export const getUsers = async (
   offset: number = 0,
@@ -1236,10 +1238,8 @@ export const getQuestsByTypeAndLevel = async (
 //   - so if it's currently 10:00, the quest will be from 00:00 to 23:59 UTC of the current day
 // - create the quest
 const generateDailyQuests = async (level: number) => {
-  // define types for seed or crop quests
   let questCategories = ["sell", "receive", "donate", "plant", "harvest"];
 
-  // take all items of category "seed" or "crop", using getItemsByCategory
   let seedItems = (await getItemsByCategory("seed")).filter(
     (item) => item.requiredLevel <= level
   );
@@ -1247,8 +1247,7 @@ const generateDailyQuests = async (level: number) => {
     (item) => item.requiredLevel <= level
   );
 
-  // amounts for the quests, from 3 to 10
-  const amounts = [3, 4, 5, 6, 7, 8, 9, 10];
+  const amounts = [3, 4, 5, 6, 7, 8];
   const xpPerAmount = {
     3: 30,
     4: 30,
@@ -1256,28 +1255,34 @@ const generateDailyQuests = async (level: number) => {
     6: 35,
     7: 40,
     8: 40,
-    9: 45,
-    10: 45,
   };
 
   const dailyQuests: InsertDbQuest[] = [];
   for (let i = 0; i < 3; i++) {
     const category =
-      questCategories[Math.floor(Math.random() * questCategories.length)];
+      chooseRandomItem(questCategories);
     questCategories = questCategories.filter((c) => c !== category);
     let item: DbItem;
     if (category === "plant") {
-      item = seedItems[Math.floor(Math.random() * seedItems.length)];
-    } else if (category === "harvest" || category === "sell") {
-      item = cropItems[Math.floor(Math.random() * cropItems.length)];
+      item = chooseRandomItem(seedItems);
+    } else if (category === "sell") {
+      item = chooseRandomItem(cropItems);
+    } else if (category === "harvest") {
+      item = chooseRandomItem(
+        cropItems.filter((i) =>
+          i.slug !== CropType.Strawberry &&
+          i.slug !== CropType.Watermelon &&
+          i.slug !== CropType.Pumpkin
+        )
+      );
     } else {
       const allItems = [...seedItems, ...cropItems];
-      item = allItems[Math.floor(Math.random() * allItems.length)];
+      item = chooseRandomItem(allItems)
     }
     seedItems = seedItems.filter((i) => i.id !== item.id);
     cropItems = cropItems.filter((i) => i.id !== item.id);
 
-    const amount = amounts[Math.floor(Math.random() * amounts.length)];
+    const amount = chooseRandomItem(amounts);
     const xp = xpPerAmount[amount as keyof typeof xpPerAmount];
     const startAt = new Date();
     startAt.setUTCHours(0, 0, 0, 0);

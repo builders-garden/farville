@@ -4,6 +4,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { CropType } from "../types/game";
 import { useGame } from "../context/GameContext";
 import { useEffect, useState } from "react";
+import { formatTime } from "@/lib/utils";
+import clsx from "clsx";
 
 interface CropSpriteCropProp {
   type: CropType;
@@ -75,15 +77,12 @@ export function PlantedCropSprite({ crop, isDemo }: CropSpriteProps) {
     if (!crop.harvestAt) return "...";
 
     const remainingTime = Math.max(crop.harvestAt - Date.now(), 0);
-
-    if (remainingTime > 3600000) {
-      const hours = Math.floor(remainingTime / 3600000);
-      const mins = Math.floor((remainingTime % 3600000) / 60000);
-      return `${hours}h ${mins}m`;
-    }
-    const mins = Math.floor(remainingTime / 60000);
-    return `${mins}m`;
+    const formattedRemainingTime = formatTime(remainingTime / 1000);
+    const parts = formattedRemainingTime.split(" ");
+    return parts.slice(0, 2).join(" ");
   };
+
+  const isGridSmall = state.gridSize.width < 4;
 
   return (
     <>
@@ -99,7 +98,7 @@ export function PlantedCropSprite({ crop, isDemo }: CropSpriteProps) {
       />
       {crop.plantedAt && (
         <div
-          className="absolute inset-[5%] mb-2"
+        className={clsx("absolute inset-[5%]", isGridSmall ? "mb-2" : "mb-1")}
           style={{
             backgroundImage: "url('/images/land/soil_big.png')",
             backgroundSize: "100% 100%",
@@ -112,10 +111,10 @@ export function PlantedCropSprite({ crop, isDemo }: CropSpriteProps) {
       {/* Speed Boost Indicator */}
       {crop.speedBoostedAt &&
         Date.now() - crop.speedBoostedAt < 1000 * 60 * 60 * 2 && (
-          <div className="absolute top-1 right-1 z-50">
+          <div className={clsx("absolute z-50", isGridSmall ? "top-1 right-1" : "-top-1 -right-1")}> 
             <motion.div
               initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
+              animate={{ scale: isGridSmall ? 1 : 0.8 }}
               className="bg-blue-500/80 rounded-full px-1"
               title={`${crop.speedBoost}x Speed Boost`}
             >
@@ -123,16 +122,17 @@ export function PlantedCropSprite({ crop, isDemo }: CropSpriteProps) {
             </motion.div>
           </div>
         )}
+        
 
       {/* Progress Bar - Centered and smaller */}
       {!crop.readyToHarvest && (
         <div className="absolute bottom-[3%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center w-3/4 z-50">
-          {!isDemo && state.gridSize.width < 5 && (
-            <div className="text-[8px] text-white font-medium mb-1 text-center drop-shadow-[0_1px_1px_rgba(0,0,0,0.8)]">
+          {!isDemo && (
+            <div className={clsx("text-white font-medium mb-1 text-center drop-shadow-[0_1px_1px_rgba(0,0,0,0.8)]", isGridSmall ? "text-[7px]" : "text-[6px]")}>
               {getTimeRemaining()}
             </div>
           )}
-          <div className="w-full h-2 bg-black/50">
+          <div className={clsx("w-full bg-black/50", isGridSmall ? "h-2" : "h-1")}> 
             <motion.div
               className="h-full bg-green-400"
               initial={{ width: 0 }}
