@@ -7,7 +7,6 @@ import { useLeaderboard } from "@/hooks/use-leadeboard";
 import Image from "next/image";
 import sdk from "@farcaster/frame-sdk";
 import { useGame } from "@/context/GameContext";
-import { LEVEL_XP_THRESHOLDS } from "@/lib/game-constants";
 import { getCurrentLevelAndProgress } from "@/lib/utils";
 
 const shimmerAnimation = `
