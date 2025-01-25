@@ -7,6 +7,8 @@ import { useLeaderboard } from "@/hooks/use-leadeboard";
 import Image from "next/image";
 import sdk from "@farcaster/frame-sdk";
 import { useGame } from "@/context/GameContext";
+import { LEVEL_XP_THRESHOLDS } from "@/lib/game-constants";
+import { getCurrentLevelAndProgress } from "@/lib/utils";
 
 const shimmerAnimation = `
   @keyframes shine {
@@ -237,7 +239,7 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
                       <div className="flex items-center gap-4">
                         <span className="text-[#FFB938] rounded-full font-medium text-xs">
                           Lvl{" "}
-                          {state.level}
+                          {getCurrentLevelAndProgress(entry.xp).currentLevel}
                         </span>
                         <p className="text-white/60 text-xs">
                           XP:{entry.xp.toLocaleString()}
