@@ -4,7 +4,6 @@ import { motion } from "framer-motion";
 import { useState } from "react";
 import { useFrameContext } from "../context/FrameContext";
 import { useLeaderboard } from "@/hooks/use-leadeboard";
-import { LEVEL_XP_THRESHOLDS } from "@/lib/game-constants";
 import Image from "next/image";
 import sdk from "@farcaster/frame-sdk";
 import { useGame } from "@/context/GameContext";
