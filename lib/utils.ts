@@ -23,6 +23,16 @@ export const getCurrentLevelAndProgress = (experience: number) => {
   const currentLevel = LEVEL_XP_THRESHOLDS.findIndex(
     (threshold) => experience < threshold
   );
+  
+  // If XP is above all thresholds, use the max level
+  if (currentLevel === -1) {
+    const maxLevel = LEVEL_XP_THRESHOLDS.length;
+    return {
+      currentLevel: maxLevel,
+      progress: 100
+    };
+  }
+
   const previousLevelXP = LEVEL_XP_THRESHOLDS[currentLevel - 1] || 0;
   const nextLevelXP = LEVEL_XP_THRESHOLDS[currentLevel];
   const progress =

@@ -28,14 +28,14 @@ export default function Header() {
               </span>
               <span className="text-white/70 text-[8px]">
                 ({state.experience.toLocaleString()}/
-                {LEVEL_XP_THRESHOLDS[
+                {(LEVEL_XP_THRESHOLDS[
                   Math.min(
                     LEVEL_XP_THRESHOLDS.findIndex(
                       (threshold) => state.experience < threshold
                     ),
                     LEVEL_XP_THRESHOLDS.length - 1
                   )
-                ].toLocaleString()}
+                ] || LEVEL_XP_THRESHOLDS[LEVEL_XP_THRESHOLDS.length - 1]).toLocaleString()}
                 <span className="ml-0.5 text-[8px]">XP</span>)
               </span>
             </div>

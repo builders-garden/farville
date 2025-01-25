@@ -168,10 +168,7 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
                     </p>
                     <div className="flex items-center gap-4">
                       <span className="text-[#FFB938] rounded-full font-medium text-xs">
-                        Lvl{" "}
-                        {LEVEL_XP_THRESHOLDS.findIndex(
-                          (threshold) => state.user.xp < threshold
-                        )}
+                        Lvl {state.level}
                       </span>
                       <p className="text-white/60 text-xs">
                         XP:{state.user.xp.toLocaleString()}
@@ -241,9 +238,7 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
                       <div className="flex items-center gap-4">
                         <span className="text-[#FFB938] rounded-full font-medium text-xs">
                           Lvl{" "}
-                          {LEVEL_XP_THRESHOLDS.findIndex(
-                            (threshold) => entry.xp < threshold
-                          )}
+                          {state.level}
                         </span>
                         <p className="text-white/60 text-xs">
                           XP:{entry.xp.toLocaleString()}
