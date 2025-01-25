@@ -17,7 +17,7 @@ export const buyItem = async (
     return { error: "User not found" };
   }
   const item = await getItemById(itemId);
-  if (!item) {
+  if (!item || item.slug === "fertilizer" || !item.buyPrice) {
     return { error: "Item not found" };
   }
 
@@ -39,7 +39,7 @@ export const sellItem = async (
     return { error: "User not found" };
   }
   const item = await getItemById(itemId);
-  if (!item) {
+  if (!item  || !item.sellPrice) {
     return { error: "Item not found" };
   }
 

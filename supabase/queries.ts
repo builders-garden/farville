@@ -367,7 +367,6 @@ export const removeUserItem = async (
       .eq("userFid", userFid)
       .eq("itemId", itemId);
 
-
     if (error) throw error;
   }
 };
@@ -982,15 +981,14 @@ export const createQuest = async (quest: InsertDbQuest): Promise<DbQuest> => {
   return data;
 };
 
-export const createQuests = async (quests: InsertDbQuest[]): Promise<DbQuest[]> => {
-  const { data, error } = await supabase
-    .from("quests")
-    .insert(quests)
-    .select();
+export const createQuests = async (
+  quests: InsertDbQuest[]
+): Promise<DbQuest[]> => {
+  const { data, error } = await supabase.from("quests").insert(quests).select();
 
   if (error) throw error;
   return data;
-}
+};
 
 export const updateQuest = async (
   id: number,
@@ -1161,7 +1159,10 @@ export const getUserQuests = async (
 
   if (filter?.status === "incomplete" || filter?.activeToday) {
     query.gte("quest.endAt", filter?.timeToCompare || new Date().toISOString());
-    query.lte("quest.startAt", filter?.timeToCompare || new Date().toISOString());
+    query.lte(
+      "quest.startAt",
+      filter?.timeToCompare || new Date().toISOString()
+    );
   }
 
   if (filter?.itemId) {
@@ -1227,13 +1228,13 @@ export const getQuestsByTypeAndLevel = async (
 };
 
 // we generate 3 quests
-  // - choose randomly the quest type from commonQuestCategories, but no duplicates in the same day
-  // - choose randomly the item from seedItems or cropItems, depending on the quest type
-  // - choose randomly the amount from amounts
-  // - calculate the xp reward based on the amount
-  // - start at the beginning of the day, end at the end of the day
-  //   - so if it's currently 10:00, the quest will be from 00:00 to 23:59 UTC of the current day
-  // - create the quest
+// - choose randomly the quest type from commonQuestCategories, but no duplicates in the same day
+// - choose randomly the item from seedItems or cropItems, depending on the quest type
+// - choose randomly the amount from amounts
+// - calculate the xp reward based on the amount
+// - start at the beginning of the day, end at the end of the day
+//   - so if it's currently 10:00, the quest will be from 00:00 to 23:59 UTC of the current day
+// - create the quest
 const generateDailyQuests = async (level: number) => {
   // define types for seed or crop quests
   let questCategories = ["sell", "receive", "donate", "plant", "harvest"];
@@ -1261,7 +1262,8 @@ const generateDailyQuests = async (level: number) => {
 
   const dailyQuests: InsertDbQuest[] = [];
   for (let i = 0; i < 3; i++) {
-    const category = questCategories[Math.floor(Math.random() * questCategories.length)];
+    const category =
+      questCategories[Math.floor(Math.random() * questCategories.length)];
     questCategories = questCategories.filter((c) => c !== category);
     let item: DbItem;
     if (category === "plant") {
@@ -1301,7 +1303,7 @@ const generateDailyQuests = async (level: number) => {
 
   const insertedQuests = await createQuests(dailyQuests);
   return insertedQuests;
-}
+};
 
 export const initDailyUserQuests = async (fid: number): Promise<void> => {
   // get user level
@@ -1314,7 +1316,10 @@ export const initDailyUserQuests = async (fid: number): Promise<void> => {
     (threshold) => userXp < threshold
   );
 
-  let dailyQuests: DbQuest[] = await getQuestsByTypeAndLevel("daily", userLevel);
+  let dailyQuests: DbQuest[] = await getQuestsByTypeAndLevel(
+    "daily",
+    userLevel
+  );
 
   if (!dailyQuests || dailyQuests.length === 0) {
     dailyQuests = await generateDailyQuests(userLevel);
@@ -1333,7 +1338,9 @@ export const initDailyUserQuests = async (fid: number): Promise<void> => {
   );
 };
 
-export const initWeeklyAndMonthlyUserQuests = async (fid: number): Promise<void> => {
+export const initWeeklyAndMonthlyUserQuests = async (
+  fid: number
+): Promise<void> => {
   const { data, error } = await supabase
     .from("quests")
     .select("id")
