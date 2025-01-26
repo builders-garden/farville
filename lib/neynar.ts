@@ -25,7 +25,8 @@ export const fetchUser = async (fid: string): Promise<NeynarUser> => {
 
 export const fetchUsersFollowedBy = async (
   fid: string,
-  limit: number = 300
+  limit: number = 300,
+  sortType: "algorithmic" | "desc_chron" = "algorithmic"
 ): Promise<NeynarUser[]> => {
   const allUsers: NeynarUser[] = [];
   let cursor = null;
@@ -34,7 +35,7 @@ export const fetchUsersFollowedBy = async (
     const response: Response = await fetch(
       `https://api.neynar.com/v2/farcaster/following?fid=${fid}&limit=100${
         cursor ? `&cursor=${cursor}` : ""
-      }&sort_type=algorithmic`,
+      }&sort_type=${sortType}`,
       {
         headers: {
           "x-api-key": process.env.NEYNAR_API_KEY!,

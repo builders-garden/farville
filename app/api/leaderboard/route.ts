@@ -10,8 +10,12 @@ export async function GET(request: Request) {
   try {
     if (friends && targetFid) {
       // Fetch users that targetFid follows
-      const followedUsers = await fetchUsersFollowedBy(targetFid);
+      let followedUsers = await fetchUsersFollowedBy(targetFid, 300);
+      if (followedUsers.length === 0) {
+        followedUsers = await fetchUsersFollowedBy(targetFid, 100, "desc_chron");
+      }
       const followedFids = followedUsers.map((user) => user.fid.toString());
+
       // Get these users from database, ordered by XP
       const { users } = await getUsersByFids(followedFids.concat(targetFid));
       return NextResponse.json({
