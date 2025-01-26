@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { fertilize, handlePerk, harvest, plantSeed, sendQuestsCalculation } from "./utils";
+import { fertilize, handlePerk, harvest, plantSeed, sendQuestsCalculation, setDelayToKillCrop } from "./utils";
 import {
   sendDelayedNotification,
   getGrowthTime,
@@ -68,6 +68,11 @@ export async function POST(
           getGrowthTime(seedType)
         );
         await sendQuestsCalculation(parseInt(fid), "plant", plantedItem.id);
+        await setDelayToKillCrop(
+          parseInt(fid),
+          parseInt(x),
+          parseInt(y),
+        )
         trackEvent(Number(fid), "planted-seed", {
           seedId: plantedItem.id,
           cropType: plantedItem.slug.replace("-seeds", ""),
@@ -124,7 +129,7 @@ export async function POST(
             `Speed boost expired! ⚡️`,
             `The speed boost on your ${perkCell?.cropType} has worn off.`,
             "boost-expired",
-            SPEED_BOOST[itemSlug as keyof typeof SPEED_BOOST].duration
+            SPEED_BOOST[itemSlug as keyof typeof SPEED_BOOST].duration / 1000
           ),
         ]);
         trackEvent(Number(fid), "applied-perk", {

@@ -240,3 +240,48 @@ export const applyPerkOnCell = async (
       throw new Error("Perk not found");
   }
 };
+
+export const setDelayToKillCrop = async (
+  fid: number,
+  x: number,
+  y: number,
+) => {
+  if (process.env.NEXT_PUBLIC_URL === "http://localhost:3000") {
+    return;
+  }
+
+  const cell = await getGridCell(fid, x, y);
+
+  if (!cell) {
+    throw new Error("Grid cell not found");
+  }
+
+  const { plantedAt } = cell;
+
+  if (!plantedAt) {
+    throw new Error("Grid cell is not planted");
+  }
+
+  const growthTime = CROP_DATA[cell.cropType!].growthTime;
+  const deathTime = CROP_DATA[cell.cropType!].deathTime;
+  const deathDelay = growthTime + deathTime;
+
+  const res = await qstashPublishJSON({
+    url: `${process.env.NEXT_PUBLIC_URL}/api/qstash/kill-crop`,
+    body: {
+      fid,
+      x,
+      y,
+      plantedAt,
+    },
+    delay: deathDelay / 1000,
+  });
+
+  console.log(
+    `[QSTASH-${new Date().toISOString()}] - sent delayed kill crop to QStash with id: ${
+      res?.messageId
+    }`
+  );
+
+  return res;
+}
