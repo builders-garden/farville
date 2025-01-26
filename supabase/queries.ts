@@ -26,7 +26,7 @@ import {
 } from "@/lib/game-constants";
 import { trackEvent } from "@/lib/posthog/server";
 import { CropType } from "@/types/game";
-import { chooseRandomItem } from "@/lib/utils";
+import { chooseRandomItem, getCurrentLevelAndProgress } from "@/lib/utils";
 
 export const getUsers = async (
   offset: number = 0,
@@ -1317,17 +1317,15 @@ export const initDailyUserQuests = async (fid: number): Promise<void> => {
     throw new Error("User not found");
   }
   const userXp = user.xp;
-  const userLevel = LEVEL_XP_THRESHOLDS.findIndex(
-    (threshold) => userXp < threshold
-  );
+  const { currentLevel } = getCurrentLevelAndProgress(userXp);
 
   let dailyQuests: DbQuest[] = await getQuestsByTypeAndLevel(
     "daily",
-    userLevel
+    currentLevel
   );
 
   if (!dailyQuests || dailyQuests.length === 0) {
-    dailyQuests = await generateDailyQuests(userLevel);
+    dailyQuests = await generateDailyQuests(currentLevel);
   }
 
   await Promise.all(

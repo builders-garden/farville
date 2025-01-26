@@ -42,7 +42,6 @@ export const POST = async (req: NextRequest) => {
       fid,
     });
   }
-  // POST: the user exists
 
   // check if the user has already the grid cells
   // if not, initialize the grid
