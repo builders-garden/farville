@@ -20,7 +20,14 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
   const { state } = useGame();
   const { data: globalData } = useLeaderboard(false, state?.user.fid);
   const { data: friendsData } = useLeaderboard(true, state?.user.fid);
+  const { data: questsData } = useLeaderboard(false, state?.user.fid, true);
+  const { data: questsFriendsData } = useLeaderboard(
+    true,
+    state?.user.fid,
+    true
+  );
   const [activeTab, setActiveTab] = useState<"global" | "friends">("global");
+  const [leaderboardType, setLeaderboardType] = useState<"xp" | "quests">("xp");
   const { safeAreaInsets } = useFrameContext();
 
   const handleClose = () => {
@@ -32,6 +39,14 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
     style.textContent = shimmerAnimation;
     document.head.appendChild(style);
   }
+
+  // Helper to get current data based on active tabs
+  const getCurrentData = () => {
+    if (leaderboardType === "xp") {
+      return activeTab === "global" ? globalData : friendsData;
+    }
+    return activeTab === "global" ? questsData : questsFriendsData;
+  };
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-start z-50">
@@ -79,7 +94,7 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
             </div>
 
             {/* Tabs */}
-            <div className="grid grid-cols-2 gap-2 mb-6">
+            <div className="grid grid-cols-2 gap-2 mb-4">
               {[
                 { id: "global", label: "Global", icon: "🌍" },
                 { id: "friends", label: "Friends", icon: "👥" },
@@ -107,6 +122,7 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
                       repeat: Infinity,
                       repeatDelay: 2,
                     }}
+                    className="mb-1"
                   >
                     {tab.icon}
                   </motion.span>
@@ -114,12 +130,51 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
                 </motion.button>
               ))}
             </div>
+
+            {/* Secondary tabs for XP/Quests */}
+            <div className="flex gap-3 mb-4 px-1">
+              {[
+                { id: "xp", label: "Experience", icon: "⭐" },
+                { id: "quests", label: "Quests", icon: "🎯" },
+              ].map((tab) => (
+                <motion.button
+                  key={tab.id}
+                  initial={{ opacity: 0, y: -20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  onClick={() => setLeaderboardType(tab.id as "xp" | "quests")}
+                  className={`px-3 py-1 rounded-full flex items-center justify-center gap-1.5 transition-all duration-200 text-xs
+                    ${
+                      leaderboardType === tab.id
+                        ? "bg-[#FFB938] text-[#5c4121] font-semibold shadow-md"
+                        : "text-white/70 hover:bg-white/10 border border-white/20"
+                    }`}
+                  whileHover={{
+                    scale: leaderboardType === tab.id ? 1.05 : 1.02,
+                  }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <motion.span
+                    animate={{
+                      rotate: leaderboardType === tab.id ? [0, -5, 5, 0] : 0,
+                    }}
+                    transition={{
+                      duration: 0.5,
+                      repeat: Infinity,
+                      repeatDelay: 2,
+                    }}
+                    className="text-sm mb-1"
+                  >
+                    {tab.icon}
+                  </motion.span>
+                  <span>{tab.label}</span>
+                </motion.button>
+              ))}
+            </div>
           </div>
 
           {/* Scrollable leaderboard list */}
           <div className="flex-1 overflow-y-auto min-h-0">
-            {(activeTab === "global" ? globalData : friendsData)
-              ?.targetPosition && (
+            {getCurrentData()?.targetPosition && (
               <motion.div
                 key={state.user.fid}
                 initial={{ opacity: 0, x: -20 }}
@@ -137,11 +192,7 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
 
                 {/* Rank */}
                 <div className="flex-none text-center px-2 py-1 bg-[#5c4121] rounded-lg text-white/90 text-xs font-medium">
-                  #
-                  {
-                    (activeTab === "global" ? globalData : friendsData)
-                      ?.targetPosition
-                  }
+                  #{getCurrentData()?.targetPosition}
                 </div>
 
                 {/* Avatar */}
@@ -167,22 +218,27 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
                       {state.user.username}
                     </p>
                     <div className="flex items-center gap-4">
-                      <span className="text-[#FFB938] rounded-full font-medium text-xs">
-                        Lvl {state.level}
-                      </span>
-                      <p className="text-white/60 text-xs">
-                        XP:{state.user.xp.toLocaleString()}
-                      </p>
+                      {leaderboardType === "xp" ? (
+                        <>
+                          <span className="text-[#FFB938] rounded-full font-medium text-xs">
+                            Lvl {state.level}
+                          </span>
+                          <p className="text-white/60 text-xs">
+                            XP:{state.user.xp.toLocaleString()}
+                          </p>
+                        </>
+                      ) : (
+                        <p className="text-white/60 text-[10px]">
+                          Completed Quests: {getCurrentData()?.questCount || 0}
+                        </p>
+                      )}
                     </div>
                   </div>
                 </div>
               </motion.div>
             )}
             <div className="space-y-2">
-              {(activeTab === "global"
-                ? globalData?.users
-                : friendsData?.users
-              )?.map((entry, index) => (
+              {getCurrentData()?.users?.map((entry, index) => (
                 <motion.div
                   key={entry.fid}
                   initial={{ opacity: 0, x: -20 }}
@@ -236,13 +292,24 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
                         {entry.username}
                       </p>
                       <div className="flex items-center gap-4">
-                        <span className="text-[#FFB938] rounded-full font-medium text-xs">
-                          Lvl{" "}
-                          {getCurrentLevelAndProgress(entry.xp).currentLevel}
-                        </span>
-                        <p className="text-white/60 text-xs">
-                          XP:{entry.xp.toLocaleString()}
-                        </p>
+                        {leaderboardType === "xp" ? (
+                          <>
+                            <span className="text-[#FFB938] rounded-full font-medium text-xs">
+                              Lvl{" "}
+                              {
+                                getCurrentLevelAndProgress(entry.xp)
+                                  .currentLevel
+                              }
+                            </span>
+                            <p className="text-white/60 text-xs">
+                              XP:{entry.xp.toLocaleString()}
+                            </p>
+                          </>
+                        ) : (
+                          <p className="text-white/60 text-[10px]">
+                            Completed Quests: {entry.questCount || 0}
+                          </p>
+                        )}
                       </div>
                     </div>
                   </div>
