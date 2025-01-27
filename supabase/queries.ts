@@ -1259,8 +1259,7 @@ const generateDailyQuests = async (level: number) => {
 
   const dailyQuests: InsertDbQuest[] = [];
   for (let i = 0; i < 3; i++) {
-    const category =
-      chooseRandomItem(questCategories);
+    const category = chooseRandomItem(questCategories);
     questCategories = questCategories.filter((c) => c !== category);
     let item: DbItem;
     if (category === "plant") {
@@ -1269,15 +1268,16 @@ const generateDailyQuests = async (level: number) => {
       item = chooseRandomItem(cropItems);
     } else if (category === "harvest") {
       item = chooseRandomItem(
-        cropItems.filter((i) =>
-          i.slug !== CropType.Strawberry &&
-          i.slug !== CropType.Watermelon &&
-          i.slug !== CropType.Pumpkin
+        cropItems.filter(
+          (i) =>
+            i.slug !== CropType.Strawberry &&
+            i.slug !== CropType.Watermelon &&
+            i.slug !== CropType.Pumpkin
         )
       );
     } else {
       const allItems = [...seedItems, ...cropItems];
-      item = chooseRandomItem(allItems)
+      item = chooseRandomItem(allItems);
     }
     seedItems = seedItems.filter((i) => i.id !== item.id);
     cropItems = cropItems.filter((i) => i.id !== item.id);
@@ -1424,4 +1424,46 @@ export const getUsersByFids = async (
   return {
     users: data,
   };
+};
+
+export interface QuestLeaderboardEntry {
+  fid: number;
+  username: string;
+  displayName: string;
+  avatarUrl: string | null;
+  completedQuestCount: number;
+  xp: number;
+}
+
+export const getQuestLeaderboard = async (
+  limit: number = 10,
+  fids?: string[]
+) => {
+  let query = supabase
+    .from("user_has_quests")
+    .select(
+      `
+      user:users!inner (
+        fid,
+        username,
+        displayName,
+        avatarUrl,
+        xp
+      ),
+      count
+    `
+    )
+    .neq("status", "incomplete")
+    .order("count", { ascending: false });
+
+  if (fids && fids.length > 0) {
+    query = query.in("user.fid", fids);
+  }
+
+  const { data, error } = await query.limit(limit);
+
+  if (error) throw error;
+  if (!data.length) return [];
+
+  return data;
 };
