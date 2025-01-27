@@ -36,7 +36,6 @@ export async function GET(request: Request) {
 
     // Default behavior - get top users by XP or quest count
     if (type === "quests") {
-      console.log("Getting quest leaderboard");
       const users = await getQuestLeaderboard({
         limit: 20,
         targetFid: targetFid ? targetFid : undefined,
