@@ -5,18 +5,20 @@ import { MESSAGE_EXPIRATION_TIME } from "@/lib/constants";
 import posthog from "posthog-js";
 import * as Sentry from "@sentry/nextjs";
 import { getUserNowDate } from "@/lib/utils";
+import { useAuthCheck } from "./use-auth-check";
 
 export const useSignIn = () => {
   const { isSDKLoaded, context, error: contextError } = useFrameContext();
   const [isSignedIn, setIsSignedIn] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [token, setToken] = useState<string>(
+    localStorage.getItem("token") || ""
+  );
+  const { error: authCheckError } = useAuthCheck();
 
   const signIn = useCallback(async () => {
     try {
-      setIsLoading(true);
-      setError(null);
-
       if (contextError) {
         throw new Error(`SDK initialization failed: ${contextError}`);
       }
@@ -40,8 +42,8 @@ export const useSignIn = () => {
       });
 
       const referrerFid =
-        context.location?.type === "cast_embed"
-          ? context.location.cast.fid
+        context?.location?.type === "cast_embed"
+          ? context?.location.cast.fid
           : null;
 
       const userNow = getUserNowDate().toISOString();
@@ -52,9 +54,9 @@ export const useSignIn = () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          signature: result.signature,
-          message: result.message,
-          fid: context.user.fid,
+          signature: result?.signature,
+          message: result?.message,
+          fid: context?.user?.fid,
           referrerFid,
           userNow,
         }),
@@ -66,12 +68,6 @@ export const useSignIn = () => {
       }
 
       const data = await res.json();
-      localStorage.setItem("token", data.token);
-      setIsSignedIn(true);
-      posthog.identify(context.user.fid.toString());
-      Sentry.setUser({
-        id: context.user.fid.toString(),
-      });
       return data;
     } catch (err) {
       const errorMessage =
@@ -81,15 +77,49 @@ export const useSignIn = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [context, contextError, isSDKLoaded]);
+  }, [context, contextError]);
+
+  const handleSignIn = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      if (token && !isSignedIn && !authCheckError) {
+        setIsSignedIn(true);
+      } else {
+        const data = await signIn();
+        localStorage.setItem("token", data.token);
+        setToken(data.token);
+      }
+      setIsSignedIn(true);
+      posthog.identify(context?.user?.fid.toString());
+      Sentry.setUser({
+        id: context?.user?.fid.toString(),
+      });
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : "Sign in failed";
+      setError(errorMessage);
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  }, [authCheckError, context?.user?.fid, isSignedIn, signIn, token]);
 
   useEffect(() => {
     if (isSDKLoaded && !isSignedIn && !isLoading && !error) {
-      signIn().catch((err) => {
+      handleSignIn().catch((err) => {
         console.error("Auto sign-in failed:", err);
       });
     }
-  }, [isSDKLoaded, isSignedIn, isLoading, error, signIn]);
+  }, [isSDKLoaded, isSignedIn, isLoading, error, handleSignIn]);
 
-  return { signIn, isSignedIn, isLoading, error };
+  useEffect(() => {
+    if (authCheckError) {
+      localStorage.removeItem("token");
+      setToken("");
+      setIsSignedIn(false);
+    }
+  }, [authCheckError]);
+
+  return { signIn: handleSignIn, isSignedIn, isLoading, error };
 };
