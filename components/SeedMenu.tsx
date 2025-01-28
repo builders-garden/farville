@@ -5,8 +5,8 @@ import { useGame } from "../context/GameContext";
 import { SeedType } from "../types/game";
 import { useState, useRef, useEffect, useCallback } from "react";
 import {
-  ArrowRightCircleIcon,
-  ArrowLeftCircleIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
 } from "@heroicons/react/24/solid";
 
 const CROP_COLORS: Record<SeedType, string> = {
@@ -210,6 +210,19 @@ export default function SeedMenu() {
     };
   }, [checkScroll]);
 
+  // Add these scroll functions
+  const scrollLeft = () => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollBy({ left: -100, behavior: "smooth" });
+    }
+  };
+
+  const scrollRight = () => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollBy({ left: 100, behavior: "smooth" });
+    }
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -234,18 +247,24 @@ export default function SeedMenu() {
         whileHover={{ scale: 1.02 }}
       >
         {showScrollHints.left && (
-          <div className="absolute left-0 top-1/2 -translate-y-1/2 bg-gradient-to-r from-[#7E4E31]/80 to-transparent px-2 h-full flex items-center z-50">
-            <ArrowLeftCircleIcon className="w-4 h-4 text-white/70 animate-pulse" />
-          </div>
+          <button
+            onClick={scrollLeft}
+            className="absolute left-0 top-1/2 -translate-y-1/2 bg-[#6d4c2c]/90 hover:bg-[#6d4c2c] rounded-lg p-1 h-12 flex items-center justify-center z-50 transition-colors"
+          >
+            <ChevronLeftIcon className="w-4 h-4 text-white/90" />
+          </button>
         )}
         {showScrollHints.right && (
-          <div className="absolute right-0 top-1/2 -translate-y-1/2 bg-gradient-to-l from-[#7E4E31]/80 to-transparent px-2 h-full flex items-center z-50">
-            <ArrowRightCircleIcon className="w-4 h-4 text-white/70 animate-pulse" />
-          </div>
+          <button
+            onClick={scrollRight}
+            className="absolute right-0 top-1/2 -translate-y-1/2 bg-[#6d4c2c]/90 hover:bg-[#6d4c2c] rounded-lg p-1 h-12 flex items-center justify-center z-50 transition-colors"
+          >
+            <ChevronRightIcon className="w-4 h-4 text-white/90" />
+          </button>
         )}
         <div
           ref={scrollContainerRef}
-          className="flex gap-2 overflow-x-auto py-4 px-2 scrollbar-thin scrollbar-thumb-[#6d4c2c] scrollbar-track-[#8B5E3C]"
+          className="flex gap-2 overflow-x-auto py-3 px-6 scrollbar-none"
         >
           {state.items
             .filter((item) => item.category === "seed")
@@ -255,57 +274,58 @@ export default function SeedMenu() {
               const quantity = seed?.quantity || 0;
 
               return (
-                <motion.button
-                  key={item.id}
-                  onClick={() => {
-                    if (isAvailable) {
-                      setSelectedSeed(
+                <div key={item.id} className="py-1 px-1">
+                  <motion.button
+                    onClick={() => {
+                      if (isAvailable) {
+                        setSelectedSeed(
+                          selectedSeed === item.slug
+                            ? null
+                            : (item.slug as SeedType)
+                        );
+                      }
+                    }}
+                    draggable={isAvailable}
+                    onDragStart={(e) =>
+                      handleDragStart(
+                        e as unknown as React.DragEvent,
+                        item.slug as SeedType
+                      )
+                    }
+                    onTouchStart={(e) =>
+                      handleTouchStart(e, item.slug as SeedType)
+                    }
+                    onTouchEnd={handleTouchEnd}
+                    className={`
+                      relative min-w-[2.5rem] w-10 h-10 rounded-lg flex items-center justify-center
+                      ${
                         selectedSeed === item.slug
-                          ? null
-                          : (item.slug as SeedType)
-                      );
-                    }
-                  }}
-                  draggable={isAvailable}
-                  onDragStart={(e) =>
-                    handleDragStart(
-                      e as unknown as React.DragEvent,
-                      item.slug as SeedType
-                    )
-                  }
-                  onTouchStart={(e) =>
-                    handleTouchStart(e, item.slug as SeedType)
-                  }
-                  onTouchEnd={handleTouchEnd}
-                  className={`
-                    relative min-w-[2.5rem] w-10 h-10 rounded-lg flex items-center justify-center
-                    ${
-                      selectedSeed === item.slug
-                        ? "bg-[#6d4c2c]"
-                        : "bg-[#8B5E3C]"
-                    }
-                    border-2 ${CROP_COLORS[item.slug as SeedType]}
-                    ${
-                      isAvailable
-                        ? "hover:bg-[#6d4c2c]"
-                        : "opacity-50 cursor-not-allowed"
-                    }
-                    transition-colors
-                  `}
-                  whileHover={isAvailable ? { scale: 1.05 } : undefined}
-                  whileTap={isAvailable ? { scale: 0.95 } : undefined}
-                >
-                  <motion.img
-                    src={`/images${item.icon}`}
-                    alt={`${item.slug} seed`}
-                    className="w-8 h-8 object-contain"
-                    animate={{ y: [0, -2, 0] }}
-                    transition={{ duration: 1.5, repeat: Infinity }}
-                  />
-                  <div className="absolute -top-2 -right-2 bg-[#6d4c2c] rounded-full w-5 h-5 flex items-center justify-center text-xs text-white/90">
-                    {quantity}
-                  </div>
-                </motion.button>
+                          ? "bg-[#6d4c2c]"
+                          : "bg-[#8B5E3C]"
+                      }
+                      border-2 ${CROP_COLORS[item.slug as SeedType]}
+                      ${
+                        isAvailable
+                          ? "hover:bg-[#6d4c2c]"
+                          : "opacity-50 cursor-not-allowed"
+                      }
+                      transition-colors
+                    `}
+                    whileHover={isAvailable ? { scale: 1.05 } : undefined}
+                    whileTap={isAvailable ? { scale: 0.95 } : undefined}
+                  >
+                    <motion.img
+                      src={`/images${item.icon}`}
+                      alt={`${item.slug} seed`}
+                      className="w-8 h-8 object-contain"
+                      animate={{ y: [0, -2, 0] }}
+                      transition={{ duration: 1.5, repeat: Infinity }}
+                    />
+                    <div className="absolute -top-2 -right-2 bg-[#6d4c2c] rounded-full w-5 h-5 flex items-center justify-center text-xs text-white/90">
+                      {quantity}
+                    </div>
+                  </motion.button>
+                </div>
               );
             })}
         </div>
