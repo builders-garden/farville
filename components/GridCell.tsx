@@ -415,6 +415,7 @@ export default function GridCell({ cell }: GridCellProps) {
                     ? new Date(cell.speedBoostedAt).getTime()
                     : 0,
                   yieldBoost: cell.yieldBoost || 0,
+                  isDead: cell.isDead,
                 }
               : undefined
           }

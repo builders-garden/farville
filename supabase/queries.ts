@@ -660,18 +660,40 @@ export const speedBoostGridCell = async (
   return data;
 };
 
-export const getGridCell = async (
+export const killGridCell = async (
   fid: number,
   x: number,
   y: number
+): Promise<void> => {
+  const { error } = await supabase
+    .from("user_grid_cells")
+    .update({
+      isDead: true,
+    })
+    .eq("fid", fid)
+    .eq("x", x)
+    .eq("y", y);
+  if (error) throw error;
+};
+
+export const getGridCell = async (
+  fid: number,
+  x: number,
+  y: number,
+  plantedAt?: string
 ): Promise<DbGridCell | null> => {
-  const { data, error } = await supabase
+  const query = supabase
     .from("user_grid_cells")
     .select("*")
     .eq("fid", fid)
     .eq("x", x)
-    .eq("y", y)
-    .maybeSingle();
+    .eq("y", y);
+
+  if (plantedAt) {
+    query.eq("plantedAt", plantedAt);
+  }
+
+  const { data, error } = await query.maybeSingle();
 
   if (error) throw error;
   return data;

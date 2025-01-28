@@ -1,5 +1,5 @@
 import { CROP_DATA } from "@/lib/game-constants";
-import { getGridCell, harvestGridCell } from "@/supabase/queries";
+import { getGridCell, killGridCell } from "@/supabase/queries";
 import { NextRequest } from "next/server";
 import { z } from "zod";
 
@@ -24,19 +24,12 @@ export async function POST(req: NextRequest) {
   const { fid, x, y, plantedAt } = requestBody.data;
 
   try {
-    const cell = await getGridCell(fid, x, y);
+    const cell = await getGridCell(fid, x, y, plantedAt);
 
     if (!cell) {
       return Response.json(
         { success: false, error: "Grid cell not found" },
         { status: 404 }
-      );
-    }
-
-    if (cell.plantedAt !== plantedAt) {
-      return Response.json(
-        { success: false, error: "Grid cell plantedAt does not match" },
-        { status: 400 }
       );
     }
 
@@ -54,7 +47,7 @@ export async function POST(req: NextRequest) {
         }
       )
     } else {
-      await harvestGridCell(fid,x,y) // this resets the cell
+      await killGridCell(fid,x,y) // this resets the cell
     }
 
     console.log(

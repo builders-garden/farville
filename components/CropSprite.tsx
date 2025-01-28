@@ -15,6 +15,7 @@ interface CropSpriteCropProp {
   speedBoost?: number;
   speedBoostedAt?: number;
   yieldBoost?: number;
+  isDead: boolean;
 }
 interface CropSpriteProps {
   crop: CropSpriteCropProp;
@@ -98,7 +99,7 @@ export function PlantedCropSprite({ crop, isDemo }: CropSpriteProps) {
       />
       {crop.plantedAt && (
         <div
-        className={clsx("absolute inset-[5%]", isGridSmall ? "mb-2" : "mb-1")}
+        className={clsx("absolute inset-[5%]", isGridSmall ? "mb-2" : "mb-1", crop.isDead ? "grayscale" : "")}
           style={{
             backgroundImage: "url('/images/land/soil_big.png')",
             backgroundSize: "100% 100%",
@@ -169,8 +170,14 @@ export function PlantedCropSprite({ crop, isDemo }: CropSpriteProps) {
             backgroundPosition: "center",
             backgroundRepeat: "no-repeat",
             imageRendering: "pixelated",
+            display: crop.isDead ? "none" : "block",
           }}
         />
+        {crop.isDead && (
+          <div className="absolute inset-0 flex items-center justify-center text-[2rem] pb-3">
+            ☠️
+          </div>
+        )}
       </motion.div>
 
       {/* Harvest Ready Animation */}

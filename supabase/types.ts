@@ -54,6 +54,7 @@ export interface DbGridCell {
   harvestAt: string | null;
   speedBoostedAt: string | null;
   yieldBoost: number | null;
+  isDead: boolean;
 }
 
 // Helper type for inserting new grid cells

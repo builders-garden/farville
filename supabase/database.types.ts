@@ -120,6 +120,7 @@ export interface Database {
           harvestAt: string | null;
           speedBoostedAt: string | null;
           yieldBoost: number | null;
+          isDead: boolean;
         };
         Insert: {
           fid: number;
@@ -132,6 +133,7 @@ export interface Database {
           harvestAt?: string | null;
           speedBoostedAt?: string | null;
           yieldBoost?: number | null;
+          isDead?: boolean;
         };
         Update: {
           fid?: number;
@@ -144,6 +146,7 @@ export interface Database {
           harvestAt?: string | null;
           speedBoostedAt?: string | null;
           yieldBoost?: number | null;
+          isDead?: boolean;
         };
       };
       user_notification: {
