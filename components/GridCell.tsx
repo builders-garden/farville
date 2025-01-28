@@ -180,9 +180,7 @@ export default function GridCell({ cell }: GridCellProps) {
     selectedSeed,
     selectedPerk,
     setSelectedPerk,
-    pendingActions,
-    addPendingAction,
-    removePendingAction,
+    pendingCells,
   } = useGame();
   const [showFloating, setShowFloating] = useState(false);
   const [floatingPosition, setFloatingPosition] = useState({ x: 0, y: 0 });
@@ -230,8 +228,18 @@ export default function GridCell({ cell }: GridCellProps) {
     (item) => item.item.slug === "fertilizer"
   );
 
-  const getCellActionKey = (x: number, y: number) => `cell-${x}-${y}`;
-  const isCellPending = pendingActions.has(getCellActionKey(cell.x, cell.y));
+  const isPending = useMemo(() => {
+    const key = `${cell.x},${cell.y}`;
+    console.log(
+      "Cell:",
+      key,
+      "Pending:",
+      pendingCells.has(key),
+      "PendingCells:",
+      [...pendingCells]
+    );
+    return pendingCells.has(key);
+  }, [cell.x, cell.y, pendingCells]);
 
   const handleBoost = async (boostType: string) => {
     const boostItem = state.inventory.find(
@@ -249,31 +257,24 @@ export default function GridCell({ cell }: GridCellProps) {
   };
 
   const handleClick = async () => {
-    if (isCellPending || isPerkIncompatible) return;
-
-    const actionKey = getCellActionKey(cell.x, cell.y);
+    if (isPerkIncompatible) return;
 
     if (
       selectedPerk &&
       ((selectedPerk.item.slug === "fertilizer" && isValidFertilizerTarget) ||
         (selectedPerk.item.slug !== "fertilizer" && isValidSpeedBoostTarget))
     ) {
-      addPendingAction(actionKey);
-      try {
-        await applyPerk({
-          x: cell.x,
-          y: cell.y,
-          itemSlug: selectedPerk.item.slug,
-          itemId: selectedPerk.itemId,
-        });
-        const perk = state.perks.find(
-          (item) => item.item.slug === selectedPerk.item.slug
-        );
-        if (!perk || perk.quantity === 0) {
-          setSelectedPerk(null);
-        }
-      } finally {
-        removePendingAction(actionKey);
+      await applyPerk({
+        x: cell.x,
+        y: cell.y,
+        itemSlug: selectedPerk.item.slug,
+        itemId: selectedPerk.itemId,
+      });
+      const perk = state.perks.find(
+        (item) => item.item.slug === selectedPerk.item.slug
+      );
+      if (!perk || perk.quantity === 0) {
+        setSelectedPerk(null);
       }
       return;
     }
@@ -284,58 +285,48 @@ export default function GridCell({ cell }: GridCellProps) {
     }
 
     if (cell.plantedAt && isReadyToHarvest) {
-      addPendingAction(actionKey);
-      try {
-        if (cellRef.current) {
-          const rect = cellRef.current.getBoundingClientRect();
-          const cropType = cell.cropType as CropType;
-          const harvestResult = await harvestCrop({
-            x: cell.x,
-            y: cell.y,
-          });
-
-          if (!harvestResult) {
-            return;
-          }
-
-          if (harvestResult.rewards?.didLevelUp) {
-            setShowLevelUpConfetti(true);
-            setTimeout(() => {
-              setShowLevelUpConfetti(false);
-            }, 3000);
-          }
-
-          setFloatingPosition({
-            x: rect.left + rect.width / 2,
-            y: rect.top + rect.height / 2,
-          });
-
-          setHarvestedExp(harvestResult.rewards?.xp || 0);
-          setHarvestedAmount(harvestResult.rewards?.amount || 0);
-          setHarvestedCropType(cropType);
-          setShowFloating(true);
-
-          setTimeout(() => {
-            setShowFloating(false);
-            setHarvestedExp(null);
-            setHarvestedAmount(null);
-            setHarvestedCropType(null);
-          }, 1500);
-        }
-      } finally {
-        removePendingAction(actionKey);
-      }
-    } else if (selectedSeed && !cell.plantedAt) {
-      addPendingAction(actionKey);
-      try {
-        await plantSeed({
+      if (cellRef.current) {
+        const rect = cellRef.current.getBoundingClientRect();
+        const cropType = cell.cropType as CropType;
+        const harvestResult = await harvestCrop({
           x: cell.x,
           y: cell.y,
-          seedType: selectedSeed,
         });
-      } finally {
-        removePendingAction(actionKey);
+
+        if (!harvestResult) {
+          return;
+        }
+
+        if (harvestResult.rewards?.didLevelUp) {
+          setShowLevelUpConfetti(true);
+          setTimeout(() => {
+            setShowLevelUpConfetti(false);
+          }, 3000);
+        }
+
+        setFloatingPosition({
+          x: rect.left + rect.width / 2,
+          y: rect.top + rect.height / 2,
+        });
+
+        setHarvestedExp(harvestResult.rewards?.xp || 0);
+        setHarvestedAmount(harvestResult.rewards?.amount || 0);
+        setHarvestedCropType(cropType);
+        setShowFloating(true);
+
+        setTimeout(() => {
+          setShowFloating(false);
+          setHarvestedExp(null);
+          setHarvestedAmount(null);
+          setHarvestedCropType(null);
+        }, 1500);
       }
+    } else if (selectedSeed && !cell.plantedAt) {
+      await plantSeed({
+        x: cell.x,
+        y: cell.y,
+        seedType: selectedSeed,
+      });
     }
   };
 
@@ -374,7 +365,7 @@ export default function GridCell({ cell }: GridCellProps) {
         className={`
           grid-cell
           aspect-square rounded-xl relative
-          ${isCellPending ? "opacity-50" : ""}
+          ${isPending ? "opacity-30" : ""}
           ${
             isPerkIncompatible
               ? "cursor-not-allowed opacity-50"
@@ -413,6 +404,12 @@ export default function GridCell({ cell }: GridCellProps) {
           repeatType: "reverse",
         }}
       >
+        {isPending && (
+          <div className="absolute inset-0 flex items-center justify-center z-50 bg-black/10">
+            <div className="w-8 h-8 border-4 border-green-500 border-t-transparent rounded-full animate-spin"></div>
+          </div>
+        )}
+
         {showPopup && cell.plantedAt && !isReadyToHarvest && (
           <SeedDetailPopup
             cell={cell}

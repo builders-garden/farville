@@ -1,6 +1,13 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useMemo,
+  useCallback,
+} from "react";
 import type { HarvestResponse, SeedType } from "../types/game";
 //import { useAudio } from "./AudioContext";
 import { GameState, useGameState } from "@/hooks/use-game-state";
@@ -12,6 +19,7 @@ import { useExpandGrid } from "@/hooks/game-actions/use-expand-grid";
 import { useSellItem } from "@/hooks/game-actions/use-sell-item";
 import { UserItem } from "@/hooks/use-user-items";
 import { useApplyPerk } from "@/hooks/game-actions/use-apply-perk";
+import { debounce } from "lodash";
 
 // Update the OverlayType to be more flexible with parameters
 export type OverlayConfig =
@@ -28,10 +36,7 @@ interface GameContextType {
   selectedPerk: UserItem | null;
   setSelectedPerk: (perk: UserItem | null) => void;
   plantSeed: (params: { x: number; y: number; seedType: SeedType }) => void;
-  harvestCrop: (params: {
-    x: number;
-    y: number;
-  }) => Promise<HarvestResponse | undefined>;
+  harvestCrop: (params: { x: number; y: number }) => Promise<HarvestResponse>;
   fertilize: (params: { x: number; y: number }) => void;
   applyPerk: (params: {
     x: number;
@@ -65,9 +70,9 @@ interface GameContextType {
   setActiveOverlay: (overlay: OverlayConfig) => void;
   tutorialComplete: boolean;
   setTutorialComplete: (complete: boolean) => void;
-  pendingActions: Set<string>;
-  addPendingAction: (actionKey: string) => void;
-  removePendingAction: (actionKey: string) => void;
+  pendingCells: Set<string>;
+  addPendingCell: (x: number, y: number) => void;
+  removePendingCell: (x: number, y: number) => void;
 }
 
 export const GameContext = createContext<GameContextType | null>(null);
@@ -93,7 +98,7 @@ export function GameProvider({
   const [activeOverlay, setActiveOverlay] =
     useState<OverlayConfig>(initialOverlay);
   const [tutorialComplete, setTutorialComplete] = useState(true);
-  const [pendingActions] = useState<Set<string>>(new Set());
+  const [pendingCells, setPendingCells] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (!loading) {
@@ -124,14 +129,95 @@ export function GameProvider({
     setIsActionInProgress,
   });
 
-  const harvestCrop = (params: { x: number; y: number }) => {
-    return new Promise<HarvestResponse | undefined>((resolve) => {
-      harvestCropMutation(params, {
-        onSuccess: (data) => resolve(data),
-        onError: () => resolve(undefined),
-      });
+  const addPendingCell = useCallback((x: number, y: number) => {
+    console.log("Adding pending cell:", `${x},${y}`);
+    setPendingCells((prev) => {
+      const next = new Set(prev);
+      next.add(`${x},${y}`);
+      console.log("New pending cells:", [...next]);
+      return next;
     });
-  };
+  }, []);
+
+  const removePendingCell = useCallback((x: number, y: number) => {
+    console.log("Removing pending cell:", `${x},${y}`);
+    setPendingCells((prev) => {
+      const next = new Set(prev);
+      next.delete(`${x},${y}`);
+      console.log("Remaining pending cells:", [...next]);
+      return next;
+    });
+  }, []);
+
+  const debouncedHarvestCrop = useMemo(
+    () =>
+      (params: { x: number; y: number }): Promise<HarvestResponse> => {
+        addPendingCell(params.x, params.y);
+        return new Promise((resolve) => {
+          const debouncedFn = debounce(async () => {
+            try {
+              const response = await new Promise<HarvestResponse>(
+                (mutateResolve) => {
+                  harvestCropMutation(params, {
+                    onSuccess: (data) => mutateResolve(data),
+                    onError: () => mutateResolve({} as HarvestResponse),
+                  });
+                }
+              );
+              resolve(response);
+            } catch (error) {
+              console.error("Error harvesting crop:", error);
+              resolve({} as HarvestResponse);
+            } finally {
+              removePendingCell(params.x, params.y);
+            }
+          }, 300);
+          debouncedFn();
+        });
+      },
+    [harvestCropMutation, addPendingCell, removePendingCell]
+  );
+
+  const debouncedPlantSeed = useMemo(
+    () =>
+      (params: { x: number; y: number; seedType: SeedType }): Promise<void> => {
+        addPendingCell(params.x, params.y);
+        return new Promise((resolve) => {
+          const debouncedFn = debounce(async () => {
+            try {
+              await new Promise<void>((mutateResolve) => {
+                plantSeed(params, {
+                  onSuccess: () => {
+                    const seed = state?.seeds.find(
+                      (seed) => seed.item.slug === params.seedType
+                    );
+                    if (!seed || seed?.quantity === 1 || seed?.quantity === 0) {
+                      setSelectedSeed(null);
+                    }
+                    mutateResolve();
+                  },
+                  onError: () => mutateResolve(),
+                });
+              });
+              resolve();
+            } catch (error) {
+              console.error("Error planting seed:", error);
+              resolve();
+            } finally {
+              removePendingCell(params.x, params.y);
+            }
+          }, 300);
+          debouncedFn();
+        });
+      },
+    [
+      plantSeed,
+      addPendingCell,
+      removePendingCell,
+      state?.seeds,
+      setSelectedSeed,
+    ]
+  );
 
   const { mutate: fertilize } = useFertilize({
     refetchGridCells: refetch.grid,
@@ -164,13 +250,49 @@ export function GameProvider({
     refetchUser: refetch.user,
   });
 
-  const addPendingAction = (actionKey: string) => {
-    pendingActions.add(actionKey);
-  };
+  const debouncedFertilize = useMemo(
+    () => async (params: { x: number; y: number }) => {
+      addPendingCell(params.x, params.y);
+      try {
+        await fertilize(params);
+      } finally {
+        removePendingCell(params.x, params.y);
+      }
+    },
+    [fertilize, addPendingCell, removePendingCell]
+  );
 
-  const removePendingAction = (actionKey: string) => {
-    pendingActions.delete(actionKey);
-  };
+  const debouncedApplyPerk = useMemo(
+    () =>
+      (params: {
+        x: number;
+        y: number;
+        itemSlug: string;
+        itemId: number;
+      }): Promise<void> => {
+        addPendingCell(params.x, params.y);
+        return new Promise((resolve) => {
+          const debouncedFn = debounce(async () => {
+            try {
+              await new Promise<void>((mutateResolve) => {
+                applyPerk(params, {
+                  onSuccess: () => mutateResolve(),
+                  onError: () => mutateResolve(),
+                });
+              });
+              resolve();
+            } catch (error) {
+              console.error("Error applying perk:", error);
+              resolve();
+            } finally {
+              removePendingCell(params.x, params.y);
+            }
+          }, 300);
+          debouncedFn();
+        });
+      },
+    [applyPerk, addPendingCell, removePendingCell]
+  );
 
   if (!state) {
     return (
@@ -188,10 +310,10 @@ export function GameProvider({
         setSelectedSeed,
         selectedPerk: selectedPerk,
         setSelectedPerk: setSelectedPerk,
-        plantSeed,
-        harvestCrop,
-        fertilize,
-        applyPerk,
+        plantSeed: debouncedPlantSeed,
+        harvestCrop: debouncedHarvestCrop,
+        fertilize: debouncedFertilize,
+        applyPerk: debouncedApplyPerk,
         buyItem,
         sellItem,
         expandGrid,
@@ -218,9 +340,9 @@ export function GameProvider({
         setActiveOverlay,
         tutorialComplete,
         setTutorialComplete,
-        pendingActions,
-        addPendingAction,
-        removePendingAction,
+        pendingCells,
+        addPendingCell,
+        removePendingCell,
       }}
     >
       {children}
