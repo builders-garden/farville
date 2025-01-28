@@ -4,10 +4,7 @@ import { motion } from "framer-motion";
 import { useGame } from "../context/GameContext";
 import { SeedType } from "../types/game";
 import { useState, useRef, useEffect, useCallback } from "react";
-import {
-  ChevronLeftIcon,
-  ChevronRightIcon,
-} from "@heroicons/react/24/solid";
+import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/solid";
 
 const CROP_COLORS: Record<SeedType, string> = {
   "carrot-seeds": "border-orange-400",
@@ -24,7 +21,13 @@ const CROP_COLORS: Record<SeedType, string> = {
 };
 
 export default function SeedMenu() {
-  const { selectedSeed, setSelectedSeed, state } = useGame();
+  const {
+    selectedSeed,
+    setSelectedSeed,
+    selectedPerk,
+    setSelectedPerk,
+    state,
+  } = useGame();
 
   const [isDragging, setIsDragging] = useState(false);
   const dragIconRef = useRef<HTMLDivElement>(null);
@@ -267,43 +270,70 @@ export default function SeedMenu() {
           className="flex gap-2 overflow-x-auto py-3 px-6 scrollbar-none"
         >
           {state.items
-            .filter((item) => item.category === "seed")
+            .filter(
+              (item) =>
+                item.category === "seed" ||
+                (item.category === "perk" && item.slug !== "fertilizer")
+            )
+            .sort((a, b) => {
+              // Sort seeds first, then perks
+              if (a.category === b.category) return 0;
+              return a.category === "seed" ? -1 : 1;
+            })
             .map((item) => {
               const seed = state.seeds.find((seed) => seed.item.id === item.id);
-              const isAvailable = !!seed;
-              const quantity = seed?.quantity || 0;
+              const perk = state.perks?.find(
+                (perk) => perk.item.id === item.id
+              );
+              const isAvailable = item.category === "seed" ? !!seed : !!perk;
+              const quantity =
+                item.category === "seed"
+                  ? seed?.quantity || 0
+                  : perk?.quantity || 0;
 
               return (
                 <div key={item.id} className="py-1 px-1">
                   <motion.button
                     onClick={() => {
                       if (isAvailable) {
-                        setSelectedSeed(
-                          selectedSeed === item.slug
-                            ? null
-                            : (item.slug as SeedType)
-                        );
+                        if (item.category === "seed") {
+                          setSelectedSeed(item.slug as SeedType);
+                          setSelectedPerk(null);
+                        } else {
+                          setSelectedPerk(perk!);
+                          setSelectedSeed(null);
+                        }
                       }
                     }}
-                    draggable={isAvailable}
+                    draggable={isAvailable && item.category === "seed"}
                     onDragStart={(e) =>
+                      item.category === "seed" &&
                       handleDragStart(
                         e as unknown as React.DragEvent,
                         item.slug as SeedType
                       )
                     }
                     onTouchStart={(e) =>
+                      item.category === "seed" &&
                       handleTouchStart(e, item.slug as SeedType)
                     }
                     onTouchEnd={handleTouchEnd}
                     className={`
                       relative min-w-[2.5rem] w-10 h-10 rounded-lg flex items-center justify-center
                       ${
-                        selectedSeed === item.slug
+                        item.category === "seed"
+                          ? selectedSeed === item.slug
+                            ? "bg-[#6d4c2c]"
+                            : "bg-[#8B5E3C]"
+                          : selectedPerk?.item.slug === item.slug
                           ? "bg-[#6d4c2c]"
                           : "bg-[#8B5E3C]"
                       }
-                      border-2 ${CROP_COLORS[item.slug as SeedType]}
+                      border-2 ${
+                        item.category === "seed"
+                          ? CROP_COLORS[item.slug as SeedType]
+                          : "border-blue-400"
+                      }
                       ${
                         isAvailable
                           ? "hover:bg-[#6d4c2c]"
@@ -316,7 +346,7 @@ export default function SeedMenu() {
                   >
                     <motion.img
                       src={`/images${item.icon}`}
-                      alt={`${item.slug} seed`}
+                      alt={`${item.slug}`}
                       className="w-8 h-8 object-contain"
                       animate={{ y: [0, -2, 0] }}
                       transition={{ duration: 1.5, repeat: Infinity }}
@@ -330,7 +360,7 @@ export default function SeedMenu() {
             })}
         </div>
         <div className="text-white/90 text-[8px] text-center">
-          Select a seed to plant
+          Select a seed or perk to use
         </div>
       </motion.div>
     </motion.div>
