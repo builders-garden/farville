@@ -28,6 +28,13 @@ export type OverlayConfig =
   | { type: "tutorial"; step?: number }
   | null;
 
+// Add at the top after imports
+interface PendingCell {
+  key: string;
+  timestamp: number;
+  removeTimeout?: NodeJS.Timeout;
+}
+
 // Update the context type
 interface GameContextType {
   state: GameState;
@@ -70,12 +77,14 @@ interface GameContextType {
   setActiveOverlay: (overlay: OverlayConfig) => void;
   tutorialComplete: boolean;
   setTutorialComplete: (complete: boolean) => void;
-  pendingCells: Set<string>;
+  pendingCells: Map<string, PendingCell>;
   addPendingCell: (x: number, y: number) => void;
   removePendingCell: (x: number, y: number) => void;
 }
 
 export const GameContext = createContext<GameContextType | null>(null);
+
+const debouncedCallbacks = new Map<string, ReturnType<typeof debounce>>();
 
 export function GameProvider({
   children,
@@ -98,7 +107,9 @@ export function GameProvider({
   const [activeOverlay, setActiveOverlay] =
     useState<OverlayConfig>(initialOverlay);
   const [tutorialComplete, setTutorialComplete] = useState(true);
-  const [pendingCells, setPendingCells] = useState<Set<string>>(new Set());
+  const [pendingCells, setPendingCells] = useState<Map<string, PendingCell>>(
+    new Map()
+  );
 
   useEffect(() => {
     if (!loading) {
@@ -130,92 +141,173 @@ export function GameProvider({
   });
 
   const addPendingCell = useCallback((x: number, y: number) => {
-    console.log("Adding pending cell:", `${x},${y}`);
+    const key = `${x},${y}`;
+    console.log("Adding pending cell:", key);
     setPendingCells((prev) => {
-      const next = new Set(prev);
-      next.add(`${x},${y}`);
-      console.log("New pending cells:", [...next]);
+      const next = new Map(prev);
+      next.set(key, { key, timestamp: Date.now() });
+      console.log("New pending cells:", [...next.values()]);
       return next;
     });
   }, []);
 
-  const removePendingCell = useCallback((x: number, y: number) => {
-    console.log("Removing pending cell:", `${x},${y}`);
-    setPendingCells((prev) => {
-      const next = new Set(prev);
-      next.delete(`${x},${y}`);
-      console.log("Remaining pending cells:", [...next]);
-      return next;
-    });
+  const processRemovalQueue = useCallback(
+    (cells: Map<string, PendingCell>, currentKey: string) => {
+      // First, remove the current cell immediately
+      setPendingCells((prev) => {
+        const next = new Map(prev);
+        next.delete(currentKey);
+        return next;
+      });
+
+      // Then process the remaining cells in order
+      const remainingCells = [...cells.values()]
+        .filter((cell) => cell.key !== currentKey)
+        .sort((a, b) => a.timestamp - b.timestamp);
+
+      remainingCells.forEach((cell, index) => {
+        if (!cell.removeTimeout) {
+          cell.removeTimeout = setTimeout(() => {
+            setPendingCells((prev) => {
+              const next = new Map(prev);
+              next.delete(cell.key);
+              console.log(
+                "Removed cell from queue:",
+                cell.key,
+                "Remaining:",
+                [...next.values()].map((c) => c.key)
+              );
+              return next;
+            });
+          }, index * 100); // Stagger remaining removals by 100ms
+        }
+      });
+    },
+    []
+  );
+
+  const removePendingCell = useCallback(
+    (x: number, y: number) => {
+      const key = `${x},${y}`;
+      console.log("Queueing cell for removal:", key);
+      setPendingCells((prev) => {
+        const next = new Map(prev);
+        const cell = next.get(key);
+        if (cell) {
+          processRemovalQueue(next, key);
+        }
+        return next;
+      });
+    },
+    [processRemovalQueue]
+  );
+
+  useEffect(() => {
+    return () => {
+      pendingCells.forEach((cell) => {
+        if (cell.removeTimeout) {
+          clearTimeout(cell.removeTimeout);
+        }
+      });
+    };
+  }, [pendingCells]);
+
+  const clearDebouncedCallback = useCallback((x: number, y: number) => {
+    const key = `${x},${y}`;
+    const debouncedFn = debouncedCallbacks.get(key);
+    if (debouncedFn) {
+      debouncedFn.cancel();
+      debouncedCallbacks.delete(key);
+    }
   }, []);
+
+  const resetPendingCells = useCallback(() => {
+    setPendingCells(new Map());
+    // Also clear any existing timeouts
+    pendingCells.forEach((cell) => {
+      if (cell.removeTimeout) {
+        clearTimeout(cell.removeTimeout);
+      }
+    });
+  }, [pendingCells]);
 
   const debouncedHarvestCrop = useMemo(
     () =>
       (params: { x: number; y: number }): Promise<HarvestResponse> => {
+        const key = `${params.x},${params.y}`;
+        clearDebouncedCallback(params.x, params.y);
         addPendingCell(params.x, params.y);
+
         return new Promise((resolve) => {
-          const debouncedFn = debounce(async () => {
-            try {
-              const response = await new Promise<HarvestResponse>(
-                (mutateResolve) => {
-                  harvestCropMutation(params, {
-                    onSuccess: (data) => mutateResolve(data),
-                    onError: () => mutateResolve({} as HarvestResponse),
-                  });
-                }
-              );
-              resolve(response);
-            } catch (error) {
-              console.error("Error harvesting crop:", error);
-              resolve({} as HarvestResponse);
-            } finally {
-              removePendingCell(params.x, params.y);
-            }
+          const debouncedFn = debounce(() => {
+            harvestCropMutation(params, {
+              onSuccess: (data) => {
+                resolve(data);
+              },
+              onError: (error) => {
+                console.error("Error harvesting crop:", error);
+                resolve({} as HarvestResponse);
+              },
+              onSettled: () => {
+                resetPendingCells();
+                debouncedCallbacks.delete(key);
+              },
+            });
           }, 300);
+
+          debouncedCallbacks.set(key, debouncedFn);
           debouncedFn();
         });
       },
-    [harvestCropMutation, addPendingCell, removePendingCell]
+    [
+      harvestCropMutation,
+      addPendingCell,
+      resetPendingCells,
+      clearDebouncedCallback,
+    ]
   );
 
   const debouncedPlantSeed = useMemo(
     () =>
       (params: { x: number; y: number; seedType: SeedType }): Promise<void> => {
+        const key = `${params.x},${params.y}`;
+        clearDebouncedCallback(params.x, params.y);
         addPendingCell(params.x, params.y);
+
         return new Promise((resolve) => {
-          const debouncedFn = debounce(async () => {
-            try {
-              await new Promise<void>((mutateResolve) => {
-                plantSeed(params, {
-                  onSuccess: () => {
-                    const seed = state?.seeds.find(
-                      (seed) => seed.item.slug === params.seedType
-                    );
-                    if (!seed || seed?.quantity === 1 || seed?.quantity === 0) {
-                      setSelectedSeed(null);
-                    }
-                    mutateResolve();
-                  },
-                  onError: () => mutateResolve(),
-                });
-              });
-              resolve();
-            } catch (error) {
-              console.error("Error planting seed:", error);
-              resolve();
-            } finally {
-              removePendingCell(params.x, params.y);
-            }
+          const debouncedFn = debounce(() => {
+            plantSeed(params, {
+              onSuccess: () => {
+                const seed = state?.seeds.find(
+                  (seed) => seed.item.slug === params.seedType
+                );
+                if (!seed || seed?.quantity === 1 || seed?.quantity === 0) {
+                  setSelectedSeed(null);
+                }
+                resolve();
+              },
+              onError: (error) => {
+                console.error("Error planting seed:", error);
+                resolve();
+              },
+              onSettled: () => {
+                resetPendingCells();
+                debouncedCallbacks.delete(key);
+              },
+            });
           }, 300);
+
+          debouncedCallbacks.set(key, debouncedFn);
           debouncedFn();
         });
       },
     [
       plantSeed,
       addPendingCell,
-      removePendingCell,
+      resetPendingCells,
       state?.seeds,
       setSelectedSeed,
+      clearDebouncedCallback,
     ]
   );
 
@@ -251,15 +343,34 @@ export function GameProvider({
   });
 
   const debouncedFertilize = useMemo(
-    () => async (params: { x: number; y: number }) => {
-      addPendingCell(params.x, params.y);
-      try {
-        await fertilize(params);
-      } finally {
-        removePendingCell(params.x, params.y);
-      }
-    },
-    [fertilize, addPendingCell, removePendingCell]
+    () =>
+      (params: { x: number; y: number }): Promise<void> => {
+        const key = `${params.x},${params.y}`;
+        clearDebouncedCallback(params.x, params.y);
+        addPendingCell(params.x, params.y);
+
+        return new Promise((resolve) => {
+          const debouncedFn = debounce(() => {
+            fertilize(params, {
+              onSuccess: () => {
+                resolve();
+              },
+              onError: (error) => {
+                console.error("Error fertilizing:", error);
+                resolve();
+              },
+              onSettled: () => {
+                resetPendingCells();
+                debouncedCallbacks.delete(key);
+              },
+            });
+          }, 300);
+
+          debouncedCallbacks.set(key, debouncedFn);
+          debouncedFn();
+        });
+      },
+    [fertilize, addPendingCell, resetPendingCells, clearDebouncedCallback]
   );
 
   const debouncedApplyPerk = useMemo(
@@ -270,28 +381,32 @@ export function GameProvider({
         itemSlug: string;
         itemId: number;
       }): Promise<void> => {
+        const key = `${params.x},${params.y}`;
+        clearDebouncedCallback(params.x, params.y);
         addPendingCell(params.x, params.y);
+
         return new Promise((resolve) => {
-          const debouncedFn = debounce(async () => {
-            try {
-              await new Promise<void>((mutateResolve) => {
-                applyPerk(params, {
-                  onSuccess: () => mutateResolve(),
-                  onError: () => mutateResolve(),
-                });
-              });
-              resolve();
-            } catch (error) {
-              console.error("Error applying perk:", error);
-              resolve();
-            } finally {
-              removePendingCell(params.x, params.y);
-            }
+          const debouncedFn = debounce(() => {
+            applyPerk(params, {
+              onSuccess: () => {
+                resolve();
+              },
+              onError: (error) => {
+                console.error("Error applying perk:", error);
+                resolve();
+              },
+              onSettled: () => {
+                resetPendingCells();
+                debouncedCallbacks.delete(key);
+              },
+            });
           }, 300);
+
+          debouncedCallbacks.set(key, debouncedFn);
           debouncedFn();
         });
       },
-    [applyPerk, addPendingCell, removePendingCell]
+    [applyPerk, addPendingCell, resetPendingCells, clearDebouncedCallback]
   );
 
   if (!state) {
