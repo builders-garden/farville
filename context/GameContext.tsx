@@ -65,6 +65,9 @@ interface GameContextType {
   setActiveOverlay: (overlay: OverlayConfig) => void;
   tutorialComplete: boolean;
   setTutorialComplete: (complete: boolean) => void;
+  pendingActions: Set<string>;
+  addPendingAction: (actionKey: string) => void;
+  removePendingAction: (actionKey: string) => void;
 }
 
 export const GameContext = createContext<GameContextType | null>(null);
@@ -90,6 +93,7 @@ export function GameProvider({
   const [activeOverlay, setActiveOverlay] =
     useState<OverlayConfig>(initialOverlay);
   const [tutorialComplete, setTutorialComplete] = useState(true);
+  const [pendingActions] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (!loading) {
@@ -160,6 +164,14 @@ export function GameProvider({
     refetchUser: refetch.user,
   });
 
+  const addPendingAction = (actionKey: string) => {
+    pendingActions.add(actionKey);
+  };
+
+  const removePendingAction = (actionKey: string) => {
+    pendingActions.delete(actionKey);
+  };
+
   if (!state) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -206,6 +218,9 @@ export function GameProvider({
         setActiveOverlay,
         tutorialComplete,
         setTutorialComplete,
+        pendingActions,
+        addPendingAction,
+        removePendingAction,
       }}
     >
       {children}

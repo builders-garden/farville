@@ -44,7 +44,10 @@ function SeedDetailPopup({
 
   useEffect(() => {
     const interval = setInterval(() => {
-      const newTimeLeft = Math.max(0, (harvestAt.getTime() - Date.now()) / 1000);
+      const newTimeLeft = Math.max(
+        0,
+        (harvestAt.getTime() - Date.now()) / 1000
+      );
       setCountdown(formatTime(newTimeLeft));
     }, 1000);
 
@@ -88,8 +91,9 @@ function SeedDetailPopup({
 
   const formattedGrowthTime = formatTime(cropData.growthTime / 1000);
   const formattedPlantAt =
-    plantedAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + " " +
-    plantedAt.toLocaleDateString([], { day: '2-digit', month: '2-digit' })
+    plantedAt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) +
+    " " +
+    plantedAt.toLocaleDateString([], { day: "2-digit", month: "2-digit" });
   const formattedBoostTimeLeft = formatTime(boostTimeLeft * 60);
 
   return createPortal(
@@ -176,7 +180,9 @@ export default function GridCell({ cell }: GridCellProps) {
     selectedSeed,
     selectedPerk,
     setSelectedPerk,
-    isActionInProgress,
+    pendingActions,
+    addPendingAction,
+    removePendingAction,
   } = useGame();
   const [showFloating, setShowFloating] = useState(false);
   const [floatingPosition, setFloatingPosition] = useState({ x: 0, y: 0 });
@@ -224,6 +230,9 @@ export default function GridCell({ cell }: GridCellProps) {
     (item) => item.item.slug === "fertilizer"
   );
 
+  const getCellActionKey = (x: number, y: number) => `cell-${x}-${y}`;
+  const isCellPending = pendingActions.has(getCellActionKey(cell.x, cell.y));
+
   const handleBoost = async (boostType: string) => {
     const boostItem = state.inventory.find(
       (item) => item.item.slug === boostType
@@ -240,24 +249,31 @@ export default function GridCell({ cell }: GridCellProps) {
   };
 
   const handleClick = async () => {
-    if (isActionInProgress || isPerkIncompatible) return;
+    if (isCellPending || isPerkIncompatible) return;
+
+    const actionKey = getCellActionKey(cell.x, cell.y);
 
     if (
       selectedPerk &&
       ((selectedPerk.item.slug === "fertilizer" && isValidFertilizerTarget) ||
         (selectedPerk.item.slug !== "fertilizer" && isValidSpeedBoostTarget))
     ) {
-      await applyPerk({
-        x: cell.x,
-        y: cell.y,
-        itemSlug: selectedPerk.item.slug,
-        itemId: selectedPerk.itemId,
-      });
-      const perk = state.perks.find(
-        (item) => item.item.slug === selectedPerk.item.slug
-      );
-      if (!perk || perk.quantity === 0) {
-        setSelectedPerk(null);
+      addPendingAction(actionKey);
+      try {
+        await applyPerk({
+          x: cell.x,
+          y: cell.y,
+          itemSlug: selectedPerk.item.slug,
+          itemId: selectedPerk.itemId,
+        });
+        const perk = state.perks.find(
+          (item) => item.item.slug === selectedPerk.item.slug
+        );
+        if (!perk || perk.quantity === 0) {
+          setSelectedPerk(null);
+        }
+      } finally {
+        removePendingAction(actionKey);
       }
       return;
     }
@@ -268,48 +284,58 @@ export default function GridCell({ cell }: GridCellProps) {
     }
 
     if (cell.plantedAt && isReadyToHarvest) {
-      if (cellRef.current) {
-        const rect = cellRef.current.getBoundingClientRect();
-        const cropType = cell.cropType as CropType;
-        const harvestResult = await harvestCrop({
-          x: cell.x,
-          y: cell.y,
-        });
+      addPendingAction(actionKey);
+      try {
+        if (cellRef.current) {
+          const rect = cellRef.current.getBoundingClientRect();
+          const cropType = cell.cropType as CropType;
+          const harvestResult = await harvestCrop({
+            x: cell.x,
+            y: cell.y,
+          });
 
-        if (!harvestResult) {
-          return;
-        }
+          if (!harvestResult) {
+            return;
+          }
 
-        if (harvestResult.rewards?.didLevelUp) {
-          setShowLevelUpConfetti(true);
+          if (harvestResult.rewards?.didLevelUp) {
+            setShowLevelUpConfetti(true);
+            setTimeout(() => {
+              setShowLevelUpConfetti(false);
+            }, 3000);
+          }
+
+          setFloatingPosition({
+            x: rect.left + rect.width / 2,
+            y: rect.top + rect.height / 2,
+          });
+
+          setHarvestedExp(harvestResult.rewards?.xp || 0);
+          setHarvestedAmount(harvestResult.rewards?.amount || 0);
+          setHarvestedCropType(cropType);
+          setShowFloating(true);
+
           setTimeout(() => {
-            setShowLevelUpConfetti(false);
-          }, 3000);
+            setShowFloating(false);
+            setHarvestedExp(null);
+            setHarvestedAmount(null);
+            setHarvestedCropType(null);
+          }, 1500);
         }
-
-        setFloatingPosition({
-          x: rect.left + rect.width / 2,
-          y: rect.top + rect.height / 2,
-        });
-
-        setHarvestedExp(harvestResult.rewards?.xp || 0);
-        setHarvestedAmount(harvestResult.rewards?.amount || 0);
-        setHarvestedCropType(cropType);
-        setShowFloating(true);
-
-        setTimeout(() => {
-          setShowFloating(false);
-          setHarvestedExp(null);
-          setHarvestedAmount(null);
-          setHarvestedCropType(null);
-        }, 1500);
+      } finally {
+        removePendingAction(actionKey);
       }
     } else if (selectedSeed && !cell.plantedAt) {
-      await plantSeed({
-        x: cell.x,
-        y: cell.y,
-        seedType: selectedSeed,
-      });
+      addPendingAction(actionKey);
+      try {
+        await plantSeed({
+          x: cell.x,
+          y: cell.y,
+          seedType: selectedSeed,
+        });
+      } finally {
+        removePendingAction(actionKey);
+      }
     }
   };
 
@@ -348,8 +374,9 @@ export default function GridCell({ cell }: GridCellProps) {
         className={`
           grid-cell
           aspect-square rounded-xl relative
+          ${isCellPending ? "opacity-50" : ""}
           ${
-            isActionInProgress || isPerkIncompatible
+            isPerkIncompatible
               ? "cursor-not-allowed opacity-50"
               : "cursor-pointer"
           }
