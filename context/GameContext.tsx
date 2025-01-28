@@ -238,15 +238,15 @@ export function GameProvider({
         clearDebouncedCallback(params.x, params.y);
         addPendingCell(params.x, params.y);
 
-        return new Promise((resolve) => {
+        return new Promise((resolve, reject) => {
           const debouncedFn = debounce(() => {
             harvestCropMutation(params, {
-              onSuccess: (data) => {
-                resolve(data);
+              onSuccess: (response) => {
+                resolve(response);
               },
               onError: (error) => {
                 console.error("Error harvesting crop:", error);
-                resolve({} as HarvestResponse);
+                reject(error);
               },
               onSettled: () => {
                 resetPendingCells();
