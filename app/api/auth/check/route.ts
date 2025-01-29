@@ -1,3 +1,4 @@
+import { trackEvent } from "@/lib/posthog/server";
 import { getUserQuests, initDailyUserQuests, initWeeklyAndMonthlyUserQuests } from "@/supabase/queries";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -24,5 +25,8 @@ export async function GET(request: NextRequest) {
   if (!weeklyAndMonthlyQuests || weeklyAndMonthlyQuests?.length === 0) {
     await initWeeklyAndMonthlyUserQuests(Number(fid));
   }
+  trackEvent(Number(fid), "sign_in", {
+    fid,
+  });
   return NextResponse.json({ message: "ok" });
 }
