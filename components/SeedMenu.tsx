@@ -26,6 +26,7 @@ export default function SeedMenu() {
     setSelectedSeed,
     selectedPerk,
     setSelectedPerk,
+    setRemainingUses,
     state,
   } = useGame();
 
@@ -226,6 +227,27 @@ export default function SeedMenu() {
     }
   };
 
+  // Update click handler to set remaining uses
+  const handleClick = (item: any) => {
+    const seed = state.seeds.find((s) => s.item.id === item.id);
+    const perk = state.perks?.find((p) => p.item.id === item.id);
+    const isAvailable = item.category === "seed" ? !!seed : !!perk;
+    const quantity =
+      item.category === "seed" ? seed?.quantity || 0 : perk?.quantity || 0;
+
+    if (!isAvailable || quantity <= 0) return;
+
+    if (item.category === "seed") {
+      setSelectedSeed(item.slug as SeedType);
+      setSelectedPerk(null);
+      setRemainingUses(seed?.quantity || 0);
+    } else {
+      setSelectedPerk(perk!);
+      setSelectedSeed(null);
+      setRemainingUses(perk?.quantity || 0);
+    }
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -294,18 +316,10 @@ export default function SeedMenu() {
               return (
                 <div key={item.id} className="py-1 px-1">
                   <motion.button
-                    onClick={() => {
-                      if (isAvailable) {
-                        if (item.category === "seed") {
-                          setSelectedSeed(item.slug as SeedType);
-                          setSelectedPerk(null);
-                        } else {
-                          setSelectedPerk(perk!);
-                          setSelectedSeed(null);
-                        }
-                      }
-                    }}
-                    draggable={isAvailable && item.category === "seed"}
+                    onClick={() => handleClick(item)}
+                    draggable={
+                      isAvailable && item.category === "seed" && quantity > 0
+                    }
                     onDragStart={(e) =>
                       item.category === "seed" &&
                       handleDragStart(
@@ -335,14 +349,18 @@ export default function SeedMenu() {
                           : "border-blue-400"
                       }
                       ${
-                        isAvailable
+                        isAvailable && quantity > 0
                           ? "hover:bg-[#6d4c2c]"
                           : "opacity-50 cursor-not-allowed"
                       }
                       transition-colors
                     `}
-                    whileHover={isAvailable ? { scale: 1.05 } : undefined}
-                    whileTap={isAvailable ? { scale: 0.95 } : undefined}
+                    whileHover={
+                      isAvailable && quantity > 0 ? { scale: 1.05 } : undefined
+                    }
+                    whileTap={
+                      isAvailable && quantity > 0 ? { scale: 0.95 } : undefined
+                    }
                   >
                     <motion.img
                       src={`/images${item.icon}`}

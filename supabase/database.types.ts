@@ -148,19 +148,19 @@ export interface Database {
       };
       user_notification: {
         Row: {
-          id: number;
+          id: string;
           fid: number;
           category: string;
           createdAt: string;
         };
         Insert: {
-          id?: number;
+          id?: string;
           fid: number;
           category: string;
           createdAt?: string;
         };
         Update: {
-          id?: number;
+          id?: string;
           fid?: number;
           category?: string;
           createdAt?: string;
@@ -260,6 +260,26 @@ export interface Database {
           completedAt?: string | null;
           createdAt?: string;
           progress?: number;
+        };
+      };
+      referrals: {
+        Row: {
+          id: number;
+          fid: number;
+          referredFid: number;
+          createdAt: string;
+        };
+        Insert: {
+          id?: number;
+          fid: number;
+          referredFid: number;
+          createdAt?: string;
+        };
+        Update: {
+          id?: number;
+          fid?: number;
+          referredFid?: number;
+          createdAt?: string;
         };
       };
     };

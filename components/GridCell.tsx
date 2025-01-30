@@ -181,17 +181,12 @@ export default function GridCell({ cell }: GridCellProps) {
     selectedPerk,
     setSelectedPerk,
     pendingCells,
+    showLevelUpConfetti,
+    floatingNumbers,
+    remainingUses,
   } = useGame();
-  const [showFloating, setShowFloating] = useState(false);
-  const [floatingPosition, setFloatingPosition] = useState({ x: 0, y: 0 });
-  const [harvestedExp, setHarvestedExp] = useState<number | null>(null);
-  const [harvestedAmount, setHarvestedAmount] = useState<number | null>(null);
-  const [harvestedCropType, setHarvestedCropType] = useState<CropType | null>(
-    null
-  );
   const cellRef = useRef<HTMLDivElement>(null);
   const [isDragOver] = useState(false);
-  const [showLevelUpConfetti, setShowLevelUpConfetti] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
 
   const isReadyToHarvest =
@@ -230,14 +225,6 @@ export default function GridCell({ cell }: GridCellProps) {
 
   const isPending = useMemo(() => {
     const key = `${cell.x},${cell.y}`;
-    console.log(
-      "Cell:",
-      key,
-      "Pending:",
-      pendingCells.has(key),
-      "PendingCells:",
-      [...pendingCells]
-    );
     return pendingCells.has(key);
   }, [cell.x, cell.y, pendingCells]);
 
@@ -257,7 +244,11 @@ export default function GridCell({ cell }: GridCellProps) {
   };
 
   const handleClick = async () => {
-    if (isPerkIncompatible) return;
+    if (
+      isPerkIncompatible ||
+      ((selectedSeed || selectedPerk) && remainingUses <= 0)
+    )
+      return;
 
     if (
       selectedPerk &&
@@ -286,40 +277,10 @@ export default function GridCell({ cell }: GridCellProps) {
 
     if (cell.plantedAt && isReadyToHarvest) {
       if (cellRef.current) {
-        const rect = cellRef.current.getBoundingClientRect();
-        const cropType = cell.cropType as CropType;
-        const harvestResult = await harvestCrop({
+        await harvestCrop({
           x: cell.x,
           y: cell.y,
         });
-
-        if (!harvestResult) {
-          return;
-        }
-
-        if (harvestResult.rewards?.didLevelUp) {
-          setShowLevelUpConfetti(true);
-          setTimeout(() => {
-            setShowLevelUpConfetti(false);
-          }, 3000);
-        }
-
-        setFloatingPosition({
-          x: rect.left + rect.width / 2,
-          y: rect.top + rect.height / 2,
-        });
-
-        setHarvestedExp(harvestResult.rewards?.xp || 0);
-        setHarvestedAmount(harvestResult.rewards?.amount || 0);
-        setHarvestedCropType(cropType);
-        setShowFloating(true);
-
-        setTimeout(() => {
-          setShowFloating(false);
-          setHarvestedExp(null);
-          setHarvestedAmount(null);
-          setHarvestedCropType(null);
-        }, 1500);
       }
     } else if (selectedSeed && !cell.plantedAt) {
       await plantSeed({
@@ -367,7 +328,8 @@ export default function GridCell({ cell }: GridCellProps) {
           aspect-square rounded-xl relative
           ${isPending ? "opacity-30" : ""}
           ${
-            isPerkIncompatible
+            isPerkIncompatible ||
+            ((selectedSeed || selectedPerk) && remainingUses <= 0)
               ? "cursor-not-allowed opacity-50"
               : "cursor-pointer"
           }
@@ -482,23 +444,25 @@ export default function GridCell({ cell }: GridCellProps) {
         )}
 
         {/* Floating Numbers */}
-        {showFloating && (
-          <>
-            <FloatingNumber
-              number={harvestedExp || 0}
-              x={floatingPosition.x}
-              y={floatingPosition.y - 20}
-              type="xp"
-            />
-            <FloatingNumber
-              number={harvestedAmount || 0}
-              x={floatingPosition.x}
-              y={floatingPosition.y + 20}
-              type="crop"
-              cropType={harvestedCropType!}
-            />
-          </>
-        )}
+        {floatingNumbers &&
+          floatingNumbers.gridX === cell.x &&
+          floatingNumbers.gridY === cell.y && (
+            <>
+              <FloatingNumber
+                number={floatingNumbers.exp}
+                x={floatingNumbers.x}
+                y={floatingNumbers.y - 5}
+                type="xp"
+              />
+              <FloatingNumber
+                number={floatingNumbers.amount}
+                x={floatingNumbers.x}
+                y={floatingNumbers.y + 5}
+                type="crop"
+                cropType={floatingNumbers.cropType}
+              />
+            </>
+          )}
       </motion.div>
     </>
   );
