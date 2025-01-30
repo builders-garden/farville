@@ -8,6 +8,13 @@ import {
 } from "@/lib/game-constants";
 import { CropType, SeedType } from "@/types/game";
 import { GridCell, PrismaClient } from "@prisma/client";
+import {
+  sendDelayedNotification,
+  getGrowthTime,
+  getCropNameFromSeeds,
+} from "@/lib/game-notifications";
+import { trackEvent } from "@/lib/posthog/server";
+import { sendQuestsCalculation } from "@/app/api/grid-cells/[x]/[y]/utils";
 
 type TransactionClient = Omit<
   PrismaClient,
@@ -139,6 +146,23 @@ async function handlePlantAction(
     data: { quantity: { decrement: 1 } },
   });
 
+  // After successful planting, add notifications and quest calculation
+  await Promise.all([
+    sendDelayedNotification(
+      fid.toString(),
+      `Harvest time! 🌾`,
+      `Your ${getCropNameFromSeeds(params.seedType)} are ready to harvest!`,
+      "harvest",
+      getGrowthTime(params.seedType)
+    ),
+    sendQuestsCalculation(fid, "plant", item.id),
+    trackEvent(fid, "planted-seed", {
+      seedId: item.id,
+      cropType: cropType,
+      cellId: `${x}/${y}`,
+    }),
+  ]);
+
   return {
     type: "plant",
     success: true,
@@ -254,6 +278,16 @@ async function handleHarvestAction(
     },
   });
 
+  // Add quest calculation and tracking
+  await Promise.all([
+    sendQuestsCalculation(fid, "harvest", crop.id, cropReward),
+    trackEvent(fid, "harvested-crop", {
+      cropId: crop.id,
+      cropType: gridCell.cropType,
+      cellId: `${x}/${y}`,
+    }),
+  ]);
+
   return {
     type: "harvest",
     success: true,
@@ -310,6 +344,15 @@ async function handleFertilizeAction(
     },
     data: { quantity: { decrement: 1 } },
   });
+
+  // Add quest calculation and tracking
+  await Promise.all([
+    sendQuestsCalculation(fid, "fertilize", fertilizer.id),
+    trackEvent(fid, "fertilized-cell", {
+      cellId: `${x}/${y}`,
+      cropType: gridCell.cropType,
+    }),
+  ]);
 
   return {
     type: "fertilize",
@@ -387,6 +430,30 @@ async function handlePerkAction(
   console.log(
     `[handlePerkAction] Successfully applied perk ${itemSlug} to cell (${x},${y})`
   );
+
+  // Add notifications, quest calculation and tracking
+  await Promise.all([
+    sendQuestsCalculation(fid, "apply-perk", perk.id),
+    sendDelayedNotification(
+      fid.toString(),
+      `Harvest time! 🌾`,
+      `Your ${updatedCell.cropType} are ready to harvest!`,
+      "harvest",
+      new Date(updatedCell.harvestAt as Date).getTime() - Date.now()
+    ),
+    sendDelayedNotification(
+      fid.toString(),
+      `Speed boost expired! ⚡️`,
+      `The speed boost on your ${updatedCell.cropType} has worn off.`,
+      "boost-expired",
+      SPEED_BOOST[itemSlug as BoostType].duration / 1000
+    ),
+    trackEvent(fid, "applied-perk", {
+      cellId: `${x}/${y}`,
+      cropType: updatedCell.cropType,
+      itemSlug,
+    }),
+  ]);
 
   return {
     type: "perk",
