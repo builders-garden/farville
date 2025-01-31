@@ -179,6 +179,7 @@ export default function GridCell({ cell }: GridCellProps) {
     applyPerk,
     selectedSeed,
     selectedPerk,
+    setSelectedSeed,
     setSelectedPerk,
     pendingCells,
     showLevelUpConfetti,
@@ -267,7 +268,7 @@ export default function GridCell({ cell }: GridCellProps) {
           itemSlug: selectedPerk.item.slug,
           itemId: selectedPerk.itemId,
         });
-        setRemainingUses((prev) => Math.max(0, prev - 1));
+        setRemainingUses(remainingUses - 1);
         if (remainingUses <= 1) {
           setSelectedPerk(null);
         }
@@ -292,7 +293,7 @@ export default function GridCell({ cell }: GridCellProps) {
           y: cell.y,
           seedType: selectedSeed,
         });
-        setRemainingUses((prev) => Math.max(0, prev - 1));
+        setRemainingUses(remainingUses - 1);
         if (remainingUses <= 1) {
           setSelectedSeed(null);
         }
