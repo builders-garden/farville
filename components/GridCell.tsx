@@ -184,6 +184,7 @@ export default function GridCell({ cell }: GridCellProps) {
     showLevelUpConfetti,
     floatingNumbers,
     remainingUses,
+    setRemainingUses,
   } = useGame();
   const cellRef = useRef<HTMLDivElement>(null);
   const [isDragOver] = useState(false);
@@ -266,10 +267,8 @@ export default function GridCell({ cell }: GridCellProps) {
           itemSlug: selectedPerk.item.slug,
           itemId: selectedPerk.itemId,
         });
-        const perk = state.perks.find(
-          (item) => item.item.slug === selectedPerk.item.slug
-        );
-        if (!perk || perk.quantity === 0) {
+        setRemainingUses((prev) => Math.max(0, prev - 1));
+        if (remainingUses <= 1) {
           setSelectedPerk(null);
         }
         return;
@@ -293,6 +292,10 @@ export default function GridCell({ cell }: GridCellProps) {
           y: cell.y,
           seedType: selectedSeed,
         });
+        setRemainingUses((prev) => Math.max(0, prev - 1));
+        if (remainingUses <= 1) {
+          setSelectedSeed(null);
+        }
       }
     } finally {
       setIsLocalLoading(false);
@@ -321,6 +324,38 @@ export default function GridCell({ cell }: GridCellProps) {
     }
   };
 
+  const cellClassName = `
+    grid-cell
+    aspect-square rounded-xl relative
+    ${isPending || isLocalLoading ? "opacity-30 cursor-not-allowed" : ""}
+    ${
+      isPerkIncompatible ||
+      ((selectedSeed || selectedPerk) && remainingUses <= 0)
+        ? "cursor-not-allowed opacity-50"
+        : "cursor-pointer"
+    }
+    ${
+      selectedPerk && (isValidFertilizerTarget || isValidSpeedBoostTarget)
+        ? "border-4 border-yellow-400 shadow-lg"
+        : ""
+    }
+    ${
+      (selectedPerk && !isValidFertilizerTarget && !isValidSpeedBoostTarget) ||
+      isPerkIncompatible
+        ? "opacity-30 bg-gray-800"
+        : ""
+    }
+    ${
+      selectedSeed && !cell.plantedAt
+        ? "border-4 border-green-400 shadow-lg"
+        : ""
+    }
+    ${selectedSeed && cell.plantedAt ? "opacity-50" : ""}
+    ${!cell.plantedAt ? "drop-target" : ""}
+    ${isDragOver ? "dragover" : ""}
+    transition-all duration-200
+  `;
+
   return (
     <>
       {showLevelUpConfetti && <Confetti />}
@@ -331,39 +366,7 @@ export default function GridCell({ cell }: GridCellProps) {
         onDrop={handleDrop}
         data-x={cell.x}
         data-y={cell.y}
-        className={`
-          grid-cell
-          aspect-square rounded-xl relative
-          ${isPending || isLocalLoading ? "opacity-30 cursor-not-allowed" : ""}
-          ${
-            isPerkIncompatible ||
-            ((selectedSeed || selectedPerk) && remainingUses <= 0)
-              ? "cursor-not-allowed opacity-50"
-              : "cursor-pointer"
-          }
-          ${
-            selectedPerk && (isValidFertilizerTarget || isValidSpeedBoostTarget)
-              ? "border-4 border-yellow-400 shadow-lg"
-              : ""
-          }
-          ${
-            (selectedPerk &&
-              !isValidFertilizerTarget &&
-              !isValidSpeedBoostTarget) ||
-            isPerkIncompatible
-              ? "opacity-30 bg-gray-800"
-              : ""
-          }
-          ${
-            selectedSeed && !cell.plantedAt
-              ? "border-4 border-green-400 shadow-lg"
-              : ""
-          }
-          ${selectedSeed && cell.plantedAt ? "opacity-50" : ""}
-          ${!cell.plantedAt ? "drop-target" : ""}
-          ${isDragOver ? "dragover" : ""}
-          transition-all duration-200
-        `}
+        className={cellClassName}
         initial={false}
         animate={{
           scale: isReadyToHarvest ? [1, 1.02, 1] : 1,
