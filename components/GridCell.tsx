@@ -293,7 +293,7 @@ export default function GridCell({ cell }: GridCellProps) {
           y: cell.y,
           seedType: selectedSeed,
         });
-        setRemainingUses(remainingUses - 1);
+        setRemainingUses(Math.max(0, remainingUses - 1));
         if (remainingUses <= 1) {
           setSelectedSeed(null);
         }
