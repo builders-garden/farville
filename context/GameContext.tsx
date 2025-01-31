@@ -6,7 +6,6 @@ import {
   useEffect,
   useState,
   useCallback,
-  useRef,
 } from "react";
 import type { CropType, SeedType } from "../types/game";
 import { useAudio } from "./AudioContext";
@@ -15,11 +14,7 @@ import { useBuyItem } from "@/hooks/game-actions/use-buy-item";
 import { useExpandGrid } from "@/hooks/game-actions/use-expand-grid";
 import { useSellItem } from "@/hooks/game-actions/use-sell-item";
 import { UserItem } from "@/hooks/use-user-items";
-import {
-  ActionResult,
-  HarvestActionResult,
-} from "@/app/api/batch-actions/route";
-import { useApiMutation } from "@/hooks/use-api-mutation";
+import { useBatchActions } from "@/hooks/use-batch-actions";
 
 // Update the OverlayType to be more flexible with parameters
 export type OverlayConfig =
@@ -32,20 +27,6 @@ export type OverlayConfig =
 interface PendingCell {
   key: string;
   timestamp: number;
-}
-
-// Add these types at the top
-type ActionType = "plant" | "harvest" | "fertilize" | "perk";
-
-interface BatchedAction {
-  type: ActionType;
-  x: number;
-  y: number;
-  params?: {
-    seedType?: SeedType;
-    itemSlug?: string;
-    itemId?: number;
-  }; // Additional params like seedType, itemId etc
 }
 
 // Update the context type
@@ -133,8 +114,6 @@ export function GameProvider({
   const [pendingCells, setPendingCells] = useState<Map<string, PendingCell>>(
     new Map()
   );
-  const [pendingActions, setPendingActions] = useState<BatchedAction[]>([]);
-  const batchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [showLevelUpConfetti, setShowLevelUpConfetti] = useState(false);
   const [floatingNumbers, setFloatingNumbers] = useState<{
     x: number; // screen x
@@ -147,16 +126,6 @@ export function GameProvider({
   } | null>(null);
   const { playSound } = useAudio();
   const [remainingUses, setRemainingUses] = useState<number>(0);
-  const isProcessingRef = useRef(false);
-
-  useEffect(() => {
-    if (!loading) {
-      const tutorialComplete =
-        localStorage.getItem("tutorialComplete") === "true" ||
-        (state?.user.xp && state?.user.xp > 0);
-      setTutorialComplete(!!tutorialComplete);
-    }
-  }, [state?.user.xp, loading]);
 
   const addPendingCell = useCallback((x: number, y: number) => {
     const key = `${x},${y}`;
@@ -176,243 +145,57 @@ export function GameProvider({
     });
   }, []);
 
-  const { mutate: processBatch } = useApiMutation<ActionResult[]>({
-    url: "/api/batch-actions",
-    method: "POST",
-    body: (actions) => {
-      console.log("[processBatch] Sending actions:", actions);
-      return { actions };
-    },
-    onSuccess: (results) => {
-      console.log("[processBatch] Received results:", results);
-
-      // Track if we need to refetch user/items
-      let shouldRefetchUser = false;
-      let shouldRefetchItems = false;
-
-      results.forEach((result: ActionResult) => {
-        console.log(`[processBatch] Processing result:`, result);
-
-        removePendingCell(result.cell?.x as number, result.cell?.y as number);
-
-        // Play appropriate sound based on action type
-        switch (result.type) {
-          case "plant":
-            playSound("plant");
-            shouldRefetchItems = true;
-            break;
-          case "harvest":
-            playSound("harvest");
-            shouldRefetchUser = true;
-            shouldRefetchItems = true;
-            break;
-          case "fertilize":
-            playSound("fertilize");
-            shouldRefetchItems = true;
-            break;
-          case "perk":
-            playSound("fertilize"); // Using fertilize sound for perks
-            shouldRefetchItems = true;
-            break;
-        }
-
-        if (
-          result.type === "harvest" &&
-          (result as HarvestActionResult).rewards
-        ) {
-          const harvestResult = result as HarvestActionResult;
-          console.log(
-            "[processBatch] Processing harvest result:",
-            harvestResult
-          );
-
-          if (harvestResult.rewards?.didLevelUp) {
-            console.log("[processBatch] Player leveled up!");
-            setShowLevelUpConfetti(true);
-            playSound("levelUp");
-            setTimeout(() => {
-              setShowLevelUpConfetti(false);
-            }, 1500);
-          }
-
-          const cellElement = document.querySelector(
-            `[data-x="${result.cell?.x}"][data-y="${result.cell?.y}"]`
-          );
-          if (cellElement && harvestResult.rewards) {
-            console.log("[processBatch] Setting floating numbers for cell:", {
-              x: result.cell?.x,
-              y: result.cell?.y,
-            });
-            const rect = cellElement.getBoundingClientRect();
-            setFloatingNumbers({
-              x: rect.left + rect.width / 2,
-              y: rect.top + rect.height / 2,
-              gridX: result.cell?.x as number,
-              gridY: result.cell?.y as number,
-              exp: harvestResult.rewards.xp,
-              amount: harvestResult.rewards.amount,
-              cropType: harvestResult.rewards.cropType as CropType,
-            });
-
-            console.log(
-              "[processBatch] Floating numbers set:",
-              floatingNumbers
-            );
-
-            setTimeout(() => {
-              setFloatingNumbers(null);
-            }, 1500);
-          }
-        }
-      });
-
-      console.log(
-        "[processBatch] Finished processing all results, refetching data"
-      );
-
-      // Perform all necessary refetches
-      if (shouldRefetchUser) {
-        refetch.user();
-      }
-      if (shouldRefetchItems) {
-        refetch.userItems();
-      }
+  const { queueAction, isProcessing } = useBatchActions({
+    onProcessComplete: () => {
       refetch.grid();
-
-      // Reset the processing flag at the end
-      isProcessingRef.current = false;
-      setIsActionInProgress(false);
+      refetch.user();
+      refetch.userItems();
     },
+    onProcessStart: (x, y) => {
+      addPendingCell(x, y);
+    },
+    onCellComplete: (x, y) => {
+      removePendingCell(x, y);
+    },
+    onLevelUp: () => {
+      setShowLevelUpConfetti(true);
+      playSound("levelUp");
+      setTimeout(() => setShowLevelUpConfetti(false), 1500);
+    },
+    onHarvestReward: ({ x, y, exp, amount, cropType }) => {
+      const cellElement = document.querySelector(
+        `[data-x="${x}"][data-y="${y}"]`
+      );
+      if (cellElement) {
+        const rect = cellElement.getBoundingClientRect();
+        setFloatingNumbers({
+          x: rect.left + rect.width / 2,
+          y: rect.top + rect.height / 2,
+          gridX: x,
+          gridY: y,
+          exp,
+          amount,
+          cropType,
+        });
+        setTimeout(() => setFloatingNumbers(null), 1500);
+      }
+    },
+    playSound,
   });
 
-  const processBatchedActions = useCallback(() => {
-    setPendingActions((currentActions) => {
-      if (isProcessingRef.current || currentActions.length === 0) {
-        console.log(
-          "[processBatchedActions] Already processing or no actions, skipping"
-        );
-        return currentActions;
-      }
-
-      console.log("[processBatchedActions] Processing batch");
-      setIsActionInProgress(true);
-      isProcessingRef.current = true;
-
-      // Store actions to process and clear the queue immediately
-      const actionsToProcess = [...currentActions];
-
-      try {
-        console.log(
-          "[processBatchedActions] Calling processBatch with actions:",
-          actionsToProcess
-        );
-        processBatch(actionsToProcess);
-      } catch (error) {
-        console.error(
-          "[processBatchedActions] Error processing batched actions:",
-          error
-        );
-        isProcessingRef.current = false;
-        setIsActionInProgress(false);
-      }
-
-      return []; // Clear the queue before processing
-    });
-    console.log("[processBatchedActions] Queue cleared", pendingActions);
-  }, [processBatch]);
-
-  const queueAction = useCallback(
-    (action: BatchedAction) => {
-      console.log(
-        `[queueAction] Adding action: ${action.type} at (${action.x},${action.y})`
-      );
-      addPendingCell(action.x, action.y);
-
-      setPendingActions((prev) => {
-        const newActions = [...prev, action];
-        console.log("[queueAction] New pending actions:", newActions);
-
-        // Clear any existing timeout
-        if (batchTimeoutRef.current) {
-          clearTimeout(batchTimeoutRef.current);
-        }
-
-        // Set new timeout
-        batchTimeoutRef.current = setTimeout(() => {
-          console.log("[queueAction] Processing batch after timeout");
-          batchTimeoutRef.current = null;
-          processBatchedActions();
-        }, 1000);
-
-        return newActions;
-      });
-    },
-    [addPendingCell, processBatchedActions]
-  );
-
-  // Update the action handlers to use queueAction
-  const plantSeed = useCallback(
-    (params: { x: number; y: number; seedType: SeedType }) => {
-      queueAction({
-        type: "plant",
-        x: params.x,
-        y: params.y,
-        params: { seedType: params.seedType },
-      });
-      setRemainingUses((prev) => Math.max(0, prev - 1));
-      if (remainingUses <= 1) {
-        setSelectedSeed(null);
-      }
-    },
-    [queueAction, remainingUses]
-  );
-
-  const harvestCrop = useCallback(
-    (params: { x: number; y: number }) => {
-      queueAction({
-        type: "harvest",
-        x: params.x,
-        y: params.y,
-      });
-    },
-    [queueAction]
-  );
-
-  const fertilize = useCallback(
-    (params: { x: number; y: number }) => {
-      queueAction({
-        type: "fertilize",
-        x: params.x,
-        y: params.y,
-      });
-    },
-    [queueAction]
-  );
-
-  const applyPerk = useCallback(
-    (params: { x: number; y: number; itemSlug: string; itemId: number }) => {
-      queueAction({
-        type: "perk",
-        x: params.x,
-        y: params.y,
-        params: { itemSlug: params.itemSlug, itemId: params.itemId },
-      });
-      setRemainingUses((prev) => Math.max(0, prev - 1));
-      if (remainingUses <= 1) {
-        setSelectedPerk(null);
-      }
-    },
-    [queueAction, remainingUses]
-  );
-
-  // Cleanup on unmount
   useEffect(() => {
-    return () => {
-      if (batchTimeoutRef.current) {
-        clearTimeout(batchTimeoutRef.current);
-      }
-    };
-  }, []);
+    if (!loading) {
+      const tutorialComplete =
+        localStorage.getItem("tutorialComplete") === "true" ||
+        (state?.user.xp && state?.user.xp > 0);
+      setTutorialComplete(!!tutorialComplete);
+    }
+  }, [state?.user.xp, loading]);
+
+  // Update isActionInProgress to use isProcessing from useBatchActions
+  useEffect(() => {
+    setIsActionInProgress(isProcessing);
+  }, [isProcessing]);
 
   const { mutate: buyItem } = useBuyItem({
     refetchUser: refetch.user,
@@ -449,10 +232,32 @@ export function GameProvider({
         setSelectedSeed,
         selectedPerk: selectedPerk,
         setSelectedPerk: setSelectedPerk,
-        plantSeed,
-        harvestCrop,
-        fertilize,
-        applyPerk,
+        plantSeed: (params) =>
+          queueAction({
+            type: "plant",
+            x: params.x,
+            y: params.y,
+            params: { seedType: params.seedType },
+          }),
+        harvestCrop: (params) =>
+          queueAction({
+            type: "harvest",
+            x: params.x,
+            y: params.y,
+          }),
+        fertilize: (params) =>
+          queueAction({
+            type: "fertilize",
+            x: params.x,
+            y: params.y,
+          }),
+        applyPerk: (params) =>
+          queueAction({
+            type: "perk",
+            x: params.x,
+            y: params.y,
+            params: { itemSlug: params.itemSlug, itemId: params.itemId },
+          }),
         buyItem,
         sellItem,
         expandGrid,
