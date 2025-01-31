@@ -67,6 +67,7 @@ export async function POST(req: Request) {
   // Use a transaction to ensure all actions are atomic
   const results = await prisma
     .$transaction<ActionResult[]>(async (tx) => {
+      console.log("[POST] Starting transaction");
       const actionResults = [];
 
       for (const action of actions) {
@@ -105,6 +106,7 @@ async function handlePlantAction(
   y: number,
   params: { seedType: SeedType }
 ): Promise<PlantActionResult> {
+  console.log("[handlePlantAction] Starting plant action");
   // Get the item (seed)
   const item = await tx.item.findFirst({
     where: { slug: params.seedType },
