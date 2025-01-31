@@ -96,6 +96,9 @@ export async function POST(req: Request) {
       throw error;
     });
 
+  // TODO: cycle over {actions} and (1) send quests calculation (2) track event
+  // move the logic away from each single action
+
   return NextResponse.json(results);
 }
 
