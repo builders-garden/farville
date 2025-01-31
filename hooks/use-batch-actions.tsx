@@ -33,6 +33,7 @@ interface UseBatchActionsProps {
     cropType: CropType;
   }) => void;
   playSound?: (sound: string) => void;
+  onAddAction?: (action: BatchedAction) => void;
 }
 
 export function useBatchActions({
@@ -42,6 +43,7 @@ export function useBatchActions({
   onLevelUp,
   onHarvestReward,
   playSound,
+  onAddAction,
 }: UseBatchActionsProps) {
   const [isProcessing, setIsProcessing] = useState(false);
 
@@ -130,8 +132,9 @@ export function useBatchActions({
     (action: BatchedAction) => {
       console.log("📥 Queueing new action:", action);
       actionQueue.add(action);
+      onAddAction?.(action);
     },
-    [actionQueue]
+    [actionQueue, onAddAction]
   );
 
   // Cleanup on unmount

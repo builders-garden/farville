@@ -151,8 +151,8 @@ export function GameProvider({
       refetch.user();
       refetch.userItems();
     },
-    onProcessStart: (x, y) => {
-      addPendingCell(x, y);
+    onAddAction: (action) => {
+      addPendingCell(action.x, action.y);
     },
     onCellComplete: (x, y) => {
       removePendingCell(x, y);
