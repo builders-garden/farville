@@ -147,6 +147,7 @@ export function GameProvider({
   } | null>(null);
   const { playSound } = useAudio();
   const [remainingUses, setRemainingUses] = useState<number>(0);
+  const isProcessingRef = useRef(false);
 
   useEffect(() => {
     if (!loading) {
@@ -189,12 +190,8 @@ export function GameProvider({
       let shouldRefetchUser = false;
       let shouldRefetchItems = false;
 
-      results.forEach((result: ActionResult, index: number) => {
-        const action = pendingActions[index];
-        console.log(`[processBatch] Processing result ${index}:`, {
-          result,
-          action,
-        });
+      results.forEach((result: ActionResult) => {
+        console.log(`[processBatch] Processing result:`, result);
 
         removePendingCell(result.cell?.x as number, result.cell?.y as number);
 
@@ -281,27 +278,29 @@ export function GameProvider({
         refetch.userItems();
       }
       refetch.grid();
+
+      // Reset the processing flag at the end
+      isProcessingRef.current = false;
+      setIsActionInProgress(false);
     },
   });
 
   const processBatchedActions = useCallback(() => {
-    // Get actions and clear queue atomically
-    let actionsToProcess: BatchedAction[] = [];
-
-    setPendingActions((currentPendingActions) => {
-      if (currentPendingActions.length === 0) {
-        console.log("[processBatchedActions] No pending actions, returning");
-        return currentPendingActions;
+    setPendingActions((currentActions) => {
+      if (isProcessingRef.current || currentActions.length === 0) {
+        console.log(
+          "[processBatchedActions] Already processing or no actions, skipping"
+        );
+        return currentActions;
       }
 
       console.log("[processBatchedActions] Processing batch");
-      actionsToProcess = [...currentPendingActions];
-      return []; // Clear the queue immediately
-    });
-
-    // Only process if we actually got actions
-    if (actionsToProcess.length > 0) {
       setIsActionInProgress(true);
+      isProcessingRef.current = true;
+
+      // Store actions to process and clear the queue immediately
+      const actionsToProcess = [...currentActions];
+
       try {
         console.log(
           "[processBatchedActions] Calling processBatch with actions:",
@@ -313,10 +312,13 @@ export function GameProvider({
           "[processBatchedActions] Error processing batched actions:",
           error
         );
-      } finally {
+        isProcessingRef.current = false;
         setIsActionInProgress(false);
       }
-    }
+
+      return []; // Clear the queue before processing
+    });
+    console.log("[processBatchedActions] Queue cleared", pendingActions);
   }, [processBatch]);
 
   const queueAction = useCallback(
@@ -330,17 +332,15 @@ export function GameProvider({
         const newActions = [...prev, action];
         console.log("[queueAction] New pending actions:", newActions);
 
-        // If we already have a timeout set, just add to queue
+        // Clear any existing timeout
         if (batchTimeoutRef.current) {
-          console.log("[queueAction] Timeout already exists, adding to queue");
-          return newActions;
+          clearTimeout(batchTimeoutRef.current);
         }
 
-        // If this is the first action, set the timeout
-        console.log("[queueAction] Setting new timeout");
+        // Set new timeout
         batchTimeoutRef.current = setTimeout(() => {
           console.log("[queueAction] Processing batch after timeout");
-          batchTimeoutRef.current = null; // Clear the ref
+          batchTimeoutRef.current = null;
           processBatchedActions();
         }, 1000);
 
