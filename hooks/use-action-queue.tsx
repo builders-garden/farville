@@ -9,13 +9,23 @@ export class ActionQueue {
 
   constructor(
     private processCallback: (actions: BatchedAction[]) => void,
-    private batchWindowDelay: number = 2000,
+    private batchWindowDelay: number = 1000,
     maxBatchSize: number = 5
   ) {
     this.maxBatchSize = maxBatchSize;
   }
 
   add(action: BatchedAction) {
+    // Check if there's already an action with same x,y coordinates
+    const hasDuplicate = this.queue.some(
+      existingAction => existingAction.x === action.x && existingAction.y === action.y
+    );
+
+    if (hasDuplicate) {
+      console.log("⚠️ Duplicate action detected, skipping add");
+      return;
+    }
+
     console.log(
       "➕ Adding action to queue. Current length:",
       this.queue.length

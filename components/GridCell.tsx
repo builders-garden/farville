@@ -188,6 +188,7 @@ export default function GridCell({ cell }: GridCellProps) {
   const cellRef = useRef<HTMLDivElement>(null);
   const [isDragOver] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
+  const [isLocalLoading, setIsLocalLoading] = useState(false);
 
   const isReadyToHarvest =
     cell.isReadyToHarvest ||
@@ -244,50 +245,57 @@ export default function GridCell({ cell }: GridCellProps) {
   };
 
   const handleClick = async () => {
+    if (isPending || isLocalLoading) return;
+
     if (
       isPerkIncompatible ||
       ((selectedSeed || selectedPerk) && remainingUses <= 0)
     )
       return;
 
-    if (
-      selectedPerk &&
-      ((selectedPerk.item.slug === "fertilizer" && isValidFertilizerTarget) ||
-        (selectedPerk.item.slug !== "fertilizer" && isValidSpeedBoostTarget))
-    ) {
-      await applyPerk({
-        x: cell.x,
-        y: cell.y,
-        itemSlug: selectedPerk.item.slug,
-        itemId: selectedPerk.itemId,
-      });
-      const perk = state.perks.find(
-        (item) => item.item.slug === selectedPerk.item.slug
-      );
-      if (!perk || perk.quantity === 0) {
-        setSelectedPerk(null);
-      }
-      return;
-    }
-
-    if (cell.plantedAt && !isReadyToHarvest) {
-      setShowPopup(true);
-      return;
-    }
-
-    if (cell.plantedAt && isReadyToHarvest) {
-      if (cellRef.current) {
-        await harvestCrop({
+    setIsLocalLoading(true);
+    try {
+      if (
+        selectedPerk &&
+        ((selectedPerk.item.slug === "fertilizer" && isValidFertilizerTarget) ||
+          (selectedPerk.item.slug !== "fertilizer" && isValidSpeedBoostTarget))
+      ) {
+        await applyPerk({
           x: cell.x,
           y: cell.y,
+          itemSlug: selectedPerk.item.slug,
+          itemId: selectedPerk.itemId,
+        });
+        const perk = state.perks.find(
+          (item) => item.item.slug === selectedPerk.item.slug
+        );
+        if (!perk || perk.quantity === 0) {
+          setSelectedPerk(null);
+        }
+        return;
+      }
+
+      if (cell.plantedAt && !isReadyToHarvest) {
+        setShowPopup(true);
+        return;
+      }
+
+      if (cell.plantedAt && isReadyToHarvest) {
+        if (cellRef.current) {
+          await harvestCrop({
+            x: cell.x,
+            y: cell.y,
+          });
+        }
+      } else if (selectedSeed && !cell.plantedAt) {
+        await plantSeed({
+          x: cell.x,
+          y: cell.y,
+          seedType: selectedSeed,
         });
       }
-    } else if (selectedSeed && !cell.plantedAt) {
-      await plantSeed({
-        x: cell.x,
-        y: cell.y,
-        seedType: selectedSeed,
-      });
+    } finally {
+      setIsLocalLoading(false);
     }
   };
 
@@ -326,7 +334,7 @@ export default function GridCell({ cell }: GridCellProps) {
         className={`
           grid-cell
           aspect-square rounded-xl relative
-          ${isPending ? "opacity-30" : ""}
+          ${isPending || isLocalLoading ? "opacity-30 cursor-not-allowed" : ""}
           ${
             isPerkIncompatible ||
             ((selectedSeed || selectedPerk) && remainingUses <= 0)
@@ -366,7 +374,7 @@ export default function GridCell({ cell }: GridCellProps) {
           repeatType: "reverse",
         }}
       >
-        {isPending && (
+        {(isPending || isLocalLoading) && (
           <div className="absolute inset-0 flex items-center justify-center z-50 bg-black/10">
             <div className="w-8 h-8 border-4 border-green-500 border-t-transparent rounded-full animate-spin"></div>
           </div>
