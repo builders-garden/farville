@@ -5,7 +5,7 @@ import { useGame } from "../context/GameContext";
 import { CropType, SeedType } from "../types/game";
 import CropSprite from "./CropSprite";
 import FloatingNumber from "./animations/FloatingNumber";
-import { useState, useRef, useEffect, useMemo } from "react";
+import { useState, useRef, useEffect, useMemo, Fragment } from "react";
 import { DbGridCell } from "@/supabase/types";
 import { CROP_DATA, SPEED_BOOST } from "@/lib/game-constants";
 import Confetti from "./animations/Confetti";
@@ -456,25 +456,25 @@ export default function GridCell({ cell }: GridCellProps) {
         )}
 
         {/* Floating Numbers */}
-        {floatingNumbers &&
-          floatingNumbers.gridX === cell.x &&
-          floatingNumbers.gridY === cell.y && (
-            <>
+        {floatingNumbers
+          .filter((num) => num.gridX === cell.x && num.gridY === cell.y)
+          .map((numbers) => (
+            <Fragment key={numbers.id}>
               <FloatingNumber
-                number={floatingNumbers.exp}
-                x={floatingNumbers.x}
-                y={floatingNumbers.y - 5}
+                number={numbers.exp}
+                x={numbers.x}
+                y={numbers.y - 5}
                 type="xp"
               />
               <FloatingNumber
-                number={floatingNumbers.amount}
-                x={floatingNumbers.x}
-                y={floatingNumbers.y + 5}
+                number={numbers.amount}
+                x={numbers.x}
+                y={numbers.y + 5}
                 type="crop"
-                cropType={floatingNumbers.cropType}
+                cropType={numbers.cropType}
               />
-            </>
-          )}
+            </Fragment>
+          ))}
       </motion.div>
     </>
   );

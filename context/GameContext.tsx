@@ -29,6 +29,18 @@ interface PendingCell {
   timestamp: number;
 }
 
+// Update the floatingNumbers type to be an array
+interface FloatingNumberData {
+  x: number; // screen x
+  y: number; // screen y
+  gridX: number; // grid x
+  gridY: number; // grid y
+  exp: number;
+  amount: number;
+  cropType: CropType;
+  id: string; // Add unique ID for managing multiple numbers
+}
+
 // Update the context type
 interface GameContextType {
   state: GameState;
@@ -75,15 +87,7 @@ interface GameContextType {
   addPendingCell: (x: number, y: number) => void;
   removePendingCell: (x: number, y: number) => void;
   showLevelUpConfetti: boolean;
-  floatingNumbers: {
-    x: number; // screen x
-    y: number; // screen y
-    gridX: number; // grid x
-    gridY: number; // grid y
-    exp: number;
-    amount: number;
-    cropType: CropType;
-  } | null;
+  floatingNumbers: FloatingNumberData[];
   remainingUses: number;
   setRemainingUses: (uses: number) => void;
 }
@@ -115,15 +119,9 @@ export function GameProvider({
     new Map()
   );
   const [showLevelUpConfetti, setShowLevelUpConfetti] = useState(false);
-  const [floatingNumbers, setFloatingNumbers] = useState<{
-    x: number; // screen x
-    y: number; // screen y
-    gridX: number; // grid x
-    gridY: number; // grid y
-    exp: number;
-    amount: number;
-    cropType: CropType;
-  } | null>(null);
+  const [floatingNumbers, setFloatingNumbers] = useState<FloatingNumberData[]>(
+    []
+  );
   const { playSound } = useAudio();
   const [remainingUses, setRemainingUses] = useState<number>(0);
 
@@ -168,7 +166,7 @@ export function GameProvider({
       );
       if (cellElement) {
         const rect = cellElement.getBoundingClientRect();
-        setFloatingNumbers({
+        const newFloatingNumber = {
           x: rect.left + rect.width / 2,
           y: rect.top + rect.height / 2,
           gridX: x,
@@ -176,8 +174,17 @@ export function GameProvider({
           exp,
           amount,
           cropType,
-        });
-        setTimeout(() => setFloatingNumbers(null), 1500);
+          id: `${Date.now()}-${x}-${y}`, // Add unique ID
+        };
+
+        setFloatingNumbers((prev) => [...prev, newFloatingNumber]);
+
+        // Remove this specific floating number after animation
+        setTimeout(() => {
+          setFloatingNumbers((prev) =>
+            prev.filter((num) => num.id !== newFloatingNumber.id)
+          );
+        }, 1500);
       }
     },
     playSound,
