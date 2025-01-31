@@ -122,7 +122,7 @@ export function useBatchActions({
       setIsProcessing(true);
       processBatch(actions);
     },
-    2000, // 2 second batch window
+    1000, // 2 second batch window
     5 // max 5 actions per batch
   );
 
