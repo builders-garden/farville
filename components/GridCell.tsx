@@ -74,6 +74,7 @@ function SeedDetailPopup({
   );
   const canBoost =
     boostData &&
+    !cell.isReadyToHarvest &&
     (!cell.speedBoostedAt ||
       new Date(cell.speedBoostedAt).getTime() + boostData?.duration <
         Date.now());
