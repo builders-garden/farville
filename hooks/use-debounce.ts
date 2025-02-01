@@ -1,10 +1,11 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef } from "react";
+import { UseMutateFunction } from "@tanstack/react-query";
 
-export function useDebounce<T extends (...args: any[]) => any>(
-  callback: T,
+export function useDebounce<TData, TVariables>(
+  callback: UseMutateFunction<TData, Error, TVariables, unknown>,
   delay: number
-): T {
-  const timeoutRef = useRef<NodeJS.Timeout>();
+): UseMutateFunction<TData, Error, TVariables, unknown> {
+  const timeoutRef = useRef<NodeJS.Timeout>(null);
 
   useEffect(() => {
     return () => {
@@ -14,15 +15,15 @@ export function useDebounce<T extends (...args: any[]) => any>(
     };
   }, []);
 
-  return ((...args: Parameters<T>) => {
+  return ((...args: Parameters<typeof callback>) => {
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
     }
 
-    return new Promise<ReturnType<T>>((resolve) => {
+    return new Promise<ReturnType<typeof callback>>((resolve) => {
       timeoutRef.current = setTimeout(() => {
         resolve(callback(...args));
       }, delay);
     });
-  }) as T;
-} 
+  }) as typeof callback;
+}
