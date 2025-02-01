@@ -392,7 +392,7 @@ export default function GridCell({ cell }: GridCellProps) {
         }}
       >
         {isLoading && (
-          <div className="absolute inset-0 bg-black/50 rounded-xl flex items-center justify-center z-50">
+          <div className="absolute inset-0 bg-black/50 rounded-lg flex items-center justify-center z-50">
             <div className="w-8 h-8 border-4 border-white/20 border-t-white rounded-full animate-spin"></div>
           </div>
         )}
