@@ -27,16 +27,18 @@ type BoostType = "nitrogen" | "potassium" | "phosphorus";
 // Add these types at the top of the file
 interface BaseActionResult {
   success: boolean;
-  cell?: GridCell;
+  cell: GridCell;
+  itemId: number;
 }
 
 export interface PlantActionResult extends BaseActionResult {
   type: "plant";
+  seedType: SeedType;
 }
 
 export interface HarvestActionResult extends BaseActionResult {
   type: "harvest";
-  rewards?: {
+  rewards: {
     xp: number;
     amount: number;
     didLevelUp: boolean;
@@ -51,6 +53,7 @@ export interface FertilizeActionResult extends BaseActionResult {
 
 export interface PerkActionResult extends BaseActionResult {
   type: "perk";
+  itemSlug: string;
 }
 
 export type ActionResult =
@@ -68,7 +71,7 @@ export async function POST(req: Request) {
   const results = await prisma
     .$transaction<ActionResult[]>(async (tx) => {
       console.log("[POST] Starting transaction");
-      const actionResults = [];
+      const actionResults: ActionResult[] = [];
 
       for (const action of actions) {
         const { type, x, y, params } = action;
@@ -96,8 +99,68 @@ export async function POST(req: Request) {
       throw error;
     });
 
-  // TODO: cycle over {actions} and (1) send quests calculation (2) track event
-  // move the logic away from each single action
+  for (const result of results) {
+    if (!result.success) continue;
+    switch (result.type) {
+      case "plant":
+        await sendDelayedNotification(
+          fid.toString(),
+          `Harvest time! 🌾`,
+          `Your ${getCropNameFromSeeds(result.seedType)} are ready to harvest!`,
+          "harvest",
+          getGrowthTime(result.seedType)
+        )
+        await sendQuestsCalculation(fid, result.type, result.itemId);
+        trackEvent(fid, "planted-seed", {
+          seedId: result.itemId,
+          cropType: result.cell.cropType,
+          cellId: `${result.cell.x}/${result.cell.y}`,
+        })
+        break;
+      case "harvest":
+        await sendQuestsCalculation(fid, result.type, result.itemId, result.rewards.amount);
+        trackEvent(fid, "harvested-crop", {
+          cropId: result.itemId,
+          cropType: result.rewards.cropType,
+          cellId: `${result.cell.x}/${result.cell.y}`,
+        })
+        break;
+      case "fertilize":
+        await sendQuestsCalculation(fid, result.type, result.itemId);
+        trackEvent(fid, "fertilized-cell", {
+          cellId: `${result.cell.x}/${result.cell.y}`,
+          cropType: result.cell.cropType,
+        })
+        break;
+      case "perk":
+        await sendQuestsCalculation(fid, "apply-perk", result.itemId);
+        await sendDelayedNotification(
+          fid.toString(),
+          `Harvest time! 🌾`,
+          `Your ${result.cell.cropType} are ready to harvest!`,
+          "harvest",
+          new Date(result.cell.harvestAt as Date).getTime() - Date.now()
+        )
+        await sendDelayedNotification(
+          fid.toString(),
+          `Speed boost expired! ⚡️`,
+          `The speed boost on your ${result.cell.cropType} has worn off.`,
+          "boost-expired",
+          SPEED_BOOST[result.itemSlug as BoostType].duration / 1000
+        )
+        trackEvent(fid, "applied-perk", {
+          cellId: `${result.cell.x}/${result.cell.y}`,
+          cropType: result.cell.cropType,
+          itemSlug: result.itemSlug,
+        })
+        break;
+    }
+
+    // TODO: this will slow down stuff, but without, seems like qstash requests will conflict
+    // resulting on miscounting the amounts for the quests
+    // see if the delay is an issue / is decreaseable
+    await new Promise((resolve) => setTimeout(resolve, 1000));  
+  }
 
   return NextResponse.json(results);
 }
@@ -151,27 +214,12 @@ async function handlePlantAction(
     data: { quantity: { decrement: 1 } },
   });
 
-  // After successful planting, add notifications and quest calculation
-  await Promise.all([
-    sendDelayedNotification(
-      fid.toString(),
-      `Harvest time! 🌾`,
-      `Your ${getCropNameFromSeeds(params.seedType)} are ready to harvest!`,
-      "harvest",
-      getGrowthTime(params.seedType)
-    ),
-    sendQuestsCalculation(fid, "plant", item.id),
-    trackEvent(fid, "planted-seed", {
-      seedId: item.id,
-      cropType: cropType,
-      cellId: `${x}/${y}`,
-    }),
-  ]);
-
   return {
     type: "plant",
     success: true,
     cell: plantedCell,
+    itemId: item.id,
+    seedType: params.seedType,
   };
 }
 
@@ -283,20 +331,11 @@ async function handleHarvestAction(
     },
   });
 
-  // Add quest calculation and tracking
-  await Promise.all([
-    sendQuestsCalculation(fid, "harvest", crop.id, cropReward),
-    trackEvent(fid, "harvested-crop", {
-      cropId: crop.id,
-      cropType: gridCell.cropType,
-      cellId: `${x}/${y}`,
-    }),
-  ]);
-
   return {
     type: "harvest",
     success: true,
     cell: updatedCell,
+    itemId: crop.id,
     rewards: {
       xp,
       amount: cropReward,
@@ -350,19 +389,11 @@ async function handleFertilizeAction(
     data: { quantity: { decrement: 1 } },
   });
 
-  // Add quest calculation and tracking
-  await Promise.all([
-    sendQuestsCalculation(fid, "fertilize", fertilizer.id),
-    trackEvent(fid, "fertilized-cell", {
-      cellId: `${x}/${y}`,
-      cropType: gridCell.cropType,
-    }),
-  ]);
-
   return {
     type: "fertilize",
     success: true,
     cell: updatedCell,
+    itemId: fertilizer.id,
   };
 }
 
@@ -436,34 +467,12 @@ async function handlePerkAction(
     `[handlePerkAction] Successfully applied perk ${itemSlug} to cell (${x},${y})`
   );
 
-  // Add notifications, quest calculation and tracking
-  await Promise.all([
-    sendQuestsCalculation(fid, "apply-perk", perk.id),
-    sendDelayedNotification(
-      fid.toString(),
-      `Harvest time! 🌾`,
-      `Your ${updatedCell.cropType} are ready to harvest!`,
-      "harvest",
-      new Date(updatedCell.harvestAt as Date).getTime() - Date.now()
-    ),
-    sendDelayedNotification(
-      fid.toString(),
-      `Speed boost expired! ⚡️`,
-      `The speed boost on your ${updatedCell.cropType} has worn off.`,
-      "boost-expired",
-      SPEED_BOOST[itemSlug as BoostType].duration / 1000
-    ),
-    trackEvent(fid, "applied-perk", {
-      cellId: `${x}/${y}`,
-      cropType: updatedCell.cropType,
-      itemSlug,
-    }),
-  ]);
-
   return {
     type: "perk",
     success: true,
     cell: updatedCell,
+    itemId: perk.id,
+    itemSlug: itemSlug,
   };
 }
 
