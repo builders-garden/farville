@@ -8,13 +8,7 @@ import {
 } from "@/lib/game-constants";
 import { CropType, SeedType } from "@/types/game";
 import { GridCell, PrismaClient } from "@prisma/client";
-import {
-  sendDelayedNotification,
-  getGrowthTime,
-  getCropNameFromSeeds,
-} from "@/lib/game-notifications";
-import { trackEvent } from "@/lib/posthog/server";
-import { sendQuestsCalculation } from "@/app/api/grid-cells/[x]/[y]/utils";
+import { qstashPublishJSON } from "@/lib/qstash";
 
 type TransactionClient = Omit<
   PrismaClient,
@@ -22,7 +16,7 @@ type TransactionClient = Omit<
 >;
 
 // Add type for boost types
-type BoostType = "nitrogen" | "potassium" | "phosphorus";
+export type BoostType = "nitrogen" | "potassium" | "phosphorus";
 
 // Add these types at the top of the file
 interface BaseActionResult {
@@ -99,68 +93,15 @@ export async function POST(req: Request) {
       throw error;
     });
 
-  for (const result of results) {
-    if (!result.success) continue;
-    switch (result.type) {
-      case "plant":
-        await sendDelayedNotification(
-          fid.toString(),
-          `Harvest time! 🌾`,
-          `Your ${getCropNameFromSeeds(result.seedType)} are ready to harvest!`,
-          "harvest",
-          getGrowthTime(result.seedType)
-        )
-        await sendQuestsCalculation(fid, result.type, result.itemId);
-        trackEvent(fid, "planted-seed", {
-          seedId: result.itemId,
-          cropType: result.cell.cropType,
-          cellId: `${result.cell.x}/${result.cell.y}`,
-        })
-        break;
-      case "harvest":
-        await sendQuestsCalculation(fid, result.type, result.itemId, result.rewards.amount);
-        trackEvent(fid, "harvested-crop", {
-          cropId: result.itemId,
-          cropType: result.rewards.cropType,
-          cellId: `${result.cell.x}/${result.cell.y}`,
-        })
-        break;
-      case "fertilize":
-        await sendQuestsCalculation(fid, result.type, result.itemId);
-        trackEvent(fid, "fertilized-cell", {
-          cellId: `${result.cell.x}/${result.cell.y}`,
-          cropType: result.cell.cropType,
-        })
-        break;
-      case "perk":
-        await sendQuestsCalculation(fid, "apply-perk", result.itemId);
-        await sendDelayedNotification(
-          fid.toString(),
-          `Harvest time! 🌾`,
-          `Your ${result.cell.cropType} are ready to harvest!`,
-          "harvest",
-          new Date(result.cell.harvestAt as Date).getTime() - Date.now()
-        )
-        await sendDelayedNotification(
-          fid.toString(),
-          `Speed boost expired! ⚡️`,
-          `The speed boost on your ${result.cell.cropType} has worn off.`,
-          "boost-expired",
-          SPEED_BOOST[result.itemSlug as BoostType].duration / 1000
-        )
-        trackEvent(fid, "applied-perk", {
-          cellId: `${result.cell.x}/${result.cell.y}`,
-          cropType: result.cell.cropType,
-          itemSlug: result.itemSlug,
-        })
-        break;
-    }
-
-    // TODO: this will slow down stuff, but without, seems like qstash requests will conflict
-    // resulting on miscounting the amounts for the quests
-    // see if the delay is an issue / is decreaseable
-    await new Promise((resolve) => setTimeout(resolve, 300));  
-  }
+  // Queue the post-action processing with updated URL
+  await qstashPublishJSON({
+    url: `${process.env.NEXT_PUBLIC_URL}/api/qstash/batch-actions`,
+    body: {
+      fid,
+      results,
+    },
+    delay: 0,
+  });
 
   return NextResponse.json(results);
 }

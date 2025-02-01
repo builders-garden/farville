@@ -12,7 +12,7 @@ const qstashClient = new Client({
 export type QStashPublishJSONRequest = {
   url: string;
   body: {
-    [key: string]: string | number | undefined; // TODO: this will be replaced with the actual type
+    [key: string]: string | number | Array<unknown> | undefined; // TODO: this will be replaced with the actual type
   };
   headers?: {
     [key: string]: string;
