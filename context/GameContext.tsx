@@ -211,6 +211,10 @@ export function GameProvider({
         }, 1500);
       }
     },
+    onAddAction: (action) => {
+      console.log("Adding action:", action);
+      addPendingCell(action.x, action.y);
+    },
     playSound,
   });
 
