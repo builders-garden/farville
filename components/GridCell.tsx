@@ -243,20 +243,19 @@ export default function GridCell({ cell }: GridCellProps) {
 
   const handleClick = async () => {
     setIsLoading(true);
-    if (
-      isPerkIncompatible ||
-      ((selectedSeed || selectedPerk) && remainingUses <= 0)
-    ) {
-      console.log("Early return due to:", {
-        isPerkIncompatible,
-        selectedSeed,
-        selectedPerk,
-        remainingUses,
-      });
-      return;
-    }
-
     try {
+      if (
+        isPerkIncompatible ||
+        ((selectedSeed || selectedPerk) && remainingUses <= 0)
+      ) {
+        console.log("Early return due to:", {
+          isPerkIncompatible,
+          selectedSeed,
+          selectedPerk,
+          remainingUses,
+        });
+        return;
+      }
       if (
         selectedPerk &&
         ((selectedPerk.item.slug === "fertilizer" && isValidFertilizerTarget) ||
