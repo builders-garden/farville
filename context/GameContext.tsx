@@ -5,21 +5,16 @@ import {
   useContext,
   useEffect,
   useState,
-  useMemo,
   useCallback,
 } from "react";
-import type { HarvestResponse, SeedType } from "../types/game";
-//import { useAudio } from "./AudioContext";
+import type { CropType, SeedType } from "../types/game";
+import { useAudio } from "./AudioContext";
 import { GameState, useGameState } from "@/hooks/use-game-state";
-import { usePlantSeed } from "@/hooks/game-actions/use-plant-seed";
-import { useHarvestCrop } from "@/hooks/game-actions/use-harvest-crop";
-import { useFertilize } from "@/hooks/game-actions/use-fertilize";
 import { useBuyItem } from "@/hooks/game-actions/use-buy-item";
 import { useExpandGrid } from "@/hooks/game-actions/use-expand-grid";
 import { useSellItem } from "@/hooks/game-actions/use-sell-item";
 import { UserItem } from "@/hooks/use-user-items";
-import { useApplyPerk } from "@/hooks/game-actions/use-apply-perk";
-import { debounce } from "lodash";
+import { useBatchActions } from "@/hooks/use-batch-actions";
 
 // Update the OverlayType to be more flexible with parameters
 export type OverlayConfig =
@@ -28,11 +23,22 @@ export type OverlayConfig =
   | { type: "tutorial"; step?: number }
   | null;
 
-// Add at the top after imports
+// Simplify PendingCell type
 interface PendingCell {
   key: string;
   timestamp: number;
-  removeTimeout?: NodeJS.Timeout;
+}
+
+// Update the floatingNumbers type to be an array
+interface FloatingNumberData {
+  x: number; // screen x
+  y: number; // screen y
+  gridX: number; // grid x
+  gridY: number; // grid y
+  exp: number;
+  amount: number;
+  cropType: CropType;
+  id: string; // Add unique ID for managing multiple numbers
 }
 
 // Update the context type
@@ -43,7 +49,7 @@ interface GameContextType {
   selectedPerk: UserItem | null;
   setSelectedPerk: (perk: UserItem | null) => void;
   plantSeed: (params: { x: number; y: number; seedType: SeedType }) => void;
-  harvestCrop: (params: { x: number; y: number }) => Promise<HarvestResponse>;
+  harvestCrop: (params: { x: number; y: number }) => void;
   fertilize: (params: { x: number; y: number }) => void;
   applyPerk: (params: {
     x: number;
@@ -80,11 +86,13 @@ interface GameContextType {
   pendingCells: Map<string, PendingCell>;
   addPendingCell: (x: number, y: number) => void;
   removePendingCell: (x: number, y: number) => void;
+  showLevelUpConfetti: boolean;
+  floatingNumbers: FloatingNumberData[];
+  remainingUses: number;
+  setRemainingUses: (uses: number) => void;
 }
 
 export const GameContext = createContext<GameContextType | null>(null);
-
-const debouncedCallbacks = new Map<string, ReturnType<typeof debounce>>();
 
 export function GameProvider({
   children,
@@ -110,6 +118,77 @@ export function GameProvider({
   const [pendingCells, setPendingCells] = useState<Map<string, PendingCell>>(
     new Map()
   );
+  const [showLevelUpConfetti, setShowLevelUpConfetti] = useState(false);
+  const [floatingNumbers, setFloatingNumbers] = useState<FloatingNumberData[]>(
+    []
+  );
+  const { playSound } = useAudio();
+  const [remainingUses, setRemainingUses] = useState<number>(0);
+
+  const addPendingCell = useCallback((x: number, y: number) => {
+    const key = `${x},${y}`;
+    setPendingCells((prev) => {
+      const next = new Map(prev);
+      next.set(key, { key, timestamp: Date.now() });
+      return next;
+    });
+  }, []);
+
+  const removePendingCell = useCallback((x: number, y: number) => {
+    const key = `${x},${y}`;
+    setPendingCells((prev) => {
+      const next = new Map(prev);
+      next.delete(key);
+      return next;
+    });
+  }, []);
+
+  const { queueAction, isProcessing } = useBatchActions({
+    onProcessComplete: () => {
+      refetch.grid();
+      refetch.user();
+      refetch.userItems();
+    },
+    onAddAction: (action) => {
+      addPendingCell(action.x, action.y);
+    },
+    onCellComplete: (x, y) => {
+      removePendingCell(x, y);
+    },
+    onLevelUp: () => {
+      setShowLevelUpConfetti(true);
+      playSound("levelUp");
+      setTimeout(() => setShowLevelUpConfetti(false), 1500);
+    },
+    onHarvestReward: ({ x, y, exp, amount, cropType }) => {
+      const cellElement = document.querySelector(
+        `[data-x="${x}"][data-y="${y}"]`
+      );
+      if (cellElement) {
+        const rect = cellElement.getBoundingClientRect();
+        const newFloatingNumber = {
+          x: rect.left + rect.width / 2,
+          y: rect.top + rect.height / 2,
+          gridX: x,
+          gridY: y,
+          exp,
+          amount,
+          cropType,
+          id: `${Date.now()}-${x}-${y}`, // Add unique ID
+        };
+
+        setFloatingNumbers((prev) => [...prev, newFloatingNumber]);
+
+        // Remove this specific floating number after animation
+        setTimeout(() => {
+          setFloatingNumbers((prev) =>
+            prev.filter((num) => num.id !== newFloatingNumber.id)
+          );
+        }, 1500);
+      }
+    },
+    playSound,
+  });
 
   useEffect(() => {
     if (!loading) {
@@ -120,209 +199,11 @@ export function GameProvider({
     }
   }, [state?.user.xp, loading]);
 
-  const { mutate: plantSeed } = usePlantSeed({
-    refetchGridCells: refetch.grid,
-    refetchUserItems: refetch.userItems,
-    setIsActionInProgress,
-    isActionInProgress,
-    onSuccess: () => {
-      const seed = state?.seeds.find((seed) => seed.item.slug === selectedSeed);
-      if (!seed || seed?.quantity === 1 || seed?.quantity === 0) {
-        setSelectedSeed(null);
-      }
-    },
-  });
-  const { mutate: harvestCropMutation } = useHarvestCrop({
-    refetchGridCells: refetch.grid,
-    refetchUserItems: refetch.userItems,
-    refetchUser: refetch.user,
-    isActionInProgress,
-    setIsActionInProgress,
-  });
-
-  const addPendingCell = useCallback((x: number, y: number) => {
-    const key = `${x},${y}`;
-    console.log("Adding pending cell:", key);
-    setPendingCells((prev) => {
-      const next = new Map(prev);
-      next.set(key, { key, timestamp: Date.now() });
-      console.log("New pending cells:", [...next.values()]);
-      return next;
-    });
-  }, []);
-
-  const processRemovalQueue = useCallback(
-    (cells: Map<string, PendingCell>, currentKey: string) => {
-      // First, remove the current cell immediately
-      setPendingCells((prev) => {
-        const next = new Map(prev);
-        next.delete(currentKey);
-        return next;
-      });
-
-      // Then process the remaining cells in order
-      const remainingCells = [...cells.values()]
-        .filter((cell) => cell.key !== currentKey)
-        .sort((a, b) => a.timestamp - b.timestamp);
-
-      remainingCells.forEach((cell, index) => {
-        if (!cell.removeTimeout) {
-          cell.removeTimeout = setTimeout(() => {
-            setPendingCells((prev) => {
-              const next = new Map(prev);
-              next.delete(cell.key);
-              console.log(
-                "Removed cell from queue:",
-                cell.key,
-                "Remaining:",
-                [...next.values()].map((c) => c.key)
-              );
-              return next;
-            });
-          }, index * 100); // Stagger remaining removals by 100ms
-        }
-      });
-    },
-    []
-  );
-
-  const removePendingCell = useCallback(
-    (x: number, y: number) => {
-      const key = `${x},${y}`;
-      console.log("Queueing cell for removal:", key);
-      setPendingCells((prev) => {
-        const next = new Map(prev);
-        const cell = next.get(key);
-        if (cell) {
-          processRemovalQueue(next, key);
-        }
-        return next;
-      });
-    },
-    [processRemovalQueue]
-  );
-
+  // Update isActionInProgress to use isProcessing from useBatchActions
   useEffect(() => {
-    return () => {
-      pendingCells.forEach((cell) => {
-        if (cell.removeTimeout) {
-          clearTimeout(cell.removeTimeout);
-        }
-      });
-    };
-  }, [pendingCells]);
+    setIsActionInProgress(isProcessing);
+  }, [isProcessing]);
 
-  const clearDebouncedCallback = useCallback((x: number, y: number) => {
-    const key = `${x},${y}`;
-    const debouncedFn = debouncedCallbacks.get(key);
-    if (debouncedFn) {
-      debouncedFn.cancel();
-      debouncedCallbacks.delete(key);
-    }
-  }, []);
-
-  const resetPendingCells = useCallback(() => {
-    setPendingCells(new Map());
-    // Also clear any existing timeouts
-    pendingCells.forEach((cell) => {
-      if (cell.removeTimeout) {
-        clearTimeout(cell.removeTimeout);
-      }
-    });
-  }, [pendingCells]);
-
-  const debouncedHarvestCrop = useMemo(
-    () =>
-      (params: { x: number; y: number }): Promise<HarvestResponse> => {
-        const key = `${params.x},${params.y}`;
-        clearDebouncedCallback(params.x, params.y);
-        addPendingCell(params.x, params.y);
-
-        return new Promise((resolve, reject) => {
-          const debouncedFn = debounce(() => {
-            harvestCropMutation(params, {
-              onSuccess: (response) => {
-                resolve(response);
-              },
-              onError: (error) => {
-                console.error("Error harvesting crop:", error);
-                reject(error);
-              },
-              onSettled: () => {
-                resetPendingCells();
-                debouncedCallbacks.delete(key);
-              },
-            });
-          }, 300);
-
-          debouncedCallbacks.set(key, debouncedFn);
-          debouncedFn();
-        });
-      },
-    [
-      harvestCropMutation,
-      addPendingCell,
-      resetPendingCells,
-      clearDebouncedCallback,
-    ]
-  );
-
-  const debouncedPlantSeed = useMemo(
-    () =>
-      (params: { x: number; y: number; seedType: SeedType }): Promise<void> => {
-        const key = `${params.x},${params.y}`;
-        clearDebouncedCallback(params.x, params.y);
-        addPendingCell(params.x, params.y);
-
-        return new Promise((resolve) => {
-          const debouncedFn = debounce(() => {
-            plantSeed(params, {
-              onSuccess: () => {
-                const seed = state?.seeds.find(
-                  (seed) => seed.item.slug === params.seedType
-                );
-                if (!seed || seed?.quantity === 1 || seed?.quantity === 0) {
-                  setSelectedSeed(null);
-                }
-                resolve();
-              },
-              onError: (error) => {
-                console.error("Error planting seed:", error);
-                resolve();
-              },
-              onSettled: () => {
-                resetPendingCells();
-                debouncedCallbacks.delete(key);
-              },
-            });
-          }, 300);
-
-          debouncedCallbacks.set(key, debouncedFn);
-          debouncedFn();
-        });
-      },
-    [
-      plantSeed,
-      addPendingCell,
-      resetPendingCells,
-      state?.seeds,
-      setSelectedSeed,
-      clearDebouncedCallback,
-    ]
-  );
-
-  const { mutate: fertilize } = useFertilize({
-    refetchGridCells: refetch.grid,
-    refetchUserItems: refetch.userItems,
-    isActionInProgress,
-    setIsActionInProgress,
-  });
-  const { mutate: applyPerk } = useApplyPerk({
-    refetchGridCells: refetch.grid,
-    refetchUserItems: refetch.userItems,
-    isActionInProgress,
-    setIsActionInProgress,
-  });
   const { mutate: buyItem } = useBuyItem({
     refetchUser: refetch.user,
     refetchUserItems: refetch.userItems,
@@ -342,73 +223,6 @@ export function GameProvider({
     refetchUser: refetch.user,
   });
 
-  const debouncedFertilize = useMemo(
-    () =>
-      (params: { x: number; y: number }): Promise<void> => {
-        const key = `${params.x},${params.y}`;
-        clearDebouncedCallback(params.x, params.y);
-        addPendingCell(params.x, params.y);
-
-        return new Promise((resolve) => {
-          const debouncedFn = debounce(() => {
-            fertilize(params, {
-              onSuccess: () => {
-                resolve();
-              },
-              onError: (error) => {
-                console.error("Error fertilizing:", error);
-                resolve();
-              },
-              onSettled: () => {
-                resetPendingCells();
-                debouncedCallbacks.delete(key);
-              },
-            });
-          }, 300);
-
-          debouncedCallbacks.set(key, debouncedFn);
-          debouncedFn();
-        });
-      },
-    [fertilize, addPendingCell, resetPendingCells, clearDebouncedCallback]
-  );
-
-  const debouncedApplyPerk = useMemo(
-    () =>
-      (params: {
-        x: number;
-        y: number;
-        itemSlug: string;
-        itemId: number;
-      }): Promise<void> => {
-        const key = `${params.x},${params.y}`;
-        clearDebouncedCallback(params.x, params.y);
-        addPendingCell(params.x, params.y);
-
-        return new Promise((resolve) => {
-          const debouncedFn = debounce(() => {
-            applyPerk(params, {
-              onSuccess: () => {
-                resolve();
-              },
-              onError: (error) => {
-                console.error("Error applying perk:", error);
-                resolve();
-              },
-              onSettled: () => {
-                resetPendingCells();
-                debouncedCallbacks.delete(key);
-              },
-            });
-          }, 300);
-
-          debouncedCallbacks.set(key, debouncedFn);
-          debouncedFn();
-        });
-      },
-    [applyPerk, addPendingCell, resetPendingCells, clearDebouncedCallback]
-  );
-
   if (!state) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -425,10 +239,32 @@ export function GameProvider({
         setSelectedSeed,
         selectedPerk: selectedPerk,
         setSelectedPerk: setSelectedPerk,
-        plantSeed: debouncedPlantSeed,
-        harvestCrop: debouncedHarvestCrop,
-        fertilize: debouncedFertilize,
-        applyPerk: debouncedApplyPerk,
+        plantSeed: (params) =>
+          queueAction({
+            type: "plant",
+            x: params.x,
+            y: params.y,
+            params: { seedType: params.seedType },
+          }),
+        harvestCrop: (params) =>
+          queueAction({
+            type: "harvest",
+            x: params.x,
+            y: params.y,
+          }),
+        fertilize: (params) =>
+          queueAction({
+            type: "fertilize",
+            x: params.x,
+            y: params.y,
+          }),
+        applyPerk: (params) =>
+          queueAction({
+            type: "perk",
+            x: params.x,
+            y: params.y,
+            params: { itemSlug: params.itemSlug, itemId: params.itemId },
+          }),
         buyItem,
         sellItem,
         expandGrid,
@@ -458,6 +294,10 @@ export function GameProvider({
         pendingCells,
         addPendingCell,
         removePendingCell,
+        showLevelUpConfetti,
+        floatingNumbers,
+        remainingUses,
+        setRemainingUses,
       }}
     >
       {children}

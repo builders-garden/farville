@@ -5,7 +5,7 @@ import { useGame } from "../context/GameContext";
 import { CropType, SeedType } from "../types/game";
 import CropSprite from "./CropSprite";
 import FloatingNumber from "./animations/FloatingNumber";
-import { useState, useRef, useEffect, useMemo } from "react";
+import { useState, useRef, useEffect, useMemo, Fragment } from "react";
 import { DbGridCell } from "@/supabase/types";
 import { CROP_DATA, SPEED_BOOST } from "@/lib/game-constants";
 import Confetti from "./animations/Confetti";
@@ -179,20 +179,18 @@ export default function GridCell({ cell }: GridCellProps) {
     applyPerk,
     selectedSeed,
     selectedPerk,
+    setSelectedSeed,
     setSelectedPerk,
     pendingCells,
+    showLevelUpConfetti,
+    floatingNumbers,
+    remainingUses,
+    setRemainingUses,
   } = useGame();
-  const [showFloating, setShowFloating] = useState(false);
-  const [floatingPosition, setFloatingPosition] = useState({ x: 0, y: 0 });
-  const [harvestedExp, setHarvestedExp] = useState<number | null>(null);
-  const [harvestedAmount, setHarvestedAmount] = useState<number | null>(null);
-  const [harvestedCropType, setHarvestedCropType] = useState<CropType | null>(
-    null
-  );
   const cellRef = useRef<HTMLDivElement>(null);
   const [isDragOver] = useState(false);
-  const [showLevelUpConfetti, setShowLevelUpConfetti] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
+  const [isLocalLoading, setIsLocalLoading] = useState(false);
 
   const isReadyToHarvest =
     cell.isReadyToHarvest ||
@@ -230,14 +228,6 @@ export default function GridCell({ cell }: GridCellProps) {
 
   const isPending = useMemo(() => {
     const key = `${cell.x},${cell.y}`;
-    console.log(
-      "Cell:",
-      key,
-      "Pending:",
-      pendingCells.has(key),
-      "PendingCells:",
-      [...pendingCells]
-    );
     return pendingCells.has(key);
   }, [cell.x, cell.y, pendingCells]);
 
@@ -257,76 +247,59 @@ export default function GridCell({ cell }: GridCellProps) {
   };
 
   const handleClick = async () => {
-    if (isPerkIncompatible) return;
+    if (isPending || isLocalLoading) return;
 
     if (
-      selectedPerk &&
-      ((selectedPerk.item.slug === "fertilizer" && isValidFertilizerTarget) ||
-        (selectedPerk.item.slug !== "fertilizer" && isValidSpeedBoostTarget))
-    ) {
-      await applyPerk({
-        x: cell.x,
-        y: cell.y,
-        itemSlug: selectedPerk.item.slug,
-        itemId: selectedPerk.itemId,
-      });
-      const perk = state.perks.find(
-        (item) => item.item.slug === selectedPerk.item.slug
-      );
-      if (!perk || perk.quantity === 0) {
-        setSelectedPerk(null);
-      }
+      isPerkIncompatible ||
+      ((selectedSeed || selectedPerk) && remainingUses <= 0)
+    )
       return;
-    }
 
-    if (cell.plantedAt && !isReadyToHarvest) {
-      setShowPopup(true);
-      return;
-    }
-
-    if (cell.plantedAt && isReadyToHarvest) {
-      if (cellRef.current) {
-        const rect = cellRef.current.getBoundingClientRect();
-        const cropType = cell.cropType as CropType;
-        const harvestResult = await harvestCrop({
+    setIsLocalLoading(true);
+    try {
+      if (
+        selectedPerk &&
+        ((selectedPerk.item.slug === "fertilizer" && isValidFertilizerTarget) ||
+          (selectedPerk.item.slug !== "fertilizer" && isValidSpeedBoostTarget))
+      ) {
+        await applyPerk({
           x: cell.x,
           y: cell.y,
+          itemSlug: selectedPerk.item.slug,
+          itemId: selectedPerk.itemId,
         });
-
-        if (!harvestResult) {
-          return;
+        setRemainingUses(remainingUses - 1);
+        if (remainingUses <= 1) {
+          setSelectedPerk(null);
         }
-
-        if (harvestResult.rewards?.didLevelUp) {
-          setShowLevelUpConfetti(true);
-          setTimeout(() => {
-            setShowLevelUpConfetti(false);
-          }, 3000);
-        }
-
-        setFloatingPosition({
-          x: rect.left + rect.width / 2,
-          y: rect.top + rect.height / 2,
-        });
-
-        setHarvestedExp(harvestResult.rewards?.xp || 0);
-        setHarvestedAmount(harvestResult.rewards?.amount || 0);
-        setHarvestedCropType(cropType);
-        setShowFloating(true);
-
-        setTimeout(() => {
-          setShowFloating(false);
-          setHarvestedExp(null);
-          setHarvestedAmount(null);
-          setHarvestedCropType(null);
-        }, 1500);
+        return;
       }
-    } else if (selectedSeed && !cell.plantedAt) {
-      await plantSeed({
-        x: cell.x,
-        y: cell.y,
-        seedType: selectedSeed,
-      });
+
+      if (cell.plantedAt && !isReadyToHarvest) {
+        setShowPopup(true);
+        return;
+      }
+
+      if (cell.plantedAt && isReadyToHarvest) {
+        if (cellRef.current) {
+          await harvestCrop({
+            x: cell.x,
+            y: cell.y,
+          });
+        }
+      } else if (selectedSeed && !cell.plantedAt) {
+        await plantSeed({
+          x: cell.x,
+          y: cell.y,
+          seedType: selectedSeed,
+        });
+        setRemainingUses(Math.max(0, remainingUses - 1));
+        if (remainingUses <= 1) {
+          setSelectedSeed(null);
+        }
+      }
+    } finally {
+      setIsLocalLoading(false);
     }
   };
 
@@ -352,6 +325,38 @@ export default function GridCell({ cell }: GridCellProps) {
     }
   };
 
+  const cellClassName = `
+    grid-cell
+    aspect-square rounded-xl relative
+    ${isPending || isLocalLoading ? "opacity-30 cursor-not-allowed" : ""}
+    ${
+      isPerkIncompatible ||
+      ((selectedSeed || selectedPerk) && remainingUses <= 0)
+        ? "cursor-not-allowed opacity-50"
+        : "cursor-pointer"
+    }
+    ${
+      selectedPerk && (isValidFertilizerTarget || isValidSpeedBoostTarget)
+        ? "border-4 border-yellow-400 shadow-lg"
+        : ""
+    }
+    ${
+      (selectedPerk && !isValidFertilizerTarget && !isValidSpeedBoostTarget) ||
+      isPerkIncompatible
+        ? "opacity-30 bg-gray-800"
+        : ""
+    }
+    ${
+      selectedSeed && !cell.plantedAt
+        ? "border-4 border-green-400 shadow-lg"
+        : ""
+    }
+    ${selectedSeed && cell.plantedAt ? "opacity-50" : ""}
+    ${!cell.plantedAt ? "drop-target" : ""}
+    ${isDragOver ? "dragover" : ""}
+    transition-all duration-200
+  `;
+
   return (
     <>
       {showLevelUpConfetti && <Confetti />}
@@ -362,38 +367,7 @@ export default function GridCell({ cell }: GridCellProps) {
         onDrop={handleDrop}
         data-x={cell.x}
         data-y={cell.y}
-        className={`
-          grid-cell
-          aspect-square rounded-xl relative
-          ${isPending ? "opacity-30" : ""}
-          ${
-            isPerkIncompatible
-              ? "cursor-not-allowed opacity-50"
-              : "cursor-pointer"
-          }
-          ${
-            selectedPerk && (isValidFertilizerTarget || isValidSpeedBoostTarget)
-              ? "border-4 border-yellow-400 shadow-lg"
-              : ""
-          }
-          ${
-            (selectedPerk &&
-              !isValidFertilizerTarget &&
-              !isValidSpeedBoostTarget) ||
-            isPerkIncompatible
-              ? "opacity-30 bg-gray-800"
-              : ""
-          }
-          ${
-            selectedSeed && !cell.plantedAt
-              ? "border-4 border-green-400 shadow-lg"
-              : ""
-          }
-          ${selectedSeed && cell.plantedAt ? "opacity-50" : ""}
-          ${!cell.plantedAt ? "drop-target" : ""}
-          ${isDragOver ? "dragover" : ""}
-          transition-all duration-200
-        `}
+        className={cellClassName}
         initial={false}
         animate={{
           scale: isReadyToHarvest ? [1, 1.02, 1] : 1,
@@ -404,7 +378,7 @@ export default function GridCell({ cell }: GridCellProps) {
           repeatType: "reverse",
         }}
       >
-        {isPending && (
+        {(isPending || isLocalLoading) && (
           <div className="absolute inset-0 flex items-center justify-center z-50 bg-black/10">
             <div className="w-8 h-8 border-4 border-green-500 border-t-transparent rounded-full animate-spin"></div>
           </div>
@@ -482,23 +456,25 @@ export default function GridCell({ cell }: GridCellProps) {
         )}
 
         {/* Floating Numbers */}
-        {showFloating && (
-          <>
-            <FloatingNumber
-              number={harvestedExp || 0}
-              x={floatingPosition.x}
-              y={floatingPosition.y - 20}
-              type="xp"
-            />
-            <FloatingNumber
-              number={harvestedAmount || 0}
-              x={floatingPosition.x}
-              y={floatingPosition.y + 20}
-              type="crop"
-              cropType={harvestedCropType!}
-            />
-          </>
-        )}
+        {floatingNumbers
+          .filter((num) => num.gridX === cell.x && num.gridY === cell.y)
+          .map((numbers) => (
+            <Fragment key={numbers.id}>
+              <FloatingNumber
+                number={numbers.exp}
+                x={numbers.x}
+                y={numbers.y - 5}
+                type="xp"
+              />
+              <FloatingNumber
+                number={numbers.amount}
+                x={numbers.x}
+                y={numbers.y + 5}
+                type="crop"
+                cropType={numbers.cropType}
+              />
+            </Fragment>
+          ))}
       </motion.div>
     </>
   );

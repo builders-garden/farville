@@ -32,12 +32,12 @@ model User {
 model Item {
   id            Int            @id @default(autoincrement())
   name          String
-  description   String
+  description   String?
   icon          String
   category      String
-  buyPrice      Int
-  sellPrice     Int
-  requiredLevel Int
+  buyPrice      Int?
+  sellPrice     Int?
+  requiredLevel Int?
   slug          String         @unique
   createdAt     DateTime       @default(now())
   userItems     UserHasItem[]
@@ -47,7 +47,6 @@ model Item {
 }
 
 model UserHasItem {
-  id        Int      @id @default(autoincrement())
   user      User     @relation(fields: [userFid], references: [fid])
   userFid   Int
   item      Item     @relation(fields: [itemId], references: [id])
@@ -70,7 +69,6 @@ model Referral {
 }
 
 model GridCell {
-  id              Int       @id @default(autoincrement())
   user            User      @relation(fields: [fid], references: [fid])
   fid             Int
   x               Int
@@ -81,8 +79,8 @@ model GridCell {
   harvestAt       DateTime?
   speedBoostedAt  DateTime?
   yieldBoost      Float?
-  createdAt       DateTime  @default(now())
-  @@map("grid_cells")
+  createdAt       DateTime @default(now())
+  @@map("user_grid_cells")
   @@unique([fid, x, y])
 }
 

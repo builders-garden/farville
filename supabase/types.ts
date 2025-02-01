@@ -32,11 +32,12 @@ export interface DbUserHasItem {
   createdAt: string;
 }
 
-export type DbReferrals = {
+export interface DbReferrals {
+  id: number;
   fid: number;
   referredFid: number;
   createdAt: string;
-};
+}
 
 // Helper type for inserting new records
 export type InsertDbItem = Omit<DbItem, "id" | "createdAt">;
