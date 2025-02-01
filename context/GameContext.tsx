@@ -15,6 +15,8 @@ import { useExpandGrid } from "@/hooks/game-actions/use-expand-grid";
 import { useSellItem } from "@/hooks/game-actions/use-sell-item";
 import { UserItem } from "@/hooks/use-user-items";
 import { useBatchActions } from "@/hooks/use-batch-actions";
+import { ActionResult } from "@/app/api/batch-actions/route";
+import { SPEED_BOOST } from "@/lib/game-constants";
 
 // Update the OverlayType to be more flexible with parameters
 export type OverlayConfig =
@@ -143,8 +145,8 @@ export function GameProvider({
     });
   }, []);
 
-  const { queueAction, isProcessing } = useBatchActions({
-    onProcessComplete: async () => {
+  const { queueAction, isProcessing, actionQueue } = useBatchActions({
+    onProcessComplete: async (actions: ActionResult[]) => {
       try {
         // Try multiple times to refresh the grid if needed
         let attempts = 0;
@@ -158,7 +160,7 @@ export function GameProvider({
 
           // Verify the grid state is correct
           // If not, try again after a short delay
-          if (verifyGridState()) {
+          if (verifyGridState(actions)) {
             break;
           }
 
@@ -212,6 +214,77 @@ export function GameProvider({
     playSound,
   });
 
+  const verifyGridState = useCallback(
+    (actions: ActionResult[]) => {
+      if (!state?.grid) return false;
+
+      // Check each pending cell to verify it's been updated
+      for (const [key] of pendingCells.entries()) {
+        const [x, y] = key.split(",").map(Number);
+        const cell = state.grid.find((cell) => cell.x === x && cell.y === y);
+
+        // If we can't find the cell, grid state is invalid
+        if (!cell) {
+          console.log(`❌ Cell ${x},${y} not found in grid state`);
+          return false;
+        }
+
+        // Get all actions for this cell from the action queue
+        const pendingActions = actions.filter(
+          (action) => action.cell.x === x && action.cell.y === y
+        );
+
+        // Verify each pending action has been applied
+        for (const action of pendingActions) {
+          switch (action.type) {
+            case "plant":
+              if (!cell.cropType || cell.plantedAt) {
+                console.log(`❌ Plant action not reflected in cell ${x},${y}`);
+                return false;
+              }
+              break;
+
+            case "harvest":
+              if (cell.cropType || cell.plantedAt || cell.harvestAt) {
+                console.log(
+                  `❌ Harvest action not reflected in cell ${x},${y}`
+                );
+                return false;
+              }
+              break;
+
+            case "fertilize":
+              if (!cell.isReadyToHarvest) {
+                console.log(
+                  `❌ Fertilize action not reflected in cell ${x},${y}`
+                );
+                return false;
+              }
+              break;
+
+            case "perk":
+              // Add specific perk verification logic based on your perk types
+              if (
+                !cell.speedBoostedAt ||
+                new Date(cell.speedBoostedAt).getTime() +
+                  SPEED_BOOST[action.itemSlug as string].duration <=
+                  Date.now()
+              ) {
+                console.log(`❌ Perk action not reflected in cell ${x},${y}`);
+                return false;
+              }
+              break;
+          }
+        }
+      }
+
+      // If we get here, all pending cells have been properly updated
+      console.log("✅ Grid state verified successfully");
+      return true;
+    },
+    [state?.grid, pendingCells, actionQueue]
+  );
+
   useEffect(() => {
     if (!loading) {
       const tutorialComplete =
@@ -244,13 +317,6 @@ export function GameProvider({
     refetchGridCells: refetch.grid,
     refetchUser: refetch.user,
   });
-
-  // Helper function to verify grid state
-  const verifyGridState = () => {
-    // Add logic to verify the grid state is as expected
-    // For example, check that cells marked as pending are properly updated
-    return true; // Implement your verification logic
-  };
 
   if (!state) {
     return (

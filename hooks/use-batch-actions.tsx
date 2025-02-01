@@ -22,7 +22,7 @@ export interface BatchedAction {
 
 interface UseBatchActionsProps {
   onProcessStart?: (x: number, y: number) => void;
-  onProcessComplete?: () => void;
+  onProcessComplete?: (actions: ActionResult[]) => void;
   onCellComplete?: (x: number, y: number) => void;
   onLevelUp?: () => void;
   onHarvestReward?: (params: {
@@ -128,7 +128,7 @@ export function useBatchActions({
       await new Promise((resolve) => setTimeout(resolve, 100));
 
       // Now trigger the grid refresh
-      await onProcessComplete?.();
+      await onProcessComplete?.(results);
     },
     onSettled: () => {
       console.log("🏁 Batch processing complete, resetting state");
@@ -166,6 +166,6 @@ export function useBatchActions({
   return {
     queueAction,
     isProcessing,
-    pendingActions: [], // We could expose the queue length if needed
+    actionQueue,
   };
 }

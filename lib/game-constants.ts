@@ -236,7 +236,7 @@ export const LEVEL_REWARDS = [
 ];
 
 
-export const SPEED_BOOST = {
+export const SPEED_BOOST: { [key: string]: { boost: number; duration: number; applyTo: CropType[] } } = {
   "nitrogen": {
     boost: 1.25,
     duration: 7200000, // 2 hours
