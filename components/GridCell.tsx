@@ -201,6 +201,7 @@ export default function GridCell({ cell }: GridCellProps) {
   const isValidFertilizerTarget = cell.plantedAt && !isReadyToHarvest;
   const isValidSpeedBoostTarget =
     cell.plantedAt &&
+    !isReadyToHarvest &&
     (!cell.speedBoostedAt ||
       new Date(cell.speedBoostedAt).getTime() + 1000 * 60 * 60 * 2 <
         Date.now()) &&
