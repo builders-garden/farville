@@ -65,10 +65,18 @@ export function useBatchActions({
     },
     onSuccess: (results) => {
       console.log("✅ Batch mutation completed with results:", results);
+
+      // Process each result immediately to update UI state
       results.forEach((result: ActionResult) => {
-        if (onCellComplete) {
-          console.log("📱 Completing cell:", result.cell?.x, result.cell?.y);
-          onCellComplete(result.cell?.x as number, result.cell?.y as number);
+        if (onCellComplete && result.cell) {
+          console.log("📱 Completing cell:", result.cell.x, result.cell.y);
+          // Ensure we have valid coordinates before calling
+          if (
+            typeof result.cell.x === "number" &&
+            typeof result.cell.y === "number"
+          ) {
+            onCellComplete(result.cell.x, result.cell.y);
+          }
         }
 
         if (playSound) {
@@ -109,9 +117,12 @@ export function useBatchActions({
           }
         }
       });
+
+      // Trigger an immediate grid refresh after processing results
+      // This ensures the grid state is updated as soon as possible
+      onProcessComplete?.();
     },
     onSettled: () => {
-      onProcessComplete?.();
       console.log("🏁 Batch processing complete, resetting state");
       setIsProcessing(false);
       actionQueue.setProcessing(false);

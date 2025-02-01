@@ -145,17 +145,21 @@ export function GameProvider({
 
   const { queueAction, isProcessing } = useBatchActions({
     onProcessComplete: async () => {
-      await Promise.all([
-        refetch.grid(),
-        refetch.user(),
-        refetch.userItems(),
-      ]);
+      // Immediately refresh the grid state
+      await refetch.grid();
+
+      // Then refresh other states that might be affected
+      Promise.all([refetch.user(), refetch.userItems()]).catch(console.error);
     },
     onAddAction: (action) => {
       addPendingCell(action.x, action.y);
     },
     onCellComplete: (x, y) => {
+      // Remove pending state immediately when a cell is complete
       removePendingCell(x, y);
+
+      // Optionally, you could also trigger a targeted grid refresh here
+      // if your API supports fetching single cell updates
     },
     onLevelUp: () => {
       setShowLevelUpConfetti(true);
