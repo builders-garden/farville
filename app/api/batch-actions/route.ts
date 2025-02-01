@@ -159,7 +159,7 @@ export async function POST(req: Request) {
     // TODO: this will slow down stuff, but without, seems like qstash requests will conflict
     // resulting on miscounting the amounts for the quests
     // see if the delay is an issue / is decreaseable
-    await new Promise((resolve) => setTimeout(resolve, 1000));  
+    await new Promise((resolve) => setTimeout(resolve, 300));  
   }
 
   return NextResponse.json(results);
