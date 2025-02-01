@@ -16,7 +16,7 @@ import { useSellItem } from "@/hooks/game-actions/use-sell-item";
 import { UserItem } from "@/hooks/use-user-items";
 import { useBatchActions } from "@/hooks/use-batch-actions";
 import { ActionResult } from "@/app/api/batch-actions/route";
-import { SPEED_BOOST } from "@/lib/game-constants";
+import { DbGridCell } from "@/supabase/types";
 
 // Update the OverlayType to be more flexible with parameters
 export type OverlayConfig =
@@ -92,6 +92,7 @@ interface GameContextType {
   floatingNumbers: FloatingNumberData[];
   remainingUses: number;
   setRemainingUses: (uses: number) => void;
+  updateGridCells: (cells: Partial<DbGridCell>[]) => void;
 }
 
 export const GameContext = createContext<GameContextType | null>(null);
@@ -110,7 +111,7 @@ export function GameProvider({
   const [showRequests, setShowRequests] = useState(false);
   const [showSeedsMenu, setShowSeedsMenu] = useState(false);
   const [showQuests, setShowQuests] = useState(false);
-  const { state, refetch, loading } = useGameState();
+  const { state, refetch, loading, updateGridCells } = useGameState();
   const [selectedSeed, setSelectedSeed] = useState<SeedType | null>(null);
   const [selectedPerk, setSelectedPerk] = useState<UserItem | null>(null);
   const [isActionInProgress, setIsActionInProgress] = useState(false);
@@ -145,35 +146,44 @@ export function GameProvider({
     });
   }, []);
 
-  const { queueAction, isProcessing, actionQueue } = useBatchActions({
+  const { queueAction, isProcessing } = useBatchActions({
     onProcessComplete: async (actions: ActionResult[]) => {
       try {
-        // Try multiple times to refresh the grid if needed
-        let attempts = 0;
-        const maxAttempts = 3;
+        // Optimistically update the grid state
+        const updatedCells = actions.map((action) => ({
+          ...action.cell,
+          x: action.cell.x,
+          y: action.cell.y,
+        }));
 
-        while (attempts < maxAttempts) {
-          console.log(
-            `Attempting grid refresh (attempt ${attempts + 1}/${maxAttempts})`
-          );
-          await refetch.grid();
-
-          // Verify the grid state is correct
-          // If not, try again after a short delay
-          if (verifyGridState(actions)) {
-            break;
-          }
-
-          await new Promise((resolve) => setTimeout(resolve, 200));
-          attempts++;
-        }
-
-        // Refresh other states after grid is confirmed updated
-        await Promise.all([refetch.user(), refetch.userItems()]).catch(
-          console.error
+        updateGridCells(
+          updatedCells.map((cell) => ({
+            ...cell,
+            plantedAt: cell.plantedAt
+              ? new Date(cell.plantedAt).toISOString()
+              : null,
+            harvestAt: cell.harvestAt
+              ? new Date(cell.harvestAt).toISOString()
+              : null,
+            speedBoostedAt: cell.speedBoostedAt
+              ? new Date(cell.speedBoostedAt).toISOString()
+              : null,
+            createdAt: cell.createdAt
+              ? new Date(cell.createdAt).toISOString()
+              : "",
+          }))
         );
+
+        // Still refetch in the background to ensure consistency
+        await Promise.all([
+          refetch.grid(),
+          refetch.user(),
+          refetch.userItems(),
+        ]).catch(console.error);
       } catch (error) {
-        console.error("Failed to refresh grid state:", error);
+        console.error("Failed to refresh state:", error);
+        // If there's an error, force refetch to ensure consistency
+        refetch.all().catch(console.error);
       }
     },
     onCellComplete: (x, y) => {
@@ -217,77 +227,6 @@ export function GameProvider({
     },
     playSound,
   });
-
-  const verifyGridState = useCallback(
-    (actions: ActionResult[]) => {
-      if (!state?.grid) return false;
-
-      // Check each pending cell to verify it's been updated
-      for (const [key] of pendingCells.entries()) {
-        const [x, y] = key.split(",").map(Number);
-        const cell = state.grid.find((cell) => cell.x === x && cell.y === y);
-
-        // If we can't find the cell, grid state is invalid
-        if (!cell) {
-          console.log(`❌ Cell ${x},${y} not found in grid state`);
-          return false;
-        }
-
-        // Get all actions for this cell from the action queue
-        const pendingActions = actions.filter(
-          (action) => action.cell.x === x && action.cell.y === y
-        );
-
-        // Verify each pending action has been applied
-        for (const action of pendingActions) {
-          switch (action.type) {
-            case "plant":
-              if (!cell.cropType || cell.plantedAt) {
-                console.log(`❌ Plant action not reflected in cell ${x},${y}`);
-                return false;
-              }
-              break;
-
-            case "harvest":
-              if (cell.cropType || cell.plantedAt || cell.harvestAt) {
-                console.log(
-                  `❌ Harvest action not reflected in cell ${x},${y}`
-                );
-                return false;
-              }
-              break;
-
-            case "fertilize":
-              if (!cell.isReadyToHarvest) {
-                console.log(
-                  `❌ Fertilize action not reflected in cell ${x},${y}`
-                );
-                return false;
-              }
-              break;
-
-            case "perk":
-              // Add specific perk verification logic based on your perk types
-              if (
-                !cell.speedBoostedAt ||
-                new Date(cell.speedBoostedAt).getTime() +
-                  SPEED_BOOST[action.itemSlug as string].duration <=
-                  Date.now()
-              ) {
-                console.log(`❌ Perk action not reflected in cell ${x},${y}`);
-                return false;
-              }
-              break;
-          }
-        }
-      }
-
-      // If we get here, all pending cells have been properly updated
-      console.log("✅ Grid state verified successfully");
-      return true;
-    },
-    [state?.grid, pendingCells, actionQueue]
-  );
 
   useEffect(() => {
     if (!loading) {
@@ -397,6 +336,7 @@ export function GameProvider({
         floatingNumbers,
         remainingUses,
         setRemainingUses,
+        updateGridCells,
       }}
     >
       {children}

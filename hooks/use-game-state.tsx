@@ -23,7 +23,7 @@ export interface GameState {
   items: DbItem[];
   inventory: UserItem[];
   user: DbUser;
-  claimableQuests?: boolean
+  claimableQuests?: boolean;
 }
 
 export const useGameState = () => {
@@ -75,7 +75,9 @@ export const useGameState = () => {
     if (userItems) {
       newState.seeds = userItems.filter((ui) => ui.item.category === "seed");
       newState.crops = userItems.filter((ui) => ui.item.category === "crop");
-      newState.perks = userItems.filter((item) => item.item.category === "perk");
+      newState.perks = userItems.filter(
+        (item) => item.item.category === "perk"
+      );
       newState.inventory = userItems;
     }
 
@@ -92,7 +94,7 @@ export const useGameState = () => {
     }
 
     if (claimableQuests) {
-      newState.claimableQuests = 
+      newState.claimableQuests =
         (claimableQuests?.daily?.length ?? 0) > 0 ||
         (claimableQuests?.weekly?.length ?? 0) > 0 ||
         (claimableQuests?.monthly?.length ?? 0) > 0 ||
@@ -118,12 +120,46 @@ export const useGameState = () => {
       refetchClaimableQuests(),
     ]);
     updateState();
-  }, [refetchUserItems, refetchUser, refetchGrid, refetchItems, refetchClaimableQuests, updateState]);
+  }, [
+    refetchUserItems,
+    refetchUser,
+    refetchGrid,
+    refetchItems,
+    refetchClaimableQuests,
+    updateState,
+  ]);
+
+  // Add new method to update grid cells directly
+  const updateGridCells = useCallback((updatedCells: Partial<DbGridCell>[]) => {
+    setState((prevState) => {
+      if (!prevState) return prevState;
+
+      const newGrid = [...prevState.grid];
+
+      updatedCells.forEach((updatedCell) => {
+        const index = newGrid.findIndex(
+          (cell) => cell.x === updatedCell.x && cell.y === updatedCell.y
+        );
+        if (index !== -1) {
+          newGrid[index] = { ...newGrid[index], ...updatedCell };
+        }
+      });
+
+      return {
+        ...prevState,
+        grid: newGrid,
+      };
+    });
+  }, []);
 
   return {
     state,
     loading:
-      userItemsLoading || itemsLoading || userLoading || gridCellsLoading || claimableQuestsLoading,
+      userItemsLoading ||
+      itemsLoading ||
+      userLoading ||
+      gridCellsLoading ||
+      claimableQuestsLoading,
     refetch: {
       all: refetchAll,
       userItems: async () => {
@@ -147,5 +183,6 @@ export const useGameState = () => {
         updateState();
       },
     },
+    updateGridCells,
   };
 };
