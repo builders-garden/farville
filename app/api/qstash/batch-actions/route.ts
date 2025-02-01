@@ -80,6 +80,9 @@ export const POST = async (req: Request) => {
         ]);
         break;
     }
+
+    // Add a small delay between processing each result
+    await new Promise(resolve => setTimeout(resolve, 1000));
   }
 
   return NextResponse.json({ success: true });
