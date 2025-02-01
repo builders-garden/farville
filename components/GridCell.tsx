@@ -182,7 +182,6 @@ export default function GridCell({ cell }: GridCellProps) {
     selectedPerk,
     setSelectedSeed,
     setSelectedPerk,
-    pendingCells,
     showLevelUpConfetti,
     floatingNumbers,
     remainingUses,
@@ -191,7 +190,7 @@ export default function GridCell({ cell }: GridCellProps) {
   const cellRef = useRef<HTMLDivElement>(null);
   const [isDragOver] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
-  const [isLocalLoading, setIsLocalLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const isReadyToHarvest =
     cell.isReadyToHarvest ||
@@ -213,7 +212,6 @@ export default function GridCell({ cell }: GridCellProps) {
 
   const isPerkIncompatible =
     selectedPerk &&
-    // For non-fertilizer perks (speed boosts), check both compatibility and recent boost
     selectedPerk.item.slug !== "fertilizer" &&
     (!SPEED_BOOST[
       selectedPerk.item.slug as keyof typeof SPEED_BOOST
@@ -227,11 +225,6 @@ export default function GridCell({ cell }: GridCellProps) {
   const hasFertilizer = state.inventory.some(
     (item) => item.item.slug === "fertilizer"
   );
-
-  const isPending = useMemo(() => {
-    const key = `${cell.x},${cell.y}`;
-    return pendingCells.has(key);
-  }, [cell.x, cell.y, pendingCells]);
 
   const handleBoost = async (boostType: string) => {
     const boostItem = state.inventory.find(
@@ -249,22 +242,27 @@ export default function GridCell({ cell }: GridCellProps) {
   };
 
   const handleClick = async () => {
-    if (isPending || isLocalLoading) return;
-
+    setIsLoading(true);
     if (
       isPerkIncompatible ||
       ((selectedSeed || selectedPerk) && remainingUses <= 0)
-    )
+    ) {
+      console.log("Early return due to:", {
+        isPerkIncompatible,
+        selectedSeed,
+        selectedPerk,
+        remainingUses,
+      });
       return;
+    }
 
-    setIsLocalLoading(true);
     try {
       if (
         selectedPerk &&
         ((selectedPerk.item.slug === "fertilizer" && isValidFertilizerTarget) ||
           (selectedPerk.item.slug !== "fertilizer" && isValidSpeedBoostTarget))
       ) {
-        await applyPerk({
+        applyPerk({
           x: cell.x,
           y: cell.y,
           itemSlug: selectedPerk.item.slug,
@@ -284,24 +282,37 @@ export default function GridCell({ cell }: GridCellProps) {
 
       if (cell.plantedAt && isReadyToHarvest) {
         if (cellRef.current) {
-          await harvestCrop({
+          harvestCrop({
             x: cell.x,
             y: cell.y,
           });
         }
-      } else if (selectedSeed && !cell.plantedAt) {
+        return;
+      }
+
+      if (selectedSeed && !cell.plantedAt) {
+        console.log("Attempting to plant:", {
+          x: cell.x,
+          y: cell.y,
+          seedType: selectedSeed,
+        });
+
         await plantSeed({
           x: cell.x,
           y: cell.y,
           seedType: selectedSeed,
         });
+
         setRemainingUses(Math.max(0, remainingUses - 1));
         if (remainingUses <= 1) {
           setSelectedSeed(null);
         }
       }
+      setIsLoading(false);
+    } catch (error) {
+      console.error("Planting failed:", error);
     } finally {
-      setIsLocalLoading(false);
+      setIsLoading(false);
     }
   };
 
@@ -330,7 +341,6 @@ export default function GridCell({ cell }: GridCellProps) {
   const cellClassName = `
     grid-cell
     aspect-square rounded-xl relative
-    ${isPending || isLocalLoading ? "opacity-30 cursor-not-allowed" : ""}
     ${
       isPerkIncompatible ||
       ((selectedSeed || selectedPerk) && remainingUses <= 0)
@@ -356,6 +366,7 @@ export default function GridCell({ cell }: GridCellProps) {
     ${selectedSeed && cell.plantedAt ? "opacity-50" : ""}
     ${!cell.plantedAt ? "drop-target" : ""}
     ${isDragOver ? "dragover" : ""}
+    ${isLoading ? "pointer-events-none" : ""}
     transition-all duration-200
   `;
 
@@ -380,9 +391,9 @@ export default function GridCell({ cell }: GridCellProps) {
           repeatType: "reverse",
         }}
       >
-        {(isPending || isLocalLoading) && (
-          <div className="absolute inset-0 flex items-center justify-center z-50 bg-black/10">
-            <div className="w-8 h-8 border-4 border-green-500 border-t-transparent rounded-full animate-spin"></div>
+        {isLoading && (
+          <div className="absolute inset-0 bg-black/50 rounded-xl flex items-center justify-center z-50">
+            <div className="w-8 h-8 border-4 border-white/20 border-t-white rounded-full animate-spin"></div>
           </div>
         )}
 

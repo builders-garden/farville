@@ -1,21 +1,15 @@
 "use client";
 
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useState,
-  useCallback,
-} from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import type { CropType, SeedType } from "../types/game";
-import { useAudio } from "./AudioContext";
 import { GameState, useGameState } from "@/hooks/use-game-state";
 import { useBuyItem } from "@/hooks/game-actions/use-buy-item";
 import { useExpandGrid } from "@/hooks/game-actions/use-expand-grid";
 import { useSellItem } from "@/hooks/game-actions/use-sell-item";
 import { UserItem } from "@/hooks/use-user-items";
-import { useBatchActions } from "@/hooks/use-batch-actions";
-import { ActionResult } from "@/app/api/batch-actions/route";
+import { usePlantSeed } from "@/hooks/game-actions/use-plant-seed";
+import { useHarvestCrop } from "@/hooks/game-actions/use-harvest-crop";
+import { useApplyPerk } from "@/hooks/game-actions/use-apply-perk";
 import { DbGridCell } from "@/supabase/types";
 
 // Update the OverlayType to be more flexible with parameters
@@ -25,14 +19,8 @@ export type OverlayConfig =
   | { type: "tutorial"; step?: number }
   | null;
 
-// Simplify PendingCell type
-interface PendingCell {
-  key: string;
-  timestamp: number;
-}
-
 // Update the floatingNumbers type to be an array
-interface FloatingNumberData {
+export interface FloatingNumberData {
   x: number; // screen x
   y: number; // screen y
   gridX: number; // grid x
@@ -40,7 +28,7 @@ interface FloatingNumberData {
   exp: number;
   amount: number;
   cropType: CropType;
-  id: string; // Add unique ID for managing multiple numbers
+  id: string;
 }
 
 // Update the context type
@@ -85,9 +73,6 @@ interface GameContextType {
   setActiveOverlay: (overlay: OverlayConfig) => void;
   tutorialComplete: boolean;
   setTutorialComplete: (complete: boolean) => void;
-  pendingCells: Map<string, PendingCell>;
-  addPendingCell: (x: number, y: number) => void;
-  removePendingCell: (x: number, y: number) => void;
   showLevelUpConfetti: boolean;
   floatingNumbers: FloatingNumberData[];
   remainingUses: number;
@@ -118,114 +103,58 @@ export function GameProvider({
   const [activeOverlay, setActiveOverlay] =
     useState<OverlayConfig>(initialOverlay);
   const [tutorialComplete, setTutorialComplete] = useState(true);
-  const [pendingCells, setPendingCells] = useState<Map<string, PendingCell>>(
-    new Map()
-  );
   const [showLevelUpConfetti, setShowLevelUpConfetti] = useState(false);
   const [floatingNumbers, setFloatingNumbers] = useState<FloatingNumberData[]>(
     []
   );
-  const { playSound } = useAudio();
   const [remainingUses, setRemainingUses] = useState<number>(0);
 
-  const addPendingCell = useCallback((x: number, y: number) => {
-    const key = `${x},${y}`;
-    setPendingCells((prev) => {
-      const next = new Map(prev);
-      next.set(key, { key, timestamp: Date.now() });
-      return next;
-    });
-  }, []);
+  const { mutate: buyItem } = useBuyItem({
+    refetchUser: refetch.user,
+    refetchUserItems: refetch.userItems,
+    isActionInProgress,
+    setIsActionInProgress,
+  });
 
-  const removePendingCell = useCallback((x: number, y: number) => {
-    const key = `${x},${y}`;
-    setPendingCells((prev) => {
-      const next = new Map(prev);
-      next.delete(key);
-      return next;
-    });
-  }, []);
+  const { mutate: sellItem } = useSellItem({
+    refetchUser: refetch.user,
+    refetchUserItems: refetch.userItems,
+    isActionInProgress,
+    setIsActionInProgress,
+  });
 
-  const { queueAction, isProcessing } = useBatchActions({
-    onProcessComplete: async (actions: ActionResult[]) => {
-      try {
-        // Optimistically update the grid state
-        const updatedCells = actions.map((action) => ({
-          ...action.cell,
-          x: action.cell.x,
-          y: action.cell.y,
-        }));
+  const { mutate: expandGrid } = useExpandGrid({
+    refetchGridCells: refetch.grid,
+    refetchUser: refetch.user,
+    isActionInProgress,
+    setIsActionInProgress,
+  });
 
-        updateGridCells(
-          updatedCells.map((cell) => ({
-            ...cell,
-            plantedAt: cell.plantedAt
-              ? new Date(cell.plantedAt).toISOString()
-              : null,
-            harvestAt: cell.harvestAt
-              ? new Date(cell.harvestAt).toISOString()
-              : null,
-            speedBoostedAt: cell.speedBoostedAt
-              ? new Date(cell.speedBoostedAt).toISOString()
-              : null,
-            createdAt: cell.createdAt
-              ? new Date(cell.createdAt).toISOString()
-              : "",
-          }))
-        );
+  const { mutate: plantSeedMutation } = usePlantSeed({
+    refetchGridCells: refetch.grid,
+    refetchUserItems: refetch.userItems,
+    isActionInProgress,
+    setIsActionInProgress,
+    updateGridCells,
+  });
 
-        // Still refetch in the background to ensure consistency
-        await Promise.all([
-          refetch.grid(),
-          refetch.user(),
-          refetch.userItems(),
-        ]).catch(console.error);
-      } catch (error) {
-        console.error("Failed to refresh state:", error);
-        // If there's an error, force refetch to ensure consistency
-        refetch.all().catch(console.error);
-      }
-    },
-    onCellComplete: (x, y) => {
-      removePendingCell(x, y);
-    },
-    onLevelUp: () => {
-      setShowLevelUpConfetti(true);
-      playSound("levelUp");
-      setTimeout(() => setShowLevelUpConfetti(false), 1500);
-    },
-    onHarvestReward: ({ x, y, exp, amount, cropType }) => {
-      const cellElement = document.querySelector(
-        `[data-x="${x}"][data-y="${y}"]`
-      );
-      if (cellElement) {
-        const rect = cellElement.getBoundingClientRect();
-        const newFloatingNumber = {
-          x: rect.left + rect.width / 2,
-          y: rect.top + rect.height / 2,
-          gridX: x,
-          gridY: y,
-          exp,
-          amount,
-          cropType,
-          id: `${Date.now()}-${x}-${y}`, // Add unique ID
-        };
+  const { mutate: harvestCropMutation } = useHarvestCrop({
+    refetchGridCells: refetch.grid,
+    refetchUserItems: refetch.userItems,
+    refetchUser: refetch.user,
+    isActionInProgress,
+    setIsActionInProgress,
+    updateGridCells,
+    setFloatingNumbers,
+    setShowLevelUpConfetti,
+  });
 
-        setFloatingNumbers((prev) => [...prev, newFloatingNumber]);
-
-        // Remove this specific floating number after animation
-        setTimeout(() => {
-          setFloatingNumbers((prev) =>
-            prev.filter((num) => num.id !== newFloatingNumber.id)
-          );
-        }, 1500);
-      }
-    },
-    onAddAction: (action) => {
-      console.log("Adding action:", action);
-      addPendingCell(action.x, action.y);
-    },
-    playSound,
+  const { mutate: applyPerkMutation } = useApplyPerk({
+    refetchGridCells: refetch.grid,
+    refetchUserItems: refetch.userItems,
+    isActionInProgress,
+    setIsActionInProgress,
+    updateGridCells,
   });
 
   useEffect(() => {
@@ -236,30 +165,6 @@ export function GameProvider({
       setTutorialComplete(!!tutorialComplete);
     }
   }, [state?.user.xp, loading]);
-
-  // Update isActionInProgress to use isProcessing from useBatchActions
-  useEffect(() => {
-    setIsActionInProgress(isProcessing);
-  }, [isProcessing]);
-
-  const { mutate: buyItem } = useBuyItem({
-    refetchUser: refetch.user,
-    refetchUserItems: refetch.userItems,
-    isActionInProgress,
-    setIsActionInProgress,
-  });
-  const { mutate: sellItem } = useSellItem({
-    refetchUser: refetch.user,
-    refetchUserItems: refetch.userItems,
-    isActionInProgress,
-    setIsActionInProgress,
-  });
-  const { mutate: expandGrid } = useExpandGrid({
-    isActionInProgress,
-    setIsActionInProgress,
-    refetchGridCells: refetch.grid,
-    refetchUser: refetch.user,
-  });
 
   if (!state) {
     return (
@@ -275,34 +180,13 @@ export function GameProvider({
         state,
         selectedSeed,
         setSelectedSeed,
-        selectedPerk: selectedPerk,
-        setSelectedPerk: setSelectedPerk,
-        plantSeed: (params) =>
-          queueAction({
-            type: "plant",
-            x: params.x,
-            y: params.y,
-            params: { seedType: params.seedType },
-          }),
-        harvestCrop: (params) =>
-          queueAction({
-            type: "harvest",
-            x: params.x,
-            y: params.y,
-          }),
+        selectedPerk,
+        setSelectedPerk,
+        plantSeed: plantSeedMutation,
+        harvestCrop: harvestCropMutation,
         fertilize: (params) =>
-          queueAction({
-            type: "fertilize",
-            x: params.x,
-            y: params.y,
-          }),
-        applyPerk: (params) =>
-          queueAction({
-            type: "perk",
-            x: params.x,
-            y: params.y,
-            params: { itemSlug: params.itemSlug, itemId: params.itemId },
-          }),
+          applyPerkMutation({ ...params, itemSlug: "fertilizer", itemId: 0 }),
+        applyPerk: applyPerkMutation,
         buyItem,
         sellItem,
         expandGrid,
@@ -329,9 +213,6 @@ export function GameProvider({
         setActiveOverlay,
         tutorialComplete,
         setTutorialComplete,
-        pendingCells,
-        addPendingCell,
-        removePendingCell,
         showLevelUpConfetti,
         floatingNumbers,
         remainingUses,

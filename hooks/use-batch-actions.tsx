@@ -47,104 +47,80 @@ export function useBatchActions({
 }: UseBatchActionsProps) {
   const [isProcessing, setIsProcessing] = useState(false);
 
-  const { mutate: processBatch } = useApiMutation<
+  const { mutate: processAction } = useApiMutation<
     ActionResult[],
-    BatchedAction[]
+    BatchedAction
   >({
     url: "/api/batch-actions",
     method: "POST",
-    body: (actions) => ({ actions }),
-    onMutate: (actions) => {
-      console.log("🚀 Starting batch mutation with actions:", actions);
-      actions.forEach((action) => {
-        onProcessStart?.(action.x, action.y);
-      });
+    body: (action) => ({ actions: [action] }), // Wrap single action in array
+    onMutate: (action) => {
+      console.log("🚀 Starting action:", action);
+      onProcessStart?.(action.x, action.y);
     },
     onError: (error) => {
-      console.error("❌ Batch mutation failed:", error);
+      console.error("❌ Action failed:", error);
     },
     onSuccess: async (results) => {
-      console.log("✅ Batch mutation completed with results:", results);
+      console.log("✅ Action completed with results:", results);
 
-      // Add a small delay before processing to ensure server state is settled
-      await new Promise((resolve) => setTimeout(resolve, 100));
+      const result = results[0]; // We only expect one result
 
-      // Process each result immediately to update UI state
-      for (const result of results) {
-        if (onCellComplete && result.cell) {
-          console.log("📱 Completing cell:", result.cell.x, result.cell.y);
-          if (
-            typeof result.cell.x === "number" &&
-            typeof result.cell.y === "number"
-          ) {
-            // Wait for cell completion before proceeding
-            await new Promise((resolve) => {
-              onCellComplete(result.cell.x, result.cell.y);
-              resolve(true);
-            });
-          }
-        }
-
-        if (playSound) {
-          console.log("🔊 Playing sound for action type:", result.type);
-          switch (result.type) {
-            case "plant":
-              playSound("plant");
-              break;
-            case "harvest":
-              playSound("harvest");
-              break;
-            case "fertilize":
-            case "perk":
-              playSound("fertilize");
-              break;
-          }
-        }
-
-        if (result.type === "harvest") {
-          const harvestResult = result as HarvestActionResult;
-          if (harvestResult.rewards?.didLevelUp) {
-            console.log("🎉 Level up triggered!");
-            onLevelUp?.();
-          }
-
-          if (harvestResult.rewards && onHarvestReward) {
-            console.log(
-              "💰 Processing harvest rewards:",
-              harvestResult.rewards
-            );
-            onHarvestReward({
-              x: result.cell?.x as number,
-              y: result.cell?.y as number,
-              exp: harvestResult.rewards.xp,
-              amount: harvestResult.rewards.amount,
-              cropType: harvestResult.rewards.cropType as CropType,
-            });
-          }
+      if (onCellComplete && result.cell) {
+        if (
+          typeof result.cell.x === "number" &&
+          typeof result.cell.y === "number"
+        ) {
+          onCellComplete(result.cell.x, result.cell.y);
         }
       }
 
-      // Add another small delay before final grid refresh
-      await new Promise((resolve) => setTimeout(resolve, 100));
+      if (playSound) {
+        switch (result.type) {
+          case "plant":
+            playSound("plant");
+            break;
+          case "harvest":
+            playSound("harvest");
+            break;
+          case "fertilize":
+          case "perk":
+            playSound("fertilize");
+            break;
+        }
+      }
 
-      // Now trigger the grid refresh
+      if (result.type === "harvest") {
+        const harvestResult = result as HarvestActionResult;
+        if (harvestResult.rewards?.didLevelUp) {
+          onLevelUp?.();
+        }
+
+        if (harvestResult.rewards && onHarvestReward) {
+          onHarvestReward({
+            x: result.cell?.x as number,
+            y: result.cell?.y as number,
+            exp: harvestResult.rewards.xp,
+            amount: harvestResult.rewards.amount,
+            cropType: harvestResult.rewards.cropType as CropType,
+          });
+        }
+      }
+
       await onProcessComplete?.(results);
     },
     onSettled: () => {
-      console.log("🏁 Batch processing complete, resetting state");
       setIsProcessing(false);
       actionQueue.setProcessing(false);
     },
   });
 
   const actionQueue = useActionQueue(
-    async (actions) => {
-      console.log("📤 Processing batch:", actions);
+    async (action) => {
       setIsProcessing(true);
-      await processBatch(actions);
+      await processAction(action);
     },
-    1000, // batch window
-    2 // max actions per batch
+    500 // debounce delay
   );
 
   const queueAction = useCallback(

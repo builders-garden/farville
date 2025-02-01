@@ -42,6 +42,7 @@ export async function POST(
   }
 
   let result: {
+    crop?: { id: number; slug: string };
     rewards?: { xp: number; amount: number };
   } | null = null;
 
@@ -87,6 +88,7 @@ export async function POST(
           harvestResult.rewards.amount
         );
         result = {
+          crop: harvestResult.crop,
           rewards: harvestResult.rewards,
         };
         trackEvent(Number(fid), "harvested-crop", {
