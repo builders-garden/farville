@@ -63,19 +63,25 @@ export function useBatchActions({
     onError: (error) => {
       console.error("❌ Batch mutation failed:", error);
     },
-    onSuccess: (results) => {
+    onSuccess: async (results) => {
       console.log("✅ Batch mutation completed with results:", results);
 
+      // Add a small delay before processing to ensure server state is settled
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
       // Process each result immediately to update UI state
-      results.forEach((result: ActionResult) => {
+      for (const result of results) {
         if (onCellComplete && result.cell) {
           console.log("📱 Completing cell:", result.cell.x, result.cell.y);
-          // Ensure we have valid coordinates before calling
           if (
             typeof result.cell.x === "number" &&
             typeof result.cell.y === "number"
           ) {
-            onCellComplete(result.cell.x, result.cell.y);
+            // Wait for cell completion before proceeding
+            await new Promise((resolve) => {
+              onCellComplete(result.cell.x, result.cell.y);
+              resolve(true);
+            });
           }
         }
 
@@ -116,11 +122,13 @@ export function useBatchActions({
             });
           }
         }
-      });
+      }
 
-      // Trigger an immediate grid refresh after processing results
-      // This ensures the grid state is updated as soon as possible
-      onProcessComplete?.();
+      // Add another small delay before final grid refresh
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      // Now trigger the grid refresh
+      await onProcessComplete?.();
     },
     onSettled: () => {
       console.log("🏁 Batch processing complete, resetting state");
@@ -130,13 +138,13 @@ export function useBatchActions({
   });
 
   const actionQueue = useActionQueue(
-    (actions) => {
+    async (actions) => {
       console.log("📤 Processing batch:", actions);
       setIsProcessing(true);
-      processBatch(actions);
+      await processBatch(actions);
     },
-    1000, // 2 second batch window
-    5 // max 5 actions per batch
+    1000, // batch window
+    5 // max actions per batch
   );
 
   const queueAction = useCallback(

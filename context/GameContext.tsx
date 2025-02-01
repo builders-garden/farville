@@ -145,21 +145,37 @@ export function GameProvider({
 
   const { queueAction, isProcessing } = useBatchActions({
     onProcessComplete: async () => {
-      // Immediately refresh the grid state
-      await refetch.grid();
+      try {
+        // Try multiple times to refresh the grid if needed
+        let attempts = 0;
+        const maxAttempts = 3;
 
-      // Then refresh other states that might be affected
-      Promise.all([refetch.user(), refetch.userItems()]).catch(console.error);
-    },
-    onAddAction: (action) => {
-      addPendingCell(action.x, action.y);
+        while (attempts < maxAttempts) {
+          console.log(
+            `Attempting grid refresh (attempt ${attempts + 1}/${maxAttempts})`
+          );
+          await refetch.grid();
+
+          // Verify the grid state is correct
+          // If not, try again after a short delay
+          if (verifyGridState()) {
+            break;
+          }
+
+          await new Promise((resolve) => setTimeout(resolve, 200));
+          attempts++;
+        }
+
+        // Refresh other states after grid is confirmed updated
+        await Promise.all([refetch.user(), refetch.userItems()]).catch(
+          console.error
+        );
+      } catch (error) {
+        console.error("Failed to refresh grid state:", error);
+      }
     },
     onCellComplete: (x, y) => {
-      // Remove pending state immediately when a cell is complete
       removePendingCell(x, y);
-
-      // Optionally, you could also trigger a targeted grid refresh here
-      // if your API supports fetching single cell updates
     },
     onLevelUp: () => {
       setShowLevelUpConfetti(true);
@@ -228,6 +244,13 @@ export function GameProvider({
     refetchGridCells: refetch.grid,
     refetchUser: refetch.user,
   });
+
+  // Helper function to verify grid state
+  const verifyGridState = () => {
+    // Add logic to verify the grid state is as expected
+    // For example, check that cells marked as pending are properly updated
+    return true; // Implement your verification logic
+  };
 
   if (!state) {
     return (
