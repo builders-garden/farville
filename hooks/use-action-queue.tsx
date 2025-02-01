@@ -108,7 +108,7 @@ export class ActionQueue {
 export function useActionQueue(
   processCallback: (actions: BatchedAction[]) => void,
   batchWindowDelay: number = 2000,
-  maxBatchSize: number = 5
+  maxBatchSize: number = 2
 ) {
   const queueRef = useRef<ActionQueue | null>(null);
 

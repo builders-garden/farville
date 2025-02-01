@@ -144,7 +144,7 @@ export function useBatchActions({
       await processBatch(actions);
     },
     1000, // batch window
-    5 // max actions per batch
+    2 // max actions per batch
   );
 
   const queueAction = useCallback(
