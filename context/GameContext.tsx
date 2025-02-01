@@ -144,10 +144,12 @@ export function GameProvider({
   }, []);
 
   const { queueAction, isProcessing } = useBatchActions({
-    onProcessComplete: () => {
-      refetch.grid();
-      refetch.user();
-      refetch.userItems();
+    onProcessComplete: async () => {
+      await Promise.all([
+        refetch.grid(),
+        refetch.user(),
+        refetch.userItems(),
+      ]);
     },
     onAddAction: (action) => {
       addPendingCell(action.x, action.y);
