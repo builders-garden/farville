@@ -255,6 +255,7 @@ export default function GridCell({ cell }: GridCellProps) {
           selectedPerk,
           remainingUses,
         });
+        setIsLoading(false);
         return;
       }
       if (
