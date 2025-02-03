@@ -236,16 +236,16 @@ export default function GridCell({ cell }: GridCellProps) {
         y: cell.y,
         itemSlug: boostType,
         itemId: boostItem.itemId,
-        setIsLoading
+        setIsLoading,
       });
       setShowPopup(false);
     }
   };
 
   const handleClick = async () => {
-    console.log("Set is loading")
-    setIsLoading(true);
+    console.log("Set is loading");
     try {
+      setIsLoading(true);
       if (
         isPerkIncompatible ||
         ((selectedSeed || selectedPerk) && remainingUses <= 0)
@@ -268,7 +268,7 @@ export default function GridCell({ cell }: GridCellProps) {
           y: cell.y,
           itemSlug: selectedPerk.item.slug,
           itemId: selectedPerk.itemId,
-          setIsLoading
+          setIsLoading,
         });
         setRemainingUses(remainingUses - 1);
         if (remainingUses <= 1) {
@@ -312,13 +312,12 @@ export default function GridCell({ cell }: GridCellProps) {
           setSelectedSeed(null);
         }
       }
-
     } catch (error) {
       console.error("Planting failed:", error);
     } finally {
       // setIsLoading(false)
     }
-    console.log("finish")
+    console.log("finish");
   };
 
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
@@ -360,7 +359,7 @@ export default function GridCell({ cell }: GridCellProps) {
     ${
       (selectedPerk && !isValidFertilizerTarget && !isValidSpeedBoostTarget) ||
       isPerkIncompatible
-        ? "opacity-30 bg-gray-800"
+        ? "opacity-30 bg-gray-800 pointer-events-none cursor-not-allowed"
         : ""
     }
     ${
@@ -368,7 +367,11 @@ export default function GridCell({ cell }: GridCellProps) {
         ? "border-4 border-green-400 shadow-lg"
         : ""
     }
-    ${selectedSeed && cell.plantedAt ? "opacity-50" : ""}
+    ${
+      selectedSeed && cell.plantedAt
+        ? "opacity-50 pointer-events-none cursor-not-allowed"
+        : ""
+    }
     ${!cell.plantedAt ? "drop-target" : ""}
     ${isDragOver ? "dragover" : ""}
     ${isLoading ? "pointer-events-none" : ""}
@@ -397,7 +400,7 @@ export default function GridCell({ cell }: GridCellProps) {
         }}
       >
         {isLoading && (
-          <div className="absolute inset-0 bg-black/50 rounded-lg flex items-center justify-center z-50">
+          <div className="absolute inset-0 bg-black/50 rounded-sm flex items-center justify-center z-50">
             <div className="w-8 h-8 border-4 border-white/20 border-t-white rounded-full animate-spin"></div>
           </div>
         )}
