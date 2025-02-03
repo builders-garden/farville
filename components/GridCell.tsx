@@ -231,19 +231,20 @@ export default function GridCell({ cell }: GridCellProps) {
       (item) => item.item.slug === boostType
     );
     if (boostItem) {
-      await applyPerk({
+      applyPerk({
         x: cell.x,
         y: cell.y,
         itemSlug: boostType,
         itemId: boostItem.itemId,
+        setIsLoading,
       });
       setShowPopup(false);
     }
   };
 
   const handleClick = async () => {
-    setIsLoading(true);
     try {
+      setIsLoading(true);
       if (
         isPerkIncompatible ||
         ((selectedSeed || selectedPerk) && remainingUses <= 0)
@@ -266,6 +267,7 @@ export default function GridCell({ cell }: GridCellProps) {
           y: cell.y,
           itemSlug: selectedPerk.item.slug,
           itemId: selectedPerk.itemId,
+          setIsLoading,
         });
         setRemainingUses(remainingUses - 1);
         if (remainingUses <= 1) {
@@ -284,6 +286,7 @@ export default function GridCell({ cell }: GridCellProps) {
           harvestCrop({
             x: cell.x,
             y: cell.y,
+            setIsLoading,
           });
         }
         return;
@@ -296,10 +299,11 @@ export default function GridCell({ cell }: GridCellProps) {
           seedType: selectedSeed,
         });
 
-        await plantSeed({
+        plantSeed({
           x: cell.x,
           y: cell.y,
           seedType: selectedSeed,
+          setIsLoading,
         });
 
         setRemainingUses(Math.max(0, remainingUses - 1));
@@ -307,11 +311,10 @@ export default function GridCell({ cell }: GridCellProps) {
           setSelectedSeed(null);
         }
       }
-      setIsLoading(false);
     } catch (error) {
       console.error("Planting failed:", error);
     } finally {
-      setIsLoading(false);
+      // setIsLoading(false)
     }
   };
 
@@ -326,13 +329,13 @@ export default function GridCell({ cell }: GridCellProps) {
     e.preventDefault();
     const seedType = e.dataTransfer.getData("seedType") as SeedType;
     if (!cell.plantedAt) {
-      await plantSeed({ x: cell.x, y: cell.y, seedType });
+      plantSeed({ x: cell.x, y: cell.y, seedType, setIsLoading });
     }
   };
 
   const handleFertilize = async () => {
     if (hasFertilizer) {
-      await fertilize({ x: cell.x, y: cell.y });
+      fertilize({ x: cell.x, y: cell.y, setIsLoading });
       setShowPopup(false);
     }
   };
@@ -354,7 +357,7 @@ export default function GridCell({ cell }: GridCellProps) {
     ${
       (selectedPerk && !isValidFertilizerTarget && !isValidSpeedBoostTarget) ||
       isPerkIncompatible
-        ? "opacity-30 bg-gray-800"
+        ? "opacity-30 bg-gray-800 pointer-events-none cursor-not-allowed"
         : ""
     }
     ${
@@ -362,7 +365,11 @@ export default function GridCell({ cell }: GridCellProps) {
         ? "border-4 border-green-400 shadow-lg"
         : ""
     }
-    ${selectedSeed && cell.plantedAt ? "opacity-50" : ""}
+    ${
+      selectedSeed && cell.plantedAt
+        ? "opacity-50 pointer-events-none cursor-not-allowed"
+        : ""
+    }
     ${!cell.plantedAt ? "drop-target" : ""}
     ${isDragOver ? "dragover" : ""}
     ${isLoading ? "pointer-events-none" : ""}
@@ -391,7 +398,7 @@ export default function GridCell({ cell }: GridCellProps) {
         }}
       >
         {isLoading && (
-          <div className="absolute inset-0 bg-black/50 rounded-lg flex items-center justify-center z-50">
+          <div className="absolute inset-0 bg-black/50 rounded-sm flex items-center justify-center z-50">
             <div className="w-8 h-8 border-4 border-white/20 border-t-white rounded-full animate-spin"></div>
           </div>
         )}
@@ -428,6 +435,7 @@ export default function GridCell({ cell }: GridCellProps) {
                 }
               : undefined
           }
+          isLoading={isLoading}
         />
 
         {/* Fertilizer/Speed Boost Hover Effect */}

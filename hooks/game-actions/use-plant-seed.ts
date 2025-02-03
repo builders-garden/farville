@@ -1,11 +1,11 @@
 "use client";
 
 import { useAudio } from "@/context/AudioContext";
-import { SeedType } from "@/types/game";
+import { CropType, SeedType } from "@/types/game";
 import { useApiMutation } from "@/hooks/use-api-mutation";
-import { useDebounce } from "@/hooks/use-debounce";
 import { DbGridCell } from "@/supabase/types";
 import { CROP_DATA } from "@/lib/game-constants";
+import { Dispatch, SetStateAction } from "react";
 
 export const usePlantSeed = ({
   isActionInProgress,
@@ -14,6 +14,7 @@ export const usePlantSeed = ({
   refetchUserItems,
   updateGridCells,
   onSuccess,
+  handleOperationCounter,
 }: {
   isActionInProgress: boolean;
   setIsActionInProgress: (value: boolean) => void;
@@ -21,18 +22,19 @@ export const usePlantSeed = ({
   refetchUserItems: () => void;
   updateGridCells: (cells: Partial<DbGridCell>[]) => void;
   onSuccess?: () => void;
+  handleOperationCounter: {
+    increase: () => void;
+    decrease: () => void;
+  }
 }) => {
   const { playSound } = useAudio();
 
   const mutation = useApiMutation({
-    url: ({ x, y }: { x: number; y: number; seedType: SeedType }) =>
+    url: ({ x, y }: { x: number; y: number; seedType: SeedType; setIsLoading: Dispatch<SetStateAction<boolean>> }) =>
       `/api/grid-cells/${x}/${y}`,
     body: ({ seedType }) => ({ action: "plant", seedType }),
     onMutate: ({ x, y, seedType }) => {
-      if (isActionInProgress) {
-        return;
-      }
-      setIsActionInProgress(true);
+      handleOperationCounter.increase();
 
       // Optimistically update the grid cell
       const now = new Date();
@@ -43,7 +45,7 @@ export const usePlantSeed = ({
         {
           x,
           y,
-          cropType: seedType,
+          cropType: seedType.replace("-seeds", "") as CropType,
           plantedAt: now.toISOString(),
           harvestAt: harvestAt.toISOString(),
           isReadyToHarvest: false,
@@ -53,21 +55,16 @@ export const usePlantSeed = ({
       playSound("plant");
     },
     onSuccess: () => {
-      refetchGridCells();
-      refetchUserItems();
       onSuccess?.();
     },
     onError: (error) => {
       console.error("Plant mutation error:", error);
-      refetchGridCells();
     },
-    onSettled: () => {
-      setIsActionInProgress(false);
+    onSettled: (_data, _error, { setIsLoading }) => {
+      handleOperationCounter.decrease();
+      setIsLoading(false);
     },
   });
 
-  return {
-    ...mutation,
-    mutate: useDebounce(mutation.mutate, 500),
-  };
+  return mutation;
 };

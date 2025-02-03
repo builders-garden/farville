@@ -105,7 +105,7 @@ export const useGameState = () => {
       ...prevState,
       ...newState,
     }));
-  }, [userItems, items, user, gridCells]);
+  }, [userItems, items, user, gridCells, claimableQuests]);
 
   useEffect(() => {
     updateState();

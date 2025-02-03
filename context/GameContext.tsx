@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, Dispatch, SetStateAction, useContext, useEffect, useRef, useState } from "react";
 import type { CropType, SeedType } from "../types/game";
 import { GameState, useGameState } from "@/hooks/use-game-state";
 import { useBuyItem } from "@/hooks/game-actions/use-buy-item";
@@ -38,14 +38,15 @@ interface GameContextType {
   setSelectedSeed: (seed: SeedType | null) => void;
   selectedPerk: UserItem | null;
   setSelectedPerk: (perk: UserItem | null) => void;
-  plantSeed: (params: { x: number; y: number; seedType: SeedType }) => void;
-  harvestCrop: (params: { x: number; y: number }) => void;
-  fertilize: (params: { x: number; y: number }) => void;
+  plantSeed: (params: { x: number; y: number; seedType: SeedType, setIsLoading: Dispatch<SetStateAction<boolean>> }) => void;
+  harvestCrop: (params: { x: number; y: number; setIsLoading: Dispatch<SetStateAction<boolean>> }) => void;
+  fertilize: (params: { x: number; y: number; setIsLoading: Dispatch<SetStateAction<boolean>> }) => void;
   applyPerk: (params: {
     x: number;
     y: number;
     itemSlug: string;
     itemId: number;
+    setIsLoading: Dispatch<SetStateAction<boolean>>;
   }) => void;
   buyItem: (params: { itemId: number; quantity: number }) => void;
   sellItem: (params: { itemId: number; quantity: number }) => void;
@@ -108,6 +109,40 @@ export function GameProvider({
     []
   );
   const [remainingUses, setRemainingUses] = useState<number>(0);
+  const [isGridDoingOperations, setIsGridDoingOperations] = useState(false);
+  const [operationsCounter, setOperationsCounter] = useState(0);
+  const prevIsGridDoingOperationsRef = useRef(isGridDoingOperations);
+
+  useEffect(() => {
+    if (operationsCounter === 0) {
+      setIsGridDoingOperations(false);
+    } else {
+      setIsGridDoingOperations(true);
+    }
+  }, [operationsCounter]);
+
+  const handleIncreaseOperationsCounter = () => {
+    setOperationsCounter((prev) => prev + 1);
+  };
+
+  const handleDecreaseOperationsCounter = () => {
+    setOperationsCounter((prev) => prev - 1);
+  };
+
+  const handleOperationCounter = {
+    increase: handleIncreaseOperationsCounter,
+    decrease: handleDecreaseOperationsCounter,
+  };
+
+  useEffect(() => {
+    const prevIsGridDoingOperations = prevIsGridDoingOperationsRef.current;
+    if (prevIsGridDoingOperations && !isGridDoingOperations) {
+      refetch.grid();
+      refetch.userItems();
+      refetch.user();
+    }
+    prevIsGridDoingOperationsRef.current = isGridDoingOperations;
+  }, [isGridDoingOperations, refetch]);
 
   const { mutate: buyItem } = useBuyItem({
     refetchUser: refetch.user,
@@ -136,6 +171,7 @@ export function GameProvider({
     isActionInProgress,
     setIsActionInProgress,
     updateGridCells,
+    handleOperationCounter
   });
 
   const { mutate: harvestCropMutation } = useHarvestCrop({
@@ -147,6 +183,7 @@ export function GameProvider({
     updateGridCells,
     setFloatingNumbers,
     setShowLevelUpConfetti,
+    handleOperationCounter
   });
 
   const { mutate: applyPerkMutation } = useApplyPerk({
@@ -155,6 +192,7 @@ export function GameProvider({
     isActionInProgress,
     setIsActionInProgress,
     updateGridCells,
+    handleOperationCounter
   });
 
   useEffect(() => {
@@ -185,7 +223,7 @@ export function GameProvider({
         plantSeed: plantSeedMutation,
         harvestCrop: harvestCropMutation,
         fertilize: (params) =>
-          applyPerkMutation({ ...params, itemSlug: "fertilizer", itemId: 0 }),
+          applyPerkMutation({ ...params, itemSlug: "fertilizer", itemId: 0, setIsLoading: params.setIsLoading }),
         applyPerk: applyPerkMutation,
         buyItem,
         sellItem,
