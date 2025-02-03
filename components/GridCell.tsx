@@ -278,6 +278,7 @@ export default function GridCell({ cell }: GridCellProps) {
 
       if (cell.plantedAt && !isReadyToHarvest) {
         setShowPopup(true);
+        setIsLoading(false);
         return;
       }
 
