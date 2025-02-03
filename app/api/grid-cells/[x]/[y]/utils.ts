@@ -1,15 +1,18 @@
 import { CROP_DATA } from "@/lib/game-constants";
+import { trackEvent } from "@/lib/posthog/server";
+import {
+  removeUserItem,
+  addUserItem,
+  updateUserXP,
+} from "@/lib/prisma/queries";
 import { qstashPublishJSON } from "@/lib/qstash";
 import {
   getUserItemByItemId,
   getGridCell,
   plantGridCell,
-  removeUserItem,
   getItemBySlug,
   fertilizeGridCell,
   harvestGridCell,
-  addUserItem,
-  updateUserXP,
   speedBoostGridCell,
 } from "@/supabase/queries";
 import { CropType, SeedType } from "@/types/game";
@@ -102,8 +105,18 @@ export const rewardUser = async (
   const roll = Math.random();
   const cropReward = roll < 0.6 ? 1 : roll < 0.9 ? 2 : 3;
   await addUserItem(fid, cropId, cropReward);
-  const { didLevelUp, newLevel } = await updateUserXP(fid, xp);
-  return { xp, amount: cropReward, didLevelUp, newLevel };
+  const { didLevelUp, newLevel, newXP } = await updateUserXP(fid, xp);
+  if (didLevelUp) {
+    trackEvent(fid, "leveled-up", {
+      xp: newXP,
+      level: newLevel,
+    });
+  }
+  console.log("Rewarding user", {
+    xp,
+    amount: cropReward,
+  });
+  return { xp, amount: cropReward, didLevelUp, newLevel, newXP };
 };
 
 export async function sendQuestsCalculation(

@@ -78,7 +78,7 @@ export const CROP_DATA: { [key: string]: Crop } = {
     rewardXP: 12,
   },
   carrot: {
-    growthTime: 6 * 3600000, // 6h
+    growthTime: 6 * 1000, // 6h
     deathTime: 3.3 * 3600000, // 3.3h
     rewardXP: 10,
   },
@@ -235,21 +235,29 @@ export const LEVEL_REWARDS = [
   },
 ];
 
-
-export const SPEED_BOOST: { [key: string]: { boost: number; duration: number; applyTo: CropType[] } } = {
-  "nitrogen": {
+export const SPEED_BOOST: {
+  [key: string]: { boost: number; duration: number; applyTo: CropType[] };
+} = {
+  nitrogen: {
     boost: 1.25,
     duration: 7200000, // 2 hours
     applyTo: [CropType.Carrot, CropType.Wheat, CropType.Radish],
   },
-  "potassium": {
+  potassium: {
     boost: 1.5,
     duration: 7200000, // 2 hours
-    applyTo: [CropType.Lettuce, CropType.Tomato, CropType.Potato, CropType.Corn, CropType.Eggplant, CropType.Tomato],
+    applyTo: [
+      CropType.Lettuce,
+      CropType.Tomato,
+      CropType.Potato,
+      CropType.Corn,
+      CropType.Eggplant,
+      CropType.Tomato,
+    ],
   },
   phosphorus: {
     boost: 2,
     duration: 7200000, // 2 hours
     applyTo: [CropType.Strawberry, CropType.Watermelon, CropType.Pumpkin],
   },
-}
+};
