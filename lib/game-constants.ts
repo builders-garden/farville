@@ -78,7 +78,7 @@ export const CROP_DATA: { [key: string]: Crop } = {
     rewardXP: 12,
   },
   carrot: {
-    growthTime: 6 * 1000, // 6h
+    growthTime: 6 * 3600000, // 6h
     deathTime: 3.3 * 3600000, // 3.3h
     rewardXP: 10,
   },
