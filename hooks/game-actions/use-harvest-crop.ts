@@ -2,10 +2,10 @@
 
 import { useAudio } from "@/context/AudioContext";
 import { useApiMutation } from "@/hooks/use-api-mutation";
-import { useDebounce } from "@/hooks/use-debounce";
 import { DbGridCell, DbItem } from "@/supabase/types";
 import { FloatingNumberData } from "@/context/GameContext";
 import { CropType } from "@/types/game";
+import { Dispatch, SetStateAction } from "react";
 
 interface HarvestResponse {
   crop: DbItem;
@@ -26,6 +26,7 @@ export const useHarvestCrop = ({
   updateGridCells,
   setFloatingNumbers,
   setShowLevelUpConfetti,
+  handleOperationCounter,
 }: {
   refetchGridCells: () => Promise<void>;
   refetchUserItems: () => Promise<void>;
@@ -37,15 +38,20 @@ export const useHarvestCrop = ({
     fn: (prev: FloatingNumberData[]) => FloatingNumberData[]
   ) => void;
   setShowLevelUpConfetti: (show: boolean) => void;
+  handleOperationCounter: {
+    increase: () => void;
+    decrease: () => void;
+  }
 }) => {
   const { playSound } = useAudio();
-  const mutation = useApiMutation<HarvestResponse, { x: number; y: number }>({
+  const mutation = useApiMutation<HarvestResponse, { x: number; y: number; setIsLoading: Dispatch<SetStateAction<boolean>> }>({
     url: (variables) => `/api/grid-cells/${variables.x}/${variables.y}`,
     body: () => ({ action: "harvest" }),
-    onMutate: ({ x, y }) => {
-      if (isActionInProgress) return;
-      setIsActionInProgress(true);
-
+    onMutate: () => {
+      handleOperationCounter.increase();
+    },
+    onSuccess: (data, variables) => {
+      const {x, y} = variables;
       // Optimistically update the grid cell
       updateGridCells([
         {
@@ -57,20 +63,13 @@ export const useHarvestCrop = ({
           isReadyToHarvest: false,
         },
       ]);
-
       playSound("harvest");
-    },
-    onSuccess: (data, variables) => {
-      refetchGridCells();
-      refetchUserItems();
-      refetchUser();
-
       // Add floating numbers for XP and harvest amount
       const newFloatingNumber = {
-        x: variables.x * 32, // Adjust multiplier based on your grid cell size
-        y: variables.y * 32,
-        gridX: variables.x,
-        gridY: variables.y,
+        x: x * 32, // Adjust multiplier based on your grid cell size
+        y: y * 32,
+        gridX: x,
+        gridY: y,
         exp: data.rewards.xp,
         amount: data.rewards.amount,
         cropType: data.crop?.slug as CropType,
@@ -90,15 +89,13 @@ export const useHarvestCrop = ({
     },
     onError: () => {
       // On error, refetch to restore correct state
-      refetchGridCells();
+      // refetchGridCells();
     },
-    onSettled: () => {
-      setIsActionInProgress(false);
+    onSettled: (_data, _error, { setIsLoading }) => {
+      handleOperationCounter.decrease();
+      setIsLoading(false);
     },
   });
 
-  return {
-    ...mutation,
-    mutate: useDebounce(mutation.mutate, 500),
-  };
+  return mutation;
 };

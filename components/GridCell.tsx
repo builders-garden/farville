@@ -236,6 +236,7 @@ export default function GridCell({ cell }: GridCellProps) {
         y: cell.y,
         itemSlug: boostType,
         itemId: boostItem.itemId,
+        setIsLoading
       });
       setShowPopup(false);
     }
@@ -267,6 +268,7 @@ export default function GridCell({ cell }: GridCellProps) {
           y: cell.y,
           itemSlug: selectedPerk.item.slug,
           itemId: selectedPerk.itemId,
+          setIsLoading
         });
         setRemainingUses(remainingUses - 1);
         if (remainingUses <= 1) {
@@ -285,6 +287,7 @@ export default function GridCell({ cell }: GridCellProps) {
           harvestCrop({
             x: cell.x,
             y: cell.y,
+            setIsLoading,
           });
         }
         return;
@@ -335,7 +338,7 @@ export default function GridCell({ cell }: GridCellProps) {
 
   const handleFertilize = async () => {
     if (hasFertilizer) {
-      fertilize({ x: cell.x, y: cell.y });
+      fertilize({ x: cell.x, y: cell.y, setIsLoading });
       setShowPopup(false);
     }
   };

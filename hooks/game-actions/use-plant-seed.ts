@@ -1,7 +1,7 @@
 "use client";
 
 import { useAudio } from "@/context/AudioContext";
-import { SeedType } from "@/types/game";
+import { CropType, SeedType } from "@/types/game";
 import { useApiMutation } from "@/hooks/use-api-mutation";
 import { DbGridCell } from "@/supabase/types";
 import { CROP_DATA } from "@/lib/game-constants";
@@ -14,6 +14,7 @@ export const usePlantSeed = ({
   refetchUserItems,
   updateGridCells,
   onSuccess,
+  handleOperationCounter,
 }: {
   isActionInProgress: boolean;
   setIsActionInProgress: (value: boolean) => void;
@@ -21,6 +22,10 @@ export const usePlantSeed = ({
   refetchUserItems: () => void;
   updateGridCells: (cells: Partial<DbGridCell>[]) => void;
   onSuccess?: () => void;
+  handleOperationCounter: {
+    increase: () => void;
+    decrease: () => void;
+  }
 }) => {
   const { playSound } = useAudio();
 
@@ -29,10 +34,7 @@ export const usePlantSeed = ({
       `/api/grid-cells/${x}/${y}`,
     body: ({ seedType }) => ({ action: "plant", seedType }),
     onMutate: ({ x, y, seedType }) => {
-      if (isActionInProgress) {
-        return;
-      }
-      setIsActionInProgress(true);
+      handleOperationCounter.increase();
 
       // Optimistically update the grid cell
       const now = new Date();
@@ -43,7 +45,7 @@ export const usePlantSeed = ({
         {
           x,
           y,
-          cropType: seedType,
+          cropType: seedType.replace("-seeds", "") as CropType,
           plantedAt: now.toISOString(),
           harvestAt: harvestAt.toISOString(),
           isReadyToHarvest: false,
@@ -53,16 +55,13 @@ export const usePlantSeed = ({
       playSound("plant");
     },
     onSuccess: () => {
-      refetchGridCells();
-      refetchUserItems();
       onSuccess?.();
     },
     onError: (error) => {
       console.error("Plant mutation error:", error);
-      refetchGridCells();
     },
     onSettled: (_data, _error, { setIsLoading }) => {
-      setIsActionInProgress(false);
+      handleOperationCounter.decrease();
       setIsLoading(false);
     },
   });

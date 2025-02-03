@@ -2,8 +2,8 @@
 
 import { useAudio } from "@/context/AudioContext";
 import { useApiMutation } from "@/hooks/use-api-mutation";
-import { useDebounce } from "@/hooks/use-debounce";
 import { DbGridCell } from "@/supabase/types";
+import { Dispatch, SetStateAction } from "react";
 
 export const useApplyPerk = ({
   isActionInProgress,
@@ -11,12 +11,17 @@ export const useApplyPerk = ({
   refetchGridCells,
   refetchUserItems,
   updateGridCells,
+  handleOperationCounter,
 }: {
   isActionInProgress: boolean;
   setIsActionInProgress: (value: boolean) => void;
   refetchGridCells: () => Promise<void>;
   refetchUserItems: () => Promise<void>;
   updateGridCells: (cells: Partial<DbGridCell>[]) => void;
+  handleOperationCounter: {
+    increase: () => void;
+    decrease: () => void;
+  }
 }) => {
   const { playSound } = useAudio();
 
@@ -29,15 +34,15 @@ export const useApplyPerk = ({
       y: number;
       itemSlug: string;
       itemId: number;
+      setIsLoading: Dispatch<SetStateAction<boolean>>
     }) => `/api/grid-cells/${x}/${y}`,
     body: ({ itemSlug, itemId }: { itemSlug: string; itemId: number }) => ({
       action: "apply-perk",
       itemSlug,
       itemId,
     }),
-    onMutate: ({ x, y, itemSlug }) => {
-      if (isActionInProgress) return;
-      setIsActionInProgress(true);
+    onMutate: ({x,y,itemSlug}) => {
+      handleOperationCounter.increase();
 
       // Optimistically update the grid cell based on perk type
       const updates: Partial<DbGridCell> = {
@@ -54,21 +59,19 @@ export const useApplyPerk = ({
       updateGridCells([updates]);
       playSound("fertilize");
     },
-    onSuccess: () => {
-      refetchGridCells();
-      refetchUserItems();
+    onSuccess: (
+      
+    ) => {
+
+      
     },
     onError: () => {
-      // On error, refetch to restore correct state
-      refetchGridCells();
     },
-    onSettled: () => {
-      setIsActionInProgress(false);
+    onSettled: (_data, _error, { setIsLoading }) => {
+      handleOperationCounter.decrease();
+      setIsLoading(false);
     },
   });
 
-  return {
-    ...mutation,
-    mutate: useDebounce(mutation.mutate, 500),
-  };
+  return mutation;
 };
