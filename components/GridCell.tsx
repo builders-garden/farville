@@ -243,7 +243,6 @@ export default function GridCell({ cell }: GridCellProps) {
   };
 
   const handleClick = async () => {
-    console.log("Set is loading");
     try {
       setIsLoading(true);
       if (
@@ -317,7 +316,6 @@ export default function GridCell({ cell }: GridCellProps) {
     } finally {
       // setIsLoading(false)
     }
-    console.log("finish");
   };
 
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
