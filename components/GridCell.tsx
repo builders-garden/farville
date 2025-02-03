@@ -243,6 +243,14 @@ export default function GridCell({ cell }: GridCellProps) {
   };
 
   const handleClick = async () => {
+    if (
+      !cell.plantedAt &&
+      !isReadyToHarvest &&
+      !selectedSeed &&
+      !selectedPerk
+    ) {
+      return;
+    }
     try {
       setIsLoading(true);
       if (
