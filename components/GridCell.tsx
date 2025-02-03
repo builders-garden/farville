@@ -231,7 +231,7 @@ export default function GridCell({ cell }: GridCellProps) {
       (item) => item.item.slug === boostType
     );
     if (boostItem) {
-      await applyPerk({
+      applyPerk({
         x: cell.x,
         y: cell.y,
         itemSlug: boostType,
@@ -242,6 +242,7 @@ export default function GridCell({ cell }: GridCellProps) {
   };
 
   const handleClick = async () => {
+    console.log("Set is loading")
     setIsLoading(true);
     try {
       if (
@@ -296,10 +297,11 @@ export default function GridCell({ cell }: GridCellProps) {
           seedType: selectedSeed,
         });
 
-        await plantSeed({
+        plantSeed({
           x: cell.x,
           y: cell.y,
           seedType: selectedSeed,
+          setIsLoading,
         });
 
         setRemainingUses(Math.max(0, remainingUses - 1));
@@ -307,12 +309,13 @@ export default function GridCell({ cell }: GridCellProps) {
           setSelectedSeed(null);
         }
       }
-      setIsLoading(false);
+
     } catch (error) {
       console.error("Planting failed:", error);
     } finally {
-      setIsLoading(false);
+      // setIsLoading(false)
     }
+    console.log("finish")
   };
 
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
@@ -326,13 +329,13 @@ export default function GridCell({ cell }: GridCellProps) {
     e.preventDefault();
     const seedType = e.dataTransfer.getData("seedType") as SeedType;
     if (!cell.plantedAt) {
-      await plantSeed({ x: cell.x, y: cell.y, seedType });
+      plantSeed({ x: cell.x, y: cell.y, seedType, setIsLoading });
     }
   };
 
   const handleFertilize = async () => {
     if (hasFertilizer) {
-      await fertilize({ x: cell.x, y: cell.y });
+      fertilize({ x: cell.x, y: cell.y });
       setShowPopup(false);
     }
   };
@@ -428,6 +431,7 @@ export default function GridCell({ cell }: GridCellProps) {
                 }
               : undefined
           }
+          isLoading={isLoading}
         />
 
         {/* Fertilizer/Speed Boost Hover Effect */}

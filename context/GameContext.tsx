@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, Dispatch, SetStateAction, useContext, useEffect, useState } from "react";
 import type { CropType, SeedType } from "../types/game";
 import { GameState, useGameState } from "@/hooks/use-game-state";
 import { useBuyItem } from "@/hooks/game-actions/use-buy-item";
@@ -38,7 +38,7 @@ interface GameContextType {
   setSelectedSeed: (seed: SeedType | null) => void;
   selectedPerk: UserItem | null;
   setSelectedPerk: (perk: UserItem | null) => void;
-  plantSeed: (params: { x: number; y: number; seedType: SeedType }) => void;
+  plantSeed: (params: { x: number; y: number; seedType: SeedType, setIsLoading: Dispatch<SetStateAction<boolean>> }) => void;
   harvestCrop: (params: { x: number; y: number }) => void;
   fertilize: (params: { x: number; y: number }) => void;
   applyPerk: (params: {

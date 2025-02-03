@@ -3,9 +3,9 @@
 import { useAudio } from "@/context/AudioContext";
 import { SeedType } from "@/types/game";
 import { useApiMutation } from "@/hooks/use-api-mutation";
-import { useDebounce } from "@/hooks/use-debounce";
 import { DbGridCell } from "@/supabase/types";
 import { CROP_DATA } from "@/lib/game-constants";
+import { Dispatch, SetStateAction } from "react";
 
 export const usePlantSeed = ({
   isActionInProgress,
@@ -25,7 +25,7 @@ export const usePlantSeed = ({
   const { playSound } = useAudio();
 
   const mutation = useApiMutation({
-    url: ({ x, y }: { x: number; y: number; seedType: SeedType }) =>
+    url: ({ x, y }: { x: number; y: number; seedType: SeedType; setIsLoading: Dispatch<SetStateAction<boolean>> }) =>
       `/api/grid-cells/${x}/${y}`,
     body: ({ seedType }) => ({ action: "plant", seedType }),
     onMutate: ({ x, y, seedType }) => {
@@ -61,13 +61,11 @@ export const usePlantSeed = ({
       console.error("Plant mutation error:", error);
       refetchGridCells();
     },
-    onSettled: () => {
+    onSettled: (_data, _error, { setIsLoading }) => {
       setIsActionInProgress(false);
+      setIsLoading(false);
     },
   });
 
-  return {
-    ...mutation,
-    mutate: useDebounce(mutation.mutate, 500),
-  };
+  return mutation;
 };

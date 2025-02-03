@@ -19,6 +19,7 @@ interface CropSpriteCropProp {
 interface CropSpriteProps {
   crop: CropSpriteCropProp;
   isDemo?: boolean;
+  isLoading?: boolean;
 }
 
 export function EmptyCropSprite() {
@@ -35,7 +36,7 @@ export function EmptyCropSprite() {
   );
 }
 
-export function PlantedCropSprite({ crop, isDemo }: CropSpriteProps) {
+export function PlantedCropSprite({ crop, isDemo, isLoading }: CropSpriteProps) {
   const { state } = useGame();
   const [, setForceUpdate] = useState(0);
 
@@ -125,7 +126,7 @@ export function PlantedCropSprite({ crop, isDemo }: CropSpriteProps) {
         
 
       {/* Progress Bar - Centered and smaller */}
-      {!crop.readyToHarvest && (
+      {!isLoading && !crop.readyToHarvest && (
         <div className="absolute bottom-[3%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center w-3/4 z-50">
           {!isDemo && (
             <div className={clsx("text-white font-medium mb-1 text-center drop-shadow-[0_1px_1px_rgba(0,0,0,0.8)]", isGridSmall ? "text-[7px]" : "text-[6px]")}>
@@ -192,12 +193,14 @@ export function PlantedCropSprite({ crop, isDemo }: CropSpriteProps) {
 export default function CropSprite({
   crop,
   isDemo,
+  isLoading,
 }: {
   crop?: CropSpriteCropProp;
   isDemo?: boolean;
+  isLoading?: boolean;
 }) {
   return crop ? (
-    <PlantedCropSprite crop={crop} isDemo={isDemo} />
+    <PlantedCropSprite crop={crop} isDemo={isDemo} isLoading={isLoading} />
   ) : (
     <EmptyCropSprite />
   );
