@@ -4,20 +4,15 @@ import { useAudio } from "@/context/AudioContext";
 import { useApiMutation } from "@/hooks/use-api-mutation";
 import { DbGridCell } from "@/supabase/types";
 import { Dispatch, SetStateAction } from "react";
+import { UserItem } from "../use-user-items";
 
 export const useApplyPerk = ({
-  isActionInProgress,
-  setIsActionInProgress,
-  refetchGridCells,
-  refetchUserItems,
   updateGridCells,
+  updateUserItems,
   handleOperationCounter,
 }: {
-  isActionInProgress: boolean;
-  setIsActionInProgress: (value: boolean) => void;
-  refetchGridCells: () => Promise<void>;
-  refetchUserItems: () => Promise<void>;
   updateGridCells: (cells: Partial<DbGridCell>[]) => void;
+  updateUserItems: (updatedItems: Partial<UserItem>[]) => void
   handleOperationCounter: {
     increase: () => void;
     decrease: () => void;
@@ -33,15 +28,15 @@ export const useApplyPerk = ({
       x: number;
       y: number;
       itemSlug: string;
-      itemId: number;
+      item?: UserItem;
       setIsLoading: Dispatch<SetStateAction<boolean>>
     }) => `/api/grid-cells/${x}/${y}`,
-    body: ({ itemSlug, itemId }: { itemSlug: string; itemId: number }) => ({
+    body: ({ itemSlug, item }: { itemSlug: string; item?: UserItem }) => ({
       action: "apply-perk",
       itemSlug,
-      itemId,
+      itemId: item?.id || 0,
     }),
-    onMutate: ({x,y,itemSlug}) => {
+    onMutate: ({x,y,itemSlug,item}) => {
       handleOperationCounter.increase();
 
       // Optimistically update the grid cell based on perk type
@@ -57,6 +52,18 @@ export const useApplyPerk = ({
       }
 
       updateGridCells([updates]);
+      if (item) {
+        updateUserItems([
+          { 
+            itemId: item.id, 
+            quantity: item.quantity - 1, 
+            item: { 
+              ...item.item, 
+              category: "perk"
+            }
+          }
+        ]);
+      }
       playSound("fertilize");
     },
     onSuccess: (

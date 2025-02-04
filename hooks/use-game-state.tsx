@@ -152,6 +152,40 @@ export const useGameState = () => {
     });
   }, []);
 
+  // Add new method to update user items directly
+  const updateUserItems = useCallback((updatedItems: Partial<UserItem>[]) => {
+    setState((prevState) => {
+      if (!prevState) return prevState;
+
+      const newSeeds = [...prevState.seeds];
+      const newPerks = [...prevState.perks];
+
+      updatedItems.forEach((updatedItem) => {
+        if (updatedItem.item && updatedItem.item.category === "seed") {
+          const index = newSeeds.findIndex(
+            (item) => item.item?.id === updatedItem.item?.id
+          );
+          if (index !== -1) {
+            newSeeds[index] = { ...newSeeds[index], ...updatedItem };
+          }
+        } else if (updatedItem.item && updatedItem.item.category === "perk") {
+          const index = newPerks.findIndex(
+            (item) => item.item?.id === updatedItem.item?.id
+          );
+          if (index !== -1) {
+            newPerks[index] = { ...newPerks[index], ...updatedItem };
+          }
+        }
+      });
+
+      return {
+        ...prevState,
+        seeds: newSeeds,
+        perks: newPerks,
+      };
+    });
+  }, []);
+
   return {
     state,
     loading:
@@ -184,5 +218,6 @@ export const useGameState = () => {
       },
     },
     updateGridCells,
+    updateUserItems,
   };
 };

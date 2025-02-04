@@ -6,21 +6,16 @@ import { useApiMutation } from "@/hooks/use-api-mutation";
 import { DbGridCell } from "@/supabase/types";
 import { CROP_DATA } from "@/lib/game-constants";
 import { Dispatch, SetStateAction } from "react";
+import { UserItem } from "../use-user-items";
 
 export const usePlantSeed = ({
-  isActionInProgress,
-  setIsActionInProgress,
-  refetchGridCells,
-  refetchUserItems,
   updateGridCells,
+  updateUserItems,
   onSuccess,
   handleOperationCounter,
 }: {
-  isActionInProgress: boolean;
-  setIsActionInProgress: (value: boolean) => void;
-  refetchGridCells: () => void;
-  refetchUserItems: () => void;
   updateGridCells: (cells: Partial<DbGridCell>[]) => void;
+  updateUserItems: (updatedItems: Partial<UserItem>[]) => void
   onSuccess?: () => void;
   handleOperationCounter: {
     increase: () => void;
@@ -30,10 +25,10 @@ export const usePlantSeed = ({
   const { playSound } = useAudio();
 
   const mutation = useApiMutation({
-    url: ({ x, y }: { x: number; y: number; seedType: SeedType; setIsLoading: Dispatch<SetStateAction<boolean>> }) =>
+    url: ({ x, y }: { x: number; y: number; seedType: SeedType; item: UserItem; setIsLoading: Dispatch<SetStateAction<boolean>> }) =>
       `/api/grid-cells/${x}/${y}`,
     body: ({ seedType }) => ({ action: "plant", seedType }),
-    onMutate: ({ x, y, seedType }) => {
+    onMutate: ({ x, y, seedType, item }) => {
       handleOperationCounter.increase();
 
       // Optimistically update the grid cell
@@ -50,6 +45,17 @@ export const usePlantSeed = ({
           harvestAt: harvestAt.toISOString(),
           isReadyToHarvest: false,
         },
+      ]);
+
+      updateUserItems([
+        {
+          itemId: item.id,
+          quantity: item.quantity - 1,
+          item: {
+            ...item.item,
+            category: "seed",
+          }
+        }
       ]);
 
       playSound("plant");

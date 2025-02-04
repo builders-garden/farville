@@ -38,14 +38,14 @@ interface GameContextType {
   setSelectedSeed: (seed: SeedType | null) => void;
   selectedPerk: UserItem | null;
   setSelectedPerk: (perk: UserItem | null) => void;
-  plantSeed: (params: { x: number; y: number; seedType: SeedType, setIsLoading: Dispatch<SetStateAction<boolean>> }) => void;
+  plantSeed: (params: { x: number; y: number; seedType: SeedType, item: UserItem, setIsLoading: Dispatch<SetStateAction<boolean>> }) => void;
   harvestCrop: (params: { x: number; y: number; setIsLoading: Dispatch<SetStateAction<boolean>> }) => void;
   fertilize: (params: { x: number; y: number; setIsLoading: Dispatch<SetStateAction<boolean>> }) => void;
   applyPerk: (params: {
     x: number;
     y: number;
     itemSlug: string;
-    itemId: number;
+    item: UserItem;
     setIsLoading: Dispatch<SetStateAction<boolean>>;
   }) => void;
   buyItem: (params: { itemId: number; quantity: number }) => void;
@@ -97,7 +97,7 @@ export function GameProvider({
   const [showRequests, setShowRequests] = useState(false);
   const [showSeedsMenu, setShowSeedsMenu] = useState(false);
   const [showQuests, setShowQuests] = useState(false);
-  const { state, refetch, loading, updateGridCells } = useGameState();
+  const { state, refetch, loading, updateGridCells, updateUserItems } = useGameState();
   const [selectedSeed, setSelectedSeed] = useState<SeedType | null>(null);
   const [selectedPerk, setSelectedPerk] = useState<UserItem | null>(null);
   const [isActionInProgress, setIsActionInProgress] = useState(false);
@@ -166,20 +166,12 @@ export function GameProvider({
   });
 
   const { mutate: plantSeedMutation } = usePlantSeed({
-    refetchGridCells: refetch.grid,
-    refetchUserItems: refetch.userItems,
-    isActionInProgress,
-    setIsActionInProgress,
     updateGridCells,
+    updateUserItems,
     handleOperationCounter
   });
 
   const { mutate: harvestCropMutation } = useHarvestCrop({
-    refetchGridCells: refetch.grid,
-    refetchUserItems: refetch.userItems,
-    refetchUser: refetch.user,
-    isActionInProgress,
-    setIsActionInProgress,
     updateGridCells,
     setFloatingNumbers,
     setShowLevelUpConfetti,
@@ -187,11 +179,8 @@ export function GameProvider({
   });
 
   const { mutate: applyPerkMutation } = useApplyPerk({
-    refetchGridCells: refetch.grid,
-    refetchUserItems: refetch.userItems,
-    isActionInProgress,
-    setIsActionInProgress,
     updateGridCells,
+    updateUserItems,
     handleOperationCounter
   });
 
@@ -223,7 +212,7 @@ export function GameProvider({
         plantSeed: plantSeedMutation,
         harvestCrop: harvestCropMutation,
         fertilize: (params) =>
-          applyPerkMutation({ ...params, itemSlug: "fertilizer", itemId: 0, setIsLoading: params.setIsLoading }),
+          applyPerkMutation({ ...params, itemSlug: "fertilizer", setIsLoading: params.setIsLoading }),
         applyPerk: applyPerkMutation,
         buyItem,
         sellItem,
