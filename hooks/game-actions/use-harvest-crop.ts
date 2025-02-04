@@ -18,21 +18,11 @@ interface HarvestResponse {
 }
 
 export const useHarvestCrop = ({
-  refetchGridCells,
-  refetchUserItems,
-  refetchUser,
-  isActionInProgress,
-  setIsActionInProgress,
   updateGridCells,
   setFloatingNumbers,
   setShowLevelUpConfetti,
   handleOperationCounter,
 }: {
-  refetchGridCells: () => Promise<void>;
-  refetchUserItems: () => Promise<void>;
-  refetchUser: () => Promise<void>;
-  isActionInProgress: boolean;
-  setIsActionInProgress: (value: boolean) => void;
   updateGridCells: (cells: Partial<DbGridCell>[]) => void;
   setFloatingNumbers: (
     fn: (prev: FloatingNumberData[]) => FloatingNumberData[]

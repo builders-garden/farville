@@ -111,24 +111,22 @@ export const removeUserItem = async (
 ) => {
   // Use a transaction to prevent race conditions
   return await prisma.$transaction(async (tx) => {
-    // Get current quantity with a lock
-    const currentItem = await tx.userHasItem.findUnique({
+    // Decrement the quantity directly
+    const updatedItem = await tx.userHasItem.update({
       where: {
         userFid_itemId: {
           userFid: fid,
           itemId,
         },
       },
+      data: {
+        quantity: { decrement: quantity },
+      },
     });
 
-    if (!currentItem) return;
-
-    // Calculate new quantity, ensuring it doesn't go below 0
-    const newQuantity = Math.max(0, currentItem.quantity - quantity);
-
-    if (newQuantity === 0) {
-      // Delete the record if quantity would be 0
-      return await tx.userHasItem.delete({
+    // If the quantity drops to 0 or below, delete the record
+    if (updatedItem.quantity <= 0) {
+      await tx.userHasItem.delete({
         where: {
           userFid_itemId: {
             userFid: fid,
@@ -138,18 +136,7 @@ export const removeUserItem = async (
       });
     }
 
-    // Update with new quantity
-    return await tx.userHasItem.update({
-      where: {
-        userFid_itemId: {
-          userFid: fid,
-          itemId,
-        },
-      },
-      data: {
-        quantity: newQuantity,
-      },
-    });
+    return updatedItem;
   });
 };
 

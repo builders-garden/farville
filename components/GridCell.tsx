@@ -235,7 +235,7 @@ export default function GridCell({ cell }: GridCellProps) {
         x: cell.x,
         y: cell.y,
         itemSlug: boostType,
-        itemId: boostItem.itemId,
+        item: boostItem,
         setIsLoading,
       });
       setShowPopup(false);
@@ -275,7 +275,7 @@ export default function GridCell({ cell }: GridCellProps) {
           x: cell.x,
           y: cell.y,
           itemSlug: selectedPerk.item.slug,
-          itemId: selectedPerk.itemId,
+          item: selectedPerk,
           setIsLoading,
         });
         setRemainingUses(remainingUses - 1);
@@ -309,10 +309,17 @@ export default function GridCell({ cell }: GridCellProps) {
           seedType: selectedSeed,
         });
 
+        const item = state.seeds.find((item) => item.item?.slug === selectedSeed);
+
+        if (!item) {
+          throw new Error("Seed item not found");
+        }
+
         plantSeed({
           x: cell.x,
           y: cell.y,
           seedType: selectedSeed,
+          item: item,
           setIsLoading,
         });
 
@@ -338,8 +345,12 @@ export default function GridCell({ cell }: GridCellProps) {
   const handleDrop = async (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     const seedType = e.dataTransfer.getData("seedType") as SeedType;
+    const seedItem = state.seeds.find((item) => item.item?.slug === seedType);
+    if (!seedItem) {
+      throw new Error("Seed item not found");
+    }
     if (!cell.plantedAt) {
-      plantSeed({ x: cell.x, y: cell.y, seedType, setIsLoading });
+      plantSeed({ x: cell.x, y: cell.y, seedType, item: seedItem, setIsLoading });
     }
   };
 
