@@ -49,6 +49,8 @@ export default function MarketplaceModal({
     { id: "expansions", label: "Expand", icon: "🗺️" },
   ];
 
+  const gridSize = state.gridSize.width * state.gridSize.height
+
   return (
     <div className="fixed inset-0 bg-black/50 flex items-start z-50">
       <motion.div
@@ -229,37 +231,42 @@ export default function MarketplaceModal({
                           </div>
                         </div>
                       </div>
-                      <div className="flex gap-2 ml-13 md:ml-0">
-                        {state.level >= item.requiredLevel &&
-                          [1, 5, 10].map((amount) => (
-                            <motion.button
-                              key={amount}
-                              whileHover={{ scale: 1.03 }}
-                              whileTap={{ scale: 0.97 }}
-                              onClick={() => {
-                                if (amount >= 5) {
-                                  setConfirmAction({
-                                    type: "buy",
-                                    itemId: item.id,
-                                    quantity: amount,
-                                    itemName: item.name,
-                                    price: item.buyPrice * amount,
-                                  });
-                                } else {
-                                  buyItem({
-                                    itemId: item.id,
-                                    quantity: amount,
-                                  });
-                                }
-                              }}
-                              disabled={state.coins < item.buyPrice * amount}
-                              className="min-w-[70px] px-2 py-1.5 bg-[#2B593B] text-white/90 rounded hover:bg-[#346344] 
-                                    transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-sm font-medium
-                                    border border-white/10"
-                            >
-                              Buy {amount}
-                            </motion.button>
-                          ))}
+                      <div className="flex gap-4 ml-13 md:ml-0 items-center">
+                        <span className="text-xs w-fit text-white/90">
+                          Buy
+                        </span>
+                        <div className="flex gap-2 w-full">
+                          {state.level >= item.requiredLevel &&
+                            [1, 5, 10, gridSize].map((amount) => (
+                              <motion.button
+                                key={amount}
+                                whileHover={{ scale: 1.03 }}
+                                whileTap={{ scale: 0.97 }}
+                                onClick={() => {
+                                  if (amount >= 5) {
+                                    setConfirmAction({
+                                      type: "buy",
+                                      itemId: item.id,
+                                      quantity: amount,
+                                      itemName: item.name,
+                                      price: item.buyPrice * amount,
+                                    });
+                                  } else {
+                                    buyItem({
+                                      itemId: item.id,
+                                      quantity: amount,
+                                    });
+                                  }
+                                }}
+                                disabled={state.coins < item.buyPrice * amount}
+                                className="w-full py-1.5 bg-[#2B593B] text-white/90 rounded hover:bg-[#346344] 
+                                      transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-xs font-medium
+                                      border border-white/10"
+                              >
+                                {amount}
+                              </motion.button>
+                            ))}
+                        </div>
                       </div>
                     </motion.div>
                   ))}
@@ -318,46 +325,51 @@ export default function MarketplaceModal({
                             </div>
                           </div>
                         </div>
-                        <div className="flex gap-2 ml-13 md:ml-0">
-                          {[1, 5, "ALL"].map((sellAmount) => (
-                            <motion.button
-                              key={sellAmount}
-                              whileHover={{ scale: 1.03 }}
-                              whileTap={{ scale: 0.97 }}
-                              onClick={() => {
-                                if (
-                                  sellAmount === "ALL" ||
-                                  Number(sellAmount) > 1
-                                ) {
-                                  const quantityToSell =
-                                    sellAmount === "ALL"
-                                      ? amount
-                                      : Number(sellAmount);
-                                  setConfirmAction({
-                                    type: "sell",
-                                    itemId: item.id,
-                                    quantity: quantityToSell,
-                                    itemName: item.name,
-                                    price: item.sellPrice * quantityToSell,
-                                  });
-                                } else {
-                                  sellItem({
-                                    itemId: item.id,
-                                    quantity: 1,
-                                  });
+                        <div className="flex gap-4 ml-13 md:ml-0 items-center">
+                          <span className="text-xs w-fit text-white/90">
+                            Sell
+                          </span>
+                          <div className="flex gap-2 w-full">
+                            {[1, 5, 10, "ALL"].map((sellAmount) => (
+                              <motion.button
+                                key={sellAmount}
+                                whileHover={{ scale: 1.03 }}
+                                whileTap={{ scale: 0.97 }}
+                                onClick={() => {
+                                  if (
+                                    sellAmount === "ALL" ||
+                                    Number(sellAmount) > 1
+                                  ) {
+                                    const quantityToSell =
+                                      sellAmount === "ALL"
+                                        ? amount
+                                        : Number(sellAmount);
+                                    setConfirmAction({
+                                      type: "sell",
+                                      itemId: item.id,
+                                      quantity: quantityToSell,
+                                      itemName: item.name,
+                                      price: item.sellPrice * quantityToSell,
+                                    });
+                                  } else {
+                                    sellItem({
+                                      itemId: item.id,
+                                      quantity: 1,
+                                    });
+                                  }
+                                }}
+                                disabled={
+                                  amount <
+                                  (sellAmount === "ALL" ? 1 : Number(sellAmount))
                                 }
-                              }}
-                              disabled={
-                                amount <
-                                (sellAmount === "ALL" ? 1 : Number(sellAmount))
-                              }
-                              className="min-w-[70px] px-2 py-1.5 bg-[#2B593B] text-white/90 rounded hover:bg-[#346344] 
-                                     transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-xs font-medium
-                                     border border-white/10"
-                            >
-                              Sell {sellAmount}
-                            </motion.button>
-                          ))}
+                                className="w-full px-2 py-1.5 bg-[#2B593B] text-white/90 rounded hover:bg-[#346344] 
+                                      transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-xs font-medium
+                                      border border-white/10"
+                              >
+                                {sellAmount}
+                              </motion.button>
+                            ))}
+                          </div>
                         </div>
                       </motion.div>
                     );
@@ -514,9 +526,12 @@ export default function MarketplaceModal({
                               </div>
                             </div>
                           </div>
-                          <div className="flex flex-col items-stretch sm:items-end gap-2 flex-shrink-0">
-                            <div className="flex gap-2">
-                              {[1, 5, 10].map((amount) => (
+                          <div className="flex gap-4 ml-13 md:ml-0 items-center">
+                            <span className="text-xs w-fit text-white/90">
+                              Buy
+                            </span>
+                            <div className="flex gap-2 w-full">
+                              {[1, 5, 10, gridSize].map((amount) => (
                                 <motion.button
                                   key={amount}
                                   whileHover={{ scale: 1.03 }}
@@ -540,11 +555,11 @@ export default function MarketplaceModal({
                                   disabled={
                                     state.coins < perk.buyPrice * amount
                                   }
-                                  className="min-w-[70px] px-2 py-1.5 bg-[#2B593B] text-white/90 rounded hover:bg-[#346344] 
+                                  className="w-full px-2 py-1.5 bg-[#2B593B] text-white/90 rounded hover:bg-[#346344] 
                                   transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-sm font-medium
                                   border border-white/10"
                                 >
-                                  Buy {amount}
+                                  {amount}
                                 </motion.button>
                               ))}
                             </div>
