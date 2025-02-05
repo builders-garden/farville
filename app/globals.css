@@ -149,12 +149,6 @@ body {
     0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
-.drop-target.dragover {
-  @apply ring-2 ring-yellow-400 ring-opacity-50 scale-105;
-  animation: pulse-border 1s infinite;
-  background-color: rgba(234, 179, 8, 0.2);
-}
-
 @keyframes pulse-border {
   0%,
   100% {
@@ -173,42 +167,6 @@ body {
   -webkit-touch-callout: none;
   -webkit-user-select: none;
   user-select: none;
-}
-
-/* Prevent scrolling and other touch actions during drag */
-body.dragging {
-  @apply overflow-hidden;
-  touch-action: none;
-}
-
-/* Ensure drag icon is visible and properly positioned */
-.drag-icon {
-  position: fixed;
-  pointer-events: none;
-  z-index: 1000;
-  transform: translate(-50%, -50%);
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
-  opacity: 0.8;
-  scale: 1.2;
-}
-
-/* Touch drag icon styles */
-.touch-drag-icon {
-  position: fixed;
-  pointer-events: none;
-  z-index: 1000;
-  transform: translate(-50%, -50%);
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
-  opacity: 0.8;
-  scale: 1.2;
-  display: none;
-}
-
-/* Ensure grid cells show drop target state */
-.grid-cell.dragover {
-  @apply ring-2 ring-yellow-400 ring-opacity-50 scale-105;
-  animation: pulse-border 1s infinite;
-  background-color: rgba(234, 179, 8, 0.2);
 }
 
 @keyframes fadeOut {

@@ -31,162 +31,12 @@ export default function SeedMenu() {
     state,
   } = useGame();
 
-  const [isDragging, setIsDragging] = useState(false);
-  const dragIconRef = useRef<HTMLDivElement>(null);
-  const touchDragIconRef = useRef<HTMLDivElement>(null);
-  const draggedCropRef = useRef<SeedType | null>(null);
-
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [showScrollHints, setShowScrollHints] = useState({
     left: false,
     right: false,
   });
 
-  // Track touch position
-  const updateTouchDragIcon = (x: number, y: number) => {
-    if (touchDragIconRef.current) {
-      touchDragIconRef.current.style.left = `${x}px`;
-      touchDragIconRef.current.style.top = `${y}px`;
-      touchDragIconRef.current.style.display = "block";
-    }
-  };
-
-  // Handle touch start for mobile drag
-  const handleTouchStart = (e: React.TouchEvent, type: SeedType) => {
-    const seed = state.seeds.find((seed) => seed.item.slug === type);
-    if (!seed || seed.quantity <= 0) return;
-
-    const touch = e.touches[0];
-    draggedCropRef.current = type as SeedType;
-    setIsDragging(true);
-
-    // Initialize drag icon
-    if (touchDragIconRef.current) {
-      const seedIcon = seed.item.icon;
-      if (seedIcon) {
-        const img = document.createElement("img");
-        img.src = `/images${seedIcon}`;
-        img.className = "w-8 h-8";
-        touchDragIconRef.current.innerHTML = "";
-        touchDragIconRef.current.appendChild(img);
-      }
-      updateTouchDragIcon(touch.clientX, touch.clientY);
-    }
-
-    // Add dragging class to body to prevent scrolling
-    document.body.classList.add("dragging");
-  };
-
-  // Handle touch move
-  const handleTouchMove = useCallback(
-    (e: React.TouchEvent) => {
-      if (!isDragging) return;
-      e.preventDefault();
-
-      const touch = e.touches[0];
-      updateTouchDragIcon(touch.clientX, touch.clientY);
-
-      // Find element under touch point
-      const elemBelow = document.elementFromPoint(touch.clientX, touch.clientY);
-      const dropTarget = elemBelow?.closest(".grid-cell");
-
-      // Remove dragover class from all cells
-      document.querySelectorAll(".grid-cell").forEach((cell) => {
-        cell.classList.remove("dragover");
-      });
-
-      // Add dragover class to current cell
-      if (dropTarget) {
-        dropTarget.classList.add("dragover");
-      }
-    },
-    [isDragging]
-  );
-
-  // Handle touch end
-  const handleTouchEnd = useCallback(
-    (e: React.TouchEvent) => {
-      if (!isDragging) return;
-
-      const touch = e.changedTouches[0];
-      const dropTarget = document.elementFromPoint(
-        touch.clientX,
-        touch.clientY
-      );
-      const gridCell = dropTarget?.closest(".grid-cell");
-
-      if (gridCell && draggedCropRef.current) {
-        // Get cell coordinates from data attributes
-        const x = parseInt(gridCell.getAttribute("data-x") || "0");
-        const y = parseInt(gridCell.getAttribute("data-y") || "0");
-
-        // Attempt to plant the crop
-        const cell = state.grid.find((cell) => cell.x === x && cell.y === y);
-
-        if (cell && !cell.plantedAt) {
-          setSelectedSeed(draggedCropRef.current as SeedType);
-          // Small delay to ensure selectedCrop is set before clicking
-          setTimeout(() => {
-            (gridCell as HTMLElement).click();
-          }, 50);
-        }
-      }
-
-      // Clean up
-      if (touchDragIconRef.current) {
-        touchDragIconRef.current.style.display = "none";
-      }
-      document.body.classList.remove("dragging");
-      setIsDragging(false);
-      draggedCropRef.current = null;
-
-      // Remove dragover class from all cells
-      document.querySelectorAll(".grid-cell").forEach((cell) => {
-        cell.classList.remove("dragover");
-      });
-    },
-    [isDragging, state.grid]
-  );
-
-  // Handle drag start
-  const handleDragStart = (e: React.DragEvent, type: SeedType) => {
-    const seed = state.seeds.find((seed) => seed.item.slug === type);
-    if (!seed || seed.quantity <= 0) return;
-
-    e.dataTransfer.setData("seedType", type);
-    e.dataTransfer.effectAllowed = "copy";
-
-    // Create a custom drag image
-    if (dragIconRef.current) {
-      const seedIcon = seed.item.icon;
-      if (seedIcon) {
-        const img = document.createElement("img");
-        img.src = seedIcon;
-        img.className = "w-8 h-8";
-        dragIconRef.current.innerHTML = "";
-        dragIconRef.current.appendChild(img);
-      }
-      e.dataTransfer.setDragImage(dragIconRef.current, 25, 25);
-    }
-  };
-
-  // Add and remove touch event listeners
-  useEffect(() => {
-    const handleDocumentTouchMove = (e: TouchEvent) =>
-      handleTouchMove(e as unknown as React.TouchEvent);
-    const handleDocumentTouchEnd = (e: TouchEvent) =>
-      handleTouchEnd(e as unknown as React.TouchEvent);
-
-    document.addEventListener("touchmove", handleDocumentTouchMove, {
-      passive: false,
-    });
-    document.addEventListener("touchend", handleDocumentTouchEnd);
-
-    return () => {
-      document.removeEventListener("touchmove", handleDocumentTouchMove);
-      document.removeEventListener("touchend", handleDocumentTouchEnd);
-    };
-  }, [handleTouchEnd, handleTouchMove, isDragging, state.grid]);
 
   // Add scroll detection
   const checkScroll = useCallback(() => {
@@ -257,17 +107,6 @@ export default function SeedMenu() {
       className="flex items-center gap-2 px-2"
       data-tutorial={"seed-menu"}
     >
-      <div
-        ref={dragIconRef}
-        className="fixed top-0 left-0 pointer-events-none w-12 h-12 -translate-x-1/2 -translate-y-1/2 z-50"
-        style={{ display: "none" }}
-      />
-      <div
-        ref={touchDragIconRef}
-        className="fixed top-0 left-0 pointer-events-none w-12 h-12 -translate-x-1/2 -translate-y-1/2 z-50"
-        style={{ display: "none" }}
-      />
-
       <motion.div
         className="bg-[#7E4E31]/40 px-4 py-2 rounded-lg shadow-lg border-2 border-[#8B5E3C]/60 w-full relative"
         whileHover={{ scale: 1.02 }}
@@ -318,21 +157,6 @@ export default function SeedMenu() {
                 <div key={item.id} className="py-1 px-1">
                   <motion.button
                     onClick={() => handleClick(item)}
-                    draggable={
-                      isAvailable && item.category === "seed" && quantity > 0
-                    }
-                    onDragStart={(e) =>
-                      item.category === "seed" &&
-                      handleDragStart(
-                        e as unknown as React.DragEvent,
-                        item.slug as SeedType
-                      )
-                    }
-                    onTouchStart={(e) =>
-                      item.category === "seed" &&
-                      handleTouchStart(e, item.slug as SeedType)
-                    }
-                    onTouchEnd={handleTouchEnd}
                     className={`
                       relative min-w-[2.5rem] w-10 h-10 rounded-lg flex items-center justify-center
                       ${

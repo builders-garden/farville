@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { useGame } from "../context/GameContext";
-import { CropType, SeedType } from "../types/game";
+import { CropType } from "../types/game";
 import CropSprite from "./CropSprite";
 import FloatingNumber from "./animations/FloatingNumber";
 import { useState, useRef, useEffect, useMemo, Fragment } from "react";
@@ -188,7 +188,6 @@ export default function GridCell({ cell }: GridCellProps) {
     setRemainingUses,
   } = useGame();
   const cellRef = useRef<HTMLDivElement>(null);
-  const [isDragOver] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -335,25 +334,6 @@ export default function GridCell({ cell }: GridCellProps) {
     }
   };
 
-  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
-    if (!cell.plantedAt) {
-      e.preventDefault();
-      e.dataTransfer.dropEffect = "copy";
-    }
-  };
-
-  const handleDrop = async (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    const seedType = e.dataTransfer.getData("seedType") as SeedType;
-    const seedItem = state.seeds.find((item) => item.item?.slug === seedType);
-    if (!seedItem) {
-      throw new Error("Seed item not found");
-    }
-    if (!cell.plantedAt) {
-      plantSeed({ x: cell.x, y: cell.y, seedType, item: seedItem, setIsLoading });
-    }
-  };
-
   const handleFertilize = async () => {
     if (hasFertilizer) {
       fertilize({ x: cell.x, y: cell.y, setIsLoading });
@@ -392,7 +372,6 @@ export default function GridCell({ cell }: GridCellProps) {
         : ""
     }
     ${!cell.plantedAt ? "drop-target" : ""}
-    ${isDragOver ? "dragover" : ""}
     ${isLoading ? "pointer-events-none" : ""}
     transition-all duration-200
   `;
@@ -403,8 +382,6 @@ export default function GridCell({ cell }: GridCellProps) {
       <motion.div
         ref={cellRef}
         onClick={handleClick}
-        onDragOver={handleDragOver}
-        onDrop={handleDrop}
         data-x={cell.x}
         data-y={cell.y}
         className={cellClassName}
