@@ -1,6 +1,5 @@
 import { ImageResponse } from "next/og";
 import { getRequestById } from "@/supabase/queries";
-import Image from "next/image";
 
 export const dynamic = "force-dynamic";
 const size = {
@@ -147,8 +146,7 @@ export async function GET(request: Request, {
                       justifyContent: "center",
                     }}
                   >
-                    <Image
-                      alt={ensName}
+                    <img
                       src={`data:image/png;base64,${Buffer.from(
                         profilePic
                       ).toString("base64")}`}
@@ -205,7 +203,7 @@ export async function GET(request: Request, {
                 >
                   {secondaryText}
                 </p>
-                {itemIcon && (
+                {item.icon && (
                   <div
                     style={{
                       marginTop: "24px",
@@ -216,12 +214,13 @@ export async function GET(request: Request, {
                       justifyContent: "center",
                     }}
                   >
-                    <Image
-                      alt={item.name}
+                    <img
                       src={
-                        `data:image/png;base64,${Buffer.from(
-                          itemIcon
-                        ).toString("base64")}`
+                        itemIcon
+                          ? `data:image/png;base64,${Buffer.from(
+                              itemIcon
+                            ).toString("base64")}`
+                          : undefined
                       }
                       width="48"
                       height="48"
