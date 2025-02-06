@@ -69,63 +69,87 @@ export interface Crop {
   deathTime: number;
   growthTime: number;
   rewardXP: number;
+  power: number;
+  tier: string;
 }
 
 export const CROP_DATA: { [key: string]: Crop } = {
   wheat: {
-    growthTime: 6 * 3600000, // 6h in milliseconds
-    deathTime: 3 * 3600000, // 3h in milliseconds
-    rewardXP: 12,
+    growthTime: 6 * 1000, // 6h in milliseconds
+    deathTime: 3 * 1000, // 3h in milliseconds
+    rewardXP: 14,
+    power: 1.4,
+    tier: "C",
   },
   carrot: {
-    growthTime: 6 * 3600000, // 6h
-    deathTime: 3.3 * 3600000, // 3.3h
-    rewardXP: 10,
+    growthTime: 4 * 1000, // 6h
+    deathTime: 3.3 * 1000, // 3.3h
+    rewardXP: 8,
+    power: 1.2,
+    tier: "C",
   },
   radish: {
-    growthTime: 6 * 3600000, // 6h
-    deathTime: 3.6 * 3600000, // 3.6h
+    growthTime: 6 * 1000, // 6h
+    deathTime: 3.6 * 1000, // 3.6h
     rewardXP: 14,
+    power: 1.4,
+    tier: "C",
   },
   lettuce: {
-    growthTime: 10 * 3600000, // 10h
-    deathTime: 6 * 3600000, // 6h
-    rewardXP: 16,
+    growthTime: 10 * 1000, // 10h
+    deathTime: 6 * 1000, // 6h
+    rewardXP: 25,
+    power: 3,
+    tier: "B",
   },
   potato: {
-    growthTime: 12 * 3600000, // 12h
-    deathTime: 7.8 * 3600000, // 7.8h
-    rewardXP: 25,
+    growthTime: 12 * 1000, // 12h
+    deathTime: 7.8 * 1000, // 7.8h
+    rewardXP: 30,
+    power: 3,
+    tier: "B",
   },
   corn: {
-    growthTime: 12 * 3600000, // 12h
-    deathTime: 8.4 * 3600000, // 8.4h
-    rewardXP: 30,
+    growthTime: 12 * 1000, // 12h
+    deathTime: 8.4 * 1000, // 8.4h
+    rewardXP: 32,
+    power: 3,
+    tier: "B",
   },
   eggplant: {
-    growthTime: 16 * 3600000, // 16h
-    deathTime: 12 * 3600000, // 12h
-    rewardXP: 35,
+    growthTime: 15 * 1000, // 16h
+    deathTime: 12 * 1000, // 12h
+    rewardXP: 40,
+    power: 4.2,
+    tier: "A",
   },
   tomato: {
-    growthTime: 16 * 3600000, // 16h
-    deathTime: 12.8 * 3600000, // 12.8h
+    growthTime: 16 * 1000, // 16h
+    deathTime: 12.8 * 1000, // 12.8h
     rewardXP: 45,
+    power: 5,
+    tier: "A",
   },
   strawberry: {
-    growthTime: 24 * 3600000, // 24h
-    deathTime: 19.2 * 3600000, // 19.2h
+    growthTime: 24 * 1000, // 24h
+    deathTime: 19.2 * 1000, // 19.2h
     rewardXP: 55,
+    power: 4.8,
+    tier: "A",
   },
   watermelon: {
-    growthTime: 36 * 3600000, // 36h
-    deathTime: 32.4 * 3600000, // 32.4h
+    growthTime: 36 * 1000, // 36h
+    deathTime: 32.4 * 1000, // 32.4h
     rewardXP: 120,
+    power: 30,
+    tier: "S",
   },
   pumpkin: {
-    growthTime: 48 * 3600000, // 48h
-    deathTime: 48 * 3600000, // 48h
-    rewardXP: 180,
+    growthTime: 48 * 1000, // 48h
+    deathTime: 48 * 1000, // 48h
+    rewardXP: 165,
+    power: 30,
+    tier: "S",
   },
 };
 

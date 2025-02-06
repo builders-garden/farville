@@ -19,7 +19,9 @@ import {
   DbUserHasQuestStatus,
 } from "./types";
 import {
+  Crop,
   CROP_DATA,
+  EXPANSION_COSTS,
   LEVEL_REWARDS,
   LEVEL_XP_THRESHOLDS,
   SPEED_BOOST,
@@ -1248,14 +1250,6 @@ const generateDailyQuests = async (level: number) => {
   );
 
   const amounts = [3, 4, 5, 6, 7, 8];
-  const xpPerAmount = {
-    3: 30,
-    4: 30,
-    5: 35,
-    6: 35,
-    7: 40,
-    8: 40,
-  };
 
   const dailyQuests: InsertDbQuest[] = [];
   for (let i = 0; i < 3; i++) {
@@ -1281,9 +1275,13 @@ const generateDailyQuests = async (level: number) => {
     }
     seedItems = seedItems.filter((i) => i.id !== item.id);
     cropItems = cropItems.filter((i) => i.id !== item.id);
+    const slugToUse =
+      item.category === "crop" ? item.slug : item.slug.split("-")[0];
+    const cropData = CROP_DATA[slugToUse];
 
     const amount = chooseRandomItem(amounts);
-    const xp = xpPerAmount[amount as keyof typeof xpPerAmount];
+
+    const xp = calculateQuestXP(level, cropData, amount);
     const startAt = new Date();
     startAt.setUTCHours(0, 0, 0, 0);
     const startAtISO = startAt.toISOString();
@@ -1306,8 +1304,185 @@ const generateDailyQuests = async (level: number) => {
     dailyQuests.push(dailyQuest);
   }
 
+  console.log("Generated daily quests:", dailyQuests);
+
   const insertedQuests = await createQuests(dailyQuests);
   return insertedQuests;
+};
+
+const generateWeeklyQuests = async (level: number) => {
+  let questCategories = ["sell", "receive", "donate", "plant", "harvest"];
+
+  let seedItems = (await getItemsByCategory("seed")).filter(
+    (item) => item.requiredLevel <= level
+  );
+  let cropItems = (await getItemsByCategory("crop")).filter(
+    (item) => item.requiredLevel <= level
+  );
+
+  const amounts = [10, 15, 20, 25, 30];
+
+  const weeklyQuests: InsertDbQuest[] = [];
+  for (let i = 0; i < 3; i++) {
+    const category = chooseRandomItem(questCategories);
+    questCategories = questCategories.filter((c) => c !== category);
+    let item: DbItem;
+    if (category === "plant") {
+      item = chooseRandomItem(seedItems);
+    } else if (category === "sell") {
+      item = chooseRandomItem(cropItems);
+    } else if (category === "harvest") {
+      item = chooseRandomItem(cropItems);
+    } else {
+      const allItems = [...seedItems, ...cropItems];
+      item = chooseRandomItem(allItems);
+    }
+    seedItems = seedItems.filter((i) => i.id !== item.id);
+    cropItems = cropItems.filter((i) => i.id !== item.id);
+    const slugToUse =
+      item.category === "crop" ? item.slug : item.slug.split("-")[0];
+    const cropData = CROP_DATA[slugToUse];
+
+    // const amount = chooseRandomItem(amounts);
+    // Apply level-based multiplier for quest amount
+    const amount = Math.floor(chooseRandomItem(amounts) * level * 0.5);
+
+    const xp = calculateQuestXP(level, cropData, amount);
+    const startAt = new Date();
+    startAt.setUTCHours(0, 0, 0, 0);
+    const startAtISO = startAt.toISOString();
+    const endAt = new Date();
+    endAt.setUTCHours(23, 59, 59, 999);
+    const endAtISO = endAt.toISOString();
+
+    const weeklyQuest: InsertDbQuest = {
+      type: "weekly",
+      category,
+      itemId: item.id ? item.id : cropItems[0].id,
+      amount,
+      xp,
+      startAt: startAtISO,
+      endAt: endAtISO,
+      coins: 0,
+      level,
+    };
+
+    weeklyQuests.push(weeklyQuest);
+  }
+
+  console.log("Generated weekly quests:", weeklyQuests);
+
+  const insertedQuests = await createQuests(weeklyQuests);
+  return insertedQuests;
+};
+
+const generateMonthlyQuests = async (level: number) => {
+  let questCategories = ["sell", "receive", "donate", "plant", "harvest"];
+
+  let seedItems = (await getItemsByCategory("seed")).filter(
+    (item) => item.requiredLevel <= level
+  );
+  let cropItems = (await getItemsByCategory("crop")).filter(
+    (item) => item.requiredLevel <= level
+  );
+
+  // const amounts = [40, 60, 80, 100, 120];
+  const amountsByTier = {
+    S: [100, 120, 150],
+    A: [200, 225, 250],
+    B: [300, 350, 400],
+    C: [500, 550, 600],
+  };
+
+  const monthlyQuests: InsertDbQuest[] = [];
+  for (let i = 0; i < 5; i++) {
+    const category = chooseRandomItem(questCategories);
+    questCategories = questCategories.filter((c) => c !== category);
+    let item: DbItem;
+    if (category === "plant") {
+      item = chooseRandomItem(seedItems);
+    } else if (category === "sell") {
+      item = chooseRandomItem(cropItems);
+    } else if (category === "harvest") {
+      item = chooseRandomItem(cropItems);
+    } else {
+      const allItems = [...seedItems, ...cropItems];
+      item = chooseRandomItem(allItems);
+    }
+    seedItems = seedItems.filter((i) => i.id !== item.id);
+    cropItems = cropItems.filter((i) => i.id !== item.id);
+    const slugToUse =
+      item.category === "crop" ? item.slug : item.slug.split("-")[0];
+    const cropData = CROP_DATA[slugToUse];
+
+    // const amount = chooseRandomItem(amounts);
+    // Apply level-based multiplier for quest amount
+    const amount = chooseRandomItem(
+      amountsByTier[cropData.tier as keyof typeof amountsByTier]
+    );
+
+    const xp = calculateQuestXP(level, cropData, amount);
+    const startAt = new Date();
+    startAt.setUTCHours(0, 0, 0, 0);
+    const startAtISO = startAt.toISOString();
+    const endAt = new Date();
+    endAt.setUTCHours(23, 59, 59, 999);
+    const endAtISO = endAt.toISOString();
+
+    const monthlyQuest: InsertDbQuest = {
+      type: "monthly",
+      category,
+      itemId: item.id ? item.id : cropItems[0].id,
+      amount,
+      xp,
+      startAt: startAtISO,
+      endAt: endAtISO,
+      coins: 0,
+      level,
+    };
+
+    monthlyQuests.push(monthlyQuest);
+  }
+
+  const insertedQuests = await createQuests(monthlyQuests);
+  return insertedQuests;
+};
+
+export const calculateQuestXP = (
+  level: number,
+  cropData: Crop,
+  amount: number
+): number => {
+  const xpBonus: Record<"5" | "10" | "15" | "20", number> = {
+    "5": 5,
+    "10": 10,
+    "15": 20,
+    "20": 30,
+  };
+
+  const userCellsWidth =
+    EXPANSION_COSTS.filter((cost) => cost.level <= level).pop()?.nextSize
+      .width ?? 2;
+  const userCellsBasedOnLevel = userCellsWidth * userCellsWidth;
+  const T =
+    (cropData.growthTime / 1000) * Math.ceil(amount / userCellsBasedOnLevel);
+
+  const bonusLevel = Object.keys(xpBonus)
+    .filter((key) => Number(key) <= level)
+    .pop();
+  const bonusApplied = bonusLevel
+    ? xpBonus[bonusLevel as keyof typeof xpBonus]
+    : 0;
+
+  const xpAmount =
+    Math.ceil(
+      (amount / cropData.power) *
+        cropData.rewardXP *
+        (1 + T / (CROP_DATA["pumpkin"].growthTime / 1000))
+    ) + bonusApplied;
+
+  // return here the xpAmount rounded to the nearest integer value which is to be a multiple of 10
+  return Math.round(xpAmount / 10) * 10;
 };
 
 export const initDailyUserQuests = async (fid: number): Promise<void> => {
@@ -1341,19 +1516,57 @@ export const initDailyUserQuests = async (fid: number): Promise<void> => {
   );
 };
 
-export const initWeeklyAndMonthlyUserQuests = async (
-  fid: number
-): Promise<void> => {
-  const { data, error } = await supabase
-    .from("quests")
-    .select("id")
-    .in("type", ["weekly", "monthly"])
-    .order("createdAt", { ascending: false });
-  if (!data || error) {
-    throw error;
+export const initWeeklyUserQuests = async (fid: number): Promise<void> => {
+  // get user level
+  const user = await getUser(fid);
+  if (!user) {
+    throw new Error("User not found");
   }
+  const userXp = user.xp;
+  const { currentLevel } = getCurrentLevelAndProgress(userXp);
+
+  let weeklyQuests: DbQuest[] = await getQuestsByTypeAndLevel(
+    "weekly",
+    currentLevel
+  );
+
+  if (!weeklyQuests || weeklyQuests.length === 0) {
+    weeklyQuests = await generateWeeklyQuests(currentLevel);
+  }
+
   await Promise.all(
-    data.map((quest) =>
+    weeklyQuests.map((quest) =>
+      createUserQuest({
+        fid,
+        questId: quest.id,
+        completedAt: null,
+        status: "incomplete",
+        progress: 0,
+      })
+    )
+  );
+};
+
+export const initMonthlyUserQuests = async (fid: number): Promise<void> => {
+  // get user level
+  const user = await getUser(fid);
+  if (!user) {
+    throw new Error("User not found");
+  }
+  const userXp = user.xp;
+  const { currentLevel } = getCurrentLevelAndProgress(userXp);
+
+  let monthlyQuests: DbQuest[] = await getQuestsByTypeAndLevel(
+    "monthly",
+    currentLevel
+  );
+
+  if (!monthlyQuests || monthlyQuests.length === 0) {
+    monthlyQuests = await generateMonthlyQuests(currentLevel);
+  }
+
+  await Promise.all(
+    monthlyQuests.map((quest) =>
       createUserQuest({
         fid,
         questId: quest.id,
