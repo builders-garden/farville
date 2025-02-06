@@ -4,8 +4,8 @@ import Image from "next/image";
 
 export const dynamic = "force-dynamic";
 const size = {
-  width: 600,
-  height: 400,
+  width: 1200,
+  height: 800,
 };
 
 async function loadGoogleFont(font: string, text: string) {
