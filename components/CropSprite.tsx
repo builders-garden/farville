@@ -39,6 +39,7 @@ export function EmptyCropSprite() {
 export function PlantedCropSprite({ crop, isDemo, isLoading }: CropSpriteProps) {
   const { state } = useGame();
   const [, setForceUpdate] = useState(0);
+  const [stopUpdate, setStopUpdate] = useState(false);
 
   useEffect(() => {
     if (isDemo || crop.readyToHarvest || !crop.harvestAt) return;
@@ -47,15 +48,17 @@ export function PlantedCropSprite({ crop, isDemo, isLoading }: CropSpriteProps) 
     setForceUpdate((prev) => prev + 1);
 
     const interval = setInterval(() => {
-      if (Date.now() >= crop.harvestAt!) {
+      if (Date.now() >= crop.harvestAt! && stopUpdate) {
         clearInterval(interval);
         return;
+      } else if (Date.now() >= crop.harvestAt! && !stopUpdate) {
+        setStopUpdate(true);
       }
       setForceUpdate((prev) => prev + 1);
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [isDemo, crop]);
+  }, [isDemo, crop, stopUpdate]);
 
   const getGrowthProgress = () => {
     if (!crop.harvestAt) return 0;
@@ -66,7 +69,7 @@ export function PlantedCropSprite({ crop, isDemo, isLoading }: CropSpriteProps) 
 
   const getGrowthStage = () => {
     const progress = getGrowthProgress();
-    if (crop.readyToHarvest) return 6;
+    if (crop.readyToHarvest || progress >= 1) return 6;
     if (progress >= 0.8) return 5;
     if (progress >= 0.6) return 4;
     if (progress >= 0.4) return 3;
@@ -84,6 +87,8 @@ export function PlantedCropSprite({ crop, isDemo, isLoading }: CropSpriteProps) 
   };
 
   const isGridSmall = state.gridSize.width < 4;
+
+  const cropIsReady = crop.readyToHarvest || getGrowthStage() === 6;
 
   return (
     <>
@@ -126,7 +131,7 @@ export function PlantedCropSprite({ crop, isDemo, isLoading }: CropSpriteProps) 
         
 
       {/* Progress Bar - Centered and smaller */}
-      {!isLoading && !crop.readyToHarvest && (
+      {!isLoading && !cropIsReady && (
         <div className="absolute bottom-[3%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center w-3/4 z-50">
           {!isDemo && (
             <div className={clsx("text-white font-medium mb-1 text-center drop-shadow-[0_1px_1px_rgba(0,0,0,0.8)]", isGridSmall ? "text-[7px]" : "text-[6px]")}>
@@ -151,7 +156,7 @@ export function PlantedCropSprite({ crop, isDemo, isLoading }: CropSpriteProps) 
         animate={{
           scale: 1,
           y: 0,
-          rotate: crop.readyToHarvest ? [0, -5, 5, -5, 5, 0] : 0,
+          rotate: cropIsReady ? [0, -5, 5, -5, 5, 0] : 0,
         }}
         exit={{ scale: 0, y: -20 }}
         transition={{
@@ -176,7 +181,7 @@ export function PlantedCropSprite({ crop, isDemo, isLoading }: CropSpriteProps) 
 
       {/* Harvest Ready Animation */}
       <AnimatePresence>
-        {crop.readyToHarvest && (
+        {cropIsReady && (
           <motion.div
             className="absolute inset-0 bg-yellow-400/20 rounded-xl"
             initial={{ opacity: 0 }}
