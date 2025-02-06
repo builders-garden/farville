@@ -1,10 +1,11 @@
 import { ImageResponse } from "next/og";
 import { getRequestById } from "@/supabase/queries";
+import Image from "next/image";
 
 export const dynamic = "force-dynamic";
 const size = {
-  width: 1200,
-  height: 800,
+  width: 600,
+  height: 400,
 };
 
 async function loadGoogleFont(font: string, text: string) {
@@ -146,7 +147,8 @@ export async function GET(request: Request, {
                       justifyContent: "center",
                     }}
                   >
-                    <img
+                    <Image
+                      alt={ensName}
                       src={`data:image/png;base64,${Buffer.from(
                         profilePic
                       ).toString("base64")}`}
@@ -203,7 +205,7 @@ export async function GET(request: Request, {
                 >
                   {secondaryText}
                 </p>
-                {item.icon && (
+                {itemIcon && (
                   <div
                     style={{
                       marginTop: "24px",
@@ -214,13 +216,12 @@ export async function GET(request: Request, {
                       justifyContent: "center",
                     }}
                   >
-                    <img
+                    <Image
+                      alt={item.name}
                       src={
-                        itemIcon
-                          ? `data:image/png;base64,${Buffer.from(
-                              itemIcon
-                            ).toString("base64")}`
-                          : undefined
+                        `data:image/png;base64,${Buffer.from(
+                          itemIcon
+                        ).toString("base64")}`
                       }
                       width="48"
                       height="48"
