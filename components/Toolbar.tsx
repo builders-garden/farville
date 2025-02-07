@@ -140,10 +140,10 @@ export default function Toolbar({
             className="relative w-12 h-12 rounded-lg flex items-center justify-center bg-[#8B5E3C] hover:bg-[#6d4c2c] transition-colors"
           >
             <Image
-              src="/images/icons/inventory.png"
-              alt="Inventory"
-              width={24}
-              height={24}
+              src="/images/icons/streaks.png"
+              alt="Streaks"
+              width={35}
+              height={35}
             />
           </motion.button>
           <span className="text-[6px] text-white mt-1">Streaks</span>

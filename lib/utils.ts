@@ -1,5 +1,12 @@
 import { DbItem } from "@/supabase/types";
 import { LEVEL_XP_THRESHOLDS } from "./game-constants";
+import { clsx, type ClassValue } from "clsx"
+import { twMerge } from "tailwind-merge"
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs))
+}
+
 
 export const warpcastComposeCastUrl = () => {
   const frameUrl = `https://farville.farm`;
