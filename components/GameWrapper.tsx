@@ -6,6 +6,7 @@ import Header from "./Header";
 import Toolbar from "./Toolbar";
 import { AnimatePresence } from "framer-motion";
 import InventoryModal from "./InventoryModal";
+import StreaksModal from "./StreaksModal";
 import MarketplaceModal from "./MarketplaceModal";
 import SettingsModal from "./SettingsModal";
 import LeaderboardModal from "./LeaderboardModal";
@@ -37,6 +38,18 @@ function InventoryModalContainer() {
     <AnimatePresence>
       {showInventory && (
         <InventoryModal onClose={() => setShowInventory(false)} />
+      )}
+    </AnimatePresence>
+  );
+}
+
+function StreaksModalContainer() {
+  const { showStreaks, setShowStreaks } = useGame();
+
+  return (
+    <AnimatePresence>
+      {showStreaks && (
+        <StreaksModal onClose={() => setShowStreaks(false)} />
       )}
     </AnimatePresence>
   );
@@ -170,6 +183,7 @@ export default function GameWrapper() {
           <PerkIndicator />
           <PlantingIndicator />
           <InventoryModalContainer />
+          <StreaksModalContainer />
           <MarketplaceModalContainer />
           <SettingsModalContainer />
           <LeaderboardModalContainer />

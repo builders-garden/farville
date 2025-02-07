@@ -61,6 +61,7 @@ interface GameContextType {
   showSeedsMenu: boolean;
   showQuests: boolean;
   showRequests: boolean;
+  showStreaks: boolean;
   setShowInventory: (show: boolean) => void;
   setShowMarket: (show: boolean) => void;
   setShowLeaderboard: (show: boolean) => void;
@@ -68,6 +69,7 @@ interface GameContextType {
   setShowSeedsMenu: (show: boolean) => void;
   setShowQuests: (show: boolean) => void;
   setShowRequests: (show: boolean) => void;
+  setShowStreaks: (show: boolean) => void;
   isActionInProgress: boolean;
   setIsActionInProgress: (value: boolean) => void;
   activeOverlay: OverlayConfig;
@@ -97,6 +99,7 @@ export function GameProvider({
   const [showRequests, setShowRequests] = useState(false);
   const [showSeedsMenu, setShowSeedsMenu] = useState(false);
   const [showQuests, setShowQuests] = useState(false);
+  const [showStreaks, setShowStreaks] = useState(false);
   const { state, refetch, loading, updateGridCells, updateUserItems } = useGameState();
   const [selectedSeed, setSelectedSeed] = useState<SeedType | null>(null);
   const [selectedPerk, setSelectedPerk] = useState<UserItem | null>(null);
@@ -227,6 +230,7 @@ export function GameProvider({
         showSeedsMenu,
         showQuests,
         showRequests,
+        showStreaks,
         setShowInventory,
         setShowMarket,
         setShowLeaderboard,
@@ -234,6 +238,7 @@ export function GameProvider({
         setShowSeedsMenu,
         setShowQuests,
         setShowRequests,
+        setShowStreaks,
         isActionInProgress,
         setIsActionInProgress,
         activeOverlay,
