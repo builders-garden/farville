@@ -1,6 +1,5 @@
 import { ImageResponse } from "next/og";
 import { getRequestById } from "@/supabase/queries";
-import Image from "next/image";
 
 export const dynamic = "force-dynamic";
 const size = {
@@ -104,8 +103,8 @@ export async function GET(request: Request, {
           <div
             style={{
               position: "absolute",
-              top: "32px",
-              fontSize: "24px",
+              top: "20px",
+              fontSize: "12px",
               color: "#ffffff",
               fontFamily: "PressStart2P",
               textShadow: "0px 2px 4px rgba(0, 0, 0, 0.5)",
@@ -120,8 +119,8 @@ export async function GET(request: Request, {
               flexDirection: "column",
               justifyContent: "center",
               alignItems: "center",
-              padding: "1rem",
-              borderRadius: "1rem",
+              padding: "0.5rem",
+              borderRadius: "0.5rem",
               position: "relative",
             }}
           >
@@ -132,28 +131,27 @@ export async function GET(request: Request, {
                     display: "flex",
                     flexDirection: "column",
                     alignItems: "center",
-                    gap: "6px",
+                    gap: "0px",
                   }}
                 >
                   <div
                     style={{
-                      width: "100px",
-                      height: "100px",
-                      borderRadius: "50px",
-                      border: "4px solid #fff",
+                      width: "50px",
+                      height: "50px",
+                      borderRadius: "25px",
+                      border: "2px solid #fff",
                       overflow: "hidden",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
                     }}
                   >
-                    <Image
-                      alt={ensName}
+                    <img
                       src={`data:image/png;base64,${Buffer.from(
                         profilePic
                       ).toString("base64")}`}
-                      width="100"
-                      height="100"
+                      width="50"
+                      height="50"
                       style={{
                         objectFit: "cover",
                       }}
@@ -161,12 +159,13 @@ export async function GET(request: Request, {
                   </div>
                   <p
                     style={{
-                      fontSize: "20px",
+                      fontSize: "10px",
                       color: "rgba(255, 255, 255, 0.75)",
                       textShadow: "0px 2px 4px rgba(0, 0, 0, 0.5)",
                       fontFamily: "PressStart2P",
-                      marginBottom: "32px",
+                      marginBottom: "16px",
                       textAlign: "center",
+                      marginTop: "8px",
                     }}
                   >
                     {ensName}
@@ -176,7 +175,7 @@ export async function GET(request: Request, {
             )}
             <p
               style={{
-                fontSize: "32px",
+                fontSize: "16px",
                 fontWeight: "bold",
                 textAlign: "center",
                 color: "#fff",
@@ -191,13 +190,13 @@ export async function GET(request: Request, {
                   display: "flex",
                   flexDirection: "row",
                   alignItems: "center",
-                  gap: "12px",
+                  gap: "6px",
                 }}
               >
                 <p
                   style={{
-                    fontSize: "48px",
-                    marginTop: "32px",
+                    fontSize: "24px",
+                    marginTop: "16px",
                     color: "#fff",
                     textShadow: "0px 2px 4px rgba(0, 0, 0, 0.5)",
                     fontFamily: "PressStart2P",
@@ -205,26 +204,27 @@ export async function GET(request: Request, {
                 >
                   {secondaryText}
                 </p>
-                {itemIcon && (
+                {item.icon && (
                   <div
                     style={{
-                      marginTop: "24px",
-                      width: "48px",
-                      height: "48px",
+                      marginLeft: "6px",
+                      width: "24px",
+                      height: "24px",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
                     }}
                   >
-                    <Image
-                      alt={item.name}
+                    <img
                       src={
-                        `data:image/png;base64,${Buffer.from(
-                          itemIcon
-                        ).toString("base64")}`
+                        itemIcon
+                          ? `data:image/png;base64,${Buffer.from(
+                              itemIcon
+                            ).toString("base64")}`
+                          : undefined
                       }
-                      width="48"
-                      height="48"
+                      width="24"
+                      height="24"
                       style={{
                         objectFit: "contain",
                       }}
