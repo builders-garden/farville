@@ -3,34 +3,35 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
 }
 
 model User {
-  fid                  Int              @unique
+  fid                 Int                @unique
   username            String
   displayName         String
-  avatarUrl          String?
-  walletAddress      String?
-  xp         Int               @default(0)
-  coins              Int               @default(0)
-  expansions         Int               @default(0)
+  avatarUrl           String?
+  walletAddress       String?
+  xp                  Int                @default(0)
+  coins               Int                @default(0)
+  expansions          Int                @default(0)
   notificationDetails String?
-  createdAt          DateTime          @default(now())
-  items              UserHasItem[]
-  gridCells          GridCell[]
-  notifications      UserNotification[]
-  requests           Request[]
-  quests             UserHasQuest[]
-  referrals          Referral[]        @relation("Referrer")
-  referredBy         Referral[]        @relation("Referred")
+  createdAt           DateTime           @default(now())
+  items               UserHasItem[]
+  gridCells           GridCell[]
+  notifications       UserNotification[]
+  requests            Request[]
+  quests              UserHasQuest[]
+  referrals           Referral[]         @relation("Referrer")
+  referredBy          Referral[]         @relation("Referred")
+
   @@map("users")
 }
 
 model Item {
-  id            Int            @id @default(autoincrement())
+  id            Int           @id @default(autoincrement())
   name          String
   description   String?
   icon          String
@@ -38,11 +39,13 @@ model Item {
   buyPrice      Int?
   sellPrice     Int?
   requiredLevel Int?
-  slug          String         @unique
-  createdAt     DateTime       @default(now())
+  slug          String        @unique
+  createdAt     DateTime      @default(now())
   userItems     UserHasItem[]
   requests      Request[]
   quests        Quest[]
+  GridCell      GridCell[]
+
   @@map("items")
 }
 
@@ -53,35 +56,39 @@ model UserHasItem {
   itemId    Int
   quantity  Int
   createdAt DateTime @default(now())
-  @@map("user_has_items")
+
   @@unique([userFid, itemId])
+  @@map("user_has_items")
 }
 
 model Referral {
-  id           Int      @id @default(autoincrement())
-  referrer     User     @relation("Referrer", fields: [fid], references: [fid])
-  fid          Int
-  referred     User     @relation("Referred", fields: [referredFid], references: [fid])
-  referredFid  Int
-  createdAt    DateTime @default(now())
-  @@map("referrals")
+  id          Int      @id @default(autoincrement())
+  referrer    User     @relation("Referrer", fields: [fid], references: [fid])
+  fid         Int
+  referred    User     @relation("Referred", fields: [referredFid], references: [fid])
+  referredFid Int
+  createdAt   DateTime @default(now())
+
   @@unique([fid, referredFid])
+  @@map("referrals")
 }
 
 model GridCell {
-  user            User      @relation(fields: [fid], references: [fid])
-  fid             Int
-  x               Int
-  y               Int
-  cropType        String?
-  plantedAt       DateTime?
-  isReadyToHarvest Boolean  @default(false)
-  harvestAt       DateTime?
-  speedBoostedAt  DateTime?
-  yieldBoost      Float?
-  createdAt       DateTime @default(now())
-  @@map("user_grid_cells")
+  user             User      @relation(fields: [fid], references: [fid])
+  fid              Int
+  x                Int
+  y                Int
+  crop             Item?     @relation(fields: [cropType], references: [slug])
+  cropType         String?
+  plantedAt        DateTime?
+  isReadyToHarvest Boolean   @default(false)
+  harvestAt        DateTime?
+  speedBoostedAt   DateTime?
+  yieldBoost       Float?
+  createdAt        DateTime  @default(now())
+
   @@unique([fid, x, y])
+  @@map("user_grid_cells")
 }
 
 model UserNotification {
@@ -90,6 +97,7 @@ model UserNotification {
   fid       Int
   category  String
   createdAt DateTime @default(now())
+
   @@map("user_notification")
 }
 
@@ -102,38 +110,41 @@ model Request {
   quantity       Int
   filledQuantity Int      @default(0)
   createdAt      DateTime @default(now())
+
   @@map("requests")
 }
 
 model Quest {
-  id        Int            @id @default(autoincrement())
-  category  String
-  type      QuestType?
-  item      Item?          @relation(fields: [itemId], references: [id])
-  itemId    Int?
-  amount    Int?
-  xp        Int?
-  coins     Int?
-  startAt   DateTime?
-  endAt     DateTime?
-  level     Int?
-  createdAt DateTime       @default(now())
+  id         Int            @id @default(autoincrement())
+  category   String
+  type       QuestType?
+  item       Item?          @relation(fields: [itemId], references: [id])
+  itemId     Int?
+  amount     Int?
+  xp         Int?
+  coins      Int?
+  startAt    DateTime?
+  endAt      DateTime?
+  level      Int?
+  createdAt  DateTime       @default(now())
   userQuests UserHasQuest[]
+
   @@map("quests")
 }
 
 model UserHasQuest {
-  id          Int            @id @default(autoincrement())
-  user        User           @relation(fields: [fid], references: [fid])
+  id          Int       @id @default(autoincrement())
+  user        User      @relation(fields: [fid], references: [fid])
   fid         Int
-  quest       Quest          @relation(fields: [questId], references: [id])
+  quest       Quest     @relation(fields: [questId], references: [id])
   questId     Int
-  status      String         @default("incomplete")
-  progress    Int            @default(0)
+  status      String    @default("incomplete")
+  progress    Int       @default(0)
   completedAt DateTime?
-  createdAt   DateTime       @default(now())
-  @@map("user_has_quests")
+  createdAt   DateTime  @default(now())
+
   @@unique([fid, questId])
+  @@map("user_has_quests")
 }
 
 enum QuestType {

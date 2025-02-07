@@ -1,6 +1,6 @@
 import { prisma } from "./client";
 import { LEVEL_XP_THRESHOLDS, LEVEL_REWARDS } from "@/lib/game-constants";
-import { DbUser } from "@/supabase/types";
+import { DbGridCell, DbUser } from "@/supabase/types";
 
 export async function getQuestLeaderboard({
   limit,
@@ -144,7 +144,7 @@ export const updateUserXP = async (
   fid: number,
   xp: number
 ): Promise<{
-  user: DbUser
+  user: DbUser;
   didLevelUp: boolean;
   newXP: number;
   newLevel: number;
@@ -196,5 +196,33 @@ export const updateUserCoins = async (fid: number, coins: number) => {
   return await prisma.user.update({
     where: { fid },
     data: { coins: { increment: coins } },
+  });
+};
+
+export const updateGridCellsBulk = async (fid: number, cells: DbGridCell[]) => {
+  return await prisma.$transaction(async (tx) => {
+    const updatedCells = [];
+    for (const cell of cells) {
+      const updatedCell = await tx.gridCell.update({
+        where: { fid_x_y: { fid, x: cell.x, y: cell.y } },
+        data: cell,
+      });
+      updatedCells.push(updatedCell);
+    }
+    return updatedCells;
+  });
+};
+
+export const getUserItemBySeedType = async (fid: number, seedType: string) => {
+  return await prisma.userHasItem.findFirst({
+    where: {
+      userFid: fid,
+      item: {
+        slug: seedType,
+      },
+    },
+    include: {
+      item: true,
+    },
   });
 };

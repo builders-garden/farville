@@ -69,6 +69,7 @@ export interface Crop {
   deathTime: number;
   growthTime: number;
   rewardXP: number;
+  id: number;
 }
 
 export const CROP_DATA: { [key: string]: Crop } = {
@@ -76,56 +77,67 @@ export const CROP_DATA: { [key: string]: Crop } = {
     growthTime: 6 * 3600000, // 6h in milliseconds
     deathTime: 3 * 3600000, // 3h in milliseconds
     rewardXP: 12,
+    id: 17,
   },
   carrot: {
     growthTime: 6 * 3600000, // 6h
     deathTime: 3.3 * 3600000, // 3.3h
     rewardXP: 10,
+    id: 5,
   },
   radish: {
     growthTime: 6 * 3600000, // 6h
     deathTime: 3.6 * 3600000, // 3.6h
     rewardXP: 14,
+    id: 18,
   },
   lettuce: {
     growthTime: 10 * 3600000, // 10h
     deathTime: 6 * 3600000, // 6h
     rewardXP: 16,
+    id: 19,
   },
   potato: {
     growthTime: 12 * 3600000, // 12h
     deathTime: 7.8 * 3600000, // 7.8h
     rewardXP: 25,
+    id: 8,
   },
   corn: {
     growthTime: 12 * 3600000, // 12h
     deathTime: 8.4 * 3600000, // 8.4h
     rewardXP: 30,
+    id: 20,
   },
   eggplant: {
     growthTime: 16 * 3600000, // 16h
     deathTime: 12 * 3600000, // 12h
     rewardXP: 35,
+    id: 21,
   },
   tomato: {
     growthTime: 16 * 3600000, // 16h
     deathTime: 12.8 * 3600000, // 12.8h
     rewardXP: 45,
+    id: 7,
   },
   strawberry: {
     growthTime: 24 * 3600000, // 24h
     deathTime: 19.2 * 3600000, // 19.2h
     rewardXP: 55,
+    id: 22,
   },
   watermelon: {
     growthTime: 36 * 3600000, // 36h
     deathTime: 32.4 * 3600000, // 32.4h
     rewardXP: 120,
+    id: 23,
   },
   pumpkin: {
     growthTime: 48 * 3600000, // 48h
     deathTime: 48 * 3600000, // 48h
     rewardXP: 180,
+    id: 6,
   },
 };
 
