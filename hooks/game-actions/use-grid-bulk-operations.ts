@@ -1,20 +1,9 @@
 "use client";
 
-import { CropType, SeedType } from "@/types/game";
 import { useApiMutation } from "@/hooks/use-api-mutation";
-import { DbGridCell } from "@/supabase/types";
-import { CROP_DATA } from "@/lib/game-constants";
-import { Dispatch, SetStateAction } from "react";
-import { UserItem } from "../use-user-items";
 import { GridBulkRequest } from "@/app/api/grid-bulk/route";
 
-export const useGridBulkOperations = ({
-  updateGridCells,
-  updateUserItems,
-}: {
-  updateGridCells: (cells: Partial<DbGridCell>[]) => void;
-  updateUserItems: (updatedItems: Partial<UserItem>[]) => void;
-}) => {
+export const useGridBulkOperations = () => {
   const mutation = useApiMutation({
     url: "/api/grid-bulk",
     body: (gridBulkOperation: GridBulkRequest) => gridBulkOperation,
@@ -51,9 +40,9 @@ export const useGridBulkOperations = ({
     onError: (error) => {
       console.error("Mutation error:", error);
     },
-    onSettled: (_data, _error, {}) => {
-      // setIsLoading(false);
-    },
+    // onSettled: (_data, _error, {}) => {
+    //   // setIsLoading(false);
+    // },
   });
 
   return mutation;

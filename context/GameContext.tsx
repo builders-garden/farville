@@ -18,7 +18,6 @@ import { UserItem } from "@/hooks/use-user-items";
 import { usePlantSeed } from "@/hooks/game-actions/use-plant-seed";
 import { useHarvestCrop } from "@/hooks/game-actions/use-harvest-crop";
 import { useApplyPerk } from "@/hooks/game-actions/use-apply-perk";
-import { DbGridCell } from "@/supabase/types";
 import { GridBulkRequest } from "@/app/api/grid-bulk/route";
 import { useGridBulkOperations } from "@/hooks/game-actions/use-grid-bulk-operations";
 
@@ -36,7 +35,7 @@ export interface FloatingNumberData {
   gridX: number; // grid x
   gridY: number; // grid y
   exp: number;
-  amount: number;
+  amount?: number;
   cropType: CropType;
   id: string;
 }
@@ -100,10 +99,11 @@ interface GameContextType {
   tutorialComplete: boolean;
   setTutorialComplete: (complete: boolean) => void;
   showLevelUpConfetti: boolean;
+  setShowLevelUpConfetti: Dispatch<SetStateAction<boolean>>;
   floatingNumbers: FloatingNumberData[];
+  setFloatingNumbers: Dispatch<SetStateAction<FloatingNumberData[]>>;
   remainingUses: number;
   setRemainingUses: (uses: number) => void;
-  updateGridCells: (cells: Partial<DbGridCell>[]) => void;
 }
 
 export const GameContext = createContext<GameContextType | null>(null);
@@ -140,10 +140,7 @@ export function GameProvider({
     useState<GridBulkRequest>();
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  const { mutate: sendGridBulkOperations } = useGridBulkOperations({
-    updateGridCells,
-    updateUserItems,
-  });
+  const { mutate: sendGridBulkOperations } = useGridBulkOperations();
 
   const addGridOperation = (operation: GridBulkRequest) => {
     if (gridBulkOperations) {
@@ -262,8 +259,8 @@ export function GameProvider({
 
   if (!state) {
     return (
-      <div className='flex items-center justify-center min-h-screen'>
-        <div className='animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500'></div>
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500"></div>
       </div>
     );
   }
@@ -313,10 +310,11 @@ export function GameProvider({
         tutorialComplete,
         setTutorialComplete,
         showLevelUpConfetti,
+        setShowLevelUpConfetti,
         floatingNumbers,
+        setFloatingNumbers,
         remainingUses,
         setRemainingUses,
-        updateGridCells,
       }}
     >
       {children}

@@ -186,6 +186,26 @@ export const useGameState = () => {
     });
   }, []);
 
+  const updateUser = useCallback(
+    (newParams: { xp?: number; level?: number; coins?: number }) => {
+      setState((prevState) => {
+        if (!prevState) return prevState;
+
+        return {
+          ...prevState,
+          experience: newParams.xp ?? prevState.experience,
+          level: newParams.level ?? prevState.level,
+          user: {
+            ...prevState.user,
+            xp: newParams.xp ?? prevState.experience,
+          },
+          coins: newParams.coins ?? prevState.coins,
+        };
+      });
+    },
+    []
+  );
+
   return {
     state,
     loading:
@@ -219,5 +239,6 @@ export const useGameState = () => {
     },
     updateGridCells,
     updateUserItems,
+    updateUser,
   };
 };
