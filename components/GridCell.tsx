@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { useGame } from "../context/GameContext";
-import { CropType } from "../types/game";
+import { CropType, PerkType } from "../types/game";
 import CropSprite from "./CropSprite";
 import FloatingNumber from "./animations/FloatingNumber";
 import { useState, useRef, useEffect, useMemo, Fragment } from "react";
@@ -10,7 +10,8 @@ import { DbGridCell } from "@/supabase/types";
 import { CROP_DATA, SPEED_BOOST } from "@/lib/game-constants";
 import Confetti from "./animations/Confetti";
 import { createPortal } from "react-dom";
-import { formatTime } from "@/lib/utils";
+import { formatTime, getBoostTime } from "@/lib/utils";
+import { useAudio } from "@/context/AudioContext";
 
 interface GridCellProps {
   cell: DbGridCell;
@@ -102,11 +103,11 @@ function SeedDetailPopup({
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.9 }}
-      className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+      className='fixed inset-0 bg-black/50 flex items-center justify-center z-50'
       onClick={onClose}
     >
       <div
-        className="bg-[#7E4E31] p-6 rounded-lg max-w-sm w-full mx-4 border-2 border-[#8B5E3C] relative"
+        className='bg-[#7E4E31] p-6 rounded-lg max-w-sm w-full mx-4 border-2 border-[#8B5E3C] relative'
         onClick={(e) => e.stopPropagation()}
       >
         <button
@@ -114,29 +115,29 @@ function SeedDetailPopup({
             e.stopPropagation();
             onClose();
           }}
-          className="absolute top-2 right-2 text-white/80 hover:text-white text-xl font-bold"
+          className='absolute top-2 right-2 text-white/80 hover:text-white text-xl font-bold'
         >
           ×
         </button>
 
-        <div className="flex items-center gap-4 mb-4">
+        <div className='flex items-center gap-4 mb-4'>
           <img
             src={`/images${seedData?.icon}`}
             alt={seedData?.name}
-            className="w-9 h-9 object-contain"
+            className='w-9 h-9 object-contain'
           />
-          <h3 className="text-white/90 font-bold text-xl">{seedData?.name}</h3>
+          <h3 className='text-white/90 font-bold text-xl'>{seedData?.name}</h3>
         </div>
 
-        <div className="space-y-3 text-white/80 text-xs mb-2">
+        <div className='space-y-3 text-white/80 text-xs mb-2'>
           <p>Growth Time: {formattedGrowthTime}</p>
           <p>Planted at: {formattedPlantAt}</p>
           {!cell.isReadyToHarvest && <p>Harvest in: {countdown}</p>}
           {cell.isReadyToHarvest && (
-            <p className="text-[#FFB938] font-medium">Ready to harvest!</p>
+            <p className='text-[#FFB938] font-medium'>Ready to harvest!</p>
           )}
           {cell.speedBoostedAt && boostTimeLeft > 0 && (
-            <p className="text-[#2196F3]">
+            <p className='text-[#2196F3]'>
               Boost ends in: {formattedBoostTimeLeft}
             </p>
           )}
@@ -148,8 +149,8 @@ function SeedDetailPopup({
               e.stopPropagation();
               onFertilize();
             }}
-            className="w-full mt-4 bg-[#FFB938] text-[#7E4E31] py-2 px-4 rounded-lg font-bold 
-                     hover:bg-[#ffc661] transition-colors"
+            className='w-full mt-4 bg-[#FFB938] text-[#7E4E31] py-2 px-4 rounded-lg font-bold 
+                     hover:bg-[#ffc661] transition-colors'
           >
             Fertilize
           </button>
@@ -160,8 +161,8 @@ function SeedDetailPopup({
               e.stopPropagation();
               onBoost(boostData.type);
             }}
-            className="w-full mt-2 bg-[#2196F3] text-white py-2 px-4 rounded-lg font-bold 
-                     hover:bg-[#1976D2] transition-colors"
+            className='w-full mt-2 bg-[#2196F3] text-white py-2 px-4 rounded-lg font-bold 
+                     hover:bg-[#1976D2] transition-colors'
           >
             Boost ({boostData.multiplier}x)
           </button>
@@ -174,6 +175,7 @@ function SeedDetailPopup({
 
 export default function GridCell({ cell }: GridCellProps) {
   const {
+    addGridOperation,
     plantSeed,
     harvestCrop,
     fertilize,
@@ -186,7 +188,9 @@ export default function GridCell({ cell }: GridCellProps) {
     floatingNumbers,
     remainingUses,
     setRemainingUses,
+    updateGridCells,
   } = useGame();
+  const { playSound } = useAudio();
   const cellRef = useRef<HTMLDivElement>(null);
   const [showPopup, setShowPopup] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -251,7 +255,7 @@ export default function GridCell({ cell }: GridCellProps) {
       return;
     }
     try {
-      setIsLoading(true);
+      // setIsLoading(true);
       if (
         isPerkIncompatible ||
         ((selectedSeed || selectedPerk) && remainingUses <= 0)
@@ -270,13 +274,28 @@ export default function GridCell({ cell }: GridCellProps) {
         ((selectedPerk.item.slug === "fertilizer" && isValidFertilizerTarget) ||
           (selectedPerk.item.slug !== "fertilizer" && isValidSpeedBoostTarget))
       ) {
-        applyPerk({
-          x: cell.x,
-          y: cell.y,
+        playSound("fertilize");
+
+        addGridOperation({
+          action: "apply-perk",
           itemSlug: selectedPerk.item.slug,
-          item: selectedPerk,
-          setIsLoading,
+          cells: [{ x: cell.x, y: cell.y }],
         });
+
+        const itemSlug = selectedPerk.item.slug as PerkType;
+        const boostTime = getBoostTime(itemSlug);
+
+        updateGridCells([
+          {
+            x: cell.x,
+            y: cell.y,
+            harvestAt: new Date(
+              new Date(cell.harvestAt!).getTime() - boostTime
+            ).toISOString(),
+            speedBoostedAt: new Date().toISOString(),
+          },
+        ]);
+
         setRemainingUses(remainingUses - 1);
         if (remainingUses <= 1) {
           setSelectedPerk(null);
@@ -308,19 +327,35 @@ export default function GridCell({ cell }: GridCellProps) {
           seedType: selectedSeed,
         });
 
-        const item = state.seeds.find((item) => item.item?.slug === selectedSeed);
+        const item = state.seeds.find(
+          (item) => item.item?.slug === selectedSeed
+        );
 
         if (!item) {
           throw new Error("Seed item not found");
         }
 
-        plantSeed({
-          x: cell.x,
-          y: cell.y,
-          seedType: selectedSeed,
-          item: item,
-          setIsLoading,
+        playSound("plant");
+
+        addGridOperation({
+          action: "plant",
+          itemSlug: selectedSeed,
+          cells: [{ x: cell.x, y: cell.y }],
         });
+
+        updateGridCells([
+          {
+            x: cell.x,
+            y: cell.y,
+            cropType: selectedSeed.replace("-seeds", "") as CropType,
+            plantedAt: new Date().toISOString(),
+            harvestAt: new Date(
+              Date.now() +
+                CROP_DATA[selectedSeed.replace("-seeds", "")].growthTime
+            ).toISOString(),
+            isReadyToHarvest: false,
+          },
+        ]);
 
         setRemainingUses(Math.max(0, remainingUses - 1));
         if (remainingUses <= 1) {
@@ -396,8 +431,8 @@ export default function GridCell({ cell }: GridCellProps) {
         }}
       >
         {isLoading && (
-          <div className="absolute inset-0 bg-black/50 rounded-sm flex items-center justify-center z-50">
-            <div className="w-8 h-8 border-4 border-white/20 border-t-white rounded-full animate-spin"></div>
+          <div className='absolute inset-0 bg-black/50 rounded-sm flex items-center justify-center z-50'>
+            <div className='w-8 h-8 border-4 border-white/20 border-t-white rounded-full animate-spin'></div>
           </div>
         )}
 
@@ -445,11 +480,11 @@ export default function GridCell({ cell }: GridCellProps) {
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="absolute inset-0 bg-yellow-400/20 rounded-lg flex items-center justify-center"
+              className='absolute inset-0 bg-yellow-400/20 rounded-lg flex items-center justify-center'
             >
               <img
                 src={`/images${selectedPerk.item.icon}`}
-                className="w-8 h-8"
+                className='w-8 h-8'
               />
             </motion.div>
           )}
@@ -459,14 +494,14 @@ export default function GridCell({ cell }: GridCellProps) {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="absolute inset-0 bg-green-400/20 rounded-lg flex items-center justify-center"
+            className='absolute inset-0 bg-green-400/20 rounded-lg flex items-center justify-center'
           >
             <motion.img
               src={`/images/${
                 state.items.find((item) => item.slug === selectedSeed)?.icon
               }`}
               alt={selectedSeed}
-              className="w-8 h-8 object-contain opacity-75"
+              className='w-8 h-8 object-contain opacity-75'
               animate={{ scale: [0.9, 1.1, 0.9] }}
               transition={{ duration: 1.5, repeat: Infinity }}
             />
@@ -482,13 +517,13 @@ export default function GridCell({ cell }: GridCellProps) {
                 number={numbers.exp}
                 x={numbers.x}
                 y={numbers.y - 5}
-                type="xp"
+                type='xp'
               />
               <FloatingNumber
                 number={numbers.amount}
                 x={numbers.x}
                 y={numbers.y + 5}
-                type="crop"
+                type='crop'
                 cropType={numbers.cropType}
               />
             </Fragment>

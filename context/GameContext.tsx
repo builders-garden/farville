@@ -1,6 +1,14 @@
 "use client";
 
-import { createContext, Dispatch, SetStateAction, useContext, useEffect, useRef, useState } from "react";
+import {
+  createContext,
+  Dispatch,
+  SetStateAction,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import type { CropType, SeedType } from "../types/game";
 import { GameState, useGameState } from "@/hooks/use-game-state";
 import { useBuyItem } from "@/hooks/game-actions/use-buy-item";
@@ -11,6 +19,8 @@ import { usePlantSeed } from "@/hooks/game-actions/use-plant-seed";
 import { useHarvestCrop } from "@/hooks/game-actions/use-harvest-crop";
 import { useApplyPerk } from "@/hooks/game-actions/use-apply-perk";
 import { DbGridCell } from "@/supabase/types";
+import { GridBulkRequest } from "@/app/api/grid-bulk/route";
+import { useGridBulkOperations } from "@/hooks/game-actions/use-grid-bulk-operations";
 
 // Update the OverlayType to be more flexible with parameters
 export type OverlayConfig =
@@ -38,9 +48,24 @@ interface GameContextType {
   setSelectedSeed: (seed: SeedType | null) => void;
   selectedPerk: UserItem | null;
   setSelectedPerk: (perk: UserItem | null) => void;
-  plantSeed: (params: { x: number; y: number; seedType: SeedType, item: UserItem, setIsLoading: Dispatch<SetStateAction<boolean>> }) => void;
-  harvestCrop: (params: { x: number; y: number; setIsLoading: Dispatch<SetStateAction<boolean>> }) => void;
-  fertilize: (params: { x: number; y: number; setIsLoading: Dispatch<SetStateAction<boolean>> }) => void;
+  addGridOperation: (operation: GridBulkRequest) => void;
+  plantSeed: (params: {
+    x: number;
+    y: number;
+    seedType: SeedType;
+    item: UserItem;
+    setIsLoading: Dispatch<SetStateAction<boolean>>;
+  }) => void;
+  harvestCrop: (params: {
+    x: number;
+    y: number;
+    setIsLoading: Dispatch<SetStateAction<boolean>>;
+  }) => void;
+  fertilize: (params: {
+    x: number;
+    y: number;
+    setIsLoading: Dispatch<SetStateAction<boolean>>;
+  }) => void;
   applyPerk: (params: {
     x: number;
     y: number;
@@ -97,7 +122,8 @@ export function GameProvider({
   const [showRequests, setShowRequests] = useState(false);
   const [showSeedsMenu, setShowSeedsMenu] = useState(false);
   const [showQuests, setShowQuests] = useState(false);
-  const { state, refetch, loading, updateGridCells, updateUserItems } = useGameState();
+  const { state, refetch, loading, updateGridCells, updateUserItems } =
+    useGameState();
   const [selectedSeed, setSelectedSeed] = useState<SeedType | null>(null);
   const [selectedPerk, setSelectedPerk] = useState<UserItem | null>(null);
   const [isActionInProgress, setIsActionInProgress] = useState(false);
@@ -109,6 +135,47 @@ export function GameProvider({
     []
   );
   const [remainingUses, setRemainingUses] = useState<number>(0);
+
+  const [gridBulkOperations, setGridBulkOperations] =
+    useState<GridBulkRequest>();
+  const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const { mutate: sendGridBulkOperations } = useGridBulkOperations({
+    updateGridCells,
+    updateUserItems,
+  });
+
+  const addGridOperation = (operation: GridBulkRequest) => {
+    if (gridBulkOperations) {
+      if (operation.action !== gridBulkOperations.action) {
+        sendGridBulkOperations(gridBulkOperations);
+        setGridBulkOperations(operation);
+      } else {
+        setGridBulkOperations((prev) => {
+          if (!prev) return operation;
+          return {
+            ...prev,
+            cells: [...prev.cells, ...operation.cells],
+          };
+        });
+      }
+    } else {
+      setGridBulkOperations(operation);
+    }
+  };
+
+  useEffect(() => {
+    if (gridBulkOperations) {
+      if (debounceTimeoutRef.current) {
+        clearTimeout(debounceTimeoutRef.current);
+      }
+      debounceTimeoutRef.current = setTimeout(() => {
+        sendGridBulkOperations(gridBulkOperations);
+        setGridBulkOperations(undefined);
+      }, 500);
+    }
+  }, [gridBulkOperations, sendGridBulkOperations]);
+
   const [isGridDoingOperations, setIsGridDoingOperations] = useState(false);
   const [operationsCounter, setOperationsCounter] = useState(0);
   const prevIsGridDoingOperationsRef = useRef(isGridDoingOperations);
@@ -168,20 +235,20 @@ export function GameProvider({
   const { mutate: plantSeedMutation } = usePlantSeed({
     updateGridCells,
     updateUserItems,
-    handleOperationCounter
+    handleOperationCounter,
   });
 
   const { mutate: harvestCropMutation } = useHarvestCrop({
     updateGridCells,
     setFloatingNumbers,
     setShowLevelUpConfetti,
-    handleOperationCounter
+    handleOperationCounter,
   });
 
   const { mutate: applyPerkMutation } = useApplyPerk({
     updateGridCells,
     updateUserItems,
-    handleOperationCounter
+    handleOperationCounter,
   });
 
   useEffect(() => {
@@ -195,8 +262,8 @@ export function GameProvider({
 
   if (!state) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500"></div>
+      <div className='flex items-center justify-center min-h-screen'>
+        <div className='animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500'></div>
       </div>
     );
   }
@@ -209,10 +276,15 @@ export function GameProvider({
         setSelectedSeed,
         selectedPerk,
         setSelectedPerk,
+        addGridOperation,
         plantSeed: plantSeedMutation,
         harvestCrop: harvestCropMutation,
         fertilize: (params) =>
-          applyPerkMutation({ ...params, itemSlug: "fertilizer", setIsLoading: params.setIsLoading }),
+          applyPerkMutation({
+            ...params,
+            itemSlug: "fertilizer",
+            setIsLoading: params.setIsLoading,
+          }),
         applyPerk: applyPerkMutation,
         buyItem,
         sellItem,

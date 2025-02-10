@@ -25,8 +25,12 @@ import {
   SPEED_BOOST,
 } from "@/lib/game-constants";
 import { trackEvent } from "@/lib/posthog/server";
-import { CropType } from "@/types/game";
-import { chooseRandomItem, getCurrentLevelAndProgress } from "@/lib/utils";
+import { CropType, PerkType } from "@/types/game";
+import {
+  chooseRandomItem,
+  getBoostTime,
+  getCurrentLevelAndProgress,
+} from "@/lib/utils";
 
 export const getUsers = async (
   offset: number = 0,
@@ -614,12 +618,11 @@ export const speedBoostGridCell = async (
   fid: number,
   x: number,
   y: number,
-  boostSlug: "nitrogen" | "potassium" | "phosphorus",
+  boostSlug: PerkType,
   harvestAt: Date
 ): Promise<DbGridCell | null> => {
   const currentHarvestTime = new Date(harvestAt);
-  const boostTime =
-    SPEED_BOOST[boostSlug].duration * (1 - 1 / SPEED_BOOST[boostSlug].boost);
+  const boostTime = getBoostTime(boostSlug);
 
   // Get current cell to check speedBoostedAt
   const { data: currentCell } = await supabase

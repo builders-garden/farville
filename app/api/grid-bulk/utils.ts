@@ -13,8 +13,9 @@ import {
 import { addUserItem, getGridCells } from "@/supabase/queries";
 import { sendQuestsCalculation } from "../grid-cells/[x]/[y]/utils";
 import { sendBatchToPostHog, trackEvent } from "@/lib/posthog/server";
-import { SeedType } from "@/types/game";
+import { PerkType, SeedType } from "@/types/game";
 import { NextResponse } from "next/server";
+import { getBoostTime } from "@/lib/utils";
 
 export const plantBulk = async (
   fid: number,
@@ -206,7 +207,7 @@ const rewardUserBulk = async (
 export const perkBulk = async (
   fid: number,
   cells: { x: number; y: number }[],
-  itemSlug: string
+  itemSlug: PerkType
 ) => {
   const userPerks = await getUserItemBySlug(fid, itemSlug);
 
@@ -237,8 +238,7 @@ export const perkBulk = async (
           continue;
         }
       }
-      const boostTime =
-        SPEED_BOOST[itemSlug].duration * (1 - 1 / SPEED_BOOST[itemSlug].boost);
+      const boostTime = getBoostTime(itemSlug);
       await sendDelayedNotification(
         fid.toString(),
         `Harvest time! 🌾`,
