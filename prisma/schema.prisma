@@ -9,14 +9,14 @@ datasource db {
 }
 
 model User {
-  fid                 Decimal            @id @db.Decimal
+  fid                 Int                @id @db.Integer
   username            String
   displayName         String
   avatarUrl           String?
   walletAddress       String?
-  xp                  Decimal            @default(0) @db.Decimal
-  coins               Decimal            @default(0) @db.Decimal
-  expansions          Decimal            @default(0) @db.Decimal
+  xp                  Int                @default(0) @db.Integer
+  coins               Int                @default(0) @db.Integer
+  expansions          Int                @default(0) @db.Integer
   notificationDetails String?
   createdAt           DateTime           @default(now()) @db.Timestamptz(6)
   referrals           Referral[]         @relation("Referrer")
@@ -30,16 +30,16 @@ model User {
 }
 
 model Item {
-  id            BigInt        @id @default(autoincrement())
+  id            Int           @id @default(autoincrement())
   name          String
   description   String?
   icon          String
   category      String
-  buyPrice      Decimal?      @db.Decimal
-  sellPrice     Decimal?      @db.Decimal
-  requiredLevel Decimal       @default(1) @db.Decimal
+  buyPrice      Int?          @db.Integer
+  sellPrice     Int?          @db.Integer
+  requiredLevel Int           @default(1) @db.Integer
   createdAt     DateTime      @default(now()) @db.Timestamptz(6)
-  slug          String?       @unique
+  slug          String        @unique
   quests        Quest[]
   requests      Request[]
   GridCell      GridCell[]
@@ -49,9 +49,9 @@ model Item {
 }
 
 model UserHasItem {
-  userFid   Decimal  @db.Decimal
-  itemId    BigInt
-  quantity  Decimal  @default(1) @db.Decimal
+  userFid   Int      @db.Integer
+  itemId    Int
+  quantity  Int      @default(1) @db.Integer
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   item      Item     @relation(fields: [itemId], references: [id], onDelete: Cascade, onUpdate: NoAction)
   user      User     @relation(fields: [userFid], references: [fid], onDelete: Cascade, onUpdate: NoAction)
@@ -61,9 +61,9 @@ model UserHasItem {
 }
 
 model Referral {
-  id          BigInt   @id @default(autoincrement())
-  fid         Decimal  @db.Decimal
-  referredFid Decimal  @db.Decimal
+  id          Int      @id @default(autoincrement())
+  fid         Int      @db.Integer
+  referredFid Int      @db.Integer
   createdAt   DateTime @default(now()) @db.Timestamptz(6)
   referrer    User     @relation("Referrer", fields: [fid], references: [fid], onDelete: Cascade, onUpdate: NoAction)
 
@@ -71,14 +71,14 @@ model Referral {
 }
 
 model GridCell {
-  fid              Decimal   @db.Decimal
-  x                BigInt
-  y                BigInt
+  fid              Int       @db.Integer
+  x                Int
+  y                Int
   cropType         String?
   plantedAt        DateTime? @db.Timestamptz(6)
   createdAt        DateTime  @default(now()) @db.Timestamptz(6)
   isReadyToHarvest Boolean   @default(false)
-  yieldBoost       Decimal?  @db.Decimal
+  yieldBoost       Int?      @db.Integer
   speedBoostedAt   DateTime? @db.Timestamptz(6)
   harvestAt        DateTime? @db.Timestamptz(6)
   user             User      @relation(fields: [fid], references: [fid], onDelete: Cascade, onUpdate: NoAction, map: "player_grid_cells_fid_fkey")
@@ -89,8 +89,8 @@ model GridCell {
 }
 
 model UserNotification {
-  id         BigInt   @id @default(autoincrement())
-  fid        Decimal  @db.Decimal
+  id         Int      @id @default(autoincrement())
+  fid        Int      @db.Integer
   created_at DateTime @default(now()) @db.Timestamptz(6)
   category   String   @db.VarChar
   user       User     @relation(fields: [fid], references: [fid], onDelete: Cascade, onUpdate: NoAction)
@@ -99,11 +99,11 @@ model UserNotification {
 }
 
 model Request {
-  id             BigInt   @id @default(autoincrement())
-  fid            Decimal  @db.Decimal
-  itemId         BigInt?
-  quantity       Decimal? @db.Decimal
-  filledQuantity Decimal  @default(0) @db.Decimal
+  id             Int      @id @default(autoincrement())
+  fid            Int      @db.Integer
+  itemId         Int?
+  quantity       Int?     @db.Integer
+  filledQuantity Int      @default(0) @db.Integer
   createdAt      DateTime @default(now()) @db.Timestamptz(6)
   user           User     @relation(fields: [fid], references: [fid], onDelete: NoAction, onUpdate: NoAction)
   item           Item?    @relation(fields: [itemId], references: [id], onDelete: NoAction, onUpdate: NoAction)
@@ -112,17 +112,17 @@ model Request {
 }
 
 model Quest {
-  id         BigInt         @id @default(autoincrement())
+  id         Int            @id @default(autoincrement())
   category   String
-  itemId     BigInt?
-  amount     Decimal?       @db.Decimal
-  xp         Decimal?       @db.Decimal
-  coins      Decimal?       @db.Decimal
+  itemId     Int?
+  amount     Int?           @db.Integer
+  xp         Int?           @db.Integer
+  coins      Int?           @db.Integer
   startAt    DateTime       @db.Timestamptz(6)
   endAt      DateTime?      @db.Timestamptz(6)
   createdAt  DateTime       @default(now()) @db.Timestamptz(6)
   type       String?
-  level      Decimal?       @db.Decimal
+  level      Int?           @db.Integer
   item       Item?          @relation(fields: [itemId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   userQuests UserHasQuest[]
 
@@ -130,12 +130,12 @@ model Quest {
 }
 
 model UserHasQuest {
-  id          BigInt    @id @default(autoincrement())
-  fid         Decimal   @db.Decimal
-  questId     BigInt
+  id          Int       @id @default(autoincrement())
+  fid         Int       @db.Integer
+  questId     Int
   completedAt DateTime? @db.Timestamptz(6)
   createdAt   DateTime  @default(dbgenerated("timezone('utc'::text, now())")) @db.Timestamptz(6)
-  progress    Decimal   @default(0) @db.Decimal
+  progress    Int       @default(0) @db.Integer
   status      String    @default("incomplete")
   user        User      @relation(fields: [fid], references: [fid], onDelete: NoAction, onUpdate: NoAction)
   quest       Quest     @relation(fields: [questId], references: [id], onDelete: Cascade, onUpdate: NoAction)

@@ -17,7 +17,6 @@ import Confetti from "./animations/Confetti";
 import { createPortal } from "react-dom";
 import { formatTime, getBoostTime } from "@/lib/utils";
 import { useAudio } from "@/context/AudioContext";
-import { useGameState } from "@/hooks/use-game-state";
 
 interface GridCellProps {
   cell: DbGridCell;
@@ -197,8 +196,10 @@ export default function GridCell({ cell }: GridCellProps) {
     remainingUses,
     setRemainingUses,
     state,
+    updateGridCells,
+    updateUserItems,
+    updateUser,
   } = useGame();
-  const { updateUserItems, updateUser, updateGridCells } = useGameState();
   const { playSound } = useAudio();
   const cellRef = useRef<HTMLDivElement>(null);
   const [showPopup, setShowPopup] = useState(false);

@@ -20,6 +20,7 @@ import { useHarvestCrop } from "@/hooks/game-actions/use-harvest-crop";
 import { useApplyPerk } from "@/hooks/game-actions/use-apply-perk";
 import { GridBulkRequest } from "@/app/api/grid-bulk/route";
 import { useGridBulkOperations } from "@/hooks/game-actions/use-grid-bulk-operations";
+import { DbGridCell } from "@/supabase/types";
 
 // Update the OverlayType to be more flexible with parameters
 export type OverlayConfig =
@@ -104,6 +105,13 @@ interface GameContextType {
   setFloatingNumbers: Dispatch<SetStateAction<FloatingNumberData[]>>;
   remainingUses: number;
   setRemainingUses: (uses: number) => void;
+  updateGridCells: (updatedCells: Partial<DbGridCell>[]) => void;
+  updateUserItems: (updatedItems: Partial<UserItem>[]) => void;
+  updateUser: (newParams: {
+    xp?: number;
+    level?: number;
+    coins?: number;
+  }) => void;
 }
 
 export const GameContext = createContext<GameContextType | null>(null);
@@ -122,8 +130,14 @@ export function GameProvider({
   const [showRequests, setShowRequests] = useState(false);
   const [showSeedsMenu, setShowSeedsMenu] = useState(false);
   const [showQuests, setShowQuests] = useState(false);
-  const { state, refetch, loading, updateGridCells, updateUserItems } =
-    useGameState();
+  const {
+    state,
+    refetch,
+    loading,
+    updateGridCells,
+    updateUserItems,
+    updateUser,
+  } = useGameState();
   const [selectedSeed, setSelectedSeed] = useState<SeedType | null>(null);
   const [selectedPerk, setSelectedPerk] = useState<UserItem | null>(null);
   const [isActionInProgress, setIsActionInProgress] = useState(false);
@@ -315,6 +329,9 @@ export function GameProvider({
         setFloatingNumbers,
         remainingUses,
         setRemainingUses,
+        updateGridCells,
+        updateUserItems,
+        updateUser,
       }}
     >
       {children}
