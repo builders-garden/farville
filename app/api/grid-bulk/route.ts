@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { SeedType } from "@/types/game";
-import { harvestBulk, plantBulk } from "./utils";
+import { harvestBulk, perkBulk, plantBulk } from "./utils";
 
 interface PlantBulkRequest {
   fid: string;
   action: string;
   seedType: SeedType;
+  itemSlug: string;
   cells: {
     x: number;
     y: number;
@@ -17,7 +18,8 @@ export const POST = async (req: NextRequest) => {
   // if (!fid) {
   //   return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   // }
-  const { fid, action, seedType, cells }: PlantBulkRequest = await req.json();
+  const { fid, action, seedType, cells, itemSlug }: PlantBulkRequest =
+    await req.json();
 
   switch (action) {
     case "plant":
@@ -31,6 +33,12 @@ export const POST = async (req: NextRequest) => {
       return NextResponse.json({
         success: true,
         data: harvestResult,
+      });
+    case "apply-perk":
+      const perkResult = await perkBulk(Number(fid), cells, itemSlug);
+      return NextResponse.json({
+        success: true,
+        data: perkResult,
       });
     default:
       return NextResponse.json({ error: "Invalid action" }, { status: 400 });

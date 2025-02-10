@@ -1,11 +1,11 @@
-import { CROP_DATA } from "@/lib/game-constants";
+import { CROP_DATA, SPEED_BOOST } from "@/lib/game-constants";
 import {
   getCropNameFromSeeds,
   getGrowthTime,
   sendDelayedNotification,
 } from "@/lib/game-notifications";
 import {
-  getUserItemBySeedType,
+  getUserItemBySlug,
   removeUserItem,
   updateGridCellsBulk,
   updateUserXP,
@@ -21,7 +21,7 @@ export const plantBulk = async (
   cells: { x: number; y: number }[],
   seedType: SeedType
 ) => {
-  const userSeeds = await getUserItemBySeedType(fid, seedType);
+  const userSeeds = await getUserItemBySlug(fid, seedType);
 
   if (!userSeeds || userSeeds.quantity < cells.length) {
     return NextResponse.json({ error: "User does not have enough seeds" });
@@ -53,21 +53,23 @@ export const plantBulk = async (
     }))
   );
 
-  await sendDelayedNotification(
-    fid.toString(),
-    `Harvest time! 🌾`,
-    `Your ${getCropNameFromSeeds(seedType)} are ready to harvest!`,
-    "harvest",
-    getGrowthTime(seedType)
-  );
-  await sendQuestsCalculation(
-    fid,
-    "plant",
-    userSeeds.itemId,
-    updatedGridCellsBulk.length
-  );
   // TODO: add different track
   if (updatedGridCellsBulk.length > 0) {
+    await removeUserItem(fid, userSeeds.itemId, updatedGridCellsBulk.length);
+
+    await sendDelayedNotification(
+      fid.toString(),
+      `Harvest time! 🌾`,
+      `Your ${getCropNameFromSeeds(seedType)} are ready to harvest!`,
+      "harvest",
+      getGrowthTime(seedType)
+    );
+    await sendQuestsCalculation(
+      fid,
+      "plant",
+      userSeeds.itemId,
+      updatedGridCellsBulk.length
+    );
     await sendBatchToPostHog(
       fid,
       "planted-seed",
@@ -78,8 +80,6 @@ export const plantBulk = async (
       }))
     );
   }
-
-  await removeUserItem(fid, userSeeds.itemId, updatedGridCellsBulk.length);
 
   return {
     cells: {
@@ -106,9 +106,6 @@ export const harvestBulk = async (
       !gridCell.cropType ||
       new Date(gridCell.harvestAt).getTime() > Date.now()
     ) {
-      console.log(
-        `Cell ${cell.x}/${cell.y} is not planted or not ready to harvest`
-      );
       notHarvestableCells.push(gridCell);
     } else {
       harvestableCells.push(gridCell);
@@ -199,14 +196,106 @@ const rewardUserBulk = async (
       level: newLevel,
     });
   }
-  console.log("Rewarding user", {
-    cropsWithRewards,
-    didLevelUp,
-    newXP,
-  });
   return {
     cropsWithRewards,
     didLevelUp,
     newXP,
+  };
+};
+
+export const perkBulk = async (
+  fid: number,
+  cells: { x: number; y: number }[],
+  itemSlug: string
+) => {
+  const userPerks = await getUserItemBySlug(fid, itemSlug);
+
+  if (!userPerks || userPerks.quantity < cells.length) {
+    return NextResponse.json({ error: "User does not have enough perks" });
+  }
+
+  const gridCells = await getGridCells(fid);
+
+  const nonPerkableCells = [];
+  const perkableCells = [];
+
+  for (const cell of cells) {
+    const gridCell = gridCells.find((gc) => gc.x === cell.x && gc.y === cell.y);
+    if (!gridCell) {
+      nonPerkableCells.push(gridCell);
+    } else if (!gridCell.plantedAt || !gridCell.harvestAt) {
+      nonPerkableCells.push(gridCell);
+    } else if (gridCell.isReadyToHarvest) {
+      nonPerkableCells.push(gridCell);
+    } else {
+      // Check if enough time has passed since last speed boost
+      if (gridCell.speedBoostedAt) {
+        const lastBoostTime = new Date(gridCell.speedBoostedAt);
+        const timeSinceBoost = Date.now() - lastBoostTime.getTime();
+        if (timeSinceBoost < SPEED_BOOST[itemSlug].duration) {
+          nonPerkableCells.push(gridCell);
+          continue;
+        }
+      }
+      const boostTime =
+        SPEED_BOOST[itemSlug].duration * (1 - 1 / SPEED_BOOST[itemSlug].boost);
+      await sendDelayedNotification(
+        fid.toString(),
+        `Harvest time! 🌾`,
+        `Your ${gridCell.cropType} are ready to harvest!`,
+        "harvest",
+        (new Date(gridCell.harvestAt as string).getTime() -
+          boostTime -
+          Date.now()) /
+          1000
+      );
+      perkableCells.push({
+        ...gridCell,
+        harvestAt: new Date(
+          new Date(gridCell.harvestAt).getTime() - boostTime
+        ).toISOString(),
+        speedBoostedAt: new Date().toISOString(),
+      });
+    }
+  }
+
+  const updatedGridCells = await updateGridCellsBulk(fid, perkableCells);
+
+  // track with posthog
+  if (updatedGridCells.length > 0) {
+    await removeUserItem(fid, userPerks.itemId, updatedGridCells.length);
+
+    // TODO: handle this if we want to add Perk Quests
+    // await sendQuestsCalculation(
+    //   fid,
+    //   "apply-perk",
+    //   userPerks.itemId,
+    //   updatedGridCells.length
+    // );
+
+    await sendDelayedNotification(
+      fid.toString(),
+      `Speed boost expired! ⚡️`,
+      `The speed boost has worn off. Check your crops!`,
+      "boost-expired",
+      SPEED_BOOST[itemSlug].duration
+    );
+
+    await sendBatchToPostHog(
+      fid,
+      "applied-perk",
+      updatedGridCells.map((cell) => ({
+        cellId: `${cell.x}/${cell.y}`,
+        cropType: cell.cropType,
+        itemSlug,
+      }))
+    );
+  }
+
+  return {
+    cells: {
+      perkable: updatedGridCells,
+      nonPerkable: nonPerkableCells,
+    },
   };
 };

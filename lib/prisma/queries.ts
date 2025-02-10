@@ -213,12 +213,12 @@ export const updateGridCellsBulk = async (fid: number, cells: DbGridCell[]) => {
   });
 };
 
-export const getUserItemBySeedType = async (fid: number, seedType: string) => {
+export const getUserItemBySlug = async (fid: number, slug: string) => {
   return await prisma.userHasItem.findFirst({
     where: {
       userFid: fid,
       item: {
-        slug: seedType,
+        slug: slug,
       },
     },
     include: {
