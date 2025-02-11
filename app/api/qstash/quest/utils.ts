@@ -16,7 +16,7 @@ export const calculateUserQuestsProgress = async (
   });
 
   if (!quests?.length) {
-    return null;
+    return [];
   }
 
   // Filter eligible quests and prepare updates
