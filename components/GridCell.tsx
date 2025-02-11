@@ -268,12 +268,6 @@ export default function GridCell({ cell }: GridCellProps) {
         isPerkIncompatible ||
         ((selectedSeed || selectedPerk) && remainingUses <= 0)
       ) {
-        console.log("Early return due to:", {
-          isPerkIncompatible,
-          selectedSeed,
-          selectedPerk,
-          remainingUses,
-        });
         setIsLoading(false);
         return;
       }
@@ -307,7 +301,7 @@ export default function GridCell({ cell }: GridCellProps) {
         updateUserItems([
           {
             itemId: selectedPerk.itemId,
-            quantity: selectedPerk.quantity - 1,
+            quantity: remainingUses - 1,
             item: {
               ...selectedPerk.item,
               category: "perk",
@@ -344,6 +338,7 @@ export default function GridCell({ cell }: GridCellProps) {
               cropType: null,
               plantedAt: null,
               harvestAt: null,
+              speedBoostedAt: null,
               isReadyToHarvest: false,
             },
           ]);
@@ -386,12 +381,6 @@ export default function GridCell({ cell }: GridCellProps) {
       }
 
       if (selectedSeed && !cell.plantedAt) {
-        console.log("Attempting to plant:", {
-          x: cell.x,
-          y: cell.y,
-          seedType: selectedSeed,
-        });
-
         const item = state.seeds.find(
           (item) => item.item?.slug === selectedSeed
         );
@@ -406,19 +395,6 @@ export default function GridCell({ cell }: GridCellProps) {
           cells: [{ x: cell.x, y: cell.y }],
         });
 
-        console.log("planting", [
-          {
-            x: cell.x,
-            y: cell.y,
-            cropType: selectedSeed.replace("-seeds", "") as CropType,
-            plantedAt: new Date().toISOString(),
-            harvestAt: new Date(
-              Date.now() +
-                CROP_DATA[selectedSeed.replace("-seeds", "")].growthTime
-            ).toISOString(),
-            isReadyToHarvest: false,
-          },
-        ]);
         updateGridCells([
           {
             x: cell.x,
@@ -433,16 +409,6 @@ export default function GridCell({ cell }: GridCellProps) {
           },
         ]);
 
-        console.log("updating user items", [
-          {
-            itemId: item.itemId,
-            quantity: item.quantity - 1,
-            item: {
-              ...item.item,
-              category: "seed",
-            },
-          },
-        ]);
         updateUserItems([
           {
             itemId: item.id,
