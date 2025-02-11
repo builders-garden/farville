@@ -1,5 +1,6 @@
 import { getUserQuests, updateUserQuest } from "@/supabase/queries";
-import { DbUserHasQuest } from "@/supabase/types";
+
+import { DbUserHasQuestStatus } from "@/supabase/types";
 
 export const calculateUserQuestsProgress = async (
   fid: number,
@@ -11,54 +12,58 @@ export const calculateUserQuestsProgress = async (
   const quests = await getUserQuests(fid, {
     status: "incomplete",
     category,
+    itemId,
   });
-  if (!quests) {
+
+  if (!quests?.length) {
     return null;
   }
-  console.log(
-    `[${new Date().toISOString()}] found ${
-      quests.length
-    } quests for user ${fid}`
+
+  // Filter eligible quests and prepare updates
+  const questUpdates = quests
+    .filter(
+      (quest) =>
+        quest.quest && (!quest.quest.itemId || quest.quest.itemId === itemId)
+    )
+    .map((quest) => {
+      const newProgress = Math.min(
+        quest.progress + itemAmount,
+        quest.quest!.amount || 1
+      );
+      const completed = newProgress >= (quest.quest!.amount || 1);
+
+      return {
+        fid,
+        questId: quest.questId,
+        updates: {
+          progress: newProgress,
+          status: completed
+            ? ("completed" as DbUserHasQuestStatus)
+            : ("incomplete" as DbUserHasQuestStatus),
+          completedAt: completed ? new Date().toISOString() : null,
+        },
+      };
+    });
+
+  if (!questUpdates.length) {
+    return [];
+  }
+
+  // Batch update all quests at once
+  const updatedQuests = await Promise.all(
+    questUpdates.map(({ fid, questId, updates }) =>
+      updateUserQuest(fid, questId, updates)
+    )
   );
 
-  const updatedQuests: DbUserHasQuest[] = [];
-  // Update progress for each quest
-  await Promise.all(
-    quests.map(async (quest) => {
-      if (
-        quest.quest &&
-        (quest.quest.itemId === null || quest.quest?.itemId === itemId)
-      ) {
-        let newProgress = quest.progress + itemAmount;
-        const completed = newProgress >= (quest.quest?.amount || 1);
-
-        if (completed) {
-          newProgress = quest.quest?.amount || 1;
-        }
-
-        const updatedQuest = await updateUserQuest(fid, quest.questId, {
-          progress: newProgress,
-          status: completed ? "completed" : "incomplete",
-          completedAt: completed ? new Date().toISOString() : null,
-        });
-        updatedQuests.push(updatedQuest);
-        console.log(
-          `[${new Date().toISOString()}] updated quest with id ${
-            quest.questId
-          } for user ${fid}`
-        );
-        if (completed) {
-          console.log(
-            `[${new Date().toISOString()}] completed quest with id ${
-              quest.questId
-            } for user ${fid}`
-          );
-        }
-        return updatedQuest;
-      } else {
-        return quest;
-      }
-    })
+  // Single log for all updates
+  console.log(
+    `[${new Date().toISOString()}] Updated ${
+      updatedQuests.length
+    } quests for user ${fid}. ` +
+      `Completed: ${
+        updatedQuests.filter((q) => q.status === "completed").length
+      }`
   );
 
   return updatedQuests;
