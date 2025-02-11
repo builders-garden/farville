@@ -3,23 +3,27 @@ import { useApiQuery } from "./use-api-query";
 
 export const useLeaderboard = (
   friends: boolean,
-  targetFid: number,
+  targetFid?: number,
   quests = false
 ) => {
-  const { data, isLoading, error } = useApiQuery<{
+  const queryParams = new URLSearchParams();
+  if (targetFid) queryParams.append("targetFid", targetFid.toString());
+  if (friends) queryParams.append("friends", "true");
+  if (quests) queryParams.append("type", "quests");
+
+  const url = `/api/leaderboard${
+    queryParams.toString() ? `?${queryParams.toString()}` : ""
+  }`;
+
+  return useApiQuery<{
     users: (DbUser & { questCount?: number })[];
     targetPosition?: number;
     questCount?: number;
   }>({
-    url: targetFid
-      ? `/api/leaderboard?targetFid=${targetFid}&friends=${friends}${
-          quests ? "&type=quests" : ""
-        }`
-      : `/api/leaderboard${quests ? "?type=quests" : ""}`,
+    url,
     queryKey: ["leaderboard", targetFid, friends, quests],
     isProtected: true,
-    enabled: targetFid !== undefined,
+    enabled: friends ? !!targetFid : true,
+    staleTime: 60 * 1000,
   });
-
-  return { data, isLoading, error };
 };

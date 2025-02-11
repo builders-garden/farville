@@ -8,14 +8,23 @@ interface UseApiQueryOptions<TData, TBody = unknown>
   method?: HttpMethod;
   body?: TBody;
   isProtected?: boolean;
+  staleTime?: number;
 }
 
 export const useApiQuery = <TData, TBody = unknown>(
   options: UseApiQueryOptions<TData, TBody>
 ) => {
-  const { url, method = "GET", body, isProtected = false, ...queryOptions } = options;
+  const { 
+    url,
+    method = "GET",
+    body,
+    isProtected = false,
+    staleTime = 5 * 60 * 1000, // Default 5 minutes stale time
+    ...queryOptions
+  } = options;
 
   return useQuery<TData>({
+    staleTime,
     ...queryOptions,
     queryFn: async () => {
       const token = localStorage.getItem("token");
