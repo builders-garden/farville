@@ -345,7 +345,7 @@ export default function GridCell({ cell }: GridCellProps) {
 
           const cropXP = CROP_DATA[cell.cropType as CropType].rewardXP;
           const newFloatingNumber = {
-            x: cell.y * 32, // Adjust multiplier based on your grid cell size
+            x: cell.y * 32, // TODO: Adjust multiplier based on your grid cell size
             y: cell.x * 32,
             gridX: cell.y,
             gridY: cell.x,

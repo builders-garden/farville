@@ -21,6 +21,7 @@ import { useApplyPerk } from "@/hooks/game-actions/use-apply-perk";
 import { GridBulkRequest } from "@/app/api/grid-bulk/route";
 import { useGridBulkOperations } from "@/hooks/game-actions/use-grid-bulk-operations";
 import { DbGridCell } from "@/supabase/types";
+import { GridBulkResult } from "@/app/api/grid-bulk/utils";
 
 // Update the OverlayType to be more flexible with parameters
 export type OverlayConfig =
@@ -49,6 +50,7 @@ interface GameContextType {
   selectedPerk: UserItem | null;
   setSelectedPerk: (perk: UserItem | null) => void;
   addGridOperation: (operation: GridBulkRequest) => void;
+  gridBulkResult?: GridBulkResult;
   plantSeed: (params: {
     x: number;
     y: number;
@@ -154,7 +156,13 @@ export function GameProvider({
     useState<GridBulkRequest>();
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  const { mutate: sendGridBulkOperations } = useGridBulkOperations();
+  const [gridBulkResult, setGridBulkResult] = useState<
+    GridBulkResult | undefined
+  >();
+
+  const { mutate: sendGridBulkOperations } = useGridBulkOperations({
+    setGridBulkResult,
+  });
 
   const addGridOperation = (operation: GridBulkRequest) => {
     if (gridBulkOperations) {
@@ -288,6 +296,7 @@ export function GameProvider({
         selectedPerk,
         setSelectedPerk,
         addGridOperation,
+        gridBulkResult,
         plantSeed: plantSeedMutation,
         harvestCrop: harvestCropMutation,
         fertilize: (params) =>

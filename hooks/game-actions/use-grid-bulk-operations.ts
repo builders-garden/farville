@@ -2,40 +2,24 @@
 
 import { useApiMutation } from "@/hooks/use-api-mutation";
 import { GridBulkRequest } from "@/app/api/grid-bulk/route";
+import { Dispatch, SetStateAction } from "react";
+import { GridBulkResult } from "@/app/api/grid-bulk/utils";
 
-export const useGridBulkOperations = () => {
+export const useGridBulkOperations = ({
+  setGridBulkResult,
+}: {
+  setGridBulkResult: Dispatch<SetStateAction<GridBulkResult | undefined>>;
+}) => {
   const mutation = useApiMutation({
     url: "/api/grid-bulk",
     body: (gridBulkOperation: GridBulkRequest) => gridBulkOperation,
-    onMutate: ({}) => {
-      // handleOperationCounter.increase();
-      // Optimistically update the grid cell
-      // const now = new Date();
-      // const growthTime = CROP_DATA[seedType.replace("-seeds", "")].growthTime;
-      // const harvestAt = new Date(now.getTime() + growthTime);
-      // updateGridCells([
-      //   {
-      //     x,
-      //     y,
-      //     cropType: seedType.replace("-seeds", "") as CropType,
-      //     plantedAt: now.toISOString(),
-      //     harvestAt: harvestAt.toISOString(),
-      //     isReadyToHarvest: false,
-      //   },
-      // ]);
-      // updateUserItems([
-      //   {
-      //     itemId: item.id,
-      //     quantity: item.quantity - 1,
-      //     item: {
-      //       ...item.item,
-      //       category: "seed",
-      //     }
-      //   }
-      // ]);
-    },
-    onSuccess: () => {
-      // onSuccess?.();
+    onMutate: ({}) => {},
+    onSuccess: (data: { success: boolean; data: GridBulkResult }) => {
+      if (data.success) {
+        setGridBulkResult(data.data);
+      } else {
+        setGridBulkResult(undefined);
+      }
     },
     onError: (error) => {
       console.error("Mutation error:", error);

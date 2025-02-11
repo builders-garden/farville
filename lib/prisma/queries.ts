@@ -201,13 +201,19 @@ export const updateUserCoins = async (fid: number, coins: number) => {
 
 export const updateGridCellsBulk = async (fid: number, cells: DbGridCell[]) => {
   return await prisma.$transaction(async (tx) => {
-    const updatedCells = [];
+    const updatedCells: DbGridCell[] = [];
     for (const cell of cells) {
       const updatedCell = await tx.gridCell.update({
         where: { fid_x_y: { fid, x: cell.x, y: cell.y } },
         data: cell,
       });
-      updatedCells.push(updatedCell);
+      updatedCells.push({
+        ...updatedCell,
+        plantedAt: updatedCell.plantedAt?.toISOString() || null,
+        harvestAt: updatedCell.harvestAt?.toISOString() || null,
+        speedBoostedAt: updatedCell.speedBoostedAt?.toISOString() || null,
+        createdAt: updatedCell.createdAt.toISOString(),
+      });
     }
     return updatedCells;
   });

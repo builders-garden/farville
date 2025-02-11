@@ -16,6 +16,26 @@ import { sendBatchToPostHog, trackEvent } from "@/lib/posthog/server";
 import { PerkType, SeedType } from "@/types/game";
 import { NextResponse } from "next/server";
 import { getBoostTime } from "@/lib/utils";
+import { DbGridCell } from "@/supabase/types";
+
+export interface GridBulkResult {
+  type: "plant" | "harvest" | "apply-perk";
+  cells: {
+    ok: DbGridCell[];
+    nok: (DbGridCell | undefined)[];
+  };
+  // harvest only
+  rewards?: {
+    cropsWithRewards: {
+      crop: string;
+      x: number;
+      y: number;
+      amount: number;
+    }[];
+    didLevelUp: boolean;
+    newXP: number;
+  };
+}
 
 export const plantBulk = async (
   fid: number,
@@ -29,8 +49,8 @@ export const plantBulk = async (
   }
   const gridCells = await getGridCells(fid);
 
-  const notPlantedCells = [];
-  const plantableCells = [];
+  const notPlantedCells: (DbGridCell | undefined)[] = [];
+  const plantableCells: DbGridCell[] = [];
   // check if the cells are already planted
   for (const cell of cells) {
     const gridCell = gridCells.find((gc) => gc.x === cell.x && gc.y === cell.y);
@@ -82,9 +102,10 @@ export const plantBulk = async (
   }
 
   return {
+    type: "plant",
     cells: {
-      planted: updatedGridCellsBulk,
-      notPlanted: notPlantedCells,
+      ok: updatedGridCellsBulk,
+      nok: notPlantedCells,
     },
   };
 };
@@ -173,7 +194,14 @@ export const harvestBulk = async (
     );
   }
 
-  return rewards;
+  return {
+    type: "harvest",
+    cells: {
+      ok: harvestableCells,
+      nok: notHarvestableCells,
+    },
+    rewards,
+  };
 };
 
 const rewardUserBulk = async (
@@ -292,9 +320,10 @@ export const perkBulk = async (
   }
 
   return {
+    type: "apply-perk",
     cells: {
-      perkable: updatedGridCells,
-      nonPerkable: nonPerkableCells,
+      ok: updatedGridCells,
+      nok: nonPerkableCells,
     },
   };
 };
