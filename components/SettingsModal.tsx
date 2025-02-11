@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { useAudio } from "../context/AudioContext";
 import { useGame } from "../context/GameContext";
 import Image from "next/image";
+import sdk from "@farcaster/frame-sdk";
 
 export default function SettingsModal({ onClose }: { onClose: () => void }) {
   const { toggleMusic, isMusicPlaying, isSoundEnabled, toggleSound } =
@@ -44,7 +45,7 @@ export default function SettingsModal({ onClose }: { onClose: () => void }) {
             </button>
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-4 overflow-y-auto h-[calc(100vh-100px)] pb-4 pr-2 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-[#6D4B2B] [&::-webkit-scrollbar-thumb]:bg-[#8A5E3B]">
             {/* Tutorial Reset Button */}
             <motion.div
               initial={{ opacity: 0, x: -20 }}
@@ -87,6 +88,49 @@ export default function SettingsModal({ onClose }: { onClose: () => void }) {
                            shadow-md"
                 >
                   Show Tutorial 📖
+                </motion.button>
+              </div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="bg-[#6d4c2c] p-5 rounded-xl border border-[#8B5E3C]/50 shadow-lg"
+            >
+              <div className="flex items-center gap-5">
+                <div className="w-14 h-14 flex justify-center items-center bg-[#5c4121] rounded-xl shadow-inner">
+                  <motion.span
+                    className="text-3xl"
+                    animate={{ scale: [1, 1.2, 1] }}
+                    transition={{ duration: 1.5, repeat: Infinity }}
+                  >
+                    👨🏻‍🌾
+                  </motion.span>
+                </div>
+                <div className="flex-1 min-w-[180px]">
+                  <h3 className="text-white/90 text-xl font-semibold mb-1">
+                    How to Play
+                  </h3>
+                  <p className="text-white/60 text-sm">
+                    Read the Farville documentation
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-5">
+                <motion.button
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
+                  onClick={async () => {
+                    await sdk.actions.openUrl(
+                      "https://docs.farville.farm/gameplay"
+                    );
+                  }}
+                  className="w-full h-11 bg-[#8B5E3C] text-white/90 rounded-lg hover:bg-[#9b6a44] 
+                           transition-colors text-sm font-medium border border-white/10 flex items-center justify-center gap-2
+                           shadow-md"
+                >
+                  Show Docs 👨🏻‍🌾
                 </motion.button>
               </div>
             </motion.div>

@@ -217,12 +217,12 @@ export const getUserItemBySlug = async (fid: number, slug: string) => {
   return await prisma.userHasItem.findFirst({
     where: {
       userFid: fid,
-      item: {
+      items: {
         slug: slug,
       },
     },
     include: {
-      item: true,
+      items: true,
     },
   });
 };

@@ -22,12 +22,16 @@ export const plantBulk = async (
   cells: { x: number; y: number }[],
   seedType: SeedType
 ) => {
+  console.log("[PLANT-BULK] getting user seeds");
   const userSeeds = await getUserItemBySlug(fid, seedType);
+  console.log("[PLANT-BULK] got user seeds");
 
   if (!userSeeds || userSeeds.quantity < cells.length) {
     return NextResponse.json({ error: "User does not have enough seeds" });
   }
+  console.log("[PLANT-BULK] getting grid cells");
   const gridCells = await getGridCells(fid);
+  console.log("[PLANT-BULK] got grid cells");
 
   const notPlantedCells = [];
   const plantableCells = [];
@@ -40,7 +44,7 @@ export const plantBulk = async (
       plantableCells.push(gridCell);
     }
   }
-
+  console.log("[PLANT-BULK] updating cells");
   const cropType = seedType.replace("-seeds", "");
   const updatedGridCellsBulk = await updateGridCellsBulk(
     fid,
@@ -53,6 +57,8 @@ export const plantBulk = async (
       ).toISOString(),
     }))
   );
+
+  console.log("[PLANT-BULK] updated cells");
 
   // TODO: add different track
   if (updatedGridCellsBulk.length > 0) {
