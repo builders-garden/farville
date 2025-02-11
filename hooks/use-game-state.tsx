@@ -159,6 +159,7 @@ export const useGameState = () => {
 
       const newSeeds = [...prevState.seeds];
       const newPerks = [...prevState.perks];
+      const newCrops = [...prevState.crops];
 
       updatedItems.forEach((updatedItem) => {
         if (updatedItem.item && updatedItem.item.category === "seed") {
@@ -174,6 +175,13 @@ export const useGameState = () => {
           );
           if (index !== -1) {
             newPerks[index] = { ...newPerks[index], ...updatedItem };
+          }
+        } else if (updatedItem.item && updatedItem.item.category === "crop") {
+          const index = newCrops.findIndex(
+            (item) => item.item?.id === updatedItem.item?.id
+          );
+          if (index !== -1) {
+            newCrops[index] = { ...newCrops[index], ...updatedItem };
           }
         }
       });
