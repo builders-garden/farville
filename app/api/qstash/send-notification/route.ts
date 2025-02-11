@@ -31,8 +31,17 @@ export async function POST(req: NextRequest) {
   }
 
   const { fid, title, text, category } = requestBody.data;
+  const parsedFid = parseInt(fid);
+  const timestamp = new Date();
+  const tenMinutesAgo = new Date(timestamp.getTime() - 10 * 60 * 1000);
 
-  const notificationDetails = await getUserNotificationDetails(parseInt(fid));
+  // Run initial checks in parallel
+  const [notificationDetails, lastNotification] = await Promise.all([
+    getUserNotificationDetails(parsedFid),
+    getUserNotificationsByCategory(parsedFid, category, 1, {
+      createdAfter: tenMinutesAgo,
+    }),
+  ]);
 
   if (!notificationDetails) {
     return Response.json(
@@ -41,116 +50,97 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // Check if the most recent notification was sent more than 3 minutes ago
-  const threeMinutesAgo = new Date(Date.now() - 3 * 60 * 1000);
-
-  const lastNotification = await getUserNotificationsByCategory(
-    parseInt(fid),
-    category,
-    1,
-    {
-      createdAfter: threeMinutesAgo,
-    }
-  );
-
-  const canSendNotification = !lastNotification?.length;
-
-  if (canSendNotification) {
-    // Add validation checks for different notification categories
-    if (category === "harvest") {
-      const harvestableCells = await getHarvestableCellsCount(parseInt(fid));
-
-      if (harvestableCells === 0) {
-        console.warn(
-          `[send-notification-${new Date().toISOString()}] user ${fid} has no harvestable cells within 3 minutes. Skipping harvest notification...`
-        );
-        return Response.json({
-          success: true,
-          message: "Notification skipped - no harvestable cells",
-        });
-      }
-    } else if (category === "boost-expired") {
-      const expiredBoostCells = await getExpiredBoostCellsCount(parseInt(fid));
-
-      if (expiredBoostCells === 0) {
-        console.warn(
-          `[send-notification-${new Date().toISOString()}] user ${fid} has no expired boost cells. Skipping boost-expired notification...`
-        );
-        return Response.json({
-          success: true,
-          message: "Notification skipped - no expired boost cells",
-        });
-      }
-    }
-
-    console.log(
-      `[send-notification-${new Date().toISOString()}]`,
-      `sending "${category}" notification to ${fid}`
-    );
-    const response = await fetch(notificationDetails.url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        notificationId: crypto.randomUUID(),
-        title: title,
-        body: text,
-        targetUrl: process.env.NEXT_PUBLIC_URL!,
-        tokens: [notificationDetails.token],
-      } satisfies SendNotificationRequest),
-    });
-
-    const responseJson = await response.json();
-
-    if (response.status === 200) {
-      // Ensure correct response
-      const responseBody =
-        sendNotificationResponseSchema.safeParse(responseJson);
-      if (responseBody.success === false) {
-        return Response.json(
-          { success: false, errors: responseBody.error.errors },
-          { status: 500 }
-        );
-      }
-
-      // Fail when rate limited
-      if (responseBody.data.result.rateLimitedTokens.length) {
-        return Response.json(
-          { success: false, error: "Rate limited" },
-          { status: 429 }
-        );
-      }
-
-      // save the notification to the database
-      const newUserNotification = await createUserNotification({
-        fid: parseInt(fid),
-        category,
-      });
-
-      console.log(
-        `[send-notification-${new Date().toISOString()}]`,
-        `saved notification with id ${newUserNotification.id} for fid ${fid}`
-      );
-
-      return Response.json({
-        success: true,
-        notification: newUserNotification.id,
-      });
-    } else {
-      return Response.json(
-        { success: false, error: responseJson },
-        { status: 500 }
-      );
-    }
-  } else {
+  if (lastNotification?.length) {
     console.warn(
-      `[send-notification-${new Date().toISOString()}] user ${fid} has already received a notification of type "${category}" in the last 3 minutes. Skipping...`
+      `[send-notification-${timestamp.toISOString()}] user ${fid} has already received a notification of type "${category}" in the last 3 minutes. Skipping...`
     );
-
     return Response.json({
       success: true,
       message: "Notification skipped due to rate limiting",
     });
+  }
+
+  // Check category-specific conditions
+  if (category === "harvest" || category === "boost-expired") {
+    const count = await (category === "harvest"
+      ? getHarvestableCellsCount(parsedFid)
+      : getExpiredBoostCellsCount(parsedFid));
+
+    if (count === 0) {
+      console.warn(
+        `[send-notification-${timestamp.toISOString()}] user ${fid} has no ${
+          category === "harvest" ? "harvestable" : "expired boost"
+        } cells. Skipping notification...`
+      );
+      return Response.json({
+        success: true,
+        message: `Notification skipped - no ${
+          category === "harvest" ? "harvestable" : "expired boost"
+        } cells`,
+      });
+    }
+  }
+
+  // Prepare notification request
+  const notificationRequest: SendNotificationRequest = {
+    notificationId: crypto.randomUUID(),
+    title,
+    body: text,
+    targetUrl: process.env.NEXT_PUBLIC_URL!,
+    tokens: [notificationDetails.token],
+  };
+
+  console.log(
+    `[send-notification-${timestamp.toISOString()}]`,
+    `sending "${category}" notification to ${fid}`
+  );
+  const response = await fetch(notificationDetails.url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(notificationRequest),
+  });
+
+  const responseJson = await response.json();
+
+  if (response.status === 200) {
+    // Ensure correct response
+    const responseBody = sendNotificationResponseSchema.safeParse(responseJson);
+    if (responseBody.success === false) {
+      return Response.json(
+        { success: false, errors: responseBody.error.errors },
+        { status: 500 }
+      );
+    }
+
+    // Fail when rate limited
+    if (responseBody.data.result.rateLimitedTokens.length) {
+      return Response.json(
+        { success: false, error: "Rate limited" },
+        { status: 429 }
+      );
+    }
+
+    // save the notification to the database
+    const newUserNotification = await createUserNotification({
+      fid: parsedFid,
+      category,
+    });
+
+    console.log(
+      `[send-notification-${timestamp.toISOString()}]`,
+      `saved notification with id ${newUserNotification.id} for fid ${fid}`
+    );
+
+    return Response.json({
+      success: true,
+      notification: newUserNotification.id,
+    });
+  } else {
+    return Response.json(
+      { success: false, error: responseJson },
+      { status: 500 }
+    );
   }
 }
