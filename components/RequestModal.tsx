@@ -8,6 +8,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useDonate } from "@/hooks/game-actions/use-donate";
 import { useGame } from "@/context/GameContext";
 import { useRequest } from "@/hooks/use-request";
+import { useDonationHistory } from "@/hooks/use-donation-history";
+import { MAX_DAILY_ALLOWED_DONATION_BETWEEN_USERS } from "@/lib/game-constants";
 
 export default function RequestModal({
   onClose,
@@ -20,6 +22,7 @@ export default function RequestModal({
   const { request, isLoading } = useRequest(id);
   const { donate } = useDonate();
   const { state } = useGame();
+  const { lastDonation } = useDonationHistory(state.user?.fid, request?.fid);
 
   // Add check for user's own request
   const isOwnRequest = request?.fid === state.user?.fid;
@@ -175,64 +178,77 @@ export default function RequestModal({
                     </div>
                   </div>
 
-                  <div className="flex flex-col items-center gap-2 mt-2">
-                    {isOwnRequest ? (
+                  {lastDonation &&
+                  lastDonation.times >=
+                    MAX_DAILY_ALLOWED_DONATION_BETWEEN_USERS &&
+                  new Date(lastDonation.lastDonation).toDateString() ===
+                    new Date().toDateString() ? (
+                    <div className="flex flex-col items-center gap-2 mt-2">
                       <p className="text-amber-500/90 text-sm text-center">
-                        You can&apos;t donate to yourself
+                        You can only donate to the same user{" "}
+                        {MAX_DAILY_ALLOWED_DONATION_BETWEEN_USERS} times a day
                       </p>
-                    ) : currentQuantity > 0 ? (
-                      <>
-                        <p className="text-white/80 text-xs sm:text-sm">
-                          You have{" "}
-                          <span className="text-amber-500 font-medium">
-                            {currentQuantity}x
-                          </span>{" "}
-                          in inventory
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center gap-2 mt-2">
+                      {isOwnRequest ? (
+                        <p className="text-amber-500/90 text-sm text-center">
+                          You can&apos;t donate to yourself
                         </p>
-                        {remainingQuantity > 0 ? (
-                          <div className="flex flex-col items-center gap-2">
-                            <p className="text-white/80 text-[10px] sm:text-sm text-center">
-                              Enter amount to donate
-                            </p>
-                            <div className="flex items-center gap-3">
-                              <input
-                                type="number"
-                                inputMode="numeric"
-                                pattern="[0-9]*"
-                                value={selectedQuantity || ""}
-                                onChange={(e) =>
-                                  handleQuantityChange(e.target.value)
-                                }
-                                min="0"
-                                max={Math.min(
-                                  currentQuantity,
-                                  remainingQuantity
-                                )}
-                                className="w-16 sm:w-20 px-2 py-1.5 bg-white/20 rounded-lg text-white text-center 
-                                         focus:outline-none focus:ring-2 focus:ring-white/20"
-                              />
-                              <button
-                                onClick={handleMaxQuantity}
-                                className="px-3 py-1.5 border border-white/90 rounded-lg text-white/90 
-                                         transition-colors text-xs sm:text-sm font-medium"
-                              >
-                                Max
-                              </button>
-                            </div>
-                          </div>
-                        ) : (
-                          <p className="text-green-400/90 text-sm text-center">
-                            This request has been fully filled!
+                      ) : currentQuantity > 0 ? (
+                        <>
+                          <p className="text-white/80 text-xs sm:text-sm">
+                            You have{" "}
+                            <span className="text-amber-500 font-medium">
+                              {currentQuantity}x
+                            </span>{" "}
+                            in inventory
                           </p>
-                        )}
-                      </>
-                    ) : (
-                      <p className="text-amber-500/90 text-sm text-center">
-                        You don&apos;t have any {request?.item?.name} in your
-                        inventory
-                      </p>
-                    )}
-                  </div>
+                          {remainingQuantity > 0 ? (
+                            <div className="flex flex-col items-center gap-2">
+                              <p className="text-white/80 text-[10px] sm:text-sm text-center">
+                                Enter amount to donate
+                              </p>
+                              <div className="flex items-center gap-3">
+                                <input
+                                  type="number"
+                                  inputMode="numeric"
+                                  pattern="[0-9]*"
+                                  value={selectedQuantity || ""}
+                                  onChange={(e) =>
+                                    handleQuantityChange(e.target.value)
+                                  }
+                                  min="0"
+                                  max={Math.min(
+                                    currentQuantity,
+                                    remainingQuantity
+                                  )}
+                                  className="w-16 sm:w-20 px-2 py-1.5 bg-white/20 rounded-lg text-white text-center 
+                                         focus:outline-none focus:ring-2 focus:ring-white/20"
+                                />
+                                <button
+                                  onClick={handleMaxQuantity}
+                                  className="px-3 py-1.5 border border-white/90 rounded-lg text-white/90 
+                                         transition-colors text-xs sm:text-sm font-medium"
+                                >
+                                  Max
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            <p className="text-green-400/90 text-sm text-center">
+                              This request has been fully filled!
+                            </p>
+                          )}
+                        </>
+                      ) : (
+                        <p className="text-amber-500/90 text-sm text-center">
+                          You don&apos;t have any {request?.item?.name} in your
+                          inventory
+                        </p>
+                      )}
+                    </div>
+                  )}
                 </>
               )
             )}

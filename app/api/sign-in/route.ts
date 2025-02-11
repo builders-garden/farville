@@ -12,7 +12,7 @@ import {
   initializeGrid,
   initDailyUserQuests,
   initWeeklyUserQuests,
-  initMonthlyUserQuests,
+  // initMonthlyUserQuests,
 } from "@/supabase/queries";
 import { trackEvent } from "@/lib/posthog/server";
 
@@ -64,18 +64,18 @@ export const POST = async (req: NextRequest) => {
   const weeklyQuests = await getUserQuests(Number(fid), {
     type: ["weekly"],
   });
-  const monthlyQuests = await getUserQuests(Number(fid), {
-    type: ["monthly"],
-  });
+  // const monthlyQuests = await getUserQuests(Number(fid), {
+  //   type: ["monthly"],
+  // });
   if (!dailyQuests || dailyQuests?.length === 0) {
     await initDailyUserQuests(Number(fid));
   }
   if (!weeklyQuests || weeklyQuests?.length === 0) {
     await initWeeklyUserQuests(Number(fid));
   }
-  if (!monthlyQuests || monthlyQuests?.length === 0) {
-    await initMonthlyUserQuests(Number(fid));
-  }
+  // if (!monthlyQuests || monthlyQuests?.length === 0) {
+  //   await initMonthlyUserQuests(Number(fid));
+  // }
 
   // Verify signature matches custody address
   const isValidSignature = await verifyMessage({

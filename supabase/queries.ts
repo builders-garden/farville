@@ -24,6 +24,7 @@ import {
   EXPANSION_COSTS,
   LEVEL_REWARDS,
   LEVEL_XP_THRESHOLDS,
+  millisecondsInHour,
   SPEED_BOOST,
 } from "@/lib/game-constants";
 import { trackEvent } from "@/lib/posthog/server";
@@ -1304,8 +1305,6 @@ const generateDailyQuests = async (level: number) => {
     dailyQuests.push(dailyQuest);
   }
 
-  console.log("Generated daily quests:", dailyQuests);
-
   const insertedQuests = await createQuests(dailyQuests);
   return insertedQuests;
 };
@@ -1352,6 +1351,7 @@ const generateWeeklyQuests = async (level: number) => {
     startAt.setUTCHours(0, 0, 0, 0);
     const startAtISO = startAt.toISOString();
     const endAt = new Date();
+    endAt.setUTCDate(endAt.getUTCDate() + (7 - endAt.getUTCDay()));
     endAt.setUTCHours(23, 59, 59, 999);
     const endAtISO = endAt.toISOString();
 
@@ -1369,8 +1369,6 @@ const generateWeeklyQuests = async (level: number) => {
 
     weeklyQuests.push(weeklyQuest);
   }
-
-  console.log("Generated weekly quests:", weeklyQuests);
 
   const insertedQuests = await createQuests(weeklyQuests);
   return insertedQuests;
@@ -1426,6 +1424,9 @@ const generateMonthlyQuests = async (level: number) => {
     startAt.setUTCHours(0, 0, 0, 0);
     const startAtISO = startAt.toISOString();
     const endAt = new Date();
+    endAt.setUTCDate(1);
+    endAt.setUTCMonth(endAt.getUTCMonth() + 1);
+    endAt.setUTCDate(0);
     endAt.setUTCHours(23, 59, 59, 999);
     const endAtISO = endAt.toISOString();
 
@@ -1465,7 +1466,8 @@ export const calculateQuestXP = (
       .width ?? 2;
   const userCellsBasedOnLevel = userCellsWidth * userCellsWidth;
   const T =
-    (cropData.growthTime / 1000) * Math.ceil(amount / userCellsBasedOnLevel);
+    (cropData.growthTime / millisecondsInHour) *
+    Math.ceil(amount / userCellsBasedOnLevel);
 
   const bonusLevel = Object.keys(xpBonus)
     .filter((key) => Number(key) <= level)
@@ -1478,11 +1480,22 @@ export const calculateQuestXP = (
     Math.ceil(
       (amount / cropData.power) *
         cropData.rewardXP *
-        (1 + T / (CROP_DATA["pumpkin"].growthTime / 1000))
+        (1 + T / (CROP_DATA["pumpkin"].growthTime / millisecondsInHour))
     ) + bonusApplied;
 
-  // return here the xpAmount rounded to the nearest integer value which is to be a multiple of 10
-  return Math.round(xpAmount / 10) * 10;
+  console.log("Quest XP calculation:", {
+    T,
+    bonusLevel,
+    bonusApplied,
+    xpAmount,
+  });
+
+  // return here the xpAmount rounded to the nearest integer value which is to be a multiple of 10 (if xpAmount < 1000) or 100 (if xpAmount >= 1000)
+  if (xpAmount < 1000) {
+    return Math.round(xpAmount / 10) * 10;
+  } else {
+    return Math.round(xpAmount / 100) * 100;
+  }
 };
 
 export const initDailyUserQuests = async (fid: number): Promise<void> => {

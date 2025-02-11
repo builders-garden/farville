@@ -73,80 +73,84 @@ export interface Crop {
   tier: string;
 }
 
+export const MAX_DAILY_ALLOWED_DONATION_BETWEEN_USERS = 2;
+
+export const millisecondsInHour = 3600000;
+
 export const CROP_DATA: { [key: string]: Crop } = {
   wheat: {
-    growthTime: 6 * 1000, // 6h in milliseconds
-    deathTime: 3 * 1000, // 3h in milliseconds
+    growthTime: 6 * millisecondsInHour, // 6h in milliseconds
+    deathTime: 3 * millisecondsInHour, // 3h in milliseconds
     rewardXP: 14,
     power: 1.4,
     tier: "C",
   },
   carrot: {
-    growthTime: 4 * 1000, // 6h
-    deathTime: 3.3 * 1000, // 3.3h
+    growthTime: 4 * millisecondsInHour, // 6h
+    deathTime: 3.3 * millisecondsInHour, // 3.3h
     rewardXP: 8,
     power: 1.2,
     tier: "C",
   },
   radish: {
-    growthTime: 6 * 1000, // 6h
-    deathTime: 3.6 * 1000, // 3.6h
+    growthTime: 6 * millisecondsInHour, // 6h
+    deathTime: 3.6 * millisecondsInHour, // 3.6h
     rewardXP: 14,
     power: 1.4,
     tier: "C",
   },
   lettuce: {
-    growthTime: 10 * 1000, // 10h
-    deathTime: 6 * 1000, // 6h
+    growthTime: 10 * millisecondsInHour, // 10h
+    deathTime: 6 * millisecondsInHour, // 6h
     rewardXP: 25,
     power: 3,
     tier: "B",
   },
   potato: {
-    growthTime: 12 * 1000, // 12h
-    deathTime: 7.8 * 1000, // 7.8h
+    growthTime: 12 * millisecondsInHour, // 12h
+    deathTime: 7.8 * millisecondsInHour, // 7.8h
     rewardXP: 30,
     power: 3,
     tier: "B",
   },
   corn: {
-    growthTime: 12 * 1000, // 12h
-    deathTime: 8.4 * 1000, // 8.4h
+    growthTime: 12 * millisecondsInHour, // 12h
+    deathTime: 8.4 * millisecondsInHour, // 8.4h
     rewardXP: 32,
     power: 3,
     tier: "B",
   },
   eggplant: {
-    growthTime: 15 * 1000, // 16h
-    deathTime: 12 * 1000, // 12h
+    growthTime: 15 * millisecondsInHour, // 16h
+    deathTime: 12 * millisecondsInHour, // 12h
     rewardXP: 40,
     power: 4.2,
     tier: "A",
   },
   tomato: {
-    growthTime: 16 * 1000, // 16h
-    deathTime: 12.8 * 1000, // 12.8h
+    growthTime: 16 * millisecondsInHour, // 16h
+    deathTime: 12.8 * millisecondsInHour, // 12.8h
     rewardXP: 45,
     power: 5,
     tier: "A",
   },
   strawberry: {
-    growthTime: 24 * 1000, // 24h
-    deathTime: 19.2 * 1000, // 19.2h
+    growthTime: 24 * millisecondsInHour, // 24h
+    deathTime: 19.2 * millisecondsInHour, // 19.2h
     rewardXP: 55,
     power: 4.8,
     tier: "A",
   },
   watermelon: {
-    growthTime: 36 * 1000, // 36h
-    deathTime: 32.4 * 1000, // 32.4h
+    growthTime: 36 * millisecondsInHour, // 36h
+    deathTime: 32.4 * millisecondsInHour, // 32.4h
     rewardXP: 120,
     power: 30,
     tier: "S",
   },
   pumpkin: {
-    growthTime: 48 * 1000, // 48h
-    deathTime: 48 * 1000, // 48h
+    growthTime: 48 * millisecondsInHour, // 48h
+    deathTime: 48 * millisecondsInHour, // 48h
     rewardXP: 165,
     power: 30,
     tier: "S",
@@ -155,25 +159,25 @@ export const CROP_DATA: { [key: string]: Crop } = {
 
 export const LEVEL_XP_THRESHOLDS = [
   0, // Level 1
-  100, // Level 2
-  300, // Level 3
-  600, // Level 4
-  1000, // Level 5
-  1400, // Level 6
-  1900, // Level 7
-  2500, // Level 8
-  3200, // Level 9
-  4000, // Level 10
-  5000, // Level 11
-  6200, // Level 12
-  7500, // Level 13
-  9000, // Level 14
-  11000, // Level 15
-  13000, // Level 16
-  15000, // Level 17
-  17000, // Level 18
-  19000, // Level 19
-  21000, // Level 20
+  150, // Level 2
+  650, // Level 3
+  1200, // Level 4
+  2000, // Level 5
+  3200, // Level 6
+  4500, // Level 7
+  7500, // Level 8
+  11000, // Level 9
+  16000, // Level 10
+  23000, // Level 11
+  32000, // Level 12
+  44000, // Level 13
+  60000, // Level 14
+  81000, // Level 15
+  108000, // Level 16
+  145000, // Level 17
+  190000, // Level 18
+  250000, // Level 19
+  330000, // Level 20
 ];
 
 export const LEVEL_REWARDS = [
@@ -235,7 +239,7 @@ export const LEVEL_REWARDS = [
   },
   {
     // level 15
-    coins: 1000,
+    coins: 3600000,
   },
   {
     // level 16

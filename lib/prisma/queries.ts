@@ -1,6 +1,6 @@
 import { prisma } from "./client";
 import { LEVEL_XP_THRESHOLDS, LEVEL_REWARDS } from "@/lib/game-constants";
-import { DbUser } from "@/supabase/types";
+import { DbUser, DbUserDonation } from "@/supabase/types";
 
 export async function getQuestLeaderboard({
   limit,
@@ -144,7 +144,7 @@ export const updateUserXP = async (
   fid: number,
   xp: number
 ): Promise<{
-  user: DbUser
+  user: DbUser;
   didLevelUp: boolean;
   newXP: number;
   newLevel: number;
@@ -196,5 +196,54 @@ export const updateUserCoins = async (fid: number, coins: number) => {
   return await prisma.user.update({
     where: { fid },
     data: { coins: { increment: coins } },
+  });
+};
+
+export const getUserDonationsHistory = async ({
+  donatorFid,
+  receiverFid,
+  limit = 1,
+}: {
+  donatorFid: number;
+  receiverFid?: number;
+  limit?: number;
+}) => {
+  return await prisma.user_donations_history.findMany({
+    where: {
+      donatorFid,
+      ...(receiverFid && { receiverFid }),
+    },
+    orderBy: {
+      lastDonation: "desc",
+    },
+    take: limit,
+  });
+};
+
+// this function is used to return the last donation made by a user to a specific receiver
+export const getUserDonationByReceiver = async (
+  donator: number,
+  receiver: number
+) => {
+  return await prisma.user_donations_history.findFirst({
+    where: {
+      donatorFid: donator,
+      receiverFid: receiver,
+    },
+  });
+};
+
+export const updateUserDonationHistory = async (
+  userDonation: DbUserDonation
+) => {
+  return await prisma.user_donations_history.upsert({
+    where: {
+      donatorFid_receiverFid: {
+        donatorFid: userDonation.donatorFid,
+        receiverFid: userDonation.receiverFid,
+      },
+    },
+    update: userDonation,
+    create: userDonation,
   });
 };
