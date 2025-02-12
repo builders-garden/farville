@@ -242,7 +242,7 @@ export const getUserDonationsHistory = async ({
   receiverFid?: number;
   limit?: number;
 }) => {
-  return await prisma.user_donations_history.findMany({
+  return await prisma.userDonationHistory.findMany({
     where: {
       donatorFid,
       ...(receiverFid && { receiverFid }),
@@ -259,7 +259,7 @@ export const getUserDonationByReceiver = async (
   donator: number,
   receiver: number
 ) => {
-  return await prisma.user_donations_history.findFirst({
+  return await prisma.userDonationHistory.findFirst({
     where: {
       donatorFid: donator,
       receiverFid: receiver,
@@ -270,7 +270,7 @@ export const getUserDonationByReceiver = async (
 export const updateUserDonationHistory = async (
   userDonation: DbUserDonation
 ) => {
-  return await prisma.user_donations_history.upsert({
+  return await prisma.userDonationHistory.upsert({
     where: {
       donatorFid_receiverFid: {
         donatorFid: userDonation.donatorFid,
