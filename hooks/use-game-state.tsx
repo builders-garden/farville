@@ -109,7 +109,7 @@ export const useGameState = () => {
 
   useEffect(() => {
     updateState();
-  }, [updateState]);
+  }, [userItems, items, user, gridCells, claimableQuests, updateState]);
 
   const refetchAll = useCallback(async () => {
     await Promise.all([
@@ -190,6 +190,7 @@ export const useGameState = () => {
         ...prevState,
         seeds: newSeeds,
         perks: newPerks,
+        crops: newCrops,
       };
     });
   }, []);

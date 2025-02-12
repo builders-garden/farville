@@ -30,11 +30,15 @@ export default function App({
   return (
     <>
       <Toaster
+        position="bottom-right"
         toastOptions={{
           style: toasterStyle,
           loading: {
             icon: "🧺",
           },
+        }}
+        containerStyle={{
+          marginBottom: "4rem",
         }}
       />
       <Game initialOverlay={initialOverlay}>

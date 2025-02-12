@@ -188,6 +188,41 @@ export function GameProvider({
     }
   }, [gridBulkOperations, sendGridBulkOperations, toastIds]);
 
+  useEffect(() => {
+    if (gridBulkResult?.type === "harvest") {
+      const rewards = gridBulkResult.rewards?.cropsWithRewards;
+      if (rewards && state) {
+        const updatedItems: Partial<UserItem>[] = [];
+        for (const reward of rewards) {
+          const crop = state.crops.find(
+            (item) => item.item?.slug === reward.crop
+          );
+          if (!crop) {
+            continue;
+          }
+          const index = updatedItems.findIndex(
+            (item) => item.item?.id === crop?.item?.id
+          );
+          if (index !== -1) {
+            updatedItems[index].quantity! += reward.amount;
+          } else {
+            updatedItems.push({
+              item: {
+                ...crop.item,
+                category: "crop",
+              },
+              quantity: crop?.quantity + reward.amount,
+            });
+          }
+        }
+        if (updatedItems.length === 0) {
+          refetch.userItems();
+        }
+        updateUserItems(updatedItems);
+      }
+    }
+  }, [gridBulkResult]);
+
   const { mutate: buyItem } = useBuyItem({
     refetchUser: refetch.user,
     refetchUserItems: refetch.userItems,

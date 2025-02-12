@@ -15,7 +15,7 @@ export const useGridBulkOperations = ({
   setGridBulkResult: Dispatch<SetStateAction<GridBulkResult | undefined>>;
 }) => {
   const mutation = useApiMutation({
-    url: "/api/grid-bulk",
+    url: () => "/api/grid-bulk",
     body: ({
       gridBulkOperations,
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
