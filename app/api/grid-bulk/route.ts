@@ -43,7 +43,6 @@ export const POST = async (req: NextRequest) => {
       });
     case "harvest":
       const harvestResult = await harvestBulk(Number(fid), cells);
-      console.log({ harvestResult });
       return NextResponse.json({
         success: true,
         data: harvestResult,
