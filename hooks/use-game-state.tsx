@@ -191,6 +191,8 @@ export const useGameState = () => {
           );
           if (index !== -1) {
             newCrops[index] = { ...newCrops[index], ...updatedItem };
+          } else {
+            newCrops.push(updatedItem as UserItem);
           }
         }
       });

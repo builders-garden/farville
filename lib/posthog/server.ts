@@ -49,13 +49,11 @@ export const sendBatchToPostHog = async (
   };
 
   try {
-    const response = await axios.post(API_URL, payload, {
+    await axios.post(API_URL, payload, {
       headers: {
         "Content-Type": "application/json",
       },
     });
-
-    console.log("PostHog Batch Response:", response.data);
   } catch (error) {
     console.error(
       "Error sending batch to PostHog:",

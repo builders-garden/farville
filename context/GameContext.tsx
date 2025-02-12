@@ -204,11 +204,12 @@ export function GameProvider({
             );
             if (cropItem) {
               crop = {
-                ...cropItem,
-                quantity: reward.amount,
                 item: cropItem,
+                quantity: 0,
+                id: cropItem.id,
                 userFid: state.user.fid,
                 itemId: cropItem.id,
+                createdAt: new Date().toISOString(),
               };
             } else {
               console.error("Crop item not found", reward.crop);
