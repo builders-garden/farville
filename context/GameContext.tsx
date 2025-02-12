@@ -15,9 +15,6 @@ import { useBuyItem } from "@/hooks/game-actions/use-buy-item";
 import { useExpandGrid } from "@/hooks/game-actions/use-expand-grid";
 import { useSellItem } from "@/hooks/game-actions/use-sell-item";
 import { UserItem } from "@/hooks/use-user-items";
-import { usePlantSeed } from "@/hooks/game-actions/use-plant-seed";
-import { useHarvestCrop } from "@/hooks/game-actions/use-harvest-crop";
-import { useApplyPerk } from "@/hooks/game-actions/use-apply-perk";
 import { GridBulkRequest } from "@/app/api/grid-bulk/route";
 import { useGridBulkOperations } from "@/hooks/game-actions/use-grid-bulk-operations";
 import { DbGridCell } from "@/supabase/types";
@@ -52,30 +49,11 @@ interface GameContextType {
   setSelectedPerk: (perk: UserItem | null) => void;
   addGridOperation: (operation: GridBulkRequest) => void;
   gridBulkResult?: GridBulkResult;
-  plantSeed: (params: {
-    x: number;
-    y: number;
-    seedType: SeedType;
-    item: UserItem;
-    setIsLoading: Dispatch<SetStateAction<boolean>>;
-  }) => void;
-  harvestCrop: (params: {
-    x: number;
-    y: number;
-    setIsLoading: Dispatch<SetStateAction<boolean>>;
-  }) => void;
-  fertilize: (params: {
-    x: number;
-    y: number;
-    setIsLoading: Dispatch<SetStateAction<boolean>>;
-  }) => void;
-  applyPerk: (params: {
-    x: number;
-    y: number;
-    itemSlug: string;
-    item: UserItem;
-    setIsLoading: Dispatch<SetStateAction<boolean>>;
-  }) => void;
+  // fertilize: (params: {
+  //   x: number;
+  //   y: number;
+  //   setIsLoading: Dispatch<SetStateAction<boolean>>;
+  // }) => void;
   buyItem: (params: { itemId: number; quantity: number }) => void;
   sellItem: (params: { itemId: number; quantity: number }) => void;
   expandGrid: () => void;
@@ -210,41 +188,6 @@ export function GameProvider({
     }
   }, [gridBulkOperations, sendGridBulkOperations, toastIds]);
 
-  const [isGridDoingOperations, setIsGridDoingOperations] = useState(false);
-  const [operationsCounter, setOperationsCounter] = useState(0);
-  const prevIsGridDoingOperationsRef = useRef(isGridDoingOperations);
-
-  useEffect(() => {
-    if (operationsCounter === 0) {
-      setIsGridDoingOperations(false);
-    } else {
-      setIsGridDoingOperations(true);
-    }
-  }, [operationsCounter]);
-
-  const handleIncreaseOperationsCounter = () => {
-    setOperationsCounter((prev) => prev + 1);
-  };
-
-  const handleDecreaseOperationsCounter = () => {
-    setOperationsCounter((prev) => prev - 1);
-  };
-
-  const handleOperationCounter = {
-    increase: handleIncreaseOperationsCounter,
-    decrease: handleDecreaseOperationsCounter,
-  };
-
-  useEffect(() => {
-    const prevIsGridDoingOperations = prevIsGridDoingOperationsRef.current;
-    if (prevIsGridDoingOperations && !isGridDoingOperations) {
-      refetch.grid();
-      refetch.userItems();
-      refetch.user();
-    }
-    prevIsGridDoingOperationsRef.current = isGridDoingOperations;
-  }, [isGridDoingOperations, refetch]);
-
   const { mutate: buyItem } = useBuyItem({
     refetchUser: refetch.user,
     refetchUserItems: refetch.userItems,
@@ -264,25 +207,6 @@ export function GameProvider({
     refetchUser: refetch.user,
     isActionInProgress,
     setIsActionInProgress,
-  });
-
-  const { mutate: plantSeedMutation } = usePlantSeed({
-    updateGridCells,
-    updateUserItems,
-    handleOperationCounter,
-  });
-
-  const { mutate: harvestCropMutation } = useHarvestCrop({
-    updateGridCells,
-    setFloatingNumbers,
-    setShowLevelUpConfetti,
-    handleOperationCounter,
-  });
-
-  const { mutate: applyPerkMutation } = useApplyPerk({
-    updateGridCells,
-    updateUserItems,
-    handleOperationCounter,
   });
 
   useEffect(() => {
@@ -312,15 +236,12 @@ export function GameProvider({
         setSelectedPerk,
         addGridOperation,
         gridBulkResult,
-        plantSeed: plantSeedMutation,
-        harvestCrop: harvestCropMutation,
-        fertilize: (params) =>
-          applyPerkMutation({
-            ...params,
-            itemSlug: "fertilizer",
-            setIsLoading: params.setIsLoading,
-          }),
-        applyPerk: applyPerkMutation,
+        // fertilize: (params) =>
+        //   applyPerkMutation({
+        //     ...params,
+        //     itemSlug: "fertilizer",
+        //     setIsLoading: params.setIsLoading,
+        //   }),
         buyItem,
         sellItem,
         expandGrid,
