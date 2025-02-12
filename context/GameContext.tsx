@@ -185,7 +185,7 @@ export function GameProvider({
           newMap.delete(gridBulkOperations.action);
           return newMap;
         });
-      }, 1500);
+      }, 750);
     }
   }, [gridBulkOperations, sendGridBulkOperations, toastIds]);
 
