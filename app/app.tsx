@@ -36,6 +36,11 @@ export default function App({
           loading: {
             icon: "🧺",
           },
+          error: {
+            style: {
+              backgroundColor: "#952020",
+            },
+          },
         }}
         containerStyle={{
           marginBottom: "4rem",

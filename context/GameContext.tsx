@@ -142,6 +142,7 @@ export function GameProvider({
 
   const { mutate: sendGridBulkOperations } = useGridBulkOperations({
     setGridBulkResult,
+    refetch,
   });
 
   const addGridOperation = (operation: GridBulkRequest) => {

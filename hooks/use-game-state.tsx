@@ -7,6 +7,15 @@ import { getCurrentLevelAndProgress } from "@/lib/utils";
 import { useUserMe } from "./use-user-me";
 import { useUserQuests } from "./use-quests";
 
+export interface RefetchType {
+  all: () => Promise<void>;
+  userItems: () => Promise<void>;
+  items: () => Promise<void>;
+  user: () => Promise<void>;
+  grid: () => Promise<void>;
+  claimableQuests: () => Promise<void>;
+}
+
 export interface GameState {
   coins: number;
   level: number;
@@ -245,7 +254,7 @@ export const useGameState = () => {
         await refetchClaimableQuests();
         updateState();
       },
-    },
+    } as RefetchType,
     updateGridCells,
     updateUserItems,
     updateUser,

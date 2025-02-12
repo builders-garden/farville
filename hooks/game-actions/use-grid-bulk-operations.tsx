@@ -8,11 +8,14 @@ import toast from "react-hot-toast";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { toasterStyle } from "@/app/app";
+import { RefetchType } from "../use-game-state";
 
 export const useGridBulkOperations = ({
   setGridBulkResult,
+  refetch,
 }: {
   setGridBulkResult: Dispatch<SetStateAction<GridBulkResult | undefined>>;
+  refetch: RefetchType;
 }) => {
   const mutation = useApiMutation({
     url: () => "/api/grid-bulk",
@@ -88,7 +91,8 @@ export const useGridBulkOperations = ({
       }
     },
     onError: (error) => {
-      console.error("Mutation error:", error);
+      toast.error(error.message);
+      refetch.all();
     },
   });
 
