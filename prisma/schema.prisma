@@ -19,7 +19,7 @@ model User {
   expansions                                                       Int
   notificationDetails                                              String?
   createdAt                                                        DateTime                 @default(now()) @db.Timestamptz(6)
-  referrals                                                        Referral[]               @relation("Referrer")
+  referrals                                                        Referral[]
   requests                                                         Request[]
   user_donations_history_user_donations_history_donatorFidTousers  user_donations_history[] @relation("user_donations_history_donatorFidTousers")
   user_donations_history_user_donations_history_receiverFidTousers user_donations_history[] @relation("user_donations_history_receiverFidTousers")
@@ -67,7 +67,7 @@ model Referral {
   fid         Int
   referredFid Int
   createdAt   DateTime @default(now()) @db.Timestamptz(6)
-  referrer    User     @relation("Referrer", fields: [fid], references: [fid], onDelete: Cascade, onUpdate: NoAction)
+  users       User     @relation(fields: [fid], references: [fid], onDelete: Cascade, onUpdate: NoAction)
 
   @@map("referrals")
 }
@@ -83,7 +83,7 @@ model GridCell {
   yieldBoost       Int?
   speedBoostedAt   DateTime? @db.Timestamptz(6)
   harvestAt        DateTime? @db.Timestamptz(6)
-  items            Item?     @relation(fields: [cropType], references: [slug], onDelete: NoAction, onUpdate: NoAction)
+  crop             Item?     @relation(fields: [cropType], references: [slug], onDelete: NoAction, onUpdate: NoAction)
   user             User      @relation(fields: [fid], references: [fid], onDelete: NoAction, onUpdate: NoAction)
 
   @@id([fid, x, y])
@@ -114,19 +114,19 @@ model Request {
 }
 
 model Quest {
-  id         Int            @id @default(autoincrement())
-  category   String
-  itemId     Int?
-  amount     Int?
-  xp         Int?
-  coins      Int?
-  startAt    DateTime       @db.Timestamptz(6)
-  endAt      DateTime?      @db.Timestamptz(6)
-  createdAt  DateTime       @default(now()) @db.Timestamptz(6)
-  type       String?
-  level      Int?
-  item       Item?          @relation(fields: [itemId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  userQuests UserHasQuest[]
+  id              Int            @id @default(autoincrement())
+  category        String
+  itemId          Int?
+  amount          Int?
+  xp              Int?
+  coins           Int?
+  startAt         DateTime       @db.Timestamptz(6)
+  endAt           DateTime?      @db.Timestamptz(6)
+  createdAt       DateTime       @default(now()) @db.Timestamptz(6)
+  type            String?
+  level           Int?
+  items           Item?          @relation(fields: [itemId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  user_has_quests UserHasQuest[]
 
   @@map("quests")
 }

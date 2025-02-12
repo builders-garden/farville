@@ -5,7 +5,6 @@ import { useGame } from "../context/GameContext";
 import { motion } from "framer-motion";
 import { getCurrentLevelAndProgress } from "@/lib/utils";
 import Image from "next/image";
-import sdk from "@farcaster/frame-sdk";
 
 export default function Header() {
   const { state } = useGame();
@@ -28,14 +27,16 @@ export default function Header() {
               </span>
               <span className="text-white/70 text-[8px]">
                 ({state.experience.toLocaleString()}/
-                {(LEVEL_XP_THRESHOLDS[
-                  Math.min(
-                    LEVEL_XP_THRESHOLDS.findIndex(
-                      (threshold) => state.experience < threshold
-                    ),
-                    LEVEL_XP_THRESHOLDS.length - 1
-                  )
-                ] || LEVEL_XP_THRESHOLDS[LEVEL_XP_THRESHOLDS.length - 1]).toLocaleString()}
+                {(
+                  LEVEL_XP_THRESHOLDS[
+                    Math.min(
+                      LEVEL_XP_THRESHOLDS.findIndex(
+                        (threshold) => state.experience < threshold
+                      ),
+                      LEVEL_XP_THRESHOLDS.length - 1
+                    )
+                  ] || LEVEL_XP_THRESHOLDS[LEVEL_XP_THRESHOLDS.length - 1]
+                ).toLocaleString()}
                 <span className="ml-0.5 text-[8px]">XP</span>)
               </span>
             </div>
@@ -49,15 +50,6 @@ export default function Header() {
             </div>
           </div>
         </div>
-
-        <p
-          className="text-center text-white/80 hover:text-white text-[8px] font-medium transition-colors"
-          onClick={async () => {
-            await sdk.actions.openUrl("https://docs.farville.farm/gameplay");
-          }}
-        >
-          How to Play
-        </p>
 
         <motion.div
           className="h-[42px] px-3 flex gap-1 items-center text-white/90 tracking-wide font-bold"

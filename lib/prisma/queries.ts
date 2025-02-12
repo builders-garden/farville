@@ -1,6 +1,6 @@
 import { prisma } from "./client";
 import { LEVEL_XP_THRESHOLDS, LEVEL_REWARDS } from "@/lib/game-constants";
-import { DbUser, DbUserDonation } from "@/supabase/types";
+import { DbGridCell, DbUser, DbUserDonation } from "@/supabase/types";
 
 export async function getQuestLeaderboard({
   limit,
@@ -196,6 +196,40 @@ export const updateUserCoins = async (fid: number, coins: number) => {
   return await prisma.user.update({
     where: { fid },
     data: { coins: { increment: coins } },
+  });
+};
+
+export const updateGridCellsBulk = async (fid: number, cells: DbGridCell[]) => {
+  return await prisma.$transaction(async (tx) => {
+    const updatedCells: DbGridCell[] = [];
+    for (const cell of cells) {
+      const updatedCell = await tx.gridCell.update({
+        where: { fid_x_y: { fid, x: cell.x, y: cell.y } },
+        data: cell,
+      });
+      updatedCells.push({
+        ...updatedCell,
+        plantedAt: updatedCell.plantedAt?.toISOString() || null,
+        harvestAt: updatedCell.harvestAt?.toISOString() || null,
+        speedBoostedAt: updatedCell.speedBoostedAt?.toISOString() || null,
+        createdAt: updatedCell.createdAt.toISOString(),
+      });
+    }
+    return updatedCells;
+  });
+};
+
+export const getUserItemBySlug = async (fid: number, slug: string) => {
+  return await prisma.userHasItem.findFirst({
+    where: {
+      userFid: fid,
+      item: {
+        slug: slug,
+      },
+    },
+    include: {
+      item: true,
+    },
   });
 };
 

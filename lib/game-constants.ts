@@ -71,6 +71,7 @@ export interface Crop {
   rewardXP: number;
   power: number;
   tier: string;
+  id: number;
 }
 
 export const MAX_DAILY_ALLOWED_DONATION_BETWEEN_USERS = 2;
@@ -84,6 +85,7 @@ export const CROP_DATA: { [key: string]: Crop } = {
     rewardXP: 14,
     power: 1.4,
     tier: "C",
+    id: 17,
   },
   carrot: {
     growthTime: 4 * millisecondsInHour, // 6h
@@ -91,6 +93,7 @@ export const CROP_DATA: { [key: string]: Crop } = {
     rewardXP: 8,
     power: 1.2,
     tier: "C",
+    id: 5,
   },
   radish: {
     growthTime: 6 * millisecondsInHour, // 6h
@@ -98,6 +101,7 @@ export const CROP_DATA: { [key: string]: Crop } = {
     rewardXP: 14,
     power: 1.4,
     tier: "C",
+    id: 18,
   },
   lettuce: {
     growthTime: 10 * millisecondsInHour, // 10h
@@ -105,6 +109,7 @@ export const CROP_DATA: { [key: string]: Crop } = {
     rewardXP: 25,
     power: 3,
     tier: "B",
+    id: 19,
   },
   potato: {
     growthTime: 12 * millisecondsInHour, // 12h
@@ -112,6 +117,7 @@ export const CROP_DATA: { [key: string]: Crop } = {
     rewardXP: 30,
     power: 3,
     tier: "B",
+    id: 8,
   },
   corn: {
     growthTime: 12 * millisecondsInHour, // 12h
@@ -119,6 +125,7 @@ export const CROP_DATA: { [key: string]: Crop } = {
     rewardXP: 32,
     power: 3,
     tier: "B",
+    id: 20,
   },
   eggplant: {
     growthTime: 15 * millisecondsInHour, // 16h
@@ -126,6 +133,7 @@ export const CROP_DATA: { [key: string]: Crop } = {
     rewardXP: 40,
     power: 4.2,
     tier: "A",
+    id: 21,
   },
   tomato: {
     growthTime: 16 * millisecondsInHour, // 16h
@@ -133,6 +141,7 @@ export const CROP_DATA: { [key: string]: Crop } = {
     rewardXP: 45,
     power: 5,
     tier: "A",
+    id: 7,
   },
   strawberry: {
     growthTime: 24 * millisecondsInHour, // 24h
@@ -140,6 +149,7 @@ export const CROP_DATA: { [key: string]: Crop } = {
     rewardXP: 55,
     power: 4.8,
     tier: "A",
+    id: 22,
   },
   watermelon: {
     growthTime: 36 * millisecondsInHour, // 36h
@@ -147,6 +157,7 @@ export const CROP_DATA: { [key: string]: Crop } = {
     rewardXP: 120,
     power: 30,
     tier: "S",
+    id: 23,
   },
   pumpkin: {
     growthTime: 48 * millisecondsInHour, // 48h
@@ -154,6 +165,7 @@ export const CROP_DATA: { [key: string]: Crop } = {
     rewardXP: 165,
     power: 30,
     tier: "S",
+    id: 6,
   },
 };
 

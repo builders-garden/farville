@@ -143,7 +143,10 @@ export default function GameWrapper() {
 
       {activeOverlay?.type === "requests" && (
         <AnimatePresence>
-          <RequestModal onClose={handleOverlayComplete} id={activeOverlay.id} />
+          <RequestModal
+            onClose={handleOverlayComplete}
+            id={activeOverlay.id}
+          />
         </AnimatePresence>
       )}
 

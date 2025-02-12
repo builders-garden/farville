@@ -14,16 +14,18 @@ interface FloatingNumberProps {
   cropType?: CropType;
 }
 
-export default function FloatingNumber({
-  number,
-  x,
-  y,
+interface FloatingNumberContentProps {
+  type: "xp" | "coins" | "crop";
+  number: number;
+  cropType?: CropType;
+}
+
+function FloatingNumberContent({
   type,
+  number,
   cropType,
-}: FloatingNumberProps) {
+}: FloatingNumberContentProps) {
   const { state } = useGame();
-  // Only render in browser environment
-  if (typeof document === "undefined") return null;
 
   const getBackgroundColor = () => {
     if (type === "xp") return "bg-yellow-500/90 text-yellow-900";
@@ -53,12 +55,29 @@ export default function FloatingNumber({
     return "";
   };
 
+  return (
+    <div className={`px-3 py-1.5 rounded-full ${getBackgroundColor()}`}>
+      {getContent()}
+    </div>
+  );
+}
+
+export default function FloatingNumber({
+  number,
+  x,
+  y,
+  type,
+  cropType,
+}: FloatingNumberProps) {
+  // Only render in browser environment
+  if (typeof document === "undefined") return null;
+
   return createPortal(
     <motion.div
       initial={{ opacity: 0, y: 0, scale: 0.5 }}
       animate={{
         opacity: [0, 1, 1, 0],
-        y: type === "crop" ? -30 : -80,
+        y: type === "crop" ? +30 : +80,
         scale: [0.5, 1.2, 1.2, 1],
       }}
       transition={{
@@ -82,9 +101,12 @@ export default function FloatingNumber({
           duration: 0.5,
           repeat: 2,
         }}
-        className={`px-3 py-1.5 rounded-full ${getBackgroundColor()}`}
       >
-        {getContent()}
+        <FloatingNumberContent
+          type={type}
+          number={number}
+          cropType={cropType}
+        />
       </motion.div>
     </motion.div>,
     document.body

@@ -36,6 +36,13 @@ export enum CropType {
   Wheat = "wheat",
 }
 
+export enum PerkType {
+  Nitrogen = "nitrogen",
+  Potassium = "potassium",
+  Phosphorus = "phosphorus",
+  Fertilizer = "fertilizer",
+}
+
 export type Crop = {
   type: CropType;
   growthStage: number;
