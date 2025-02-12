@@ -9,7 +9,7 @@ datasource db {
 }
 
 model User {
-  fid                                                              Int                      @id
+  fid                                                              Int                   @id
   username                                                         String
   displayName                                                      String
   avatarUrl                                                        String?
@@ -18,11 +18,11 @@ model User {
   coins                                                            Int
   expansions                                                       Int
   notificationDetails                                              String?
-  createdAt                                                        DateTime                 @default(now()) @db.Timestamptz(6)
+  createdAt                                                        DateTime              @default(now()) @db.Timestamptz(6)
   referrals                                                        Referral[]
   requests                                                         Request[]
-  user_donations_history_user_donations_history_donatorFidTousers  user_donations_history[] @relation("user_donations_history_donatorFidTousers")
-  user_donations_history_user_donations_history_receiverFidTousers user_donations_history[] @relation("user_donations_history_receiverFidTousers")
+  user_donations_history_user_donations_history_donatorFidTousers  UserDonationHistory[] @relation("user_donations_history_donatorFidTousers")
+  user_donations_history_user_donations_history_receiverFidTousers UserDonationHistory[] @relation("user_donations_history_receiverFidTousers")
   gridCells                                                        GridCell[]
   items                                                            UserHasItem[]
   quests                                                           UserHasQuest[]
@@ -151,7 +151,7 @@ model UserHasQuest {
 }
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
-model user_donations_history {
+model UserDonationHistory {
   lastDonation                                    DateTime @default(now()) @db.Timestamptz(6)
   donatorFid                                      Int
   receiverFid                                     Int
@@ -160,6 +160,7 @@ model user_donations_history {
   users_user_donations_history_receiverFidTousers User     @relation("user_donations_history_receiverFidTousers", fields: [receiverFid], references: [fid], onDelete: NoAction, onUpdate: NoAction)
 
   @@id([donatorFid, receiverFid])
+  @@map("user_donations_history")
 }
 
 enum UserHasQuestStatus {
