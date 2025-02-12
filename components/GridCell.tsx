@@ -37,7 +37,7 @@ function SeedDetailPopup({
   onBoost,
   onClose,
 }: SeedDetailPopupProps) {
-  const { state } = useGame();
+  const { state, remainingUses } = useGame();
   const seedData = state.items.find(
     (seed) => seed.slug === `${cell.cropType}-seeds`
   );
@@ -160,18 +160,22 @@ function SeedDetailPopup({
             Fertilize
           </button>
         )}
-        {!cell.isReadyToHarvest && hasBoost && canBoost && boostData && (
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onBoost(boostData.type);
-            }}
-            className="w-full mt-2 bg-[#2196F3] text-white py-2 px-4 rounded-lg font-bold 
+        {!cell.isReadyToHarvest &&
+          hasBoost &&
+          canBoost &&
+          boostData &&
+          remainingUses > 0 && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onBoost(boostData.type);
+              }}
+              className="w-full mt-2 bg-[#2196F3] text-white py-2 px-4 rounded-lg font-bold 
                      hover:bg-[#1976D2] transition-colors"
-          >
-            Boost ({boostData.multiplier}x)
-          </button>
-        )}
+            >
+              Boost ({boostData.multiplier}x)
+            </button>
+          )}
       </div>
     </motion.div>,
     document.body
