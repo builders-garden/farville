@@ -15,7 +15,7 @@ import {
   harvestGridCell,
   speedBoostGridCell,
 } from "@/supabase/queries";
-import { CropType, SeedType } from "@/types/game";
+import { CropType, PerkType, SeedType } from "@/types/game";
 
 export const plantSeed = async (
   fid: number,
@@ -203,7 +203,7 @@ export const applyPerkOnCell = async (
           fid,
           x,
           y,
-          "nitrogen",
+          PerkType.Nitrogen,
           new Date(harvestAt)
         );
       } else {
@@ -225,7 +225,7 @@ export const applyPerkOnCell = async (
           fid,
           x,
           y,
-          "potassium",
+          PerkType.Potassium,
           new Date(harvestAt)
         );
       } else {
@@ -242,7 +242,7 @@ export const applyPerkOnCell = async (
           fid,
           x,
           y,
-          "phosphorus",
+          PerkType.Phosphorus,
           new Date(harvestAt)
         );
       } else {
