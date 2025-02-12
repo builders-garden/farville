@@ -22,6 +22,7 @@ import { GridBulkRequest } from "@/app/api/grid-bulk/route";
 import { useGridBulkOperations } from "@/hooks/game-actions/use-grid-bulk-operations";
 import { DbGridCell } from "@/supabase/types";
 import { GridBulkResult } from "@/app/api/grid-bulk/utils";
+import toast from "react-hot-toast";
 
 // Update the OverlayType to be more flexible with parameters
 export type OverlayConfig =
@@ -159,15 +160,23 @@ export function GameProvider({
   const [gridBulkResult, setGridBulkResult] = useState<
     GridBulkResult | undefined
   >();
+  const [toastIds, setToastIds] = useState<Map<string, string>>(new Map());
 
   const { mutate: sendGridBulkOperations } = useGridBulkOperations({
     setGridBulkResult,
   });
 
   const addGridOperation = (operation: GridBulkRequest) => {
+    let toastId = toastIds.get(operation.action);
+
+    if (operation.action === "harvest" && !toastId) {
+      toastId = toast.loading("Harvesting...");
+      setToastIds((prev) => new Map(prev).set(operation.action, toastId!));
+    }
+
     if (gridBulkOperations) {
       if (operation.action !== gridBulkOperations.action) {
-        sendGridBulkOperations(gridBulkOperations);
+        sendGridBulkOperations({ gridBulkOperations, toastId: toastId || "" });
         setGridBulkOperations(operation);
       } else {
         setGridBulkOperations((prev) => {
@@ -189,11 +198,17 @@ export function GameProvider({
         clearTimeout(debounceTimeoutRef.current);
       }
       debounceTimeoutRef.current = setTimeout(() => {
-        sendGridBulkOperations(gridBulkOperations);
+        const toastId = toastIds.get(gridBulkOperations.action);
+        sendGridBulkOperations({ gridBulkOperations, toastId: toastId || "" });
         setGridBulkOperations(undefined);
+        setToastIds((prev) => {
+          const newMap = new Map(prev);
+          newMap.delete(gridBulkOperations.action);
+          return newMap;
+        });
       }, 500);
     }
-  }, [gridBulkOperations, sendGridBulkOperations]);
+  }, [gridBulkOperations, sendGridBulkOperations, toastIds]);
 
   const [isGridDoingOperations, setIsGridDoingOperations] = useState(false);
   const [operationsCounter, setOperationsCounter] = useState(0);
