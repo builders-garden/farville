@@ -195,11 +195,25 @@ export function GameProvider({
       if (rewards && state) {
         const updatedItems: Partial<UserItem>[] = [];
         for (const reward of rewards) {
-          const crop = state.crops.find(
+          let crop = state.crops.find(
             (item) => item.item?.slug === reward.crop
           );
           if (!crop) {
-            continue;
+            const cropItem = state.items.find(
+              (item) => item.slug === reward.crop
+            );
+            if (cropItem) {
+              crop = {
+                ...cropItem,
+                quantity: reward.amount,
+                item: cropItem,
+                userFid: state.user.fid,
+                itemId: cropItem.id,
+              };
+            } else {
+              console.error("Crop item not found", reward.crop);
+              continue;
+            }
           }
           const index = updatedItems.findIndex(
             (item) => item.item?.id === crop?.item?.id
