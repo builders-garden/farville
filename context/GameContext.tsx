@@ -185,7 +185,7 @@ export function GameProvider({
           newMap.delete(gridBulkOperations.action);
           return newMap;
         });
-      }, 500);
+      }, 1500);
     }
   }, [gridBulkOperations, sendGridBulkOperations, toastIds]);
 
@@ -230,9 +230,6 @@ export function GameProvider({
               quantity: crop?.quantity + reward.amount,
             });
           }
-        }
-        if (updatedItems.length === 0) {
-          refetch.userItems();
         }
         updateUserItems(updatedItems);
       }
