@@ -90,7 +90,8 @@ export const useGridBulkOperations = ({
         }
       }
     },
-    onError: (error) => {
+    onError: (error, { toastId }) => {
+      toast.dismiss(toastId);
       toast.error(error.message);
       refetch.all();
     },
