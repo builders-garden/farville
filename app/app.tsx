@@ -30,7 +30,7 @@ export default function App({
   return (
     <>
       <Toaster
-        position="bottom-right"
+        position="bottom-left"
         toastOptions={{
           style: toasterStyle,
           loading: {

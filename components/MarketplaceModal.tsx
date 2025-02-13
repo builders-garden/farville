@@ -49,7 +49,7 @@ export default function MarketplaceModal({
     { id: "expansions", label: "Expand", icon: "🗺️" },
   ];
 
-  const gridSize = state.gridSize.width * state.gridSize.height
+  const gridSize = state.gridSize.width * state.gridSize.height;
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-start z-50">
@@ -232,9 +232,7 @@ export default function MarketplaceModal({
                         </div>
                       </div>
                       <div className="flex gap-4 ml-13 md:ml-0 items-center">
-                        <span className="text-xs w-fit text-white/90">
-                          Buy
-                        </span>
+                        <span className="text-xs w-fit text-white/90">Buy</span>
                         <div className="flex gap-2 w-full">
                           {state.level >= item.requiredLevel &&
                             [1, 5, 10, gridSize].map((amount) => (
@@ -360,7 +358,9 @@ export default function MarketplaceModal({
                                 }}
                                 disabled={
                                   amount <
-                                  (sellAmount === "ALL" ? 1 : Number(sellAmount))
+                                  (sellAmount === "ALL"
+                                    ? 1
+                                    : Number(sellAmount))
                                 }
                                 className="w-full px-2 py-1.5 bg-[#2B593B] text-white/90 rounded hover:bg-[#346344] 
                                       transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-xs font-medium

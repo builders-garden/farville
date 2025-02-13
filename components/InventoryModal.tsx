@@ -17,9 +17,7 @@ export default function InventoryModal({ onClose }: { onClose: () => void }) {
   const { safeAreaInsets, context } = useFrameContext();
   const [selectedItem, setSelectedItem] = useState<DbItem | null>(null);
   const [requestQuantity, setRequestQuantity] = useState(1);
-  const {
-    mutate: createRequest,
-  } = useCreateRequest();
+  const { mutate: createRequest } = useCreateRequest();
 
   const handlePerkClick = (perk: UserItem) => {
     if (perk.quantity && perk.quantity > 0) {
@@ -106,7 +104,7 @@ export default function InventoryModal({ onClose }: { onClose: () => void }) {
               <p className="text-white/60 text-[10px]">
                 Click an item to see details
               </p>
-              <motion.p 
+              <motion.p
                 className="text-amber-500/90 text-[8px] drop-shadow-[0_0_3px_rgba(251,191,36,0.7)]"
                 animate={{ opacity: [0.6, 1, 0.6], scale: [1, 1.02, 1] }}
                 transition={{ duration: 2, repeat: Infinity }}

@@ -236,6 +236,9 @@ export function GameProvider({
                 category: "crop",
               },
               quantity: crop?.quantity + reward.amount,
+              itemId: crop.item.id,
+              userFid: state.user.fid,
+              createdAt: new Date().toISOString(),
             });
           }
         }
