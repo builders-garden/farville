@@ -9,6 +9,7 @@ import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { toasterStyle } from "@/app/app";
 import { RefetchType } from "../use-game-state";
+import { ActionType } from "@/types/game";
 
 export const useGridBulkOperations = ({
   setGridBulkResult,
@@ -32,7 +33,9 @@ export const useGridBulkOperations = ({
       data: { success: boolean; data: GridBulkResult },
       { toastId }
     ) => {
-      if (data.data.type === "harvest") {
+      if (data.data.type !== ActionType.Harvest) {
+        toast.dismiss(toastId);
+      } else {
         if (data.success) {
           const crops = data.data.rewards?.cropsWithRewards.reduce(
             (acc, { crop, amount }) => {

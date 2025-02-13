@@ -5,6 +5,7 @@ import { useApiMutation } from "@/hooks/use-api-mutation";
 import { DbGridCell } from "@/supabase/types";
 import { Dispatch, SetStateAction } from "react";
 import { UserItem } from "../use-user-items";
+import { ActionType } from "@/types/game";
 
 export const useApplyPerk = ({
   updateGridCells,
@@ -12,11 +13,11 @@ export const useApplyPerk = ({
   handleOperationCounter,
 }: {
   updateGridCells: (cells: Partial<DbGridCell>[]) => void;
-  updateUserItems: (updatedItems: Partial<UserItem>[]) => void
+  updateUserItems: (updatedItems: Partial<UserItem>[]) => void;
   handleOperationCounter: {
     increase: () => void;
     decrease: () => void;
-  }
+  };
 }) => {
   const { playSound } = useAudio();
 
@@ -29,14 +30,14 @@ export const useApplyPerk = ({
       y: number;
       itemSlug: string;
       item?: UserItem;
-      setIsLoading: Dispatch<SetStateAction<boolean>>
+      setIsLoading: Dispatch<SetStateAction<boolean>>;
     }) => `/api/grid-cells/${x}/${y}`,
     body: ({ itemSlug, item }: { itemSlug: string; item?: UserItem }) => ({
-      action: "apply-perk",
+      action: ActionType.ApplyPerk,
       itemSlug,
       itemId: item?.id || 0,
     }),
-    onMutate: ({x,y,itemSlug,item}) => {
+    onMutate: ({ x, y, itemSlug, item }) => {
       handleOperationCounter.increase();
 
       // Optimistically update the grid cell based on perk type
@@ -54,26 +55,20 @@ export const useApplyPerk = ({
       updateGridCells([updates]);
       if (item) {
         updateUserItems([
-          { 
-            itemId: item.id, 
-            quantity: item.quantity - 1, 
-            item: { 
-              ...item.item, 
-              category: "perk"
-            }
-          }
+          {
+            itemId: item.id,
+            quantity: item.quantity - 1,
+            item: {
+              ...item.item,
+              category: "perk",
+            },
+          },
         ]);
       }
       playSound("fertilize");
     },
-    onSuccess: (
-      
-    ) => {
-
-      
-    },
-    onError: () => {
-    },
+    onSuccess: () => {},
+    onError: () => {},
     onSettled: (_data, _error, { setIsLoading }) => {
       handleOperationCounter.decrease();
       setIsLoading(false);

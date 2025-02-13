@@ -13,13 +13,13 @@ import {
 import { addUserItem, getGridCells } from "@/supabase/queries";
 import { sendQuestsCalculation } from "../grid-cells/[x]/[y]/utils";
 import { sendBatchToPostHog, trackEvent } from "@/lib/posthog/server";
-import { PerkType, SeedType } from "@/types/game";
+import { ActionType, PerkType, SeedType } from "@/types/game";
 import { NextResponse } from "next/server";
 import { getBoostTime } from "@/lib/utils";
 import { DbGridCell } from "@/supabase/types";
 
 export interface GridBulkResult {
-  type: "plant" | "harvest" | "apply-perk";
+  type: ActionType;
   cells: {
     ok: DbGridCell[];
     nok: (DbGridCell | undefined)[];
@@ -102,7 +102,7 @@ export const plantBulk = async (
   }
 
   return {
-    type: "plant",
+    type: ActionType.Plant,
     cells: {
       ok: updatedGridCellsBulk,
       nok: notPlantedCells,
@@ -176,7 +176,7 @@ export const harvestBulk = async (
     );
     await sendQuestsCalculation(
       fid,
-      "harvest",
+      ActionType.Harvest,
       CROP_DATA[cropType].id,
       harvestCropSummary[cropType]
     );
@@ -195,7 +195,7 @@ export const harvestBulk = async (
   }
 
   return {
-    type: "harvest",
+    type: ActionType.Harvest,
     cells: {
       ok: harvestableCells,
       nok: notHarvestableCells,
@@ -320,7 +320,7 @@ export const perkBulk = async (
   }
 
   return {
-    type: "apply-perk",
+    type: ActionType.ApplyPerk,
     cells: {
       ok: updatedGridCells,
       nok: nonPerkableCells,

@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { useGame } from "../context/GameContext";
-import { CropType, PerkType } from "../types/game";
+import { ActionType, CropType, PerkType } from "../types/game";
 import CropSprite from "./CropSprite";
 import FloatingNumber from "./animations/FloatingNumber";
 import { useState, useRef, useEffect, useMemo, Fragment } from "react";
@@ -245,7 +245,7 @@ export default function GridCell({ cell }: GridCellProps) {
       playSound("boost");
 
       addGridOperation({
-        action: "apply-perk",
+        action: ActionType.ApplyPerk,
         itemSlug: boostType,
         cells: [{ x: cell.x, y: cell.y }],
       });
@@ -301,7 +301,7 @@ export default function GridCell({ cell }: GridCellProps) {
         playSound("fertilize");
 
         addGridOperation({
-          action: "apply-perk",
+          action: ActionType.ApplyPerk,
           itemSlug: selectedPerk.item.slug,
           cells: [{ x: cell.x, y: cell.y }],
         });
@@ -348,7 +348,7 @@ export default function GridCell({ cell }: GridCellProps) {
           playSound("harvest");
 
           addGridOperation({
-            action: "harvest",
+            action: ActionType.Harvest,
             cells: [{ x: cell.x, y: cell.y }],
           });
 
@@ -411,7 +411,7 @@ export default function GridCell({ cell }: GridCellProps) {
         }
 
         addGridOperation({
-          action: "plant",
+          action: ActionType.Plant,
           itemSlug: selectedSeed,
           cells: [{ x: cell.x, y: cell.y }],
         });

@@ -9,7 +9,7 @@ import {
   useRef,
   useState,
 } from "react";
-import type { CropType, SeedType } from "../types/game";
+import { ActionType, type CropType, type SeedType } from "../types/game";
 import { GameState, useGameState } from "@/hooks/use-game-state";
 import { useBuyItem } from "@/hooks/game-actions/use-buy-item";
 import { useExpandGrid } from "@/hooks/game-actions/use-expand-grid";
@@ -148,8 +148,16 @@ export function GameProvider({
   const addGridOperation = (operation: GridBulkRequest) => {
     let toastId = toastIds.get(operation.action);
 
-    if (operation.action === "harvest" && !toastId) {
-      toastId = toast.loading("Harvesting...");
+    if (!toastId) {
+      toastId = toast.loading(
+        operation.action === ActionType.Harvest
+          ? "Harvesting..."
+          : operation.action === ActionType.Plant
+          ? "Planting..."
+          : operation.action === ActionType.ApplyPerk
+          ? "Boosting..."
+          : "Processing..."
+      );
       setToastIds((prev) => new Map(prev).set(operation.action, toastId!));
     }
 
@@ -190,7 +198,7 @@ export function GameProvider({
   }, [gridBulkOperations, sendGridBulkOperations, toastIds]);
 
   useEffect(() => {
-    if (gridBulkResult?.type === "harvest") {
+    if (gridBulkResult?.type === ActionType.Harvest) {
       const rewards = gridBulkResult.rewards?.cropsWithRewards;
       if (rewards && state) {
         const updatedItems: Partial<UserItem>[] = [];

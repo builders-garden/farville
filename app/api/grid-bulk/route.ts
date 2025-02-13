@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { SeedType, PerkType } from "@/types/game";
+import { SeedType, PerkType, ActionType } from "@/types/game";
 import { harvestBulk, perkBulk, plantBulk } from "./utils";
 
 export interface GridBulkRequest {
-  action: string;
+  action: ActionType;
   itemSlug?: string;
   cells: {
     x: number;
@@ -22,7 +22,7 @@ export const POST = async (req: NextRequest) => {
 
   try {
     switch (action) {
-      case "plant":
+      case ActionType.Plant:
         if (!itemSlug) {
           return NextResponse.json(
             { error: "Item slug is required" },
@@ -44,13 +44,13 @@ export const POST = async (req: NextRequest) => {
           success: true,
           data: plantResult,
         });
-      case "harvest":
+      case ActionType.Harvest:
         const harvestResult = await harvestBulk(Number(fid), cells);
         return NextResponse.json({
           success: true,
           data: harvestResult,
         });
-      case "apply-perk":
+      case ActionType.ApplyPerk:
         if (!itemSlug) {
           return NextResponse.json(
             { error: "Item slug is required" },

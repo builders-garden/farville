@@ -1,5 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { fertilize, handlePerk, harvest, plantSeed, sendQuestsCalculation } from "./utils";
+import {
+  fertilize,
+  handlePerk,
+  harvest,
+  plantSeed,
+  sendQuestsCalculation,
+} from "./utils";
 import {
   sendDelayedNotification,
   getGrowthTime,
@@ -48,7 +54,7 @@ export async function POST(
 
   try {
     switch (action) {
-      case "plant":
+      case ActionType.Plant:
         if (!seedType) {
           return NextResponse.json(
             { error: "Missing seedType for plant action" },
@@ -68,14 +74,18 @@ export async function POST(
           "harvest",
           getGrowthTime(seedType)
         );
-        await sendQuestsCalculation(parseInt(fid), "plant", plantedItem.id);
+        await sendQuestsCalculation(
+          parseInt(fid),
+          ActionType.Plant,
+          plantedItem.id
+        );
         trackEvent(Number(fid), "planted-seed", {
           seedId: plantedItem.id,
           cropType: plantedItem.slug.replace("-seeds", ""),
           cellId: `${x}/${y}`,
         });
         break;
-      case "harvest":
+      case ActionType.Harvest:
         const harvestResult = await harvest(
           parseInt(fid),
           parseInt(x),
@@ -83,7 +93,7 @@ export async function POST(
         );
         await sendQuestsCalculation(
           parseInt(fid),
-          "harvest",
+          ActionType.Harvest,
           harvestResult.crop.id,
           harvestResult.rewards.amount
         );
@@ -97,15 +107,15 @@ export async function POST(
           cellId: `${x}/${y}`,
         });
         break;
-      case "fertilize":
+      case ActionType.Fertilize:
         const cell = await fertilize(parseInt(fid), parseInt(x), parseInt(y));
-        await sendQuestsCalculation(parseInt(fid), "fertilize", 9);
+        await sendQuestsCalculation(parseInt(fid), ActionType.Fertilize, 9);
         trackEvent(Number(fid), "fertilized-cell", {
           cellId: `${x}/${y}`,
           cropType: cell?.cropType,
         });
         break;
-      case "apply-perk":
+      case ActionType.ApplyPerk:
         const perkCell = await handlePerk(
           parseInt(fid),
           parseInt(x),
@@ -113,7 +123,7 @@ export async function POST(
           itemSlug as string
         );
         await Promise.all([
-          sendQuestsCalculation(parseInt(fid), "apply-perk", itemId),
+          sendQuestsCalculation(parseInt(fid), ActionType.ApplyPerk, itemId),
           sendDelayedNotification(
             fid.toString(),
             `Harvest time! 🌾`,
@@ -137,7 +147,7 @@ export async function POST(
         break;
     }
     return NextResponse.json(result);
-  } catch (err) { 
+  } catch (err) {
     console.error("Failed to perform action:", err);
     return NextResponse.json(
       { error: "Failed to perform action", message: (err as Error).message },
