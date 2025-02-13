@@ -252,7 +252,7 @@ export const LEVEL_REWARDS = [
   },
   {
     // level 15
-    coins: 3600000,
+    coins: 1000,
   },
   {
     // level 16
