@@ -36,7 +36,24 @@ export interface GameState {
 }
 
 export const useGameState = () => {
-  const [state, setState] = useState<GameState>();
+  const [state, setState] = useState<GameState>({
+    coins: 0,
+    level: 0,
+    experience: 0,
+    seeds: [],
+    crops: [],
+    grid: [],
+    gridSize: {
+      width: 0,
+      height: 0,
+    },
+    perks: [],
+    expansionLevel: 0,
+    items: [],
+    inventory: [],
+    user: {} as DbUser,
+    claimableQuests: false,
+  });
   const {
     userItems,
     isLoading: userItemsLoading,
