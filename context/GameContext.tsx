@@ -269,10 +269,10 @@ export function GameProvider({
     if (!loading) {
       const tutorialComplete =
         localStorage.getItem("tutorialComplete") === "true" ||
-        (state?.user.xp && state?.user.xp > 0);
+        (state?.user?.xp && state?.user?.xp > 0);
       setTutorialComplete(!!tutorialComplete);
     }
-  }, [state?.user.xp, loading]);
+  }, [state?.user?.xp, loading]);
 
   if (!state) {
     return (

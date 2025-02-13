@@ -55,70 +55,86 @@ export const useGameState = () => {
     refetch: refetchClaimableQuests,
   } = useUserQuests(state?.user?.fid, "completed");
 
-  const updateState = useCallback(() => {
-    const newState: GameState = {
-      coins: 0,
-      level: 0,
-      experience: 0,
-      seeds: [],
-      crops: [],
-      grid: [],
-      gridSize: { width: 0, height: 0 },
-      perks: [],
-      expansionLevel: 0,
-      items: [],
-      inventory: [],
-      user: {} as DbUser,
-      claimableQuests: false,
-    };
-
+  const updateUserState = useCallback(() => {
     if (user) {
       const { currentLevel } = getCurrentLevelAndProgress(user.xp);
-      newState.coins = user.coins;
-      newState.level = currentLevel;
-      newState.experience = user.xp;
-      newState.expansionLevel = user.expansions - 1;
-      newState.user = user;
+      setState((prevState) => ({
+        ...prevState!,
+        coins: user.coins,
+        level: currentLevel,
+        experience: user.xp,
+        expansionLevel: user.expansions - 1,
+        user: user,
+      }));
     }
+  }, [user]);
 
+  const updateUserItemsState = useCallback(() => {
     if (userItems) {
-      newState.seeds = userItems.filter((ui) => ui.item.category === "seed");
-      newState.crops = userItems.filter((ui) => ui.item.category === "crop");
-      newState.perks = userItems.filter(
-        (item) => item.item.category === "perk"
-      );
-      newState.inventory = userItems;
+      setState((prevState) => ({
+        ...prevState!,
+        seeds: userItems.filter((ui) => ui.item.category === "seed"),
+        crops: userItems.filter((ui) => ui.item.category === "crop"),
+        perks: userItems.filter((item) => item.item.category === "perk"),
+        inventory: userItems,
+      }));
     }
+  }, [userItems]);
 
+  const updateGridState = useCallback(() => {
     if (gridCells) {
-      newState.grid = gridCells;
-      newState.gridSize = {
-        width: Math.max(...gridCells.map((cell) => cell.x)),
-        height: Math.max(...gridCells.map((cell) => cell.y)),
-      };
+      setState((prevState) => ({
+        ...prevState!,
+        grid: gridCells,
+        gridSize: {
+          width: Math.max(...gridCells.map((cell) => cell.x)),
+          height: Math.max(...gridCells.map((cell) => cell.y)),
+        },
+      }));
     }
+  }, [gridCells]);
 
+  const updateItemsState = useCallback(() => {
     if (items) {
-      newState.items = items;
+      setState((prevState) => ({
+        ...prevState!,
+        items: items,
+      }));
     }
+  }, [items]);
 
+  const updateClaimableQuestsState = useCallback(() => {
     if (claimableQuests) {
-      newState.claimableQuests =
-        (claimableQuests?.daily?.length ?? 0) > 0 ||
-        (claimableQuests?.weekly?.length ?? 0) > 0 ||
-        (claimableQuests?.monthly?.length ?? 0) > 0 ||
-        (claimableQuests?.farmer?.length ?? 0) > 0;
+      setState((prevState) => ({
+        ...prevState!,
+        claimableQuests:
+          (claimableQuests?.daily?.length ?? 0) > 0 ||
+          (claimableQuests?.weekly?.length ?? 0) > 0 ||
+          (claimableQuests?.monthly?.length ?? 0) > 0 ||
+          (claimableQuests?.farmer?.length ?? 0) > 0,
+      }));
     }
-
-    setState((prevState) => ({
-      ...prevState,
-      ...newState,
-    }));
-  }, [userItems, items, user, gridCells, claimableQuests]);
+  }, [claimableQuests]);
 
   useEffect(() => {
-    updateState();
-  }, [userItems, items, user, gridCells, claimableQuests, updateState]);
+    updateUserState();
+  }, [user, updateUserState]);
+
+  useEffect(() => {
+    updateUserItemsState();
+  }, [userItems, updateUserItemsState]);
+
+  useEffect(() => {
+    updateGridState();
+  }, [gridCells, updateGridState]);
+
+  useEffect(() => {
+    updateItemsState();
+  }, [items, updateItemsState]);
+
+  useEffect(() => {
+    updateClaimableQuestsState();
+  }, [claimableQuests, updateClaimableQuestsState]);
 
   const refetchAll = useCallback(async () => {
     await Promise.all([
@@ -128,14 +144,12 @@ export const useGameState = () => {
       refetchItems(),
       refetchClaimableQuests(),
     ]);
-    updateState();
   }, [
     refetchUserItems,
     refetchUser,
     refetchGrid,
     refetchItems,
     refetchClaimableQuests,
-    updateState,
   ]);
 
   // Add new method to update grid cells directly
@@ -238,23 +252,18 @@ export const useGameState = () => {
       all: refetchAll,
       userItems: async () => {
         await refetchUserItems();
-        updateState();
       },
       items: async () => {
         await refetchItems();
-        updateState();
       },
       user: async () => {
         await refetchUser();
-        updateState();
       },
       grid: async () => {
         await refetchGrid();
-        updateState();
       },
       claimableQuests: async () => {
         await refetchClaimableQuests();
-        updateState();
       },
     } as RefetchType,
     updateGridCells,

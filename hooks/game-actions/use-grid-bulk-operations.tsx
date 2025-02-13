@@ -92,6 +92,9 @@ export const useGridBulkOperations = ({
           setGridBulkResult(undefined);
         }
       }
+      refetch.userItems();
+      refetch.claimableQuests();
+      refetch.user();
     },
     onError: (error, { toastId }) => {
       toast.dismiss(toastId);
