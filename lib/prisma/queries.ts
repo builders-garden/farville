@@ -110,34 +110,40 @@ export const removeUserItem = async (
   quantity: number
 ) => {
   // Use a transaction to prevent race conditions
-  return await prisma.$transaction(async (tx) => {
-    // Decrement the quantity directly
-    const updatedItem = await tx.userHasItem.update({
-      where: {
-        userFid_itemId: {
-          userFid: fid,
-          itemId,
-        },
-      },
-      data: {
-        quantity: { decrement: quantity },
-      },
-    });
-
-    // If the quantity drops to 0 or below, delete the record
-    if (updatedItem.quantity <= 0) {
-      await tx.userHasItem.delete({
+  return await prisma.$transaction(
+    async (tx) => {
+      // Decrement the quantity directly
+      const updatedItem = await tx.userHasItem.update({
         where: {
           userFid_itemId: {
             userFid: fid,
             itemId,
           },
         },
+        data: {
+          quantity: { decrement: quantity },
+        },
       });
-    }
 
-    return updatedItem;
-  });
+      // If the quantity drops to 0 or below, delete the record
+      if (updatedItem.quantity <= 0) {
+        await tx.userHasItem.delete({
+          where: {
+            userFid_itemId: {
+              userFid: fid,
+              itemId,
+            },
+          },
+        });
+      }
+
+      return updatedItem;
+    },
+    {
+      maxWait: 14000,
+      timeout: 14000,
+    }
+  );
 };
 
 export const updateUserXP = async (
@@ -149,47 +155,53 @@ export const updateUserXP = async (
   newXP: number;
   newLevel: number;
 }> => {
-  return await prisma.$transaction(async (tx) => {
-    // Get current user data with a lock
-    const currentUser = await tx.user.findUnique({
-      where: { fid },
-      select: { xp: true, coins: true },
-    });
+  return await prisma.$transaction(
+    async (tx) => {
+      // Get current user data with a lock
+      const currentUser = await tx.user.findUnique({
+        where: { fid },
+        select: { xp: true, coins: true },
+      });
 
-    if (!currentUser) throw new Error("User not found");
+      if (!currentUser) throw new Error("User not found");
 
-    const currentXP = currentUser.xp;
-    const newXP = currentXP + xp;
+      const currentXP = currentUser.xp;
+      const newXP = currentXP + xp;
 
-    const currentLevel = LEVEL_XP_THRESHOLDS.findIndex(
-      (threshold) => currentXP < threshold
-    );
-    const newLevel = LEVEL_XP_THRESHOLDS.findIndex(
-      (threshold) => newXP < threshold
-    );
-    const didLevelUp = newLevel > currentLevel;
+      const currentLevel = LEVEL_XP_THRESHOLDS.findIndex(
+        (threshold) => currentXP < threshold
+      );
+      const newLevel = LEVEL_XP_THRESHOLDS.findIndex(
+        (threshold) => newXP < threshold
+      );
+      const didLevelUp = newLevel > currentLevel;
 
-    // Update user XP and potentially coins if leveled up
-    const user = await tx.user.update({
-      where: { fid },
-      data: {
-        xp: { increment: xp },
-        ...(didLevelUp && {
-          coins: { increment: LEVEL_REWARDS[newLevel - 1].coins },
-        }),
-      },
-    });
+      // Update user XP and potentially coins if leveled up
+      const user = await tx.user.update({
+        where: { fid },
+        data: {
+          xp: { increment: xp },
+          ...(didLevelUp && {
+            coins: { increment: LEVEL_REWARDS[newLevel - 1].coins },
+          }),
+        },
+      });
 
-    return {
-      user: {
-        ...user,
-        createdAt: user.createdAt.toISOString(),
-      },
-      didLevelUp,
-      newXP,
-      newLevel,
-    };
-  });
+      return {
+        user: {
+          ...user,
+          createdAt: user.createdAt.toISOString(),
+        },
+        didLevelUp,
+        newXP,
+        newLevel,
+      };
+    },
+    {
+      maxWait: 14000,
+      timeout: 14000,
+    }
+  );
 };
 
 export const updateUserCoins = async (fid: number, coins: number) => {
@@ -200,23 +212,29 @@ export const updateUserCoins = async (fid: number, coins: number) => {
 };
 
 export const updateGridCellsBulk = async (fid: number, cells: DbGridCell[]) => {
-  return await prisma.$transaction(async (tx) => {
-    const updatedCells: DbGridCell[] = [];
-    for (const cell of cells) {
-      const updatedCell = await tx.gridCell.update({
-        where: { fid_x_y: { fid, x: cell.x, y: cell.y } },
-        data: cell,
-      });
-      updatedCells.push({
-        ...updatedCell,
-        plantedAt: updatedCell.plantedAt?.toISOString() || null,
-        harvestAt: updatedCell.harvestAt?.toISOString() || null,
-        speedBoostedAt: updatedCell.speedBoostedAt?.toISOString() || null,
-        createdAt: updatedCell.createdAt.toISOString(),
-      });
+  return await prisma.$transaction(
+    async (tx) => {
+      const updatedCells: DbGridCell[] = [];
+      for (const cell of cells) {
+        const updatedCell = await tx.gridCell.update({
+          where: { fid_x_y: { fid, x: cell.x, y: cell.y } },
+          data: cell,
+        });
+        updatedCells.push({
+          ...updatedCell,
+          plantedAt: updatedCell.plantedAt?.toISOString() || null,
+          harvestAt: updatedCell.harvestAt?.toISOString() || null,
+          speedBoostedAt: updatedCell.speedBoostedAt?.toISOString() || null,
+          createdAt: updatedCell.createdAt.toISOString(),
+        });
+      }
+      return updatedCells;
+    },
+    {
+      maxWait: 14000,
+      timeout: 14000,
     }
-    return updatedCells;
-  });
+  );
 };
 
 export const getUserItemBySlug = async (fid: number, slug: string) => {
