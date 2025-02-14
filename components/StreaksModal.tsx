@@ -2,16 +2,26 @@ import { useFrameContext } from "@/context/FrameContext";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import { Calendar } from "@/components/ui/calendar";
-import { useState } from "react";
 
 export default function StreaksModal({ onClose }: { onClose: () => void }) {
   const { safeAreaInsets, context } = useFrameContext();
-  const [date, setDate] = useState<Date | undefined>(new Date());
+
+  const dates = [
+    new Date(2025, 1, 1),
+    new Date(2025, 1, 2),
+    new Date(2025, 1, 3),
+    new Date(2025, 1, 5),
+    new Date(2025, 1, 6),
+    new Date(2025, 1, 7),
+    new Date(2025, 1, 10),
+  ];
+
   return (
     <div className='fixed inset-0 bg-black/50 flex items-start z-50'>
       <motion.div
         initial={{ opacity: 0, y: 50 }}
-        animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 50 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: 50 }}
         style={{
           marginTop: safeAreaInsets.top,
           marginBottom: safeAreaInsets.bottom,
@@ -56,11 +66,31 @@ export default function StreaksModal({ onClose }: { onClose: () => void }) {
             </button>
           </div>
         </div>
+        <div className='flex justify-between p-6 gap-6'>
+          <div className='flex flex-col gap-2 bg-[#6D4C2C] border-2 border-[#8b5d3c] p-6 py-4 w-full rounded-2xl'>
+            <div className='flex text-4xl text-white items-end gap-2'>
+              <span className='leading-none'>6</span>
+              <span className='text-sm text-white/70'>days</span>
+            </div>
+            <span className='text-[0.75rem] leading-none text-[#ea9712]'>
+              Streak
+            </span>
+          </div>
+          <div className='flex flex-col gap-2 bg-[#6D4C2C] border-2 border-[#8b5d3c] p-6 py-4 w-full rounded-2xl'>
+            <div className='flex text-4xl text-white items-end gap-2'>
+              <span className='leading-none'>14</span>
+              <span className='text-sm text-white/70'>Feb</span>
+            </div>
+            <span className='text-[0.75rem] leading-none text-[#ea9712]'>
+              Reward
+            </span>
+          </div>
+        </div>
         <Calendar
-          mode='single'
-          selected={date}
-          onSelect={setDate}
-          className='rounded-md border w-fit m-auto mt-8'
+          mode='multiple'
+          selected={dates}
+          className='rounded-md border w-auto mx-6'
+          disabled={new Date(2025, 1, 13)}
         />
       </motion.div>
     </div>
