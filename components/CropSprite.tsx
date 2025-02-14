@@ -19,7 +19,6 @@ interface CropSpriteCropProp {
 interface CropSpriteProps {
   crop: CropSpriteCropProp;
   isDemo?: boolean;
-  isLoading?: boolean;
 }
 
 export function EmptyCropSprite() {
@@ -36,7 +35,7 @@ export function EmptyCropSprite() {
   );
 }
 
-export function PlantedCropSprite({ crop, isDemo, isLoading }: CropSpriteProps) {
+export function PlantedCropSprite({ crop, isDemo }: CropSpriteProps) {
   const { state } = useGame();
   const [, setForceUpdate] = useState(0);
 
@@ -99,7 +98,7 @@ export function PlantedCropSprite({ crop, isDemo, isLoading }: CropSpriteProps) 
       />
       {crop.plantedAt && (
         <div
-        className={clsx("absolute inset-[5%]", isGridSmall ? "mb-2" : "mb-1")}
+          className={clsx("absolute inset-[5%]", isGridSmall ? "mb-2" : "mb-1")}
           style={{
             backgroundImage: "url('/images/land/soil_big.png')",
             backgroundSize: "100% 100%",
@@ -112,7 +111,12 @@ export function PlantedCropSprite({ crop, isDemo, isLoading }: CropSpriteProps) 
       {/* Speed Boost Indicator */}
       {crop.speedBoostedAt &&
         Date.now() - crop.speedBoostedAt < 1000 * 60 * 60 * 2 && (
-          <div className={clsx("absolute z-50", isGridSmall ? "top-1 right-1" : "-top-1 -right-1")}> 
+          <div
+            className={clsx(
+              "absolute z-50",
+              isGridSmall ? "top-1 right-1" : "-top-1 -right-1"
+            )}
+          >
             <motion.div
               initial={{ scale: 0 }}
               animate={{ scale: isGridSmall ? 1 : 0.8 }}
@@ -123,17 +127,23 @@ export function PlantedCropSprite({ crop, isDemo, isLoading }: CropSpriteProps) 
             </motion.div>
           </div>
         )}
-        
 
       {/* Progress Bar - Centered and smaller */}
-      {!isLoading && !crop.readyToHarvest && (
+      {!crop.readyToHarvest && (
         <div className="absolute bottom-[3%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center w-3/4 z-50">
           {!isDemo && (
-            <div className={clsx("text-white font-medium mb-1 text-center drop-shadow-[0_1px_1px_rgba(0,0,0,0.8)]", isGridSmall ? "text-[7px]" : "text-[6px]")}>
+            <div
+              className={clsx(
+                "text-white font-medium mb-1 text-center drop-shadow-[0_1px_1px_rgba(0,0,0,0.8)]",
+                isGridSmall ? "text-[7px]" : "text-[6px]"
+              )}
+            >
               {getTimeRemaining()}
             </div>
           )}
-          <div className={clsx("w-full bg-black/50", isGridSmall ? "h-2" : "h-1")}> 
+          <div
+            className={clsx("w-full bg-black/50", isGridSmall ? "h-2" : "h-1")}
+          >
             <motion.div
               className="h-full bg-green-400"
               initial={{ width: 0 }}
@@ -193,14 +203,15 @@ export function PlantedCropSprite({ crop, isDemo, isLoading }: CropSpriteProps) 
 export default function CropSprite({
   crop,
   isDemo,
-  isLoading,
 }: {
   crop?: CropSpriteCropProp;
   isDemo?: boolean;
-  isLoading?: boolean;
 }) {
   return crop ? (
-    <PlantedCropSprite crop={crop} isDemo={isDemo} isLoading={isLoading} />
+    <PlantedCropSprite
+      crop={crop}
+      isDemo={isDemo}
+    />
   ) : (
     <EmptyCropSprite />
   );

@@ -112,7 +112,13 @@ const BACKGROUND_PATTERN = `
 
 // Add new container component
 function QuestsModalContainer() {
-  const { showQuests, setShowQuests } = useGame();
+  const { showQuests, setShowQuests, refetchClaimableQuests } = useGame();
+
+  useEffect(() => {
+    if (showQuests) {
+      refetchClaimableQuests();
+    }
+  }, [showQuests]);
 
   return (
     <AnimatePresence>
@@ -156,7 +162,10 @@ export default function GameWrapper() {
 
       {activeOverlay?.type === "requests" && (
         <AnimatePresence>
-          <RequestModal onClose={handleOverlayComplete} id={activeOverlay.id} />
+          <RequestModal
+            onClose={handleOverlayComplete}
+            id={activeOverlay.id}
+          />
         </AnimatePresence>
       )}
 

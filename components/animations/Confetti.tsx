@@ -23,11 +23,12 @@ export default function Confetti() {
         return;
       }
 
-      const particleCount = 50;
+      const particleCount = 40; // Reduced particle count
+      const spread = 70; // Reduced spread
 
       confetti({
         particleCount,
-        spread: 70,
+        spread,
         origin: {
           x: randomInRange(0.1, 0.9),
           y: randomInRange(0.1, 0.9),
@@ -35,7 +36,7 @@ export default function Confetti() {
         colors: ["#FFD700", "#FFA500", "#FF6347", "#98FB98", "#87CEEB"],
         disableForReducedMotion: true,
       });
-    }, 250);
+    }, 750); // Increased interval speed
 
     return () => clearInterval(interval);
   }, []);
@@ -45,17 +46,17 @@ export default function Confetti() {
   return (
     <div className="fixed inset-0 flex items-center justify-center pointer-events-none z-50">
       <div
-        className="text-6xl font-bold text-yellow-300 animate-fade-out text-center"
+        className="text-6xl font-bold text-yellow-600 animate-fade-out text-center"
         style={{
           textShadow: `
-            0 0 7px #fff,
+            0 0 3px #fff,
+            0 0 5px #fff,
             0 0 10px #fff,
-            0 0 21px #fff,
-            0 0 42px #FFD700,
-            0 0 82px #FFD700,
-            0 0 92px #FFD700,
-            0 0 102px #FFD700,
-            0 0 151px #FFD700
+            0 0 20px #FFD700,
+            0 0 40px #FFD700,
+            0 0 50px #FFD700,
+            0 0 60px #FFD700,
+            0 0 75px #FFD700
           `,
           animation: "fadeOut 5s ease-in-out forwards",
         }}

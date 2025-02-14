@@ -11,7 +11,8 @@ import {
   giftStarterPack,
   initializeGrid,
   initDailyUserQuests,
-  initWeeklyAndMonthlyUserQuests,
+  initWeeklyUserQuests,
+  // initMonthlyUserQuests,
 } from "@/supabase/queries";
 import { trackEvent } from "@/lib/posthog/server";
 
@@ -60,15 +61,21 @@ export const POST = async (req: NextRequest) => {
     activeToday: true,
     timeToCompare: userNow,
   });
-  const weeklyAndMonthlyQuests = await getUserQuests(fid, {
-    type: ["weekly", "monthly"],
+  const weeklyQuests = await getUserQuests(Number(fid), {
+    type: ["weekly"],
   });
+  // const monthlyQuests = await getUserQuests(Number(fid), {
+  //   type: ["monthly"],
+  // });
   if (!dailyQuests || dailyQuests?.length === 0) {
-    await initDailyUserQuests(fid);
+    await initDailyUserQuests(Number(fid));
   }
-  if (!weeklyAndMonthlyQuests || weeklyAndMonthlyQuests?.length === 0) {
-    await initWeeklyAndMonthlyUserQuests(fid);
+  if (!weeklyQuests || weeklyQuests?.length === 0) {
+    await initWeeklyUserQuests(Number(fid));
   }
+  // if (!monthlyQuests || monthlyQuests?.length === 0) {
+  //   await initMonthlyUserQuests(Number(fid));
+  // }
 
   // Verify signature matches custody address
   const isValidSignature = await verifyMessage({

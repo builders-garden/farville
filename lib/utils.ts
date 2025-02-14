@@ -1,12 +1,12 @@
 import { DbItem } from "@/supabase/types";
-import { LEVEL_XP_THRESHOLDS } from "./game-constants";
-import { clsx, type ClassValue } from "clsx"
-import { twMerge } from "tailwind-merge"
+import { clsx, type ClassValue } from "clsx";
+import { twMerge } from "tailwind-merge";
+import { LEVEL_XP_THRESHOLDS, SPEED_BOOST } from "./game-constants";
+import { PerkType } from "@/types/game";
 
 export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs))
+  return twMerge(clsx(inputs));
 }
-
 
 export const warpcastComposeCastUrl = () => {
   const frameUrl = `https://farville.farm`;
@@ -30,13 +30,13 @@ export const getCurrentLevelAndProgress = (experience: number) => {
   const currentLevel = LEVEL_XP_THRESHOLDS.findIndex(
     (threshold) => experience < threshold
   );
-  
+
   // If XP is above all thresholds, use the max level
   if (currentLevel === -1) {
     const maxLevel = LEVEL_XP_THRESHOLDS.length;
     return {
       currentLevel: maxLevel,
-      progress: 100
+      progress: 100,
     };
   }
 
@@ -52,14 +52,14 @@ export const getUserNowDate = () => {
   // 1. toLocaleString() output format is locale-dependent and unreliable
   // 2. Creating date string manually can lead to timezone issues
   // 3. The .000Z suffix forces UTC which may not match user's timezone
-  
+
   // Instead, we should just return the current date:
   return new Date();
-}
+};
 
 export const chooseRandomItem = <T>(items: T[]): T => {
   return items[Math.floor(Math.random() * items.length)];
-}
+};
 
 export const formatTime = (seconds: number) => {
   const days = Math.floor(seconds / (3600 * 24));
@@ -75,4 +75,8 @@ export const formatTime = (seconds: number) => {
   ]
     .filter(Boolean)
     .join(" ");
+};
+
+export const getBoostTime = (perkSlug: PerkType) => {
+  return SPEED_BOOST[perkSlug].duration * (1 - 1 / SPEED_BOOST[perkSlug].boost);
 };

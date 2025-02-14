@@ -2,15 +2,21 @@
 
 import { motion } from "framer-motion";
 import { useGame } from "../context/GameContext";
-import { CropType } from "../types/game";
+import { ActionType, CropType, PerkType } from "../types/game";
 import CropSprite from "./CropSprite";
 import FloatingNumber from "./animations/FloatingNumber";
 import { useState, useRef, useEffect, useMemo, Fragment } from "react";
 import { DbGridCell } from "@/supabase/types";
-import { CROP_DATA, SPEED_BOOST } from "@/lib/game-constants";
+import {
+  CROP_DATA,
+  LEVEL_REWARDS,
+  LEVEL_XP_THRESHOLDS,
+  SPEED_BOOST,
+} from "@/lib/game-constants";
 import Confetti from "./animations/Confetti";
 import { createPortal } from "react-dom";
-import { formatTime } from "@/lib/utils";
+import { formatTime, getBoostTime } from "@/lib/utils";
+import { useAudio } from "@/context/AudioContext";
 
 interface GridCellProps {
   cell: DbGridCell;
@@ -31,7 +37,7 @@ function SeedDetailPopup({
   onBoost,
   onClose,
 }: SeedDetailPopupProps) {
-  const { state } = useGame();
+  const { state, remainingUses } = useGame();
   const seedData = state.items.find(
     (seed) => seed.slug === `${cell.cropType}-seeds`
   );
@@ -154,18 +160,22 @@ function SeedDetailPopup({
             Fertilize
           </button>
         )}
-        {!cell.isReadyToHarvest && hasBoost && canBoost && boostData && (
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onBoost(boostData.type);
-            }}
-            className="w-full mt-2 bg-[#2196F3] text-white py-2 px-4 rounded-lg font-bold 
+        {!cell.isReadyToHarvest &&
+          hasBoost &&
+          canBoost &&
+          boostData &&
+          remainingUses > 0 && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onBoost(boostData.type);
+              }}
+              className="w-full mt-2 bg-[#2196F3] text-white py-2 px-4 rounded-lg font-bold 
                      hover:bg-[#1976D2] transition-colors"
-          >
-            Boost ({boostData.multiplier}x)
-          </button>
-        )}
+            >
+              Boost ({boostData.multiplier}x)
+            </button>
+          )}
       </div>
     </motion.div>,
     document.body
@@ -174,22 +184,26 @@ function SeedDetailPopup({
 
 export default function GridCell({ cell }: GridCellProps) {
   const {
-    plantSeed,
-    harvestCrop,
-    fertilize,
-    applyPerk,
+    addGridOperation,
+    // fertilize,
     selectedSeed,
     selectedPerk,
     setSelectedSeed,
     setSelectedPerk,
     showLevelUpConfetti,
+    setShowLevelUpConfetti,
     floatingNumbers,
+    setFloatingNumbers,
     remainingUses,
     setRemainingUses,
+    state,
+    updateGridCells,
+    updateUserItems,
+    updateUser,
   } = useGame();
+  const { playSound } = useAudio();
   const cellRef = useRef<HTMLDivElement>(null);
   const [showPopup, setShowPopup] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
 
   const isReadyToHarvest =
     cell.isReadyToHarvest ||
@@ -219,8 +233,6 @@ export default function GridCell({ cell }: GridCellProps) {
         new Date(cell.speedBoostedAt).getTime() + 1000 * 60 * 60 * 2 >=
           Date.now()));
 
-  const { state } = useGame();
-
   const hasFertilizer = state.inventory.some(
     (item) => item.item.slug === "fertilizer"
   );
@@ -230,13 +242,37 @@ export default function GridCell({ cell }: GridCellProps) {
       (item) => item.item.slug === boostType
     );
     if (boostItem) {
-      applyPerk({
-        x: cell.x,
-        y: cell.y,
+      playSound("boost");
+
+      addGridOperation({
+        action: ActionType.ApplyPerk,
         itemSlug: boostType,
-        item: boostItem,
-        setIsLoading,
+        cells: [{ x: cell.x, y: cell.y }],
       });
+
+      const boostData = SPEED_BOOST[boostType as keyof typeof SPEED_BOOST];
+
+      updateGridCells([
+        {
+          x: cell.x,
+          y: cell.y,
+          speedBoostedAt: new Date().toISOString(),
+          yieldBoost: boostData.boost,
+        },
+      ]);
+
+      updateUserItems([
+        {
+          itemId: boostItem.id,
+          quantity: remainingUses - 1,
+          item: {
+            ...boostItem.item,
+            category: "perk",
+          },
+        },
+      ]);
+
+      setRemainingUses(remainingUses - 1);
       setShowPopup(false);
     }
   };
@@ -251,18 +287,10 @@ export default function GridCell({ cell }: GridCellProps) {
       return;
     }
     try {
-      setIsLoading(true);
       if (
         isPerkIncompatible ||
         ((selectedSeed || selectedPerk) && remainingUses <= 0)
       ) {
-        console.log("Early return due to:", {
-          isPerkIncompatible,
-          selectedSeed,
-          selectedPerk,
-          remainingUses,
-        });
-        setIsLoading(false);
         return;
       }
       if (
@@ -270,13 +298,39 @@ export default function GridCell({ cell }: GridCellProps) {
         ((selectedPerk.item.slug === "fertilizer" && isValidFertilizerTarget) ||
           (selectedPerk.item.slug !== "fertilizer" && isValidSpeedBoostTarget))
       ) {
-        applyPerk({
-          x: cell.x,
-          y: cell.y,
+        playSound("fertilize");
+
+        addGridOperation({
+          action: ActionType.ApplyPerk,
           itemSlug: selectedPerk.item.slug,
-          item: selectedPerk,
-          setIsLoading,
+          cells: [{ x: cell.x, y: cell.y }],
         });
+
+        const itemSlug = selectedPerk.item.slug as PerkType;
+        const boostTime = getBoostTime(itemSlug);
+
+        updateGridCells([
+          {
+            x: cell.x,
+            y: cell.y,
+            harvestAt: new Date(
+              new Date(cell.harvestAt!).getTime() - boostTime
+            ).toISOString(),
+            speedBoostedAt: new Date().toISOString(),
+          },
+        ]);
+
+        updateUserItems([
+          {
+            itemId: selectedPerk.itemId,
+            quantity: remainingUses - 1,
+            item: {
+              ...selectedPerk.item,
+              category: "perk",
+            },
+          },
+        ]);
+
         setRemainingUses(remainingUses - 1);
         if (remainingUses <= 1) {
           setSelectedPerk(null);
@@ -286,41 +340,108 @@ export default function GridCell({ cell }: GridCellProps) {
 
       if (cell.plantedAt && !isReadyToHarvest) {
         setShowPopup(true);
-        setIsLoading(false);
         return;
       }
 
       if (cell.plantedAt && isReadyToHarvest) {
         if (cellRef.current) {
-          harvestCrop({
-            x: cell.x,
-            y: cell.y,
-            setIsLoading,
+          playSound("harvest");
+
+          addGridOperation({
+            action: ActionType.Harvest,
+            cells: [{ x: cell.x, y: cell.y }],
           });
+
+          updateGridCells([
+            {
+              x: cell.x,
+              y: cell.y,
+              cropType: null,
+              plantedAt: null,
+              harvestAt: null,
+              speedBoostedAt: null,
+              isReadyToHarvest: false,
+            },
+          ]);
+
+          const cropXP = CROP_DATA[cell.cropType as CropType].rewardXP;
+          const newFloatingNumber = {
+            x: cell.y * 32, // TODO: Adjust multiplier based on your grid cell size
+            y: cell.x * 32,
+            gridX: cell.y,
+            gridY: cell.x,
+            exp: cropXP,
+            cropType: cell.cropType as CropType,
+            id: Math.random().toString(),
+          };
+          setFloatingNumbers((prev) => [...prev, newFloatingNumber]);
+
+          if (
+            state.experience < LEVEL_XP_THRESHOLDS[state.level] &&
+            state.experience + cropXP >= LEVEL_XP_THRESHOLDS[state.level]
+          ) {
+            updateUser({
+              xp: state.experience + cropXP,
+              level: state.level + 1,
+              coins: state.coins + LEVEL_REWARDS[state.level].coins,
+            });
+            // Show level up confetti if player leveled up
+            setShowLevelUpConfetti(true);
+            playSound("levelUp");
+            // Reset confetti after animation
+            setTimeout(() => {
+              setShowLevelUpConfetti(false);
+            }, 3000);
+          } else {
+            updateUser({
+              xp: state.experience + cropXP,
+            });
+          }
         }
         return;
       }
 
       if (selectedSeed && !cell.plantedAt) {
-        console.log("Attempting to plant:", {
-          x: cell.x,
-          y: cell.y,
-          seedType: selectedSeed,
-        });
-
-        const item = state.seeds.find((item) => item.item?.slug === selectedSeed);
+        const item = state.seeds.find(
+          (item) => item.item?.slug === selectedSeed
+        );
 
         if (!item) {
           throw new Error("Seed item not found");
         }
 
-        plantSeed({
-          x: cell.x,
-          y: cell.y,
-          seedType: selectedSeed,
-          item: item,
-          setIsLoading,
+        addGridOperation({
+          action: ActionType.Plant,
+          itemSlug: selectedSeed,
+          cells: [{ x: cell.x, y: cell.y }],
         });
+
+        updateGridCells([
+          {
+            x: cell.x,
+            y: cell.y,
+            cropType: selectedSeed.replace("-seeds", "") as CropType,
+            plantedAt: new Date().toISOString(),
+            harvestAt: new Date(
+              Date.now() +
+                CROP_DATA[selectedSeed.replace("-seeds", "")].growthTime
+            ).toISOString(),
+            isReadyToHarvest: false,
+          },
+        ]);
+
+        updateUserItems([
+          {
+            itemId: item.id,
+            quantity: item.quantity - 1,
+            item: {
+              ...item.item,
+              category: "seed",
+            },
+          },
+        ]);
+
+        playSound("plant");
 
         setRemainingUses(Math.max(0, remainingUses - 1));
         if (remainingUses <= 1) {
@@ -329,14 +450,13 @@ export default function GridCell({ cell }: GridCellProps) {
       }
     } catch (error) {
       console.error("Planting failed:", error);
-    } finally {
-      // setIsLoading(false)
     }
   };
 
+  // TODO: handle fertilize with new bulk API
   const handleFertilize = async () => {
     if (hasFertilizer) {
-      fertilize({ x: cell.x, y: cell.y, setIsLoading });
+      // fertilize({ x: cell.x, y: cell.y, setIsLoading });
       setShowPopup(false);
     }
   };
@@ -372,7 +492,6 @@ export default function GridCell({ cell }: GridCellProps) {
         : ""
     }
     ${!cell.plantedAt ? "drop-target" : ""}
-    ${isLoading ? "pointer-events-none" : ""}
     transition-all duration-200
   `;
 
@@ -395,12 +514,6 @@ export default function GridCell({ cell }: GridCellProps) {
           repeatType: "reverse",
         }}
       >
-        {isLoading && (
-          <div className="absolute inset-0 bg-black/50 rounded-sm flex items-center justify-center z-50">
-            <div className="w-8 h-8 border-4 border-white/20 border-t-white rounded-full animate-spin"></div>
-          </div>
-        )}
-
         {showPopup && cell.plantedAt && !isReadyToHarvest && (
           <SeedDetailPopup
             cell={cell}
@@ -433,7 +546,6 @@ export default function GridCell({ cell }: GridCellProps) {
                 }
               : undefined
           }
-          isLoading={isLoading}
         />
 
         {/* Fertilizer/Speed Boost Hover Effect */}
@@ -483,13 +595,6 @@ export default function GridCell({ cell }: GridCellProps) {
                 x={numbers.x}
                 y={numbers.y - 5}
                 type="xp"
-              />
-              <FloatingNumber
-                number={numbers.amount}
-                x={numbers.x}
-                y={numbers.y + 5}
-                type="crop"
-                cropType={numbers.cropType}
               />
             </Fragment>
           ))}
