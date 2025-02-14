@@ -11,7 +11,7 @@ import {
   updateUserXP,
 } from "@/lib/prisma/queries";
 import { addUserItem, getGridCells } from "@/supabase/queries";
-import { sendQuestsCalculation } from "../grid-cells/[x]/[y]/utils";
+import { sendQuestsCalculation } from "../grid-cells/utils";
 import { sendBatchToPostHog, trackEvent } from "@/lib/posthog/server";
 import { ActionType, PerkType, SeedType } from "@/types/game";
 import { NextResponse } from "next/server";

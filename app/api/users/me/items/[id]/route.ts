@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { buyItem, sellItem } from "./utils";
-import { sendQuestsCalculation } from "@/app/api/grid-cells/[x]/[y]/utils";
+import { sendQuestsCalculation } from "@/app/api/grid-cells/utils";
 import { trackEvent } from "@/lib/posthog/server";
 import { getItemById } from "@/supabase/queries";
 export const POST = async (req: NextRequest) => {

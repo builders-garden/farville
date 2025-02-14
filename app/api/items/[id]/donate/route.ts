@@ -1,4 +1,4 @@
-import { sendQuestsCalculation } from "@/app/api/grid-cells/[x]/[y]/utils";
+import { sendQuestsCalculation } from "@/app/api/grid-cells/utils";
 import { MAX_DAILY_ALLOWED_DONATION_BETWEEN_USERS } from "@/lib/game-constants";
 import { sendDelayedNotification } from "@/lib/game-notifications";
 import { trackEvent } from "@/lib/posthog/server";
