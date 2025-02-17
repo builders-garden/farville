@@ -104,11 +104,6 @@ export default function TimelineModal({ onClose }: { onClose: () => void }) {
     }
   }, [user]);
 
-  console.log({
-    timelineData,
-    userStats,
-  });
-
   const isLoading = isLoadingItems || isLoadingUser;
 
   return (
