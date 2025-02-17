@@ -2,6 +2,13 @@ import { DbItem } from "@/supabase/types";
 import { LEVEL_XP_THRESHOLDS, SPEED_BOOST } from "./game-constants";
 import { PerkType } from "@/types/game";
 
+import { clsx, type ClassValue } from "clsx";
+import { twMerge } from "tailwind-merge";
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
+
 export const warpcastComposeCastUrl = () => {
   const frameUrl = `https://farville.farm`;
   const text = `I'm tired of touching grass IRL, and I can't wait to touch PIXEL grass in /farville...\n\nBuild my dream farm and grow quirky crops. It's honest work, but way more fun than real farming!🧑‍🌾`;
