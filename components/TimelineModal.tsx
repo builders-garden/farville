@@ -26,7 +26,6 @@ import { getCurrentLevelAndProgress } from "@/lib/utils";
 interface TimelineData {
   level: number;
   xp: number;
-  title?: string;
   rewards: {
     expansion?: number;
     coins: number;
@@ -47,27 +46,26 @@ function extractTimelineData(items: DbItem[]): TimelineData[] {
       .filter((item) => item.requiredLevel === level)
       ?.map((item) => item.slug);
 
-    let title;
-    switch (level) {
-      case 2:
-        title = "Time to grow";
-        break;
-      case 5:
-        title = "Growing strong";
-        break;
-      case 10:
-        title = "Unstoppable";
-        break;
-      case 15:
-        title = "Legendary farmer";
-        break;
-      default:
-        title = undefined;
-    }
+    // let title;
+    // switch (level) {
+    //   case 2:
+    //     title = "Time to grow";
+    //     break;
+    //   case 5:
+    //     title = "Growing strong";
+    //     break;
+    //   case 10:
+    //     title = "Unstoppable";
+    //     break;
+    //   case 15:
+    //     title = "Legendary farmer";
+    //     break;
+    //   default:
+    //     title = undefined;
+    // }
 
     return {
       level,
-      title,
       xp,
       rewards: {
         expansion: expansion?.nextSize.width || undefined,
