@@ -180,31 +180,22 @@ export default function TimelineModal({ onClose }: { onClose: () => void }) {
                         >
                           {item.level}
                         </TimelineDot>
-                        <TimelineConnector
-                          className={`bg-[#5B4120] w-1 my-0 ${
-                            item.level === userStats.level ? "opacity-30" : ""
-                          }`}
-                        />
+                        {item.level ===
+                        timelineData[timelineData.length - 1].level ? null : (
+                          <TimelineConnector
+                            className={`bg-[#5B4120] w-1 my-0 ${
+                              item.level === userStats.level ? "opacity-30" : ""
+                            }`}
+                          />
+                        )}
                       </TimelineSeparator>
                       <TimelineContent
                         className={`text-white ${
                           item.level > userStats.level ? "opacity-30" : ""
                         }`}
                       >
-                        <Card
-                          className={`${
-                            item.level === userStats.level
-                              ? "bg-[#ffb938] text-[#5B4120]"
-                              : "bg-[#5B4120]"
-                          } border-none p-4 gap-4`}
-                        >
-                          <CardContent
-                            className={`p-0 ${
-                              item.level === userStats.level
-                                ? "text-[#5B4120]"
-                                : "text-white"
-                            }`}
-                          >
+                        <Card className="bg-[#5B4120] border-none p-4 gap-4">
+                          <CardContent className="p-0 text-white">
                             <div className="flex flex-row justify-between">
                               {item.xp > 0 && item.level > 1 ? (
                                 <>
@@ -221,9 +212,6 @@ export default function TimelineModal({ onClose }: { onClose: () => void }) {
                             <div className="flex flex-col gap-2 mt-4 text-[10px]">
                               {item.xp > 0 && item.level > 1 ? (
                                 <>
-                                  {/* <p className="text-sm font-bold text-[#FFB938]">
-                                    Rewards 🎁
-                                  </p> */}
                                   <div className="flex flex-row items-center justify-between">
                                     <span>Coins 💰</span>
                                     <p className="flex items-center justify-center rounded-xl">
@@ -243,16 +231,12 @@ export default function TimelineModal({ onClose }: { onClose: () => void }) {
                                   {item.rewards.crops &&
                                     item.rewards.crops.length > 0 && (
                                       <div className="flex flex-row items-start justify-between">
-                                        <span>New crops</span>
+                                        <span>New crops 🆕</span>
                                         <div className="flex flex-row flex-wrap gap-2">
                                           {item.rewards.crops.map((crop) => (
                                             <div
                                               key={crop}
-                                              className={`flex items-center justify-center p-1 rounded-xl ${
-                                                item.level === userStats.level
-                                                  ? "bg-[#5B4120]"
-                                                  : "bg-[#ba7200]"
-                                              }`}
+                                              className="flex items-center justify-center p-1 rounded-xl bg-[#ba7200]"
                                             >
                                               <motion.div
                                                 animate={{
