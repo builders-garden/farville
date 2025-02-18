@@ -6,4 +6,3 @@ export const GET = async (req: NextRequest) => {
   const items = await getItems(category);
   return NextResponse.json(items);
 };
-
