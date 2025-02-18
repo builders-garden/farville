@@ -7,13 +7,16 @@ import { getCurrentLevelAndProgress } from "@/lib/utils";
 import Image from "next/image";
 
 export default function Header() {
-  const { state } = useGame();
+  const { state, setShowTimeline } = useGame();
   const { progress } = getCurrentLevelAndProgress(state.experience);
 
   return (
     <div className="bg-[#8B5E3C]/40 px-3 py-2 shadow-lg bg-opacity-95 backdrop-blur-sm border-b-2 border-[#6d4c2c]/50 z-30">
       <div className="flex justify-between items-center max-w-4xl mx-auto">
-        <div className="h-[42px] px-4 rounded-xl flex items-center">
+        <div
+          className="h-[42px] px-4 rounded-xl flex items-center cursor-pointer"
+          onClick={() => setShowTimeline(true)}
+        >
           <div className="w-fit">
             <div className="flex items-center justify-between gap-1">
               <span className="text-white/90 font-semibold tracking-wide text-xs flex items-center gap-1">

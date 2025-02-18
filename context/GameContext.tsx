@@ -66,6 +66,7 @@ interface GameContextType {
   showSettings: boolean;
   showSeedsMenu: boolean;
   showQuests: boolean;
+  showTimeline: boolean;
   showRequests: boolean;
   showStreaks: boolean;
   setShowInventory: (show: boolean) => void;
@@ -74,6 +75,7 @@ interface GameContextType {
   setShowSettings: (show: boolean) => void;
   setShowSeedsMenu: (show: boolean) => void;
   setShowQuests: (show: boolean) => void;
+  setShowTimeline: (show: boolean) => void;
   setShowRequests: (show: boolean) => void;
   setShowStreaks: (show: boolean) => void;
   isActionInProgress: boolean;
@@ -114,6 +116,7 @@ export function GameProvider({
   const [showSeedsMenu, setShowSeedsMenu] = useState(false);
   const [showQuests, setShowQuests] = useState(false);
   const [showStreaks, setShowStreaks] = useState(false);
+  const [showTimeline, setShowTimeline] = useState(false);
   const {
     state,
     refetch,
@@ -316,6 +319,7 @@ export function GameProvider({
         showSettings,
         showSeedsMenu,
         showQuests,
+        showTimeline,
         showRequests,
         showStreaks,
         setShowInventory,
@@ -324,6 +328,7 @@ export function GameProvider({
         setShowSettings,
         setShowSeedsMenu,
         setShowQuests,
+        setShowTimeline,
         setShowRequests,
         setShowStreaks,
         isActionInProgress,
