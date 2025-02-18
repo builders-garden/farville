@@ -18,6 +18,7 @@ import { useAudio } from "@/context/AudioContext";
 import RequestModal from "./RequestModal";
 import TutorialOverlay from "./TutorialOverlay";
 import { useEffect } from "react";
+import TimelineModal from "./TimelineModal";
 
 // const WelcomeOverlay = dynamic(() => import("./../components/WelcomeOverlay"), {
 //   ssr: false,
@@ -114,6 +115,16 @@ function QuestsModalContainer() {
   );
 }
 
+function TimelineModalContainer() {
+  const { showTimeline, setShowTimeline } = useGame();
+
+  return (
+    <AnimatePresence>
+      {showTimeline && <TimelineModal onClose={() => setShowTimeline(false)} />}
+    </AnimatePresence>
+  );
+}
+
 export default function GameWrapper() {
   const { startBackgroundMusic } = useAudio();
   const {
@@ -149,10 +160,7 @@ export default function GameWrapper() {
 
       {activeOverlay?.type === "requests" && (
         <AnimatePresence>
-          <RequestModal
-            onClose={handleOverlayComplete}
-            id={activeOverlay.id}
-          />
+          <RequestModal onClose={handleOverlayComplete} id={activeOverlay.id} />
         </AnimatePresence>
       )}
 
@@ -184,6 +192,7 @@ export default function GameWrapper() {
           <LeaderboardModalContainer />
           <SeedMenuContainer />
           <QuestsModalContainer />
+          <TimelineModalContainer />
         </div>
       )}
     </div>
