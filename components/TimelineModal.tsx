@@ -161,8 +161,8 @@ export default function TimelineModal({ onClose }: { onClose: () => void }) {
             </div>
 
             {/* Content area */}
-            <div className="flex-1 overflow-y-auto my-4">
-              <Timeline>
+            <div className="flex-1 overflow-y-auto mt-4 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-[#6D4B2B] [&::-webkit-scrollbar-thumb]:bg-[#8A5E3B]">
+              <Timeline className="mr-2">
                 {timelineData.length > 0 && userStats ? (
                   timelineData.map((item) => (
                     <TimelineItem key={item.level}>
