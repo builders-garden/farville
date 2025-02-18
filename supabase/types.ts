@@ -131,3 +131,11 @@ export type DbUserDonation = {
   times: number;
   lastDonation: string;
 };
+
+export type DbStreak = {
+  fid: number;
+  startedAt: string;
+  endedAt: string | null;
+  lastActionAt: string | null;
+  lastFreezeAt: string | null;
+};

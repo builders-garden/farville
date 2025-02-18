@@ -1,6 +1,6 @@
 import { prisma } from "./client";
 import { LEVEL_XP_THRESHOLDS, LEVEL_REWARDS } from "@/lib/game-constants";
-import { DbGridCell, DbUser, DbUserDonation } from "@/supabase/types";
+import { DbGridCell, DbStreak, DbUser, DbUserDonation } from "@/supabase/types";
 
 export async function getQuestLeaderboard({
   limit,
@@ -297,5 +297,38 @@ export const updateUserDonationHistory = async (
     },
     update: userDonation,
     create: userDonation,
+  });
+};
+
+export const getUserStreaks = async (fid: number) => {
+  return await prisma.streaks.findMany({
+    where: {
+      fid,
+    },
+    orderBy: {
+      startedAt: "desc",
+    },
+  });
+};
+
+export const createUserStreak = async (fid: number) => {
+  return await prisma.streaks.create({
+    data: {
+      fid,
+      startedAt: new Date(),
+      lastActionAt: new Date(),
+    },
+  });
+};
+
+export const updateUserStreak = async (fid: number, streak: DbStreak) => {
+  return await prisma.streaks.update({
+    where: {
+      fid_startedAt: {
+        fid,
+        startedAt: streak.startedAt,
+      },
+    },
+    data: streak,
   });
 };

@@ -1,11 +1,12 @@
 import { useUserItems, UserItem } from "./use-user-items";
 import { useEffect, useState, useCallback } from "react";
 import { useGridCells } from "./use-grid-cells";
-import { DbGridCell, DbItem, DbUser } from "@/supabase/types";
+import { DbGridCell, DbItem, DbStreak, DbUser } from "@/supabase/types";
 import { useItems } from "./use-items";
 import { getCurrentLevelAndProgress } from "@/lib/utils";
 import { useUserMe } from "./use-user-me";
 import { useUserQuests } from "./use-quests";
+import { useUserStreaks } from "./use-user-streaks";
 
 export interface RefetchType {
   all: () => Promise<void>;
@@ -32,7 +33,9 @@ export interface GameState {
   items: DbItem[];
   inventory: UserItem[];
   user: DbUser;
-  claimableQuests?: boolean;
+  claimableQuests: boolean;
+  streakUpdated: boolean;
+  streaks: DbStreak[];
 }
 
 export const useGameState = () => {
@@ -53,6 +56,8 @@ export const useGameState = () => {
     inventory: [],
     user: {} as DbUser,
     claimableQuests: false,
+    streakUpdated: false,
+    streaks: [],
   });
   const {
     userItems,
@@ -71,6 +76,11 @@ export const useGameState = () => {
     isLoading: claimableQuestsLoading,
     refetch: refetchClaimableQuests,
   } = useUserQuests(state?.user?.fid, "completed");
+  const {
+    userStreaks,
+    isLoading: streaksLoading,
+    refetch: refetchStreaks,
+  } = useUserStreaks();
 
   const updateUserState = useCallback(() => {
     if (user) {
@@ -133,6 +143,15 @@ export const useGameState = () => {
     }
   }, [claimableQuests]);
 
+  const updateStreaksState = useCallback(() => {
+    if (userStreaks) {
+      setState((prevState) => ({
+        ...prevState!,
+        streaks: userStreaks,
+      }));
+    }
+  }, [userStreaks]);
+
   useEffect(() => {
     updateUserState();
   }, [user, updateUserState]);
@@ -153,6 +172,10 @@ export const useGameState = () => {
     updateClaimableQuestsState();
   }, [claimableQuests, updateClaimableQuestsState]);
 
+  useEffect(() => {
+    updateStreaksState();
+  }, [userStreaks, updateStreaksState]);
+
   const refetchAll = useCallback(async () => {
     await Promise.all([
       refetchUserItems(),
@@ -160,6 +183,7 @@ export const useGameState = () => {
       refetchGrid(),
       refetchItems(),
       refetchClaimableQuests(),
+      refetchStreaks(),
     ]);
   }, [
     refetchUserItems,
@@ -167,6 +191,7 @@ export const useGameState = () => {
     refetchGrid,
     refetchItems,
     refetchClaimableQuests,
+    refetchStreaks,
   ]);
 
   // Add new method to update grid cells directly
@@ -238,7 +263,12 @@ export const useGameState = () => {
   }, []);
 
   const updateUser = useCallback(
-    (newParams: { xp?: number; level?: number; coins?: number }) => {
+    (newParams: {
+      xp?: number;
+      level?: number;
+      coins?: number;
+      streakUpdated?: boolean;
+    }) => {
       setState((prevState) => {
         if (!prevState) return prevState;
 
@@ -251,6 +281,7 @@ export const useGameState = () => {
             xp: newParams.xp ?? prevState.experience,
           },
           coins: newParams.coins ?? prevState.coins,
+          streakUpdated: newParams.streakUpdated ?? prevState.streakUpdated,
         };
       });
     },
@@ -264,7 +295,8 @@ export const useGameState = () => {
       itemsLoading ||
       userLoading ||
       gridCellsLoading ||
-      claimableQuestsLoading,
+      claimableQuestsLoading ||
+      streaksLoading,
     refetch: {
       all: refetchAll,
       userItems: async () => {
@@ -281,6 +313,9 @@ export const useGameState = () => {
       },
       claimableQuests: async () => {
         await refetchClaimableQuests();
+      },
+      streaks: async () => {
+        await refetchStreaks();
       },
     } as RefetchType,
     updateGridCells,

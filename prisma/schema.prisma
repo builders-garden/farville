@@ -21,6 +21,7 @@ model User {
   createdAt                                                        DateTime              @default(now()) @db.Timestamptz(6)
   referrals                                                        Referral[]
   requests                                                         Request[]
+  streaks                                                          Streaks[]
   user_donations_history_user_donations_history_donatorFidTousers  UserDonationHistory[] @relation("user_donations_history_donatorFidTousers")
   user_donations_history_user_donations_history_receiverFidTousers UserDonationHistory[] @relation("user_donations_history_receiverFidTousers")
   gridCells                                                        GridCell[]
@@ -161,6 +162,19 @@ model UserDonationHistory {
 
   @@id([donatorFid, receiverFid])
   @@map("user_donations_history")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model Streaks {
+  fid          Int
+  startedAt    DateTime  @db.Timestamptz(6)
+  endedAt      DateTime? @db.Timestamptz(6)
+  lastActionAt DateTime? @db.Timestamptz(6)
+  lastFreezeAt DateTime? @db.Timestamptz(6)
+  users        User      @relation(fields: [fid], references: [fid], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([fid, startedAt])
+  @@map("streaks")
 }
 
 enum UserHasQuestStatus {
