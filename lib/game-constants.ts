@@ -302,3 +302,223 @@ export const SPEED_BOOST: {
     applyTo: [CropType.Strawberry, CropType.Watermelon, CropType.Pumpkin],
   },
 };
+
+export const MONTHLY_REWARDS = [
+  {
+    day: 1,
+    rewards: [
+      { itemId: 5, quantity: 2 },
+      { itemId: 19, quantity: 2 },
+      { itemId: 21, quantity: 2 },
+    ],
+  },
+  {
+    day: 2,
+    rewards: [
+      { itemId: 18, quantity: 2 },
+      { itemId: 8, quantity: 2 },
+      { itemId: 7, quantity: 2 },
+    ],
+  },
+  {
+    day: 3,
+    rewards: [
+      { itemId: 17, quantity: 2 },
+      { itemId: 20, quantity: 2 },
+      { itemId: 22, quantity: 2 },
+    ],
+  },
+  {
+    day: 4,
+    rewards: [
+      { itemId: 5, quantity: 2 },
+      { itemId: 19, quantity: 2 },
+      { itemId: 21, quantity: 2 },
+    ],
+  },
+  {
+    day: 5,
+    rewards: [
+      { itemId: 18, quantity: 2 },
+      { itemId: 8, quantity: 2 },
+      { itemId: 7, quantity: 2 },
+    ],
+  },
+  {
+    day: 6,
+    rewards: [
+      { itemId: 17, quantity: 2 },
+      { itemId: 20, quantity: 2 },
+      { itemId: 22, quantity: 2 },
+    ],
+  },
+  {
+    day: 7,
+    rewards: [
+      { itemId: 23, quantity: 2 },
+      { itemId: 26, quantity: 2 },
+    ],
+  },
+  {
+    day: 8,
+    rewards: [
+      { itemId: 5, quantity: 4 },
+      { itemId: 19, quantity: 4 },
+      { itemId: 21, quantity: 4 },
+    ],
+  },
+  {
+    day: 9,
+    rewards: [
+      { itemId: 18, quantity: 4 },
+      { itemId: 8, quantity: 4 },
+      { itemId: 7, quantity: 4 },
+    ],
+  },
+  {
+    day: 10,
+    rewards: [
+      { itemId: 17, quantity: 4 },
+      { itemId: 20, quantity: 4 },
+      { itemId: 22, quantity: 4 },
+    ],
+  },
+  {
+    day: 11,
+    rewards: [
+      { itemId: 5, quantity: 4 },
+      { itemId: 19, quantity: 4 },
+      { itemId: 21, quantity: 4 },
+    ],
+  },
+  {
+    day: 12,
+    rewards: [
+      { itemId: 18, quantity: 4 },
+      { itemId: 8, quantity: 4 },
+      { itemId: 7, quantity: 4 },
+    ],
+  },
+  {
+    day: 13,
+    rewards: [
+      { itemId: 17, quantity: 4 },
+      { itemId: 20, quantity: 4 },
+      { itemId: 22, quantity: 4 },
+    ],
+  },
+  {
+    day: 14,
+    rewards: [
+      { itemId: 28, quantity: 4 },
+      { itemId: 27, quantity: 4 },
+    ],
+  },
+  {
+    day: 15,
+    rewards: [
+      { itemId: 5, quantity: 6 },
+      { itemId: 19, quantity: 6 },
+      { itemId: 21, quantity: 6 },
+    ],
+  },
+  {
+    day: 16,
+    rewards: [
+      { itemId: 18, quantity: 6 },
+      { itemId: 8, quantity: 6 },
+      { itemId: 7, quantity: 6 },
+    ],
+  },
+  {
+    day: 17,
+    rewards: [
+      { itemId: 17, quantity: 6 },
+      { itemId: 20, quantity: 6 },
+      { itemId: 22, quantity: 6 },
+    ],
+  },
+  {
+    day: 18,
+    rewards: [
+      { itemId: 5, quantity: 6 },
+      { itemId: 19, quantity: 6 },
+      { itemId: 21, quantity: 6 },
+    ],
+  },
+  {
+    day: 19,
+    rewards: [
+      { itemId: 18, quantity: 6 },
+      { itemId: 8, quantity: 6 },
+      { itemId: 7, quantity: 6 },
+    ],
+  },
+  {
+    day: 20,
+    rewards: [
+      { itemId: 17, quantity: 6 },
+      { itemId: 20, quantity: 6 },
+      { itemId: 22, quantity: 6 },
+    ],
+  },
+  {
+    day: 21,
+    rewards: [
+      { itemId: 23, quantity: 2 },
+      { itemId: 6, quantity: 1 },
+    ],
+  },
+  {
+    day: 22,
+    rewards: [
+      { itemId: 5, quantity: 8 },
+      { itemId: 19, quantity: 8 },
+      { itemId: 21, quantity: 8 },
+    ],
+  },
+  {
+    day: 23,
+    rewards: [
+      { itemId: 18, quantity: 8 },
+      { itemId: 8, quantity: 8 },
+      { itemId: 7, quantity: 8 },
+    ],
+  },
+  {
+    day: 24,
+    rewards: [
+      { itemId: 17, quantity: 8 },
+      { itemId: 20, quantity: 8 },
+      { itemId: 22, quantity: 8 },
+    ],
+  },
+  {
+    day: 25,
+    rewards: [
+      { itemId: 5, quantity: 8 },
+      { itemId: 19, quantity: 8 },
+      { itemId: 21, quantity: 8 },
+    ],
+  },
+  {
+    day: 26,
+    rewards: [
+      { itemId: 18, quantity: 8 },
+      { itemId: 8, quantity: 8 },
+      { itemId: 7, quantity: 8 },
+    ],
+  },
+  {
+    day: 27,
+    rewards: [
+      { itemId: 17, quantity: 8 },
+      { itemId: 20, quantity: 8 },
+      { itemId: 22, quantity: 8 },
+    ],
+  },
+  {
+    day: 28,
+    rewards: [{ itemId: 9, quantity: 5 }],
+  },
+];
