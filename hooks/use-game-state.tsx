@@ -7,6 +7,7 @@ import { getCurrentLevelAndProgress } from "@/lib/utils";
 import { useUserMe } from "./use-user-me";
 import { useUserQuests } from "./use-quests";
 import { useUserStreaks } from "./use-user-streaks";
+import { useUserFrosts } from "./use-user-frosts";
 
 export interface RefetchType {
   all: () => Promise<void>;
@@ -16,6 +17,7 @@ export interface RefetchType {
   grid: () => Promise<void>;
   claimableQuests: () => Promise<void>;
   streaks: () => Promise<void>;
+  frosts: () => Promise<void>;
 }
 
 export interface GameState {
@@ -38,6 +40,7 @@ export interface GameState {
   streakUpdated: boolean;
   streaks: DbStreak[];
   specialItems: UserItem[];
+  frosts: Date[];
 }
 
 export const useGameState = () => {
@@ -61,6 +64,7 @@ export const useGameState = () => {
     streakUpdated: false,
     streaks: [],
     specialItems: [],
+    frosts: [],
   });
   const {
     userItems,
@@ -84,6 +88,11 @@ export const useGameState = () => {
     isLoading: streaksLoading,
     refetch: refetchStreaks,
   } = useUserStreaks();
+  const {
+    userFrosts,
+    isLoading: frostsLoading,
+    refetch: refetchFrosts,
+  } = useUserFrosts();
 
   const updateUserState = useCallback(() => {
     if (user) {
@@ -158,6 +167,15 @@ export const useGameState = () => {
     }
   }, [userStreaks]);
 
+  const updateUserFrostsState = useCallback(() => {
+    if (userFrosts) {
+      setState((prevState) => ({
+        ...prevState!,
+        frosts: userFrosts,
+      }));
+    }
+  }, [userFrosts]);
+
   useEffect(() => {
     updateUserState();
   }, [user, updateUserState]);
@@ -193,6 +211,10 @@ export const useGameState = () => {
       }
     }
   }, [userStreaks, updateStreaksState]);
+
+  useEffect(() => {
+    updateUserFrostsState();
+  }, [userFrosts, updateUserFrostsState]);
 
   const refetchAll = useCallback(async () => {
     await Promise.all([
@@ -331,7 +353,8 @@ export const useGameState = () => {
       userLoading ||
       gridCellsLoading ||
       claimableQuestsLoading ||
-      streaksLoading,
+      streaksLoading ||
+      frostsLoading,
     refetch: {
       all: refetchAll,
       userItems: async () => {
@@ -351,6 +374,9 @@ export const useGameState = () => {
       },
       streaks: async () => {
         await refetchStreaks();
+      },
+      frosts: async () => {
+        await refetchFrosts();
       },
     } as RefetchType,
     updateGridCells,

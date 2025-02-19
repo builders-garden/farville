@@ -1,6 +1,12 @@
 import { prisma } from "./client";
 import { LEVEL_XP_THRESHOLDS, LEVEL_REWARDS } from "@/lib/game-constants";
-import { DbGridCell, DbStreak, DbUser, DbUserDonation } from "@/supabase/types";
+import {
+  DbGridCell,
+  DbStreak,
+  DbUser,
+  DbUserDonation,
+  DbUserFrost,
+} from "@/supabase/types";
 
 export async function getQuestLeaderboard({
   limit,
@@ -355,4 +361,26 @@ export const applyUserFrost = async (
     console.error("Error creating user frosts:", error);
     throw new Error("Failed to apply user frost");
   }
+};
+
+export const getUserFrosts = async (fid: number) => {
+  const streaks = await getUserStreaks(fid);
+  const streakIds = streaks.map((streak) => streak.id);
+
+  if (streakIds.length === 0) {
+    return [];
+  }
+
+  const userFrosts: DbUserFrost[] = await prisma.userFrosts.findMany({
+    where: {
+      streakId: {
+        in: streakIds,
+      },
+    },
+    orderBy: {
+      frozenAt: "asc",
+    },
+  });
+
+  return userFrosts.map((frost) => new Date(frost.frozenAt));
 };

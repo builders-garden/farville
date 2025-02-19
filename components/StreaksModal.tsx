@@ -15,6 +15,29 @@ import { MONTHLY_REWARDS } from "@/lib/game-constants";
 import { useGame } from "@/context/GameContext";
 import { Plus } from "lucide-react";
 import ConfirmationModal from "./ConfirmationModal";
+import { DbStreak } from "@/supabase/types";
+
+const getStreakDates = (streaks: DbStreak[]) => {
+  const dates: Date[] = [];
+
+  streaks.forEach((streak) => {
+    if (streak.endedAt) {
+      const startDate = new Date(streak.startedAt);
+      const endDate = new Date(streak.endedAt);
+      for (let d = startDate; d <= endDate; d.setDate(d.getDate() + 1)) {
+        dates.push(new Date(d));
+      }
+    } else {
+      const startDate = new Date(streak.startedAt);
+      const lastActionDate = new Date(streak.lastActionAt);
+      for (let d = startDate; d <= lastActionDate; d.setDate(d.getDate() + 1)) {
+        dates.push(new Date(d));
+      }
+    }
+  });
+
+  return dates;
+};
 
 interface StreakReward {
   day: number;
@@ -64,15 +87,7 @@ export default function StreaksModal({ onClose }: { onClose: () => void }) {
     }
   };
 
-  const dates = [
-    new Date(2025, 1, 1),
-    new Date(2025, 1, 2),
-    new Date(2025, 1, 3),
-    new Date(2025, 1, 5),
-    new Date(2025, 1, 6),
-    new Date(2025, 1, 7),
-    new Date(2025, 1, 10),
-  ];
+  const streakDates = getStreakDates(state.streaks);
 
   useEffect(() => {
     // Calculate the effective day within the monthly cycle
@@ -118,11 +133,6 @@ export default function StreaksModal({ onClose }: { onClose: () => void }) {
 
     setRewards(streaksRewards);
   }, [state.items, currentDayStreak]);
-
-  console.log({
-    rewards,
-    activeReward,
-  });
 
   const hasPlayedToday = true; // This should come from your game state
   const frostsAvailable = 1; // This should come from your game state
@@ -386,10 +396,10 @@ export default function StreaksModal({ onClose }: { onClose: () => void }) {
         </div> */}
         <Calendar
           mode="multiple"
-          selected={dates}
+          selected={streakDates}
           className="rounded-md w-auto mx-6 
                     [&_.selected]:bg-[#FFB938] [&_.selected]:text-[#5B4120]"
-          disabled={new Date(2025, 1, 13)}
+          disabled={state.frosts.map((frost) => new Date(frost))}
         />
         <div className="flex-1 mt-4 px-6">
           <Timeline>
