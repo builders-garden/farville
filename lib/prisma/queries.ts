@@ -321,14 +321,38 @@ export const createUserStreak = async (fid: number) => {
   });
 };
 
-export const updateUserStreak = async (fid: number, streak: DbStreak) => {
+export const updateUserStreak = async (
+  streakId: number,
+  data: Partial<DbStreak>
+) => {
   return await prisma.streaks.update({
-    where: {
-      fid_startedAt: {
-        fid,
-        startedAt: streak.startedAt,
-      },
-    },
-    data: streak,
+    where: { id: streakId },
+    data,
   });
+};
+
+export const applyUserFrost = async (
+  fid: number,
+  streakId: number,
+  from: Date,
+  amount: number,
+  frostItemId: number
+) => {
+  const records = Array.from({ length: amount }, (_, i) => {
+    const date = new Date(from);
+    date.setDate(date.getDate() + i);
+    return {
+      streakId,
+      frozenAt: date,
+    };
+  });
+  try {
+    await prisma.userFrosts.createMany({
+      data: records,
+    });
+    await removeUserItem(fid, frostItemId, amount);
+  } catch (error) {
+    console.error("Error creating user frosts:", error);
+    throw new Error("Failed to apply user frost");
+  }
 };

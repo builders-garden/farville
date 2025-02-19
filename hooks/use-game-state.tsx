@@ -15,6 +15,7 @@ export interface RefetchType {
   user: () => Promise<void>;
   grid: () => Promise<void>;
   claimableQuests: () => Promise<void>;
+  streaks: () => Promise<void>;
 }
 
 export interface GameState {
@@ -36,6 +37,7 @@ export interface GameState {
   claimableQuests: boolean;
   streakUpdated: boolean;
   streaks: DbStreak[];
+  specialItems: UserItem[];
 }
 
 export const useGameState = () => {
@@ -58,6 +60,7 @@ export const useGameState = () => {
     claimableQuests: false,
     streakUpdated: false,
     streaks: [],
+    specialItems: [],
   });
   const {
     userItems,
@@ -104,6 +107,9 @@ export const useGameState = () => {
         crops: userItems.filter((ui) => ui.item.category === "crop"),
         perks: userItems.filter((item) => item.item.category === "perk"),
         inventory: userItems,
+        specialItems: userItems.filter(
+          (item) => item.item.category === "special"
+        ),
       }));
     }
   }, [userItems]);
@@ -125,7 +131,7 @@ export const useGameState = () => {
     if (items) {
       setState((prevState) => ({
         ...prevState!,
-        items: items,
+        items: items.filter((item) => item.category !== "special"),
       }));
     }
   }, [items]);
@@ -174,6 +180,18 @@ export const useGameState = () => {
 
   useEffect(() => {
     updateStreaksState();
+    const latestStreak = userStreaks?.[0];
+    if (latestStreak) {
+      const lastActionAt = new Date(latestStreak.lastActionAt);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      if (lastActionAt >= today) {
+        setState((prevState) => ({
+          ...prevState!,
+          streakUpdated: true,
+        }));
+      }
+    }
   }, [userStreaks, updateStreaksState]);
 
   const refetchAll = useCallback(async () => {
@@ -225,6 +243,7 @@ export const useGameState = () => {
       const newSeeds = [...prevState.seeds];
       const newPerks = [...prevState.perks];
       const newCrops = [...prevState.crops];
+      const newSpecialItems = [...prevState.specialItems];
 
       updatedItems.forEach((updatedItem) => {
         if (updatedItem.item && updatedItem.item.category === "seed") {
@@ -250,6 +269,21 @@ export const useGameState = () => {
           } else {
             newCrops.push(updatedItem as UserItem);
           }
+        } else if (
+          updatedItem.item &&
+          updatedItem.item.category === "special"
+        ) {
+          const index = newSpecialItems.findIndex(
+            (item) => item.item?.id === updatedItem.item?.id
+          );
+          if (index !== -1) {
+            newSpecialItems[index] = {
+              ...newSpecialItems[index],
+              ...updatedItem,
+            };
+          } else {
+            newSpecialItems.push(updatedItem as UserItem);
+          }
         }
       });
 
@@ -258,6 +292,7 @@ export const useGameState = () => {
         seeds: newSeeds,
         perks: newPerks,
         crops: newCrops,
+        specialItems: newSpecialItems,
       };
     });
   }, []);
@@ -267,6 +302,7 @@ export const useGameState = () => {
       xp?: number;
       level?: number;
       coins?: number;
+      streaks?: DbStreak[];
       streakUpdated?: boolean;
     }) => {
       setState((prevState) => {
@@ -281,7 +317,6 @@ export const useGameState = () => {
             xp: newParams.xp ?? prevState.experience,
           },
           coins: newParams.coins ?? prevState.coins,
-          streakUpdated: newParams.streakUpdated ?? prevState.streakUpdated,
         };
       });
     },

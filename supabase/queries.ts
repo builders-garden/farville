@@ -65,8 +65,6 @@ export const getItems = async (category?: string): Promise<DbItem[]> => {
 
   if (category) {
     query.eq("category", category);
-  } else {
-    query.neq("category", "special");
   }
 
   query.order("requiredLevel", { ascending: true });
@@ -291,8 +289,6 @@ export const getUserItems = async (
 
   if (category) {
     query.eq("items.category", category);
-  } else {
-    query.neq("items.category", "special");
   }
 
   const { data, error } = await query;

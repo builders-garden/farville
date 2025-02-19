@@ -133,9 +133,9 @@ export type DbUserDonation = {
 };
 
 export type DbStreak = {
+  id: number;
   fid: number;
-  startedAt: string;
-  endedAt: string | null;
-  lastActionAt: string | null;
-  lastFreezeAt: string | null;
+  startedAt: Date; // Date with no time
+  endedAt: Date | null; // Changed to Date type
+  lastActionAt: Date; // Changed to Date type
 };

@@ -166,15 +166,25 @@ model UserDonationHistory {
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model Streaks {
+  id           Int       @id @default(autoincrement())
   fid          Int
-  startedAt    DateTime  @db.Timestamptz(6)
-  endedAt      DateTime? @db.Timestamptz(6)
-  lastActionAt DateTime? @db.Timestamptz(6)
-  lastFreezeAt DateTime? @db.Timestamptz(6)
+  startedAt    DateTime  @db.Date
+  endedAt      DateTime? @db.Date
+  lastActionAt DateTime  @db.Date
   users        User      @relation(fields: [fid], references: [fid], onDelete: NoAction, onUpdate: NoAction)
 
-  @@id([fid, startedAt])
+  @@unique([fid, startedAt], map: "streaks_fid_started_at_unique")
   @@map("streaks")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model UserFrosts {
+  id       Int      @id @default(autoincrement())
+  streakId Int
+  frozenAt DateTime @db.Date
+
+  @@unique([streakId, frozenAt], map: "user_frosts_streak_frozen_unique")
+  @@map("user_frosts")
 }
 
 enum UserHasQuestStatus {
