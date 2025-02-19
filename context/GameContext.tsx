@@ -21,6 +21,7 @@ import { DbGridCell } from "@/supabase/types";
 import { GridBulkResult } from "@/app/api/grid-bulk/utils";
 import toast from "react-hot-toast";
 import { useUpdateUserStreaks } from "@/hooks/use-update-user-streaks";
+import { useClaimReward } from "@/hooks/game-actions/use-claim-reward";
 
 // Update the OverlayType to be more flexible with parameters
 export type OverlayConfig =
@@ -97,6 +98,9 @@ interface GameContextType {
     xp?: number;
     level?: number;
     coins?: number;
+  }) => void;
+  claimRewards: (variables: {
+    rewards: { itemId: number; quantity: number }[];
   }) => void;
 }
 
@@ -286,6 +290,12 @@ export function GameProvider({
     setIsActionInProgress,
   });
 
+  const { mutate: claimRewards } = useClaimReward({
+    refetchUserItems: refetch.userItems,
+    isActionInProgress,
+    setIsActionInProgress,
+  });
+
   useEffect(() => {
     if (!loading) {
       const tutorialComplete =
@@ -358,6 +368,7 @@ export function GameProvider({
         updateGridCells,
         updateUserItems,
         updateUser,
+        claimRewards,
       }}
     >
       {children}
