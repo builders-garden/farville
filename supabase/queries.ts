@@ -27,7 +27,6 @@ import {
   millisecondsInHour,
   SPEED_BOOST,
 } from "@/lib/game-constants";
-import { trackEvent } from "@/lib/posthog/server";
 import { CropType, PerkType } from "@/types/game";
 import {
   chooseRandomItem,
@@ -173,10 +172,7 @@ export const updateUserXP = async (
   if (didLevelUp) {
     const levelReward = LEVEL_REWARDS[newLevel - 1];
     await updateUserCoins(fid, currentUser?.coins + levelReward.coins);
-    trackEvent(fid, "leveled-up", {
-      xp: newXP,
-      level: newLevel,
-    });
+    
   }
 
   if (error) throw error;
