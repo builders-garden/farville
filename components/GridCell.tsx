@@ -250,14 +250,15 @@ export default function GridCell({ cell }: GridCellProps) {
         cells: [{ x: cell.x, y: cell.y }],
       });
 
-      const boostData = SPEED_BOOST[boostType as keyof typeof SPEED_BOOST];
-
       updateGridCells([
         {
           x: cell.x,
           y: cell.y,
+          harvestAt: new Date(
+            new Date(cell.harvestAt!).getTime() -
+              getBoostTime(boostType as PerkType)
+          ).toISOString(),
           speedBoostedAt: new Date().toISOString(),
-          yieldBoost: boostData.boost,
         },
       ]);
 
