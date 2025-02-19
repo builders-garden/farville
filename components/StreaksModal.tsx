@@ -13,6 +13,8 @@ import {
 import { useEffect, useState } from "react";
 import { MONTHLY_REWARDS } from "@/lib/game-constants";
 import { useGame } from "@/context/GameContext";
+import { Plus } from "lucide-react";
+import ConfirmationModal from "./ConfirmationModal";
 
 interface StreakReward {
   day: number;
@@ -36,6 +38,7 @@ export default function StreaksModal({ onClose }: { onClose: () => void }) {
   const [activeReward, setActiveReward] = useState<StreakReward | undefined>(
     undefined
   );
+  const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
 
   const currentDayStreak = 80;
 
@@ -121,6 +124,10 @@ export default function StreaksModal({ onClose }: { onClose: () => void }) {
     activeReward,
   });
 
+  const hasPlayedToday = true; // This should come from your game state
+  const frostsAvailable = 1; // This should come from your game state
+  const maxFrosts = 2;
+
   return (
     <div className="fixed inset-0 bg-black/50 flex items-start z-50">
       {isClaimInProgress && (
@@ -180,34 +187,203 @@ export default function StreaksModal({ onClose }: { onClose: () => void }) {
             </button>
           </div>
         </div>
-        <div className="flex justify-between p-6 gap-6">
+        <div className="p-6 flex flex-col gap-4">
+          {/* New Streak Status Section */}
           <motion.div
-            whileHover={{ scale: 1.02 }}
-            className="flex flex-col gap-2 bg-[#6d4c2c]
-                     border-2 border-[#8B5d3C] p-6 py-4 w-full rounded-2xl"
+            animate={{
+              boxShadow: [
+                "0 0 20px rgba(255,165,0,0.3)",
+                "0 0 40px rgba(255,165,0,0.5)",
+                "0 0 20px rgba(255,165,0,0.3)",
+              ],
+            }}
+            transition={{ duration: 2, repeat: Infinity }}
+            className="bg-gradient-to-br from-[#a13810] to-[#822800] 
+                      rounded-2xl p-4 border-2 border-[#ffa07a]/30"
           >
-            <div className="flex text-4xl text-white items-end gap-2">
-              <span className="leading-none">6</span>
-              <span className="text-sm text-white/70">days</span>
+            <div className="flex items-center justify-between">
+              <div className="flex flex-col gap-2">
+                <span className="text-[#ffa07a] text-sm">Current Streak</span>
+                <span className="text-5xl font-bold text-white/90">
+                  {currentDayStreak}
+                </span>
+              </div>
+              <motion.div
+                animate={
+                  hasPlayedToday
+                    ? { rotate: [-5, 5, -5], scale: [0.95, 1.05, 0.95] }
+                    : { rotate: [-3, 3, -3], scale: [0.98, 1.02, 0.98] }
+                }
+                transition={{ duration: 2, repeat: Infinity }}
+                className="relative"
+              >
+                <Image
+                  src={
+                    hasPlayedToday
+                      ? "/images/special/fire.png"
+                      : "/images/special/frost.png"
+                  }
+                  alt={hasPlayedToday ? "Active Streak" : "Inactive Streak"}
+                  width={70}
+                  height={70}
+                  className="drop-shadow-[0_2px_8px_rgba(255,165,0,0.5)]"
+                />
+              </motion.div>
             </div>
-            <span className="text-[0.75rem] leading-none text-[#ea9712]">
-              Streak
-            </span>
           </motion.div>
+
+          {/* Frost Counter Card */}
           <motion.div
-            whileHover={{ scale: 1.02 }}
-            className="flex flex-col gap-2 bg-[#6d4c2c]
-                    border-2 border-[#8B5c3C] p-6 py-4 w-full rounded-2xl"
+            animate={{
+              boxShadow: [
+                "0 0 10px rgba(155,220,255,0.3)",
+                "0 0 20px rgba(155,220,255,0.5)",
+                "0 0 10px rgba(155,220,255,0.3)",
+              ],
+            }}
+            transition={{ duration: 2, repeat: Infinity }}
+            className="bg-gradient-to-br from-[#6D4C2C] to-[#5B4120]
+                      rounded-2xl p-4 border border-[#FFD700]/20"
           >
-            <div className="flex text-4xl text-white items-end gap-2">
-              <span className="leading-none">14</span>
-              <span className="text-sm text-white/70">Feb</span>
+            <div className="flex flex-row gap-3">
+              <span className="text-white text-sm">Available Frosts</span>
+              <div className="flex gap-3">
+                {[...Array(maxFrosts)].map((_, i) => (
+                  <motion.div
+                    key={i}
+                    animate={
+                      i < frostsAvailable
+                        ? {
+                            scale: [1, 1.05, 1],
+                            boxShadow: [
+                              "0 0 10px rgba(155,220,255,0.3)",
+                              "0 0 20px rgba(155,220,255,0.5)",
+                              "0 0 10px rgba(155,220,255,0.3)",
+                            ],
+                          }
+                        : {}
+                    }
+                    transition={{ duration: 2, repeat: Infinity }}
+                    className={`w-14 h-14 rounded-xl flex items-center justify-center cursor-pointer
+                        ${
+                          i < frostsAvailable
+                            ? "bg-gradient-to-br from-[#a8d7f7]/80 to-[#5ab5f5]/60 border-2 border-[#cce9ff]/50"
+                            : "bg-[#5ab5f5]/40 border-2 border-[#cce9ff]/60"
+                        }`}
+                    onClick={() => {
+                      setIsConfirmationOpen(true);
+                    }}
+                  >
+                    {i < frostsAvailable ? (
+                      <Image
+                        src="/images/special/frost.png"
+                        alt="Frost"
+                        width={32}
+                        height={32}
+                      />
+                    ) : (
+                      <span className="text-[#cce9ff] text-2xl font-bold">
+                        <Plus />
+                      </span>
+                    )}
+                  </motion.div>
+                ))}
+              </div>
             </div>
-            <span className="text-[0.75rem] leading-none text-[#ea9712]">
-              Reward
-            </span>
           </motion.div>
         </div>
+        {isConfirmationOpen && (
+          <ConfirmationModal
+            title="Buy streak frosts"
+            message="Would you like to buy a frost for 🪙10000 coins?"
+            onCancel={() => setIsConfirmationOpen(false)}
+            onConfirm={() => {
+              // Buy frost logic here
+              setIsConfirmationOpen(false);
+            }}
+          />
+        )}
+        {/* Monthly streak stats */}
+        {/* <div className="flex justify-between p-6 gap-6">
+          <motion.div
+            animate={{
+              boxShadow: [
+                "0 0 10px rgba(255,69,0,0.3)",
+                "0 0 20px rgba(255,69,0,0.5)",
+                "0 0 10px rgba(255,69,0,0.3)",
+              ],
+            }}
+            transition={{
+              duration: 2,
+              repeat: Infinity,
+            }}
+            className="flex flex-col gap-2 
+              bg-gradient-to-br from-[#a13810]/90 to-[#822800]/80
+              backdrop-blur-sm
+              border-2 border-[#ffa07a]/50 p-6 py-4 w-full rounded-2xl
+              shadow-inner shadow-[#ffffff50]"
+          >
+            <div className="flex text-4xl items-end justify-between gap-2">
+              <span className="leading-none text-white/90 drop-shadow-[0_2px_2px_rgba(0,0,0,0.3)]">
+                6
+              </span>
+              <motion.div
+                animate={{ rotate: [-5, 5, -5] }}
+                transition={{ duration: 2, repeat: Infinity }}
+              >
+                <Image
+                  src="/images/special/fire.png"
+                  alt="Fire"
+                  width={38}
+                  height={38}
+                  className="drop-shadow-[0_2px_4px_rgba(255,69,0,0.5)]"
+                />
+              </motion.div>
+            </div>
+            <span className="text-[0.75rem] leading-none text-[#fea041] font-medium">
+              Days streak
+            </span>
+          </motion.div>
+          <motion.div
+            animate={{
+              boxShadow: [
+                "0 0 10px rgba(155,220,255,0.3)",
+                "0 0 20px rgba(155,220,255,0.5)",
+                "0 0 10px rgba(155,220,255,0.3)",
+              ],
+            }}
+            transition={{
+              duration: 2,
+              repeat: Infinity,
+            }}
+            className="flex flex-col gap-2 
+                bg-gradient-to-br from-[#a8d7f7]/80 to-[#5ab5f5]/60
+                backdrop-blur-sm
+                border-2 border-[#cce9ff]/50 p-6 py-4 w-full rounded-2xl
+                shadow-inner shadow-[#ffffff50]"
+          >
+            <div className="flex flex-row text-4xl items-end justify-between gap-2">
+              <span className="leading-none text-white/90 drop-shadow-[0_2px_2px_rgba(0,0,0,0.3)]">
+                14
+              </span>
+              <motion.div
+                animate={{ rotate: [-5, 5, -5] }}
+                transition={{ duration: 2, repeat: Infinity }}
+              >
+                <Image
+                  src={`/images/special/frost.png`}
+                  alt="Frost"
+                  width={32}
+                  height={32}
+                  className="drop-shadow-[0_2px_4px_rgba(155,220,255,0.5)]"
+                />
+              </motion.div>
+            </div>
+            <span className="text-[0.75rem] leading-none text-[#4d60be] font-medium">
+              Used frosts
+            </span>
+          </motion.div>
+        </div> */}
         <Calendar
           mode="multiple"
           selected={dates}
