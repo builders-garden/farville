@@ -1,8 +1,10 @@
+import { updateStreakLastClaimed } from "@/lib/prisma/queries";
 import { getUserItems, updateUserItem } from "@/supabase/queries";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
 const requestSchema = z.object({
+  streakId: z.number(),
   rewards: z.array(
     z.object({
       itemId: z.number(),
@@ -27,7 +29,7 @@ export const POST = async (req: NextRequest) => {
     );
   }
 
-  const { rewards } = requestBody.data;
+  const { rewards, streakId } = requestBody.data;
 
   // TODO: validate items
   console.warn("missing rewards validation");
@@ -44,6 +46,9 @@ export const POST = async (req: NextRequest) => {
       userItem ? userItem.quantity + item.quantity : item.quantity
     );
   }
+
+  // Update the streak to set the last claimed day
+  await updateStreakLastClaimed(streakId);
 
   return NextResponse.json({ message: "Item updated" }, { status: 200 });
 };

@@ -138,6 +138,7 @@ export type DbStreak = {
   startedAt: Date;
   endedAt: Date | null;
   lastActionAt: Date;
+  lastClaimed: number;
 };
 
 export type DbUserFrost = {

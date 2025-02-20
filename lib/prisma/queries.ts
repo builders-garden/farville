@@ -337,6 +337,15 @@ export const updateUserStreak = async (
   });
 };
 
+export const updateStreakLastClaimed = async (streakId: number) => {
+  return await prisma.streaks.update({
+    where: { id: streakId },
+    data: {
+      lastClaimed: { increment: 1 },
+    },
+  });
+};
+
 export const applyUserFrost = async (
   fid: number,
   streakId: number,

@@ -2,15 +2,18 @@ import { useAudio } from "@/context/AudioContext";
 import { useApiMutation } from "@/hooks/use-api-mutation";
 
 interface ClaimRewardVariables {
+  streakId: number;
   rewards: { itemId: number; quantity: number }[];
 }
 
 export const useClaimReward = ({
   refetchUserItems,
+  refetchStreaks,
   isActionInProgress,
   setIsActionInProgress,
 }: {
   refetchUserItems: () => void;
+  refetchStreaks: () => void;
   isActionInProgress: boolean;
   setIsActionInProgress: (value: boolean) => void;
 }) => {
@@ -18,7 +21,7 @@ export const useClaimReward = ({
 
   return useApiMutation<unknown, ClaimRewardVariables>({
     url: () => `/api/users/me/rewards/claim`,
-    body: (rewards) => rewards,
+    body: ({ rewards, streakId }) => ({ rewards, streakId }),
     onMutate: () => {
       if (isActionInProgress) return;
       setIsActionInProgress(true);
@@ -26,7 +29,8 @@ export const useClaimReward = ({
     onSuccess: () => {
       console.log("Claimed rewards");
       refetchUserItems();
-      playSound("coins");
+      refetchStreaks();
+      playSound("claim-quest");
     },
     onSettled: () => {
       setIsActionInProgress(false);

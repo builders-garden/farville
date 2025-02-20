@@ -66,6 +66,7 @@ export default function StreaksModal({ onClose }: { onClose: () => void }) {
   const {
     state,
     claimRewards,
+    buyItem,
     isActionInProgress: isClaimInProgress,
   } = useGame();
   const [rewards, setRewards] = useState<StreakReward[]>([]);
@@ -77,7 +78,6 @@ export default function StreaksModal({ onClose }: { onClose: () => void }) {
   const currentDayStreak = getCurrentDayStreak(state.streaks[0]);
 
   const handleClaim = (day: number) => {
-    console.log("Claiming rewards for day", day);
     const reward = rewards.find((r) => r.day === day);
     if (reward) {
       const rewards = reward.rewards.map((r) => ({
@@ -86,6 +86,7 @@ export default function StreaksModal({ onClose }: { onClose: () => void }) {
       }));
 
       claimRewards({
+        streakId: state.streaks[0].id,
         rewards,
       });
 
@@ -146,7 +147,9 @@ export default function StreaksModal({ onClose }: { onClose: () => void }) {
   }, [state.items, currentDayStreak]);
 
   const hasPlayedToday = true; // This should come from your game state
-  const frostsAvailable = 1; // This should come from your game state
+  const frostsAvailable =
+    state.specialItems.find((item) => item.item.slug === "frost")?.quantity ||
+    0;
   const maxFrosts = 2;
 
   return (
@@ -255,19 +258,17 @@ export default function StreaksModal({ onClose }: { onClose: () => void }) {
 
           {/* Frost Counter Card */}
           <motion.div
-            animate={{
-              boxShadow: [
-                "0 0 10px rgba(155,220,255,0.3)",
-                "0 0 20px rgba(155,220,255,0.5)",
-                "0 0 10px rgba(155,220,255,0.3)",
-              ],
-            }}
-            transition={{ duration: 2, repeat: Infinity }}
-            className="bg-gradient-to-br from-[#6D4C2C] to-[#5B4120]
-                      rounded-2xl p-4 border border-[#FFD700]/20"
+            className="bg-gradient-to-br from-sky-900 to-sky-700
+                  rounded-2xl p-4 border border-sky-600"
           >
-            <div className="flex flex-row gap-3">
-              <span className="text-white text-sm">Available Frosts</span>
+            <div className="flex flex-row gap-3 justify-between">
+              <div className="flex flex-col h-auto justify-between">
+                <span className="text-sky-300 text-sm">Your Frosts</span>
+                <span className="text-white text-md font-bold">
+                  {frostsAvailable}
+                  <span className="text-md text-white/50">/2</span>
+                </span>
+              </div>
               <div className="flex gap-3">
                 {[...Array(maxFrosts)].map((_, i) => (
                   <motion.div
@@ -277,20 +278,20 @@ export default function StreaksModal({ onClose }: { onClose: () => void }) {
                         ? {
                             scale: [1, 1.05, 1],
                             boxShadow: [
-                              "0 0 10px rgba(155,220,255,0.3)",
-                              "0 0 20px rgba(155,220,255,0.5)",
-                              "0 0 10px rgba(155,220,255,0.3)",
+                              "0 0 10px rgba(0, 0, 139, 0.3)",
+                              "0 0 20px rgba(0, 0, 139, 0.5)",
+                              "0 0 10px rgba(0, 0, 139, 0.3)",
                             ],
                           }
                         : {}
                     }
                     transition={{ duration: 2, repeat: Infinity }}
                     className={`w-14 h-14 rounded-xl flex items-center justify-center cursor-pointer
-                        ${
-                          i < frostsAvailable
-                            ? "bg-gradient-to-br from-[#a8d7f7]/80 to-[#5ab5f5]/60 border-2 border-[#cce9ff]/50"
-                            : "bg-[#5ab5f5]/40 border-2 border-[#cce9ff]/60"
-                        }`}
+                  ${
+                    i < frostsAvailable
+                      ? "bg-gradient-to-br from-[#1E90FF]/80 to-[#00BFFF]/60 border-2 border-[#ADD8E6]/50"
+                      : "bg-[#00BFFF]/40 border-2 border-[#ADD8E6]/60"
+                  }`}
                     onClick={() => {
                       setIsConfirmationOpen(true);
                     }}
@@ -303,7 +304,7 @@ export default function StreaksModal({ onClose }: { onClose: () => void }) {
                         height={32}
                       />
                     ) : (
-                      <span className="text-[#cce9ff] text-2xl font-bold">
+                      <span className="text-[#ADD8E6] text-2xl font-bold">
                         <Plus />
                       </span>
                     )}
@@ -319,7 +320,7 @@ export default function StreaksModal({ onClose }: { onClose: () => void }) {
             message="Would you like to buy a frost for 🪙10000 coins?"
             onCancel={() => setIsConfirmationOpen(false)}
             onConfirm={() => {
-              // Buy frost logic here
+              buyItem({ itemId: 29, quantity: 1 });
               setIsConfirmationOpen(false);
             }}
           />

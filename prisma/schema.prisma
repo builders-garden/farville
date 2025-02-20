@@ -171,6 +171,7 @@ model Streaks {
   startedAt    DateTime  @db.Date
   endedAt      DateTime? @db.Date
   lastActionAt DateTime  @db.Date
+  lastClaimed  Int       @default(0)
   users        User      @relation(fields: [fid], references: [fid], onDelete: NoAction, onUpdate: NoAction)
 
   @@unique([fid, startedAt], map: "streaks_fid_started_at_unique")

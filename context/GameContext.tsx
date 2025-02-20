@@ -100,6 +100,7 @@ interface GameContextType {
     coins?: number;
   }) => void;
   claimRewards: (variables: {
+    streakId: number;
     rewards: { itemId: number; quantity: number }[];
   }) => void;
 }
@@ -292,6 +293,7 @@ export function GameProvider({
 
   const { mutate: claimRewards } = useClaimReward({
     refetchUserItems: refetch.userItems,
+    refetchStreaks: refetch.streaks,
     isActionInProgress,
     setIsActionInProgress,
   });
