@@ -166,13 +166,14 @@ model UserDonationHistory {
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model Streaks {
-  id           Int       @id @default(autoincrement())
+  id           Int          @id @default(autoincrement())
   fid          Int
-  startedAt    DateTime  @db.Date
-  endedAt      DateTime? @db.Date
-  lastActionAt DateTime  @db.Date
-  lastClaimed  Int       @default(0)
-  users        User      @relation(fields: [fid], references: [fid], onDelete: NoAction, onUpdate: NoAction)
+  startedAt    DateTime     @db.Date
+  endedAt      DateTime?    @db.Date
+  lastActionAt DateTime     @db.Date
+  lastClaimed  Int          @default(0)
+  users        User         @relation(fields: [fid], references: [fid], onDelete: NoAction, onUpdate: NoAction)
+  user_frosts  UserFrosts[]
 
   @@unique([fid, startedAt], map: "streaks_fid_started_at_unique")
   @@map("streaks")
@@ -183,6 +184,7 @@ model UserFrosts {
   id       Int      @id @default(autoincrement())
   streakId Int
   frozenAt DateTime @db.Date
+  streaks  Streaks  @relation(fields: [streakId], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@unique([streakId, frozenAt], map: "user_frosts_streak_frozen_unique")
   @@map("user_frosts")
