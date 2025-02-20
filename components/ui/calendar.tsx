@@ -51,7 +51,7 @@ function Calendar({
         day_outside:
           "day-outside text-[#3e2600] aria-selected:bg-accent/50 aria-selected:text-[#3e2600]",
         day_disabled:
-          "day-disabled !opacity-100 bg-[url('/images/icons/streaks.png')] bg-cover text-transparent",
+          "day-disabled bg-blue-200 !opacity-100 bg-[url('/images/special/frost.png')] bg-cover bg-center bg-no-repeat bg-[length:60%] p-2 text-transparent",
         day_range_middle:
           "aria-selected:bg-accent aria-selected:text-accent-foreground",
         day_hidden: "invisible",

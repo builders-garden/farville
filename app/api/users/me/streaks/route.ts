@@ -1,4 +1,5 @@
 import {
+  addUserItem,
   applyUserFrost,
   createUserStreak,
   getUserItemBySlug,
@@ -24,7 +25,7 @@ export const POST = async (req: NextRequest) => {
   try {
     const streaks = await getUserStreaks(Number(fid));
     if (streaks.length === 0) {
-      // TODO: give user 1 frost item
+      await addUserItem(Number(fid), 29, 2);
       await createUserStreak(Number(fid));
     } else {
       const latestStreak = streaks[0];
@@ -45,36 +46,35 @@ export const POST = async (req: NextRequest) => {
               (1000 * 60 * 60 * 24)
           ) - 1;
         const frostNeeded = daysSinceLastAction;
-        if (userFrost?.quantity && userFrost.quantity >= frostNeeded) {
+        const userFrostQuantity = userFrost?.quantity || 0;
+        if (userFrostQuantity >= frostNeeded) {
           await updateUserStreak(streaks[0].id, {
             lastActionAt: new Date(),
           });
           lastActionAt.setDate(lastActionAt.getDate() + 1);
-          await applyUserFrost(
-            Number(fid),
-            streaks[0].id,
-            lastActionAt,
-            frostNeeded,
-            userFrost.itemId
-          );
+          if (userFrost && frostNeeded > 0) {
+            await applyUserFrost(
+              Number(fid),
+              streaks[0].id,
+              lastActionAt,
+              frostNeeded,
+              userFrost?.itemId
+            );
+          }
         } else {
           await createUserStreak(Number(fid));
           const newEndDate = new Date(lastActionAt);
-          newEndDate.setDate(newEndDate.getDate() + (userFrost?.quantity || 0));
+          newEndDate.setDate(newEndDate.getDate() + (userFrostQuantity || 0));
           await updateUserStreak(streaks[0].id, {
             endedAt: newEndDate,
           });
-          if (
-            userFrost?.quantity &&
-            userFrost.quantity > 0 &&
-            frostNeeded > 0
-          ) {
+          if (userFrost && userFrostQuantity > 0 && frostNeeded > 0) {
             lastActionAt.setDate(lastActionAt.getDate() + 1);
             await applyUserFrost(
               Number(fid),
               streaks[0].id,
               lastActionAt,
-              userFrost?.quantity,
+              userFrostQuantity,
               userFrost.itemId
             );
           }

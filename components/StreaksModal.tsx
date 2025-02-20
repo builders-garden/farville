@@ -39,6 +39,17 @@ const getStreakDates = (streaks: DbStreak[]) => {
   return dates;
 };
 
+const getCurrentDayStreak = (streak: DbStreak) => {
+  if (streak.endedAt) {
+    return 0;
+  }
+  const startDate = new Date(streak.startedAt);
+  const lastActionDate = new Date(streak.lastActionAt);
+  const differenceInTime = lastActionDate.getTime() - startDate.getTime();
+  const differenceInDays = Math.ceil(differenceInTime / (1000 * 3600 * 24));
+  return differenceInDays + 1;
+};
+
 interface StreakReward {
   day: number;
   rewards: {
@@ -63,7 +74,7 @@ export default function StreaksModal({ onClose }: { onClose: () => void }) {
   );
   const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
 
-  const currentDayStreak = 80;
+  const currentDayStreak = getCurrentDayStreak(state.streaks[0]);
 
   const handleClaim = (day: number) => {
     console.log("Claiming rewards for day", day);
@@ -304,7 +315,7 @@ export default function StreaksModal({ onClose }: { onClose: () => void }) {
         </div>
         {isConfirmationOpen && (
           <ConfirmationModal
-            title="Buy streak frosts"
+            title="Buy Streaks Frosts"
             message="Would you like to buy a frost for 🪙10000 coins?"
             onCancel={() => setIsConfirmationOpen(false)}
             onConfirm={() => {
