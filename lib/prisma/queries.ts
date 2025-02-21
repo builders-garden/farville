@@ -401,7 +401,20 @@ export const getUserFrosts = async (fid: number) => {
     },
   });
 
-  return userFrosts.map((frost) => new Date(frost.frozenAt));
+  const allFrostsDates = userFrosts.map((frost) => new Date(frost.frozenAt));
+
+  const lastStreakId = streaks[0]?.id;
+  const lastStreakFrosts = userFrosts.filter(
+    (frost) => frost.streakId === lastStreakId
+  );
+  const lastStreakDates = lastStreakFrosts.map(
+    (frost) => new Date(frost.frozenAt)
+  );
+
+  return {
+    allFrostsDates,
+    lastStreakDates,
+  };
 };
 
 export const getUserFrostsByStreakId = async (streakId: number) => {

@@ -40,7 +40,10 @@ export interface GameState {
   streakUpdated: boolean;
   streaks: DbStreak[];
   specialItems: UserItem[];
-  frosts: Date[];
+  frosts: {
+    allFrostsDates: Date[];
+    lastStreakDates: Date[];
+  };
   claimableStreakReward: boolean;
 }
 
@@ -65,7 +68,10 @@ export const useGameState = () => {
     streakUpdated: false,
     streaks: [],
     specialItems: [],
-    frosts: [],
+    frosts: {
+      allFrostsDates: [],
+      lastStreakDates: [],
+    },
     claimableStreakReward: false,
   });
   const {

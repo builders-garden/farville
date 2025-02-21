@@ -43,7 +43,7 @@ const getStreakDates = (streaks: DbStreak[]) => {
   return dates;
 };
 
-const getCurrentDayStreak = (streak?: DbStreak) => {
+const getCurrentDayStreak = (totalFrostsDays: number, streak?: DbStreak) => {
   if (!streak || streak.endedAt) {
     return 0;
   }
@@ -51,7 +51,7 @@ const getCurrentDayStreak = (streak?: DbStreak) => {
   const lastActionDate = new Date(streak.lastActionAt);
   const differenceInTime = lastActionDate.getTime() - startDate.getTime();
   const differenceInDays = Math.ceil(differenceInTime / (1000 * 3600 * 24));
-  return differenceInDays + 1;
+  return differenceInDays + 1 - totalFrostsDays;
 };
 
 interface StreakReward {
@@ -79,7 +79,10 @@ export default function StreaksModal({ onClose }: { onClose: () => void }) {
   );
   const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
 
-  const currentDayStreak = getCurrentDayStreak(state.streaks[0]);
+  const currentDayStreak = getCurrentDayStreak(
+    state.frosts.lastStreakDates.length,
+    state.streaks[0]
+  );
 
   const handleClaim = (day: number) => {
     const reward = rewards.find((r) => r.day === day);
@@ -342,7 +345,7 @@ export default function StreaksModal({ onClose }: { onClose: () => void }) {
           selected={streakDates}
           className="rounded-md w-auto mx-6 
                     [&_.selected]:bg-[#FFB938] [&_.selected]:text-[#5B4120]"
-          disabled={state.frosts.map((frost) => new Date(frost))}
+          disabled={state.frosts.allFrostsDates.map((frost) => new Date(frost))}
         />
         <div className="flex flex-col w-full gap-1 p-6 pt-8 pb-2">
           <h3 className="text-white/90 text-lg font-bold">Rewards</h3>

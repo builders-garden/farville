@@ -38,7 +38,7 @@ export const useUpdateUserFrosts = ({
   refetchFrosts: () => void;
 }) => {
   return useApiMutation<void>({
-    url: "/api/users/me/streaks/frosts",
+    url: "/api/users/me/frosts",
     onSuccess: () => {
       refetchStreaks();
       refetchUserItems();
