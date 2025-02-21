@@ -522,3 +522,9 @@ export const MONTHLY_REWARDS = [
     rewards: [{ itemId: 9, quantity: 5 }],
   },
 ];
+
+export const MAX_FROSTS_QUANTITY = 2;
+
+export const FIRST_FROST_QUANTITY = 1;
+
+export const FROST_COST = 10000;

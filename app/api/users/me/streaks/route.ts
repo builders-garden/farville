@@ -1,3 +1,4 @@
+import { FIRST_FROST_QUANTITY } from "@/lib/game-constants";
 import {
   addUserItem,
   applyUserFrost,
@@ -22,10 +23,14 @@ export const POST = async (req: NextRequest) => {
   if (!fid) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+  const userFrost = await getUserItemBySlug(Number(fid), "frost");
   try {
     const streaks = await getUserStreaks(Number(fid));
     if (streaks.length === 0) {
-      await addUserItem(Number(fid), 29, 2);
+      // check here if the user has already a frost item otherwise give them one
+      if (!userFrost || userFrost.quantity === 0) {
+        await addUserItem(Number(fid), 29, FIRST_FROST_QUANTITY);
+      }
       await createUserStreak(Number(fid));
     } else {
       const latestStreak = streaks[0];
@@ -37,7 +42,6 @@ export const POST = async (req: NextRequest) => {
           lastActionAt: new Date(),
         });
       } else {
-        const userFrost = await getUserItemBySlug(Number(fid), "frost");
         const lastActionDay = new Date(lastActionAt);
         lastActionDay.setHours(0, 0, 0, 0);
         const daysSinceLastAction =

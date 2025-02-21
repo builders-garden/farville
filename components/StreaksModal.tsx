@@ -11,7 +11,11 @@ import {
   TimelineSeparator,
 } from "@/components/ui/timeline";
 import { useEffect, useState } from "react";
-import { MONTHLY_REWARDS } from "@/lib/game-constants";
+import {
+  FROST_COST,
+  MAX_FROSTS_QUANTITY,
+  MONTHLY_REWARDS,
+} from "@/lib/game-constants";
 import { useGame } from "@/context/GameContext";
 import { Plus } from "lucide-react";
 import ConfirmationModal from "./ConfirmationModal";
@@ -39,8 +43,8 @@ const getStreakDates = (streaks: DbStreak[]) => {
   return dates;
 };
 
-const getCurrentDayStreak = (streak: DbStreak) => {
-  if (streak.endedAt) {
+const getCurrentDayStreak = (streak?: DbStreak) => {
+  if (!streak || streak.endedAt) {
     return 0;
   }
   const startDate = new Date(streak.startedAt);
@@ -101,7 +105,7 @@ export default function StreaksModal({ onClose }: { onClose: () => void }) {
 
   const streakDates = getStreakDates(state.streaks);
 
-  const lastClaimedDay = state.streaks[0].lastClaimed;
+  const lastClaimedDay = state.streaks[0] ? state.streaks[0].lastClaimed : 0;
 
   useEffect(() => {
     // Calculate the effective day within the monthly cycle
@@ -153,7 +157,6 @@ export default function StreaksModal({ onClose }: { onClose: () => void }) {
   const frostsAvailable =
     state.specialItems.find((item) => item.item.slug === "frost")?.quantity ||
     0;
-  const maxFrosts = 2;
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-start z-50">
@@ -273,7 +276,7 @@ export default function StreaksModal({ onClose }: { onClose: () => void }) {
                 </span>
               </div>
               <div className="flex gap-3">
-                {[...Array(maxFrosts)].map((_, i) => (
+                {[...Array(MAX_FROSTS_QUANTITY)].map((_, i) => (
                   <motion.div
                     key={i}
                     animate={
@@ -320,7 +323,7 @@ export default function StreaksModal({ onClose }: { onClose: () => void }) {
         {isConfirmationOpen && (
           <ConfirmationModal
             title="Buy Streaks Frosts"
-            message="Would you like to buy a frost for 🪙10000 coins?"
+            message={`Would you like to buy a frost for 🪙${FROST_COST} coins?`}
             onCancel={() => setIsConfirmationOpen(false)}
             onConfirm={() => {
               buyItem({ itemId: 29, quantity: 1 });
