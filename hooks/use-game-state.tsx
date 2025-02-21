@@ -6,7 +6,7 @@ import { useItems } from "./use-items";
 import { getCurrentLevelAndProgress } from "@/lib/utils";
 import { useUserMe } from "./use-user-me";
 import { useUserQuests } from "./use-quests";
-import { useUserStreaks } from "./use-user-streaks";
+import { useUpdateUserFrosts, useUserStreaks } from "./use-user-streaks";
 import { useUserFrosts } from "./use-user-frosts";
 
 export interface RefetchType {
@@ -41,6 +41,7 @@ export interface GameState {
   streaks: DbStreak[];
   specialItems: UserItem[];
   frosts: Date[];
+  claimableStreakReward: boolean;
 }
 
 export const useGameState = () => {
@@ -65,6 +66,7 @@ export const useGameState = () => {
     streaks: [],
     specialItems: [],
     frosts: [],
+    claimableStreakReward: false,
   });
   const {
     userItems,
@@ -93,6 +95,12 @@ export const useGameState = () => {
     isLoading: frostsLoading,
     refetch: refetchFrosts,
   } = useUserFrosts();
+
+  const { mutate: updateUserFrosts } = useUpdateUserFrosts({
+    refetchStreaks,
+    refetchUserItems,
+    refetchFrosts,
+  });
 
   const updateUserState = useCallback(() => {
     if (user) {
@@ -185,6 +193,16 @@ export const useGameState = () => {
   }, [userItems, updateUserItemsState]);
 
   useEffect(() => {
+    const userFrosts = userItems?.find((item) => item.item.slug === "frost");
+    if (
+      userStreaks?.length === 0 &&
+      (!userFrosts || userFrosts.quantity === 0)
+    ) {
+      updateUserFrosts({});
+    }
+  }, [userItems, userStreaks, updateUserFrosts]);
+
+  useEffect(() => {
     updateGridState();
   }, [gridCells, updateGridState]);
 
@@ -203,11 +221,16 @@ export const useGameState = () => {
       const lastActionAt = new Date(latestStreak.lastActionAt);
       const today = new Date();
       today.setHours(0, 0, 0, 0);
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      yesterday.setHours(0, 0, 0, 0);
       if (lastActionAt >= today) {
         setState((prevState) => ({
           ...prevState!,
           streakUpdated: true,
         }));
+      } else if (lastActionAt < yesterday) {
+        updateUserFrosts({});
       }
     }
   }, [userStreaks, updateStreaksState]);

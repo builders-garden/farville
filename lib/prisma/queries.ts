@@ -7,6 +7,7 @@ import {
   DbUserDonation,
   DbUserFrost,
 } from "@/supabase/types";
+import { UserHasItem } from "@prisma/client";
 
 export async function getQuestLeaderboard({
   limit,
@@ -243,8 +244,11 @@ export const updateGridCellsBulk = async (fid: number, cells: DbGridCell[]) => {
   );
 };
 
-export const getUserItemBySlug = async (fid: number, slug: string) => {
-  return await prisma.userHasItem.findFirst({
+export const getUserItemBySlug = async (
+  fid: number,
+  slug: string
+): Promise<UserHasItem | null> => {
+  const userItem = await prisma.userHasItem.findFirst({
     where: {
       userFid: fid,
       item: {
@@ -255,6 +259,12 @@ export const getUserItemBySlug = async (fid: number, slug: string) => {
       item: true,
     },
   });
+
+  if (!userItem) {
+    return null;
+  }
+
+  return userItem;
 };
 
 export const getUserDonationsHistory = async ({
@@ -392,4 +402,15 @@ export const getUserFrosts = async (fid: number) => {
   });
 
   return userFrosts.map((frost) => new Date(frost.frozenAt));
+};
+
+export const getUserFrostsByStreakId = async (streakId: number) => {
+  return await prisma.userFrosts.findMany({
+    where: {
+      streakId,
+    },
+    orderBy: {
+      frozenAt: "desc",
+    },
+  });
 };

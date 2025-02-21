@@ -265,14 +265,14 @@ export default function StreaksModal({ onClose }: { onClose: () => void }) {
           {/* Frost Counter Card */}
           <motion.div
             className="bg-gradient-to-br from-sky-900 to-sky-700
-                  rounded-2xl p-4 border border-sky-600"
+                  rounded-2xl p-4 py-3 border border-sky-600"
           >
             <div className="flex flex-row gap-3 justify-between">
               <div className="flex flex-col h-auto justify-between">
                 <span className="text-sky-300 text-sm">Streak Frosts</span>
-                <span className="text-white text-md font-bold">
+                <span className="text-white text-sm font-bold">
                   {frostsAvailable}
-                  <span className="text-md text-white/50">/2</span>
+                  <span className="text-sm text-white/50">/2</span>
                 </span>
               </div>
               <div className="flex gap-3">
@@ -292,11 +292,11 @@ export default function StreaksModal({ onClose }: { onClose: () => void }) {
                         : {}
                     }
                     transition={{ duration: 2, repeat: Infinity }}
-                    className={`w-14 h-14 rounded-xl flex items-center justify-center cursor-pointer
+                    className={`w-12 h-12 rounded-xl flex items-center justify-center
                   ${
                     i < frostsAvailable
                       ? "bg-gradient-to-br from-[#1E90FF]/80 to-[#00BFFF]/60 border-2 border-[#ADD8E6]/50"
-                      : "bg-[#00BFFF]/40 border-2 border-[#ADD8E6]/60"
+                      : "bg-[#00BFFF]/40 border-2 border-[#ADD8E6]/60 cursor-pointer"
                   }`}
                     onClick={() => {
                       setIsConfirmationOpen(true);
@@ -331,6 +331,12 @@ export default function StreaksModal({ onClose }: { onClose: () => void }) {
             }}
           />
         )}
+        <div className="flex flex-col w-full gap-1 p-6 pt-4 pb-4">
+          <h3 className="text-white/90 text-lg font-bold">Your Progress</h3>
+          <p className="text-white/60 text-[10px]">
+            Keep track of your daily activity
+          </p>
+        </div>
         <Calendar
           mode="multiple"
           selected={streakDates}
@@ -338,72 +344,76 @@ export default function StreaksModal({ onClose }: { onClose: () => void }) {
                     [&_.selected]:bg-[#FFB938] [&_.selected]:text-[#5B4120]"
           disabled={state.frosts.map((frost) => new Date(frost))}
         />
-        <div className="flex-1 mt-4 px-6">
-          <Timeline>
-            {rewards.map((reward) => {
-              const isActivePrecursor = reward.day === lastClaimedDay;
-              const isActive =
-                reward.day === lastClaimedDay + 1 &&
-                reward.day <= currentDayStreak;
-              const isClaimableButDisabled =
-                reward.day > lastClaimedDay + 1 &&
-                reward.day <= currentDayStreak;
+        <div className="flex flex-col w-full gap-1 p-6 pt-8 pb-2">
+          <h3 className="text-white/90 text-lg font-bold">Rewards</h3>
+          <p className="text-white/60 text-[10px]">
+            Claim your rewards for the current streak
+          </p>
+        </div>
+        <Timeline className="flex-1 mt-4 px-6">
+          {rewards.map((reward) => {
+            const isActivePrecursor = reward.day === lastClaimedDay;
+            const isActive =
+              reward.day === lastClaimedDay + 1 &&
+              reward.day <= currentDayStreak;
+            const isClaimableButDisabled =
+              reward.day > lastClaimedDay + 1 && reward.day <= currentDayStreak;
 
-              const rewardToUse = isActive ? activeReward : reward;
+            const rewardToUse = isActive ? activeReward : reward;
 
-              const allClaimed = lastClaimedDay === currentDayStreak;
+            const allClaimed = lastClaimedDay === currentDayStreak;
 
-              if (!rewardToUse) {
-                return null;
-              }
+            if (!rewardToUse) {
+              return null;
+            }
 
-              return (
-                <TimelineItem key={reward.day}>
-                  <TimelineSeparator>
-                    <TimelineDot
-                      className={`mt-0 p-6 rounded-lg transition-all duration-300 ${
-                        isActive
-                          ? "bg-gradient-to-br from-[#FFD700] to-[#FFA500] text-[#5B4120] scale-110 shadow-[0_0_20px_rgba(255,215,0,0.3)]"
-                          : rewardToUse.day > lastClaimedDay
-                          ? "bg-[#5B4120]/50 text-[#FFB938]/50"
-                          : "bg-[#feb938] text-[#5B4120]"
-                      }`}
-                    >
-                      {rewardToUse.day}
-                    </TimelineDot>
-                    <TimelineConnector
-                      className={`my-0 ${
-                        !allClaimed
-                          ? rewardToUse.day === lastClaimedDay + 1
-                            ? "bg-gradient-to-b from-[#FFD700]/20 to-[#5B4120]"
-                            : isActivePrecursor
-                            ? "bg-gradient-to-b from-[#5B4120] to-[#FFD700]/20"
-                            : "bg-[#5B4120]"
-                          : rewardToUse.day === currentDayStreak
+            return (
+              <TimelineItem key={reward.day}>
+                <TimelineSeparator>
+                  <TimelineDot
+                    className={`mt-0 p-6 rounded-lg transition-all duration-300 ${
+                      isActive
+                        ? "bg-gradient-to-br from-[#FFD700] to-[#FFA500] text-[#5B4120] scale-110 shadow-[0_0_20px_rgba(255,215,0,0.3)]"
+                        : rewardToUse.day > lastClaimedDay
+                        ? "bg-[#5B4120]/50 text-[#FFB938]/50"
+                        : "bg-[#feb938] text-[#5B4120]"
+                    }`}
+                  >
+                    {rewardToUse.day}
+                  </TimelineDot>
+                  <TimelineConnector
+                    className={`my-0 ${
+                      !allClaimed
+                        ? rewardToUse.day === lastClaimedDay + 1
                           ? "bg-gradient-to-b from-[#FFD700]/20 to-[#5B4120]"
-                          : rewardToUse.day === currentDayStreak - 1
+                          : isActivePrecursor
                           ? "bg-gradient-to-b from-[#5B4120] to-[#FFD700]/20"
                           : "bg-[#5B4120]"
-                      } w-1`}
-                    />
-                  </TimelineSeparator>
-                  <TimelineContent>
-                    <motion.div
-                      initial={false}
-                      animate={
-                        isActive &&
-                        !rewardToUse.claimed &&
-                        !isClaimableButDisabled
-                          ? {
-                              scale: [1, 1.02, 1],
-                              transition: {
-                                duration: 2,
-                                repeat: Infinity,
-                              },
-                            }
-                          : {}
-                      }
-                      className={`bg-gradient-to-br from-[#6D4C2C] to-[#5B4120] p-4 rounded-lg 
+                        : rewardToUse.day === currentDayStreak
+                        ? "bg-gradient-to-b from-[#FFD700]/20 to-[#5B4120]"
+                        : rewardToUse.day === currentDayStreak - 1
+                        ? "bg-gradient-to-b from-[#5B4120] to-[#FFD700]/20"
+                        : "bg-[#5B4120]"
+                    } w-1`}
+                  />
+                </TimelineSeparator>
+                <TimelineContent>
+                  <motion.div
+                    initial={false}
+                    animate={
+                      isActive &&
+                      !rewardToUse.claimed &&
+                      !isClaimableButDisabled
+                        ? {
+                            scale: [1, 1.02, 1],
+                            transition: {
+                              duration: 2,
+                              repeat: Infinity,
+                            },
+                          }
+                        : {}
+                    }
+                    className={`bg-gradient-to-br from-[#6D4C2C] to-[#5B4120] p-4 rounded-lg 
                                 border border-[#FFD700]/20 
                                 ${
                                   rewardToUse.day > currentDayStreak ||
@@ -411,65 +421,65 @@ export default function StreaksModal({ onClose }: { onClose: () => void }) {
                                     ? "opacity-30"
                                     : ""
                                 }`}
-                    >
-                      <div className="flex flex-col gap-2">
-                        <div className="text-[#feb938] text-sm font-semibold flex justify-between items-center">
-                          <span>Rewards</span>
-                          {rewardToUse.claimed && (
-                            <span className="text-xs bg-green-500/20 text-green-500 px-2 py-1 rounded">
-                              Claimed
-                            </span>
-                          )}
-                        </div>
-                        <div className="flex gap-4 my-2 items-center">
-                          {rewardToUse.rewards.map((item, idx) => (
-                            <motion.div
-                              key={idx}
-                              className="p-2 bg-[#6d4c2c] aspect-square rounded-lg relative flex items-center justify-center
+                  >
+                    <div className="flex flex-col gap-2">
+                      <div className="text-[#feb938] text-sm font-semibold flex justify-between items-center">
+                        <span>Rewards</span>
+                        {rewardToUse.claimed && (
+                          <span className="text-xs bg-green-500/20 text-green-500 px-2 py-1 rounded">
+                            Claimed
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex gap-4 my-2 items-center">
+                        {rewardToUse.rewards.map((item, idx) => (
+                          <motion.div
+                            key={idx}
+                            className="p-2 bg-[#6d4c2c] aspect-square rounded-lg relative flex items-center justify-center
                                    shadow-lg hover:shadow-xl transition-shadow duration-200
                                    border-2 border-[#8B5E3C]"
-                              whileHover={{ scale: 1.02 }}
-                            >
-                              <motion.img
-                                src={`/images${item.icon}`}
-                                alt={`${item.itemId} seed`}
-                                className="w-8 h-8 object-contain"
-                                animate={{ y: [0, -2, 0] }}
-                                transition={{ duration: 1.5, repeat: Infinity }}
-                              />
-                              <motion.div
-                                className="absolute -top-2 -right-2 bg-[#FFB938] text-[#7E4E31] text-xs px-2 py-0.5 
+                            whileHover={{ scale: 1.02 }}
+                          >
+                            <motion.img
+                              src={`/images${item.icon}`}
+                              alt={`${item.itemId} seed`}
+                              className="w-8 h-8 object-contain"
+                              animate={{ y: [0, -2, 0] }}
+                              transition={{ duration: 1.5, repeat: Infinity }}
+                            />
+                            <motion.div
+                              className="absolute -top-2 -right-2 bg-[#FFB938] text-[#7E4E31] text-xs px-2 py-0.5 
                                      rounded-full font-bold shadow-md border border-[#7E4E31]"
-                                animate={{
-                                  scale: item.quantity ? [1, 1.1, 1] : 1,
-                                }}
-                                transition={{ duration: 0.3 }}
-                              >
-                                {item.quantity}
-                              </motion.div>
-                            </motion.div>
-                          ))}
-                        </div>
-                        {(isActive || isClaimableButDisabled) &&
-                          !rewardToUse.claimed && (
-                            <motion.button
-                              whileHover={
-                                isClaimableButDisabled ? {} : { scale: 1.05 }
-                              }
-                              whileTap={{ scale: 0.95 }}
                               animate={{
-                                boxShadow: [
-                                  "0 0 10px rgba(255,215,0,0.3)",
-                                  "0 0 20px rgba(255,215,0,0.5)",
-                                  "0 0 10px rgba(255,215,0,0.3)",
-                                ],
+                                scale: item.quantity ? [1, 1.1, 1] : 1,
                               }}
-                              transition={{
-                                duration: 2,
-                                repeat: Infinity,
-                              }}
-                              onClick={() => handleClaim(rewardToUse.day)}
-                              className={`bg-gradient-to-r from-[#FFD700] to-[#FFA500] text-[#5B4120] 
+                              transition={{ duration: 0.3 }}
+                            >
+                              {item.quantity}
+                            </motion.div>
+                          </motion.div>
+                        ))}
+                      </div>
+                      {(isActive || isClaimableButDisabled) &&
+                        !rewardToUse.claimed && (
+                          <motion.button
+                            whileHover={
+                              isClaimableButDisabled ? {} : { scale: 1.05 }
+                            }
+                            whileTap={{ scale: 0.95 }}
+                            animate={{
+                              boxShadow: [
+                                "0 0 10px rgba(255,215,0,0.3)",
+                                "0 0 20px rgba(255,215,0,0.5)",
+                                "0 0 10px rgba(255,215,0,0.3)",
+                              ],
+                            }}
+                            transition={{
+                              duration: 2,
+                              repeat: Infinity,
+                            }}
+                            onClick={() => handleClaim(rewardToUse.day)}
+                            className={`bg-gradient-to-r from-[#FFD700] to-[#FFA500] text-[#5B4120] 
                                  px-4 py-2 rounded-lg mt-2 font-bold text-sm 
                                  ${
                                    !isClaimableButDisabled
@@ -478,21 +488,20 @@ export default function StreaksModal({ onClose }: { onClose: () => void }) {
                                  } transition-all
                                  shadow-[0_0_15px_rgba(255,215,0,0.3)]
                                  disabled:opacity-50 disabled:cursor-not-allowed`}
-                              disabled={
-                                !rewardToUse.claimable || isClaimableButDisabled
-                              }
-                            >
-                              Claim Reward
-                            </motion.button>
-                          )}
-                      </div>
-                    </motion.div>
-                  </TimelineContent>
-                </TimelineItem>
-              );
-            })}
-          </Timeline>
-        </div>
+                            disabled={
+                              !rewardToUse.claimable || isClaimableButDisabled
+                            }
+                          >
+                            Claim Reward
+                          </motion.button>
+                        )}
+                    </div>
+                  </motion.div>
+                </TimelineContent>
+              </TimelineItem>
+            );
+          })}
+        </Timeline>
       </motion.div>
     </div>
   );

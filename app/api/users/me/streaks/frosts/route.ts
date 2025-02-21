@@ -1,19 +1,11 @@
+import { FIRST_FROST_QUANTITY } from "@/lib/game-constants";
 import {
-  createUserStreak,
+  addUserItem,
   getUserItemBySlug,
   getUserStreaks,
 } from "@/lib/prisma/queries";
 import { NextRequest, NextResponse } from "next/server";
-import { checkUserActivityAndApplyFrost } from "./utils";
-
-export const GET = async (req: NextRequest) => {
-  const fid = req.headers.get("x-user-fid");
-  if (!fid) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-  const streaks = await getUserStreaks(Number(fid));
-  return NextResponse.json(streaks);
-};
+import { checkUserActivityAndApplyFrost } from "../utils";
 
 export const POST = async (req: NextRequest) => {
   const fid = req.headers.get("x-user-fid");
@@ -23,12 +15,13 @@ export const POST = async (req: NextRequest) => {
   try {
     const userFrost = await getUserItemBySlug(Number(fid), "frost");
     const streaks = await getUserStreaks(Number(fid));
-    if (streaks.length === 0) {
-      await createUserStreak(Number(fid));
-    } else {
-      await checkUserActivityAndApplyFrost(streaks[0], userFrost, true);
+    if (streaks.length === 0 && (!userFrost || userFrost.quantity === 0)) {
+      await addUserItem(Number(fid), 29, FIRST_FROST_QUANTITY);
+    } else if (streaks.length > 0) {
+      await checkUserActivityAndApplyFrost(streaks[0], userFrost, false);
     }
   } catch (error) {
+    console.error("Error updating streak:", error);
     if (error instanceof Error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
@@ -37,5 +30,5 @@ export const POST = async (req: NextRequest) => {
       { status: 500 }
     );
   }
-  return NextResponse.json({ message: "Streak updated" });
+  return NextResponse.json({ message: "Frost airdropped or applied" });
 };

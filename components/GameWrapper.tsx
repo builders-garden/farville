@@ -49,9 +49,7 @@ function StreaksModalContainer() {
 
   return (
     <AnimatePresence>
-      {showStreaks && (
-        <StreaksModal onClose={() => setShowStreaks(false)} />
-      )}
+      {showStreaks && <StreaksModal onClose={() => setShowStreaks(false)} />}
     </AnimatePresence>
   );
 }
@@ -173,7 +171,10 @@ export default function GameWrapper() {
 
       {activeOverlay?.type === "requests" && (
         <AnimatePresence>
-          <RequestModal onClose={handleOverlayComplete} id={activeOverlay.id} />
+          <RequestModal
+            onClose={handleOverlayComplete}
+            id={activeOverlay.id}
+          />
         </AnimatePresence>
       )}
 

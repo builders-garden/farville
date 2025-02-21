@@ -20,8 +20,8 @@ import { useGridBulkOperations } from "@/hooks/game-actions/use-grid-bulk-operat
 import { DbGridCell } from "@/supabase/types";
 import { GridBulkResult } from "@/app/api/grid-bulk/utils";
 import toast from "react-hot-toast";
-import { useUpdateUserStreaks } from "@/hooks/use-update-user-streaks";
 import { useClaimReward } from "@/hooks/game-actions/use-claim-reward";
+import { useUpdateUserStreaks } from "@/hooks/use-user-streaks";
 
 // Update the OverlayType to be more flexible with parameters
 export type OverlayConfig =
