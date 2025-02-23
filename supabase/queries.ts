@@ -172,7 +172,6 @@ export const updateUserXP = async (
   if (didLevelUp) {
     const levelReward = LEVEL_REWARDS[newLevel - 1];
     await updateUserCoins(fid, currentUser?.coins + levelReward.coins);
-    
   }
 
   if (error) throw error;
@@ -1309,7 +1308,7 @@ const generateDailyQuests = async (level: number) => {
 };
 
 const generateWeeklyQuests = async (level: number) => {
-  let questCategories = ["sell", "receive", "donate", "plant", "harvest"];
+  let questCategories = ["sell", "plant", "harvest"];
 
   let seedItems = (await getItemsByCategory("seed")).filter(
     (item) => item.requiredLevel <= level
@@ -1343,7 +1342,9 @@ const generateWeeklyQuests = async (level: number) => {
 
     // const amount = chooseRandomItem(amounts);
     // Apply level-based multiplier for quest amount
-    const amount = Math.floor(chooseRandomItem(amounts) * level * 0.5);
+    // and round the amount to the lowest 10 multiple
+    const amount =
+      Math.round(Math.floor(chooseRandomItem(amounts) * level * 0.5) / 10) * 10;
 
     const xp = calculateQuestXP(level, cropData, amount);
     const startAt = new Date();
