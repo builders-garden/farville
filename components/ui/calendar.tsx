@@ -19,14 +19,15 @@ function Calendar({
     <DayPicker
       showOutsideDays={showOutsideDays}
       className={cn(
-        "p-3 pb-4 !border-2 !rounded-2xl border-[#8b5d3c] bg-[#6D4C2C]",
+        "p-[0.7rem] pb-4 !border-2 !rounded-2xl border-[#8b5d3c] bg-[#6D4C2C]",
         className
       )}
       classNames={{
         months:
           "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0 text-white",
         month: "space-y-4",
-        caption: "flex pt-1 relative justify-between mx-3 mr-0 items-center",
+        caption:
+          "flex pt-1 relative justify-between ml-[0.5rem] mr-0 items-center",
         caption_label: "text-sm font-medium",
         nav: "space-x-1 flex items-center",
         nav_button: cn(
@@ -35,15 +36,15 @@ function Calendar({
         ),
         nav_button_previous: "",
         nav_button_next: "",
-        table: "w-fit mx-auto !mt-4 !mb-1 border-collapse space-y-1",
+        table: "w-full mx-auto !mt-4 !mb-1 border-collapse space-y-1",
         head_row: "flex",
         head_cell:
           "text-amber-500/90 rounded-md w-full font-normal text-[0.7rem]",
         row: "flex w-full mt-[0.6rem]",
-        cell: "mx-[0.3rem] h-9 w-9 text-center !text-[0.5rem] p-0 relative",
+        cell: "mx-[0.3rem] h-8 w-full text-center !text-[0.5rem] p-0 relative",
         day: cn(
           buttonVariants({ variant: "ghost" }),
-          "h-9 w-9 p-0 font-normal aria-selected:opacity-100 pointer-events-none bg-[#5a4129] !text-[0.7rem]"
+          "h-8 w-full p-0 font-normal aria-selected:opacity-100 pointer-events-none bg-[#5a4129] !text-[0.7rem]"
         ),
         day_range_end: "day-range-end",
         day_selected: "!bg-[#FFB938] text-[#7e4e31]",
