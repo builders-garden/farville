@@ -19,7 +19,7 @@ function Calendar({
     <DayPicker
       showOutsideDays={showOutsideDays}
       className={cn(
-        "p-3 !border-2 !rounded-2xl border-[#8b5d3c] bg-[#6D4C2C]",
+        "p-3 pb-4 !border-2 !rounded-2xl border-[#8b5d3c] bg-[#6D4C2C]",
         className
       )}
       classNames={{
@@ -38,12 +38,12 @@ function Calendar({
         table: "w-fit mx-auto !mt-4 !mb-1 border-collapse space-y-1",
         head_row: "flex",
         head_cell:
-          "text-amber-500/90 rounded-md w-full font-normal text-[0.8rem]",
-        row: "flex w-full mt-2",
-        cell: "mx-1 h-10 w-10 text-center text-sm p-0 relative [&:has([aria-selected].day-range-end)]:rounded-r-md first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
+          "text-amber-500/90 rounded-md w-full font-normal text-[0.7rem]",
+        row: "flex w-full mt-[0.6rem]",
+        cell: "mx-[0.3rem] h-9 w-9 text-center !text-[0.5rem] p-0 relative",
         day: cn(
           buttonVariants({ variant: "ghost" }),
-          "h-10 w-10 p-0 font-normal aria-selected:opacity-100 pointer-events-none bg-[#5a4129]"
+          "h-9 w-9 p-0 font-normal aria-selected:opacity-100 pointer-events-none bg-[#5a4129] !text-[0.7rem]"
         ),
         day_range_end: "day-range-end",
         day_selected: "!bg-[#FFB938] text-[#7e4e31]",
