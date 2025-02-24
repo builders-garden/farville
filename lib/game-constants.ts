@@ -65,7 +65,7 @@ export const CROPS: {
   },
 ];
 
-export interface Crop {
+export interface CropData {
   deathTime: number;
   growthTime: number;
   rewardXP: number;
@@ -76,10 +76,10 @@ export interface Crop {
 
 export const MAX_DAILY_ALLOWED_DONATION_BETWEEN_USERS = 2;
 
-export const millisecondsInHour =
-  process.env.NODE_ENV === "production" ? 3600000 : 1000;
+export const millisecondsInHour = 3600000;
+// process.env.NODE_ENV === "production" ? 3600000 : 1000;
 
-export const CROP_DATA: { [key: string]: Crop } = {
+export const CROP_DATA: { [key: string]: CropData } = {
   wheat: {
     growthTime: 6 * millisecondsInHour, // 6h in milliseconds
     deathTime: 3 * millisecondsInHour, // 3h in milliseconds
