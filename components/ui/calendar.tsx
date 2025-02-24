@@ -19,7 +19,7 @@ function Calendar({
     <DayPicker
       showOutsideDays={showOutsideDays}
       className={cn(
-        "p-3 pb-1 !border-2 !rounded-2xl border-[#8b5d3c] bg-[#6D4C2C]",
+        "p-3 !border-2 !rounded-2xl border-[#8b5d3c] bg-[#6D4C2C]",
         className
       )}
       classNames={{
@@ -40,16 +40,15 @@ function Calendar({
         head_cell:
           "text-amber-500/90 rounded-md w-full font-normal text-[0.8rem]",
         row: "flex w-full mt-2",
-        cell: "mx-1 h-10 w-10 text-center text-sm p-0 relative [&:has([aria-selected].day-range-end)]:rounded-r-md [&:has([aria-selected].day-outside)]:bg-accent/90 first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
+        cell: "mx-1 h-10 w-10 text-center text-sm p-0 relative [&:has([aria-selected].day-range-end)]:rounded-r-md first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
         day: cn(
           buttonVariants({ variant: "ghost" }),
-          "h-10 w-10 p-0 font-normal aria-selected:opacity-100 pointer-events-none"
+          "h-10 w-10 p-0 font-normal aria-selected:opacity-100 pointer-events-none bg-[#5a4129]"
         ),
         day_range_end: "day-range-end",
-        day_selected: "bg-[#FFB938] text-[#7e4e31]",
-        day_today: "outline outline-[3px] outline-offset-2 outline-[#ffb938]",
-        day_outside:
-          "day-outside text-[#3e2600] aria-selected:bg-accent/50 aria-selected:text-[#3e2600]",
+        day_selected: "!bg-[#FFB938] text-[#7e4e31]",
+        day_today: "outline outline-[2px] outline-offset-2 outline-[#ffb938]",
+        day_outside: "day-outside text-[#3e2600] aria-selected:text-[#3e2600]",
         day_disabled:
           "day-disabled text-white !opacity-100 bg-gradient-to-br from-[#1786E4] to-[#0698D6]",
         day_range_middle:

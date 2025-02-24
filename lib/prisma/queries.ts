@@ -387,7 +387,10 @@ export const getUserFrosts = async (fid: number) => {
   const streakIds = streaks.map((streak) => streak.id);
 
   if (streakIds.length === 0) {
-    return [];
+    return {
+      allFrostsDates: [],
+      lastStreakDates: [],
+    };
   }
 
   const userFrosts: DbUserFrost[] = await prisma.userFrosts.findMany({

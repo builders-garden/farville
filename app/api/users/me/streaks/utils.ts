@@ -28,7 +28,7 @@ export const checkUserActivityAndApplyFrost = async (
     });
   } else {
     const userFrosts = await getUserFrostsByStreakId(streak.id);
-    const lastFrostAt = userFrosts[0].frozenAt;
+    const lastFrostAt = userFrosts[0]?.frozenAt || lastActionAt;
     const lastFrostOrActionAt =
       lastFrostAt > lastActionAt ? lastFrostAt : lastActionAt;
 

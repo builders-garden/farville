@@ -43,12 +43,21 @@ const getStreakDates = (streaks: DbStreak[]) => {
   return dates;
 };
 
-const getCurrentDayStreak = (totalFrostsDays: number, streak?: DbStreak) => {
+const getCurrentDayStreak = (streak?: DbStreak, frostsDays?: Date[]) => {
   if (!streak || streak.endedAt) {
     return 0;
   }
+  const totalFrostsDays = frostsDays ? frostsDays.length : 0;
   const startDate = new Date(streak.startedAt);
-  const lastActionDate = new Date(streak.lastActionAt);
+  const lastActionDate =
+    frostsDays && frostsDays.length > 0
+      ? new Date(
+          Math.max(
+            new Date(streak.lastActionAt).getTime(),
+            new Date(frostsDays[frostsDays.length - 1]).getTime()
+          )
+        )
+      : new Date(streak.lastActionAt);
   const differenceInTime = lastActionDate.getTime() - startDate.getTime();
   const differenceInDays = Math.ceil(differenceInTime / (1000 * 3600 * 24));
   return differenceInDays + 1 - totalFrostsDays;
@@ -80,8 +89,8 @@ export default function StreaksModal({ onClose }: { onClose: () => void }) {
   const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
 
   const currentDayStreak = getCurrentDayStreak(
-    state.frosts.lastStreakDates.length,
-    state.streaks[0]
+    state.streaks[0],
+    state.frosts.lastStreakDates
   );
 
   const handleClaim = (day: number) => {
@@ -272,7 +281,7 @@ export default function StreaksModal({ onClose }: { onClose: () => void }) {
           >
             <div className="flex flex-row gap-3 justify-between">
               <div className="flex flex-col h-auto justify-between">
-                <span className="text-sky-300 text-sm">Streak Frosts</span>
+                <span className="text-sky-300 text-xs">Streak Frosts</span>
                 <span className="text-white text-sm font-bold">
                   {frostsAvailable}
                   <span className="text-sm text-white/50">/2</span>
