@@ -127,7 +127,6 @@ export default function Toolbar({
         <div className="flex flex-col items-center w-[48px]">
           <motion.button
             onClick={() => {
-              trackEvent("open_streaks", {});
               setShowStreaks(true);
             }}
             whileHover={{ scale: 1.1 }}

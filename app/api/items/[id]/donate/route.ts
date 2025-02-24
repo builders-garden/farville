@@ -54,6 +54,7 @@ export const POST = async (
 
   if (
     userLastDonation &&
+    userLastDonation?.times &&
     userLastDonation.times >= MAX_DAILY_ALLOWED_DONATION_BETWEEN_USERS &&
     new Date(userLastDonation.lastDonation).toDateString() ===
       new Date().toDateString()
@@ -85,7 +86,7 @@ export const POST = async (
       new Date(userLastDonation.lastDonation).toDateString() !==
         new Date().toDateString()
         ? 1
-        : userLastDonation.times + 1,
+        : (userLastDonation?.times ?? 0) + 1,
     lastDonation: new Date().toISOString(),
   });
 
