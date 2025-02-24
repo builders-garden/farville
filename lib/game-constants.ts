@@ -76,8 +76,8 @@ export interface CropData {
 
 export const MAX_DAILY_ALLOWED_DONATION_BETWEEN_USERS = 2;
 
-export const millisecondsInHour = 3600000;
-// process.env.NODE_ENV === "production" ? 3600000 : 1000;
+export const millisecondsInHour =
+  process.env.NODE_ENV === "production" ? 3600000 : 1000;
 
 export const CROP_DATA: { [key: string]: CropData } = {
   wheat: {
