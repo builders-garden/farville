@@ -4,19 +4,19 @@ import {
   getGrowthTime,
   sendDelayedNotification,
 } from "@/lib/game-notifications";
+import { sendBatchToPostHog } from "@/lib/posthog/server";
 import {
   getUserItemBySlug,
   removeUserItem,
   updateGridCellsBulk,
   updateUserXP,
 } from "@/lib/prisma/queries";
+import { getBoostTime } from "@/lib/utils";
 import { addUserItem, getGridCells } from "@/supabase/queries";
-import { sendQuestsCalculation } from "../grid-cells/utils";
-import { sendBatchToPostHog, trackEvent } from "@/lib/posthog/server";
+import { DbGridCell } from "@/supabase/types";
 import { ActionType, PerkType, SeedType } from "@/types/game";
 import { NextResponse } from "next/server";
-import { getBoostTime } from "@/lib/utils";
-import { DbGridCell } from "@/supabase/types";
+import { sendQuestsCalculation } from "../grid-cells/utils";
 
 export interface GridBulkResult {
   type: ActionType;
@@ -217,13 +217,8 @@ const rewardUserBulk = async (
     };
   });
   const totalXp = cropsWithRewards.reduce((acc, crop) => acc + crop.xp, 0);
-  const { didLevelUp, newLevel, newXP } = await updateUserXP(fid, totalXp);
-  if (didLevelUp) {
-    trackEvent(fid, "leveled-up", {
-      xp: newXP,
-      level: newLevel,
-    });
-  }
+  const { didLevelUp, newXP } = await updateUserXP(fid, totalXp);
+
   return {
     cropsWithRewards,
     didLevelUp,

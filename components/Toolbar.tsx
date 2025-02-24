@@ -3,7 +3,6 @@
 import { useGame } from "../context/GameContext";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { trackEvent } from "../lib/posthog/client";
 
 export default function Toolbar({
   safeAreaInsets,
@@ -37,7 +36,6 @@ export default function Toolbar({
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => {
-              trackEvent("open_market", {});
               setShowMarket(true);
             }}
             data-tutorial="marketplace"
@@ -58,7 +56,6 @@ export default function Toolbar({
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => {
-              trackEvent("open_quests", {});
               setShowQuests(true);
             }}
             className={`w-12 h-12 rounded-lg flex items-center justify-center transition-colors relative
@@ -94,7 +91,6 @@ export default function Toolbar({
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => {
-              trackEvent("open_leaderboard", {});
               setShowLeaderboard(true);
             }}
             className="w-12 h-12 rounded-lg flex items-center justify-center bg-[#8B5E3C] hover:bg-[#6d4c2c] transition-colors"
@@ -112,7 +108,6 @@ export default function Toolbar({
         <div className="flex flex-col items-center w-[48px]">
           <motion.button
             onClick={() => {
-              trackEvent("open_inventory", {});
               setShowInventory(true);
             }}
             whileHover={{ scale: 1.1 }}
@@ -154,7 +149,6 @@ export default function Toolbar({
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => {
-              trackEvent("open_settings", {});
               setShowSettings(true);
             }}
             className="w-12 h-12 rounded-lg flex items-center justify-center bg-[#8B5E3C] hover:bg-[#6d4c2c] transition-colors"
