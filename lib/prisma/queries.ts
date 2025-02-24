@@ -1,6 +1,13 @@
 import { prisma } from "./client";
 import { LEVEL_XP_THRESHOLDS, LEVEL_REWARDS } from "@/lib/game-constants";
-import { DbGridCell, DbUser, DbUserDonation } from "@/supabase/types";
+import {
+  DbGridCell,
+  DbStreak,
+  DbUser,
+  DbUserDonation,
+  DbUserFrost,
+} from "@/supabase/types";
+import { UserHasItem } from "@prisma/client";
 
 export async function getQuestLeaderboard({
   limit,
@@ -237,8 +244,11 @@ export const updateGridCellsBulk = async (fid: number, cells: DbGridCell[]) => {
   );
 };
 
-export const getUserItemBySlug = async (fid: number, slug: string) => {
-  return await prisma.userHasItem.findFirst({
+export const getUserItemBySlug = async (
+  fid: number,
+  slug: string
+): Promise<UserHasItem | null> => {
+  const userItem = await prisma.userHasItem.findFirst({
     where: {
       userFid: fid,
       item: {
@@ -249,6 +259,12 @@ export const getUserItemBySlug = async (fid: number, slug: string) => {
       item: true,
     },
   });
+
+  if (!userItem) {
+    return null;
+  }
+
+  return userItem;
 };
 
 export const getUserDonationsHistory = async ({
@@ -297,5 +313,120 @@ export const updateUserDonationHistory = async (
     },
     update: userDonation,
     create: userDonation,
+  });
+};
+
+export const getUserStreaks = async (fid: number) => {
+  return await prisma.streaks.findMany({
+    where: {
+      fid,
+    },
+    orderBy: {
+      startedAt: "desc",
+    },
+  });
+};
+
+export const createUserStreak = async (fid: number) => {
+  return await prisma.streaks.create({
+    data: {
+      fid,
+      startedAt: new Date(),
+      lastActionAt: new Date(),
+    },
+  });
+};
+
+export const updateUserStreak = async (
+  streakId: number,
+  data: Partial<DbStreak>
+) => {
+  return await prisma.streaks.update({
+    where: { id: streakId },
+    data,
+  });
+};
+
+export const updateStreakLastClaimed = async (streakId: number) => {
+  return await prisma.streaks.update({
+    where: { id: streakId },
+    data: {
+      lastClaimed: { increment: 1 },
+    },
+  });
+};
+
+export const applyUserFrost = async (
+  fid: number,
+  streakId: number,
+  from: Date,
+  amount: number,
+  frostItemId: number
+) => {
+  const records = Array.from({ length: amount }, (_, i) => {
+    const date = new Date(from);
+    date.setDate(date.getDate() + i);
+    return {
+      streakId,
+      frozenAt: date,
+    };
+  });
+  try {
+    await prisma.userFrosts.createMany({
+      data: records,
+    });
+    await removeUserItem(fid, frostItemId, amount);
+  } catch (error) {
+    console.error("Error creating user frosts:", error);
+    throw new Error("Failed to apply user frost");
+  }
+};
+
+export const getUserFrosts = async (fid: number) => {
+  const streaks = await getUserStreaks(fid);
+  const streakIds = streaks.map((streak) => streak.id);
+
+  if (streakIds.length === 0) {
+    return {
+      allFrostsDates: [],
+      lastStreakDates: [],
+    };
+  }
+
+  const userFrosts: DbUserFrost[] = await prisma.userFrosts.findMany({
+    where: {
+      streakId: {
+        in: streakIds,
+      },
+    },
+    orderBy: {
+      frozenAt: "asc",
+    },
+  });
+
+  const allFrostsDates = userFrosts.map((frost) => new Date(frost.frozenAt));
+
+  const lastStreakId = streaks[0]?.id;
+  const lastStreakFrosts = userFrosts.filter(
+    (frost) => frost.streakId === lastStreakId
+  );
+  const lastStreakDates = lastStreakFrosts.map(
+    (frost) => new Date(frost.frozenAt)
+  );
+
+  return {
+    allFrostsDates,
+    lastStreakDates,
+  };
+};
+
+export const getUserFrostsByStreakId = async (streakId: number) => {
+  return await prisma.userFrosts.findMany({
+    where: {
+      streakId,
+    },
+    orderBy: {
+      frozenAt: "desc",
+    },
   });
 };

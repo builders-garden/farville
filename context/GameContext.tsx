@@ -20,6 +20,8 @@ import { useGridBulkOperations } from "@/hooks/game-actions/use-grid-bulk-operat
 import { DbGridCell } from "@/supabase/types";
 import { GridBulkResult } from "@/app/api/grid-bulk/utils";
 import toast from "react-hot-toast";
+import { useClaimReward } from "@/hooks/game-actions/use-claim-reward";
+import { useUpdateUserStreaks } from "@/hooks/use-user-streaks";
 
 // Update the OverlayType to be more flexible with parameters
 export type OverlayConfig =
@@ -68,6 +70,7 @@ interface GameContextType {
   showQuests: boolean;
   showTimeline: boolean;
   showRequests: boolean;
+  showStreaks: boolean;
   setShowInventory: (show: boolean) => void;
   setShowMarket: (show: boolean) => void;
   setShowLeaderboard: (show: boolean) => void;
@@ -76,6 +79,7 @@ interface GameContextType {
   setShowQuests: (show: boolean) => void;
   setShowTimeline: (show: boolean) => void;
   setShowRequests: (show: boolean) => void;
+  setShowStreaks: (show: boolean) => void;
   isActionInProgress: boolean;
   setIsActionInProgress: (value: boolean) => void;
   activeOverlay: OverlayConfig;
@@ -95,6 +99,10 @@ interface GameContextType {
     level?: number;
     coins?: number;
   }) => void;
+  claimRewards: (variables: {
+    streakId: number;
+    rewards: { itemId: number; quantity: number }[];
+  }) => void;
 }
 
 export const GameContext = createContext<GameContextType | null>(null);
@@ -113,6 +121,7 @@ export function GameProvider({
   const [showRequests, setShowRequests] = useState(false);
   const [showSeedsMenu, setShowSeedsMenu] = useState(false);
   const [showQuests, setShowQuests] = useState(false);
+  const [showStreaks, setShowStreaks] = useState(false);
   const [showTimeline, setShowTimeline] = useState(false);
   const {
     state,
@@ -143,9 +152,20 @@ export function GameProvider({
   >();
   const [toastIds, setToastIds] = useState<Map<string, string>>(new Map());
 
+  const { mutate: updateUserStreaks } = useUpdateUserStreaks({
+    refetchStreaks: refetch.streaks,
+    refetchUserItems: refetch.userItems,
+  });
+
+  const updateUserStreaksOnFirstDailyAction = () => {
+    if (state.streakUpdated) return;
+    updateUserStreaks({});
+  };
+
   const { mutate: sendGridBulkOperations } = useGridBulkOperations({
     setGridBulkResult,
     refetch,
+    updateStreaks: updateUserStreaksOnFirstDailyAction,
   });
 
   const addGridOperation = (operation: GridBulkRequest) => {
@@ -271,6 +291,13 @@ export function GameProvider({
     setIsActionInProgress,
   });
 
+  const { mutate: claimRewards } = useClaimReward({
+    refetchUserItems: refetch.userItems,
+    refetchStreaks: refetch.streaks,
+    isActionInProgress,
+    setIsActionInProgress,
+  });
+
   useEffect(() => {
     if (!loading) {
       const tutorialComplete =
@@ -318,6 +345,7 @@ export function GameProvider({
         showQuests,
         showTimeline,
         showRequests,
+        showStreaks,
         setShowInventory,
         setShowMarket,
         setShowLeaderboard,
@@ -326,6 +354,7 @@ export function GameProvider({
         setShowQuests,
         setShowTimeline,
         setShowRequests,
+        setShowStreaks,
         isActionInProgress,
         setIsActionInProgress,
         activeOverlay,
@@ -341,6 +370,7 @@ export function GameProvider({
         updateGridCells,
         updateUserItems,
         updateUser,
+        claimRewards,
       }}
     >
       {children}

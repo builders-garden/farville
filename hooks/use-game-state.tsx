@@ -1,11 +1,13 @@
 import { useUserItems, UserItem } from "./use-user-items";
 import { useEffect, useState, useCallback } from "react";
 import { useGridCells } from "./use-grid-cells";
-import { DbGridCell, DbItem, DbUser } from "@/supabase/types";
+import { DbGridCell, DbItem, DbStreak, DbUser } from "@/supabase/types";
 import { useItems } from "./use-items";
 import { getCurrentLevelAndProgress } from "@/lib/utils";
 import { useUserMe } from "./use-user-me";
 import { useUserQuests } from "./use-quests";
+import { useUpdateUserFrosts, useUserStreaks } from "./use-user-streaks";
+import { useUserFrosts } from "./use-user-frosts";
 
 export interface RefetchType {
   all: () => Promise<void>;
@@ -14,6 +16,8 @@ export interface RefetchType {
   user: () => Promise<void>;
   grid: () => Promise<void>;
   claimableQuests: () => Promise<void>;
+  streaks: () => Promise<void>;
+  frosts: () => Promise<void>;
 }
 
 export interface GameState {
@@ -32,7 +36,15 @@ export interface GameState {
   items: DbItem[];
   inventory: UserItem[];
   user: DbUser;
-  claimableQuests?: boolean;
+  claimableQuests: boolean;
+  streakUpdated: boolean;
+  streaks: DbStreak[];
+  specialItems: UserItem[];
+  frosts: {
+    allFrostsDates: Date[];
+    lastStreakDates: Date[];
+  };
+  claimableStreakReward: boolean;
 }
 
 export const useGameState = () => {
@@ -53,6 +65,14 @@ export const useGameState = () => {
     inventory: [],
     user: {} as DbUser,
     claimableQuests: false,
+    streakUpdated: false,
+    streaks: [],
+    specialItems: [],
+    frosts: {
+      allFrostsDates: [],
+      lastStreakDates: [],
+    },
+    claimableStreakReward: false,
   });
   const {
     userItems,
@@ -71,6 +91,22 @@ export const useGameState = () => {
     isLoading: claimableQuestsLoading,
     refetch: refetchClaimableQuests,
   } = useUserQuests(state?.user?.fid, "completed");
+  const {
+    userStreaks,
+    isLoading: streaksLoading,
+    refetch: refetchStreaks,
+  } = useUserStreaks();
+  const {
+    userFrosts,
+    isLoading: frostsLoading,
+    refetch: refetchFrosts,
+  } = useUserFrosts();
+
+  const { mutate: updateUserFrosts } = useUpdateUserFrosts({
+    refetchStreaks,
+    refetchUserItems,
+    refetchFrosts,
+  });
 
   const updateUserState = useCallback(() => {
     if (user) {
@@ -94,6 +130,9 @@ export const useGameState = () => {
         crops: userItems.filter((ui) => ui.item.category === "crop"),
         perks: userItems.filter((item) => item.item.category === "perk"),
         inventory: userItems,
+        specialItems: userItems.filter(
+          (item) => item.item.category === "special"
+        ),
       }));
     }
   }, [userItems]);
@@ -115,7 +154,7 @@ export const useGameState = () => {
     if (items) {
       setState((prevState) => ({
         ...prevState!,
-        items: items,
+        items: items.filter((item) => item.category !== "special"),
       }));
     }
   }, [items]);
@@ -133,6 +172,24 @@ export const useGameState = () => {
     }
   }, [claimableQuests]);
 
+  const updateStreaksState = useCallback(() => {
+    if (userStreaks) {
+      setState((prevState) => ({
+        ...prevState!,
+        streaks: userStreaks,
+      }));
+    }
+  }, [userStreaks]);
+
+  const updateUserFrostsState = useCallback(() => {
+    if (userFrosts) {
+      setState((prevState) => ({
+        ...prevState!,
+        frosts: userFrosts,
+      }));
+    }
+  }, [userFrosts]);
+
   useEffect(() => {
     updateUserState();
   }, [user, updateUserState]);
@@ -140,6 +197,16 @@ export const useGameState = () => {
   useEffect(() => {
     updateUserItemsState();
   }, [userItems, updateUserItemsState]);
+
+  useEffect(() => {
+    const userFrosts = userItems?.find((item) => item.item.slug === "frost");
+    if (
+      userStreaks?.length === 0 &&
+      (!userFrosts || userFrosts.quantity === 0)
+    ) {
+      updateUserFrosts({});
+    }
+  }, [userItems, userStreaks, updateUserFrosts]);
 
   useEffect(() => {
     updateGridState();
@@ -153,6 +220,31 @@ export const useGameState = () => {
     updateClaimableQuestsState();
   }, [claimableQuests, updateClaimableQuestsState]);
 
+  useEffect(() => {
+    updateStreaksState();
+    const latestStreak = userStreaks?.[0];
+    if (latestStreak) {
+      const lastActionAt = new Date(latestStreak.lastActionAt);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      yesterday.setHours(0, 0, 0, 0);
+      if (lastActionAt >= today) {
+        setState((prevState) => ({
+          ...prevState!,
+          streakUpdated: true,
+        }));
+      } else if (lastActionAt < yesterday) {
+        updateUserFrosts({});
+      }
+    }
+  }, [userStreaks, updateStreaksState]);
+
+  useEffect(() => {
+    updateUserFrostsState();
+  }, [userFrosts, updateUserFrostsState]);
+
   const refetchAll = useCallback(async () => {
     await Promise.all([
       refetchUserItems(),
@@ -160,6 +252,7 @@ export const useGameState = () => {
       refetchGrid(),
       refetchItems(),
       refetchClaimableQuests(),
+      refetchStreaks(),
     ]);
   }, [
     refetchUserItems,
@@ -167,6 +260,7 @@ export const useGameState = () => {
     refetchGrid,
     refetchItems,
     refetchClaimableQuests,
+    refetchStreaks,
   ]);
 
   // Add new method to update grid cells directly
@@ -200,6 +294,7 @@ export const useGameState = () => {
       const newSeeds = [...prevState.seeds];
       const newPerks = [...prevState.perks];
       const newCrops = [...prevState.crops];
+      const newSpecialItems = [...prevState.specialItems];
 
       updatedItems.forEach((updatedItem) => {
         if (updatedItem.item && updatedItem.item.category === "seed") {
@@ -225,6 +320,21 @@ export const useGameState = () => {
           } else {
             newCrops.push(updatedItem as UserItem);
           }
+        } else if (
+          updatedItem.item &&
+          updatedItem.item.category === "special"
+        ) {
+          const index = newSpecialItems.findIndex(
+            (item) => item.item?.id === updatedItem.item?.id
+          );
+          if (index !== -1) {
+            newSpecialItems[index] = {
+              ...newSpecialItems[index],
+              ...updatedItem,
+            };
+          } else {
+            newSpecialItems.push(updatedItem as UserItem);
+          }
         }
       });
 
@@ -233,12 +343,19 @@ export const useGameState = () => {
         seeds: newSeeds,
         perks: newPerks,
         crops: newCrops,
+        specialItems: newSpecialItems,
       };
     });
   }, []);
 
   const updateUser = useCallback(
-    (newParams: { xp?: number; level?: number; coins?: number }) => {
+    (newParams: {
+      xp?: number;
+      level?: number;
+      coins?: number;
+      streaks?: DbStreak[];
+      streakUpdated?: boolean;
+    }) => {
       setState((prevState) => {
         if (!prevState) return prevState;
 
@@ -264,7 +381,9 @@ export const useGameState = () => {
       itemsLoading ||
       userLoading ||
       gridCellsLoading ||
-      claimableQuestsLoading,
+      claimableQuestsLoading ||
+      streaksLoading ||
+      frostsLoading,
     refetch: {
       all: refetchAll,
       userItems: async () => {
@@ -281,6 +400,12 @@ export const useGameState = () => {
       },
       claimableQuests: async () => {
         await refetchClaimableQuests();
+      },
+      streaks: async () => {
+        await refetchStreaks();
+      },
+      frosts: async () => {
+        await refetchFrosts();
       },
     } as RefetchType,
     updateGridCells,

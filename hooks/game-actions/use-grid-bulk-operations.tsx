@@ -14,9 +14,11 @@ import { ActionType } from "@/types/game";
 export const useGridBulkOperations = ({
   setGridBulkResult,
   refetch,
+  updateStreaks,
 }: {
   setGridBulkResult: Dispatch<SetStateAction<GridBulkResult | undefined>>;
   refetch: RefetchType;
+  updateStreaks: () => void;
 }) => {
   const mutation = useApiMutation({
     url: () => "/api/grid-bulk",
@@ -92,6 +94,7 @@ export const useGridBulkOperations = ({
           setGridBulkResult(undefined);
         }
       }
+      updateStreaks();
     },
     onError: (error, { toastId }) => {
       toast.dismiss(toastId);
