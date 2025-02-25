@@ -19,7 +19,7 @@ export async function GET(request: Request) {
       // Optimize followed users fetch with proper pagination
       const followedUsers = await fetchUsersFollowedBy(
         targetFid,
-        100,
+        300,
         "desc_chron"
       );
       const followedFids = followedUsers.map((user) => user.fid.toString());
@@ -29,6 +29,7 @@ export async function GET(request: Request) {
         const users = await getQuestLeaderboard({
           fids: userFids,
           targetFid,
+          limit: 20,
         });
         return NextResponse.json({ users }, { headers });
       }
