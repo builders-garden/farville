@@ -13,6 +13,7 @@ export default function Toolbar({
     setShowInventory,
     setShowMarket,
     setShowSettings,
+    setShowProfile,
     setShowLeaderboard,
     setShowQuests,
     setShowStreaks,
@@ -176,6 +177,25 @@ export default function Toolbar({
             />
           </motion.button>
           <span className="text-[6px] text-white mt-1">Settings</span>
+        </div>
+
+        <div className="flex flex-col items-center w-[48px]">
+          <motion.button
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => {
+              setShowProfile(true);
+            }}
+            className="w-12 h-12 rounded-lg flex items-center justify-center bg-[#8B5E3C] hover:bg-[#6d4c2c] transition-colors"
+          >
+            <Image
+              src="/images/icons/farmer.png"
+              alt="Profile"
+              width={36}
+              height={36}
+            />
+          </motion.button>
+          <span className="text-[6px] text-white mt-1">Profile</span>
         </div>
       </div>
     </div>
