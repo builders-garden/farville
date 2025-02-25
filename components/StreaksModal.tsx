@@ -243,21 +243,8 @@ export default function StreaksModal({ onClose }: { onClose: () => void }) {
               </div>
               <div className="flex gap-3">
                 {[...Array(MAX_FROSTS_QUANTITY)].map((_, i) => (
-                  <motion.div
+                  <div
                     key={i}
-                    animate={
-                      i < frostsAvailable
-                        ? {
-                            scale: [1, 1.05, 1],
-                            boxShadow: [
-                              "0 0 10px rgba(0, 0, 139, 0.3)",
-                              "0 0 20px rgba(0, 0, 139, 0.5)",
-                              "0 0 10px rgba(0, 0, 139, 0.3)",
-                            ],
-                          }
-                        : {}
-                    }
-                    transition={{ duration: 2, repeat: Infinity }}
                     className={`w-12 h-12 rounded-xl flex items-center justify-center
                   ${
                     i < frostsAvailable
@@ -280,7 +267,7 @@ export default function StreaksModal({ onClose }: { onClose: () => void }) {
                         <Plus />
                       </span>
                     )}
-                  </motion.div>
+                  </div>
                 ))}
               </div>
             </div>
