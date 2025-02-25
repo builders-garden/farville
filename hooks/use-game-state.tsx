@@ -242,7 +242,7 @@ export const useGameState = () => {
   }, [userStreaks, updateStreaksState]);
 
   useEffect(() => {
-    if (userStreaks) {
+    if (userStreaks && userStreaks[0]) {
       const currentDayStreak = getCurrentDayStreak(
         userStreaks[0],
         state.frosts.lastStreakDates
