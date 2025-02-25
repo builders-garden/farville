@@ -1,4 +1,4 @@
-import { DbItem } from "@/supabase/types";
+import { DbItem, DbStreak } from "@/supabase/types";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { LEVEL_XP_THRESHOLDS, SPEED_BOOST } from "./game-constants";
@@ -79,4 +79,46 @@ export const formatTime = (seconds: number) => {
 
 export const getBoostTime = (perkSlug: PerkType) => {
   return SPEED_BOOST[perkSlug].duration * (1 - 1 / SPEED_BOOST[perkSlug].boost);
+};
+
+export const getStreakDates = (streaks: DbStreak[]) => {
+  const dates: Date[] = [];
+
+  streaks.forEach((streak) => {
+    if (streak.endedAt) {
+      const startDate = new Date(streak.startedAt);
+      const endDate = new Date(streak.endedAt);
+      for (let d = startDate; d <= endDate; d.setDate(d.getDate() + 1)) {
+        dates.push(new Date(d));
+      }
+    } else {
+      const startDate = new Date(streak.startedAt);
+      const lastActionDate = new Date(streak.lastActionAt);
+      for (let d = startDate; d <= lastActionDate; d.setDate(d.getDate() + 1)) {
+        dates.push(new Date(d));
+      }
+    }
+  });
+
+  return dates;
+};
+
+export const getCurrentDayStreak = (streak?: DbStreak, frostsDays?: Date[]) => {
+  if (!streak || streak.endedAt) {
+    return 0;
+  }
+  const totalFrostsDays = frostsDays ? frostsDays.length : 0;
+  const startDate = new Date(streak.startedAt);
+  const lastActionDate =
+    frostsDays && frostsDays.length > 0
+      ? new Date(
+          Math.max(
+            new Date(streak.lastActionAt).getTime(),
+            new Date(frostsDays[frostsDays.length - 1]).getTime()
+          )
+        )
+      : new Date(streak.lastActionAt);
+  const differenceInTime = lastActionDate.getTime() - startDate.getTime();
+  const differenceInDays = Math.ceil(differenceInTime / (1000 * 3600 * 24));
+  return differenceInDays + 1 - totalFrostsDays;
 };

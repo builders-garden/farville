@@ -19,49 +19,7 @@ import {
 import { useGame } from "@/context/GameContext";
 import { Plus } from "lucide-react";
 import ConfirmationModal from "./ConfirmationModal";
-import { DbStreak } from "@/supabase/types";
-
-const getStreakDates = (streaks: DbStreak[]) => {
-  const dates: Date[] = [];
-
-  streaks.forEach((streak) => {
-    if (streak.endedAt) {
-      const startDate = new Date(streak.startedAt);
-      const endDate = new Date(streak.endedAt);
-      for (let d = startDate; d <= endDate; d.setDate(d.getDate() + 1)) {
-        dates.push(new Date(d));
-      }
-    } else {
-      const startDate = new Date(streak.startedAt);
-      const lastActionDate = new Date(streak.lastActionAt);
-      for (let d = startDate; d <= lastActionDate; d.setDate(d.getDate() + 1)) {
-        dates.push(new Date(d));
-      }
-    }
-  });
-
-  return dates;
-};
-
-const getCurrentDayStreak = (streak?: DbStreak, frostsDays?: Date[]) => {
-  if (!streak || streak.endedAt) {
-    return 0;
-  }
-  const totalFrostsDays = frostsDays ? frostsDays.length : 0;
-  const startDate = new Date(streak.startedAt);
-  const lastActionDate =
-    frostsDays && frostsDays.length > 0
-      ? new Date(
-          Math.max(
-            new Date(streak.lastActionAt).getTime(),
-            new Date(frostsDays[frostsDays.length - 1]).getTime()
-          )
-        )
-      : new Date(streak.lastActionAt);
-  const differenceInTime = lastActionDate.getTime() - startDate.getTime();
-  const differenceInDays = Math.ceil(differenceInTime / (1000 * 3600 * 24));
-  return differenceInDays + 1 - totalFrostsDays;
-};
+import { getCurrentDayStreak, getStreakDates } from "@/lib/utils";
 
 interface StreakReward {
   day: number;
@@ -71,7 +29,8 @@ interface StreakReward {
     quantity: number;
   }[];
   claimable: boolean;
-  claimed?: boolean; // Add claimed status
+  claimed?: boolean;
+  isLoading?: boolean;
 }
 
 export default function StreaksModal({ onClose }: { onClose: () => void }) {
@@ -101,16 +60,11 @@ export default function StreaksModal({ onClose }: { onClose: () => void }) {
         quantity: r.quantity,
       }));
 
+      setActiveReward({ ...reward, isLoading: true });
+
       claimRewards({
         streakId: state.streaks[0].id,
         rewards,
-      });
-
-      // TODO: this will be removed for Streaks refetch
-      setActiveReward({
-        ...reward,
-        claimable: false,
-        claimed: true,
       });
     }
   };
@@ -202,7 +156,7 @@ export default function StreaksModal({ onClose }: { onClose: () => void }) {
                 transition={{ duration: 0.5, repeat: Infinity, repeatDelay: 5 }}
               >
                 <Image
-                  src="/images/icons/streaks.png"
+                  src="/images/special/fire.png"
                   alt="Streaks"
                   width={35}
                   height={35}
@@ -307,7 +261,7 @@ export default function StreaksModal({ onClose }: { onClose: () => void }) {
                     className={`w-12 h-12 rounded-xl flex items-center justify-center
                   ${
                     i < frostsAvailable
-                      ? "bg-gradient-to-br from-[#1E90FF]/80 to-[#00BFFF]/60 border-2 border-[#ADD8E6]/50"
+                      ? "bg-gradient-to-br from-[#1E90FF]/80 to-[#00BFFF]/60 border-2 border-[#ADD8E6]/50 pointer-events-none"
                       : "bg-[#00BFFF]/40 border-2 border-[#ADD8E6]/60 cursor-pointer"
                   }`}
                     onClick={() => {
@@ -501,7 +455,9 @@ export default function StreaksModal({ onClose }: { onClose: () => void }) {
                                  shadow-[0_0_15px_rgba(255,215,0,0.3)]
                                  disabled:opacity-50 disabled:cursor-not-allowed`}
                             disabled={
-                              !rewardToUse.claimable || isClaimableButDisabled
+                              !rewardToUse.claimable ||
+                              isClaimableButDisabled ||
+                              rewardToUse.isLoading
                             }
                           >
                             Claim Reward

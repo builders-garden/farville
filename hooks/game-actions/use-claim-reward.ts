@@ -27,10 +27,9 @@ export const useClaimReward = ({
       setIsActionInProgress(true);
     },
     onSuccess: () => {
-      console.log("Claimed rewards");
       refetchUserItems();
       refetchStreaks();
-      playSound("claim-quest");
+      playSound("claimQuest");
     },
     onSettled: () => {
       setIsActionInProgress(false);

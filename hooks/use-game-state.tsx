@@ -3,7 +3,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useGridCells } from "./use-grid-cells";
 import { DbGridCell, DbItem, DbStreak, DbUser } from "@/supabase/types";
 import { useItems } from "./use-items";
-import { getCurrentLevelAndProgress } from "@/lib/utils";
+import { getCurrentDayStreak, getCurrentLevelAndProgress } from "@/lib/utils";
 import { useUserMe } from "./use-user-me";
 import { useUserQuests } from "./use-quests";
 import { useUpdateUserFrosts, useUserStreaks } from "./use-user-streaks";
@@ -240,6 +240,27 @@ export const useGameState = () => {
       }
     }
   }, [userStreaks, updateStreaksState]);
+
+  useEffect(() => {
+    if (userStreaks) {
+      const currentDayStreak = getCurrentDayStreak(
+        userStreaks[0],
+        state.frosts.lastStreakDates
+      );
+      const lastClaimed = userStreaks[0].lastClaimed;
+      if (currentDayStreak > lastClaimed) {
+        setState((prevState) => ({
+          ...prevState!,
+          claimableStreakReward: true,
+        }));
+      } else {
+        setState((prevState) => ({
+          ...prevState!,
+          claimableStreakReward: false,
+        }));
+      }
+    }
+  }, [userStreaks, state.frosts.lastStreakDates]);
 
   useEffect(() => {
     updateUserFrostsState();

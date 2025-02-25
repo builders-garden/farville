@@ -33,7 +33,7 @@ export default function Toolbar({
       >
         <div className="flex flex-col items-center w-[48px]">
           <motion.button
-            whileHover={{ scale: 1.02 }}
+            whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => {
               setShowMarket(true);
@@ -53,7 +53,7 @@ export default function Toolbar({
 
         <div className="flex flex-col items-center w-[48px]">
           <motion.button
-            whileHover={{ scale: 1.02 }}
+            whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => {
               setShowQuests(true);
@@ -88,7 +88,7 @@ export default function Toolbar({
 
         <div className="flex flex-col items-center w-[48px]">
           <motion.button
-            whileHover={{ scale: 1.02 }}
+            whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => {
               setShowLeaderboard(true);
@@ -126,26 +126,42 @@ export default function Toolbar({
 
         <div className="flex flex-col items-center w-[48px]">
           <motion.button
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
             onClick={() => {
               setShowStreaks(true);
             }}
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.95 }}
-            className="relative w-12 h-12 rounded-lg flex items-center justify-center bg-[#8B5E3C] hover:bg-[#6d4c2c] transition-colors"
+            className={`w-12 h-12 rounded-lg flex items-center justify-center transition-colors relative
+              ${
+                state.claimableStreakReward
+                  ? "bg-[#A17449] shadow-lg shadow-[#A17449]/50 animate-pulse"
+                  : "bg-[#8B5E3C] hover:bg-[#6d4c2c]"
+              }`}
           >
+            {state.claimableStreakReward && (
+              <div className="absolute -top-1 -right-1 w-3 h-3 bg-[#FFD700] rounded-full" />
+            )}
             <Image
-              src="/images/icons/streaks.png"
+              src="/images/special/fire.png"
               alt="Streaks"
-              width={35}
-              height={35}
+              width={30}
+              height={30}
             />
           </motion.button>
-          <span className="text-[6px] text-white mt-1">Streaks</span>
+          <span
+            className={`text-[6px] mt-1 ${
+              state.claimableStreakReward
+                ? "text-white drop-shadow-[0_0_3px_rgba(255,255,255,0.7)]"
+                : "text-white"
+            }`}
+          >
+            Streaks
+          </span>
         </div>
 
         <div className="flex flex-col items-center w-[48px]">
           <motion.button
-            whileHover={{ scale: 1.02 }}
+            whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => {
               setShowSettings(true);
