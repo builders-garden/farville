@@ -305,7 +305,7 @@ export default function StreaksModal({ onClose }: { onClose: () => void }) {
                   </p>
                   <p>You miss a day and a frost will be used.</p>
                   <p>
-                    Didn&apos;t you have frosts? Your streak will
+                    Don&apos;t you have frosts? Your streak will
                     <span className="text-red-500 font-bold"> DIE</span>!
                   </p>
                   <p>The max number of frosts you can hold is 2.</p>
