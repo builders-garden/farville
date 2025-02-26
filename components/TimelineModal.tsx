@@ -10,7 +10,6 @@ import {
   TimelineItem,
   TimelineSeparator,
 } from "@/components/ui/timeline";
-import { useItems } from "@/hooks/use-items";
 import { DbItem } from "@/supabase/types";
 import {
   EXPANSION_COSTS,
@@ -22,6 +21,7 @@ import Image from "next/image";
 import { Card, CardContent } from "./ui/card";
 import { useUserMe } from "@/hooks/use-user-me";
 import { getCurrentLevelAndProgress } from "@/lib/utils";
+import { useGame } from "@/context/GameContext";
 
 interface TimelineData {
   level: number;
@@ -46,24 +46,6 @@ function extractTimelineData(items: DbItem[]): TimelineData[] {
       .filter((item) => item.requiredLevel === level)
       ?.map((item) => item.slug);
 
-    // let title;
-    // switch (level) {
-    //   case 2:
-    //     title = "Time to grow";
-    //     break;
-    //   case 5:
-    //     title = "Growing strong";
-    //     break;
-    //   case 10:
-    //     title = "Unstoppable";
-    //     break;
-    //   case 15:
-    //     title = "Legendary farmer";
-    //     break;
-    //   default:
-    //     title = undefined;
-    // }
-
     return {
       level,
       xp,
@@ -79,7 +61,6 @@ function extractTimelineData(items: DbItem[]): TimelineData[] {
 export default function TimelineModal({ onClose }: { onClose: () => void }) {
   const { safeAreaInsets } = useFrameContext();
   const [timelineData, setTimelineData] = useState<TimelineData[]>([]);
-  const { items, isLoading: isLoadingItems } = useItems();
   const { user, isLoading: isLoadingUser } = useUserMe();
   const [userStats, setUserStats] = useState<
     | {
@@ -89,11 +70,13 @@ export default function TimelineModal({ onClose }: { onClose: () => void }) {
     | undefined
   >(undefined);
 
+  const { state } = useGame();
+
   useEffect(() => {
-    if (!isLoadingItems && items) {
-      setTimelineData(extractTimelineData(items));
+    if (state.items) {
+      setTimelineData(extractTimelineData(state.items));
     }
-  }, [items, isLoadingItems]);
+  }, [state.items]);
 
   useEffect(() => {
     if (user) {
@@ -102,7 +85,7 @@ export default function TimelineModal({ onClose }: { onClose: () => void }) {
     }
   }, [user]);
 
-  const isLoading = isLoadingItems || isLoadingUser;
+  const isLoading = isLoadingUser;
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-start z-50">
