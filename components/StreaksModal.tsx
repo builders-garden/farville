@@ -20,6 +20,7 @@ import { useGame } from "@/context/GameContext";
 import { Plus } from "lucide-react";
 import ConfirmationModal from "./ConfirmationModal";
 import { getCurrentDayStreak, getStreakDates } from "@/lib/utils";
+import InfoModal from "./InfoModal";
 
 interface StreakReward {
   day: number;
@@ -46,6 +47,7 @@ export default function StreaksModal({ onClose }: { onClose: () => void }) {
     undefined
   );
   const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
+  const [isFrostInfoOpen, setIsFrostInfoOpen] = useState(false);
 
   const currentDayStreak = getCurrentDayStreak(
     state.streaks[0],
@@ -234,18 +236,31 @@ export default function StreaksModal({ onClose }: { onClose: () => void }) {
                   rounded-2xl p-4 py-3 border border-sky-600"
           >
             <div className="flex flex-row gap-3 justify-between">
-              <div className="flex flex-col h-auto justify-between">
-                <span className="text-sky-300 text-xs">Streak Frosts</span>
-                <span className="text-white text-sm font-bold">
+              <div className="flex flex-col h-auto justify-between gap-2">
+                <p className="flex flex-row items-center text-sky-300 text-xs gap-2">
+                  Streak Frosts
+                  {/* <button className="text-sky-300/70 hover:text-sky-300 transition-colors">
+                    <Info />
+                  </button> */}
+                </p>
+                <p className="text-white text-sm font-bold">
                   {frostsAvailable}
                   <span className="text-sm text-white/50">/2</span>
-                </span>
+                </p>
+                <div className="flex w-full">
+                  <button
+                    className="text-[8px] text-sky-200/80 hover:text-sky-200 transition-colors px-2 py-1 rounded-md border border-sky-200/80"
+                    onClick={() => setIsFrostInfoOpen(true)}
+                  >
+                    How it works?
+                  </button>
+                </div>
               </div>
-              <div className="flex gap-3">
+              <div className="flex gap-3 items-center">
                 {[...Array(MAX_FROSTS_QUANTITY)].map((_, i) => (
                   <div
                     key={i}
-                    className={`w-12 h-12 rounded-xl flex items-center justify-center
+                    className={`w-16 h-16 rounded-xl flex items-center justify-center
                   ${
                     i < frostsAvailable
                       ? "bg-gradient-to-br from-[#1E90FF]/80 to-[#00BFFF]/60 border-2 border-[#ADD8E6]/50 pointer-events-none"
@@ -259,8 +274,8 @@ export default function StreaksModal({ onClose }: { onClose: () => void }) {
                       <Image
                         src="/images/special/frost.png"
                         alt="Frost"
-                        width={32}
-                        height={32}
+                        width={38}
+                        height={38}
                       />
                     ) : (
                       <span className="text-[#ADD8E6] text-2xl font-bold">
@@ -272,16 +287,47 @@ export default function StreaksModal({ onClose }: { onClose: () => void }) {
               </div>
             </div>
           </motion.div>
+          {
+            // Frost Info Card
+            isFrostInfoOpen && (
+              <InfoModal
+                title="Streak Frosts"
+                icon="/images/special/frost.png"
+                onCancel={() => setIsFrostInfoOpen(false)}
+                options={{
+                  titleColor: "text-sky-200",
+                }}
+              >
+                <div className="flex flex-col gap-4 my-4 text-white/80 text-sm">
+                  <p>
+                    Streak Frosts are special items that will be used to keep
+                    your streak alive even if you missed a day.
+                  </p>
+                  <p>You miss a day and a frost will be used.</p>
+                  <p>
+                    Didn&apos;t you have frosts? Your streak will
+                    <span className="text-red-500 font-bold"> DIE</span>!
+                  </p>
+                  <p>The max number of frosts you can hold is 2.</p>
+                </div>
+              </InfoModal>
+            )
+          }
         </div>
         {isConfirmationOpen && (
           <ConfirmationModal
             title="Buy Streaks Frosts"
-            message={`Would you like to buy a frost for 🪙${FROST_COST} coins?`}
+            message={
+              state.user.coins >= FROST_COST
+                ? `Do you want to buy a Streak Frost for ${FROST_COST}🪙 coins?`
+                : `You don't have enough coins to buy a Streak Frost. One costs ${FROST_COST}🪙 coins.`
+            }
             onCancel={() => setIsConfirmationOpen(false)}
             onConfirm={() => {
               buyItem({ itemId: 29, quantity: 1 });
               setIsConfirmationOpen(false);
             }}
+            confirmDisabled={state.user.coins < FROST_COST}
           />
         )}
         <div className="flex flex-col w-full gap-1 p-6 pt-4 pb-4">
