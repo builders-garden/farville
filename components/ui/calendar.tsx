@@ -48,8 +48,7 @@ function Calendar({
         ),
         day_range_end: "day-range-end",
         day_selected: "!bg-[#FFB938] text-[#7e4e31]",
-        day_today:
-          "outline outline-[2px] outline-offset-2 outline-[#ffb938] text-yellow-500",
+        day_today: "outline outline-[2px] outline-offset-2 outline-[#ffb938]",
         day_outside: "day-outside text-[#6D4C2C] aria-selected:text-[#3e2600]",
         day_disabled:
           "day-disabled text-white !opacity-100 bg-gradient-to-br from-[#1786E4] to-[#0698D6]",
