@@ -322,3 +322,60 @@ export const perkBulk = async (
     },
   };
 };
+
+export const fertilizeBulk = async (
+  fid: number,
+  cells: { x: number; y: number }[]
+) => {
+  const userPerks = await getUserItemBySlug(fid, PerkType.Fertilizer);
+
+  if (!userPerks || userPerks.quantity < cells.length) {
+    return NextResponse.json({ error: "User does not have enough perks" });
+  }
+
+  const gridCells = await getGridCells(fid);
+
+  const nonPerkableCells = [];
+  const perkableCells = [];
+
+  for (const cell of cells) {
+    const gridCell = gridCells.find((gc) => gc.x === cell.x && gc.y === cell.y);
+    if (!gridCell) {
+      nonPerkableCells.push(gridCell);
+    } else if (!gridCell.plantedAt || !gridCell.harvestAt) {
+      nonPerkableCells.push(gridCell);
+    } else if (gridCell.isReadyToHarvest) {
+      nonPerkableCells.push(gridCell);
+    } else {
+      perkableCells.push({
+        ...gridCell,
+        harvestAt: new Date().toISOString(),
+        speedBoostedAt: new Date().toISOString(),
+      });
+    }
+  }
+
+  const updatedGridCells = await updateGridCellsBulk(fid, perkableCells);
+
+  if (updatedGridCells.length > 0) {
+    await removeUserItem(fid, userPerks.itemId, updatedGridCells.length);
+
+    await sendBatchToPostHog(
+      fid,
+      "applied-perk",
+      updatedGridCells.map((cell) => ({
+        cellId: `${cell.x}/${cell.y}`,
+        cropType: cell.cropType,
+        itemSlug: PerkType.Fertilizer,
+      }))
+    );
+  }
+
+  return {
+    type: ActionType.Fertilize,
+    cells: {
+      ok: updatedGridCells,
+      nok: nonPerkableCells,
+    },
+  };
+};
