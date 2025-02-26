@@ -1,6 +1,3 @@
-import { useFrameContext } from "@/context/FrameContext";
-import { motion } from "framer-motion";
-import Image from "next/image";
 import { Calendar } from "@/components/ui/calendar";
 import {
   Timeline,
@@ -10,16 +7,19 @@ import {
   TimelineItem,
   TimelineSeparator,
 } from "@/components/ui/timeline";
-import { useEffect, useState } from "react";
+import { useFrameContext } from "@/context/FrameContext";
+import { useGame } from "@/context/GameContext";
 import {
   FROST_COST,
   MAX_FROSTS_QUANTITY,
   MONTHLY_REWARDS,
 } from "@/lib/game-constants";
-import { useGame } from "@/context/GameContext";
-import { Plus } from "lucide-react";
-import ConfirmationModal from "./ConfirmationModal";
 import { getCurrentDayStreak, getStreakDates } from "@/lib/utils";
+import { motion } from "framer-motion";
+import { Plus } from "lucide-react";
+import Image from "next/image";
+import { useEffect, useState } from "react";
+import ConfirmationModal from "./ConfirmationModal";
 import InfoModal from "./InfoModal";
 
 interface StreakReward {
@@ -300,15 +300,15 @@ export default function StreaksModal({ onClose }: { onClose: () => void }) {
               >
                 <div className="flex flex-col gap-4 my-4 text-white/80 text-sm">
                   <p>
-                    Streak Frosts are special items that will be used to keep
-                    your streak alive even if you missed a day.
+                    Streak Frosts are special items that protect your streak,
+                    even if you miss a day.
                   </p>
-                  <p>You miss a day and a frost will be used.</p>
+                  <p>If you skip a day, a Frost will be automatically used.</p>
                   <p>
-                    Don&apos;t you have frosts? Your streak will
+                    Out of Frosts? Your streak will
                     <span className="text-red-500 font-bold"> DIE</span>!
                   </p>
-                  <p>The max number of frosts you can hold is 2.</p>
+                  <p>You can hold a maximum of 2 Frosts at a time.</p>
                 </div>
               </InfoModal>
             )
