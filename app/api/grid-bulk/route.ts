@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { SeedType, PerkType, ActionType } from "@/types/game";
-import { harvestBulk, perkBulk, plantBulk } from "./utils";
+import { fertilizeBulk, harvestBulk, perkBulk, plantBulk } from "./utils";
 
 export interface GridBulkRequest {
   action: ActionType;
@@ -71,6 +71,12 @@ export const POST = async (req: NextRequest) => {
         return NextResponse.json({
           success: true,
           data: perkResult,
+        });
+      case ActionType.Fertilize:
+        const fertilizeResult = await fertilizeBulk(Number(fid), cells);
+        return NextResponse.json({
+          success: true,
+          data: fertilizeResult,
         });
       default:
         return NextResponse.json({ error: "Invalid action" }, { status: 400 });

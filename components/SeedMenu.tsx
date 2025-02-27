@@ -37,7 +37,6 @@ export default function SeedMenu() {
     right: false,
   });
 
-
   // Add scroll detection
   const checkScroll = useCallback(() => {
     if (!scrollContainerRef.current) return;
@@ -133,9 +132,7 @@ export default function SeedMenu() {
         >
           {state.items
             .filter(
-              (item) =>
-                item.category === "seed" ||
-                (item.category === "perk" && item.slug !== "fertilizer")
+              (item) => item.category === "seed" || item.category === "perk"
             )
             .sort((a, b) => {
               // Sort seeds first, then perks
@@ -154,7 +151,10 @@ export default function SeedMenu() {
                   : perk?.quantity || 0;
 
               return (
-                <div key={item.id} className="py-1 px-1">
+                <div
+                  key={item.id}
+                  className="py-1 px-1"
+                >
                   <motion.button
                     onClick={() => handleClick(item)}
                     className={`

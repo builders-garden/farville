@@ -179,6 +179,8 @@ export function GameProvider({
           ? "Planting..."
           : operation.action === ActionType.ApplyPerk
           ? "Boosting..."
+          : operation.action === ActionType.Fertilize
+          ? "Fertilizing..."
           : "Processing..."
       );
       setToastIds((prev) => new Map(prev).set(operation.action, toastId!));
