@@ -17,6 +17,7 @@ import {
   DbUserHasQuestWithQuest,
   InsertDbUserHasQuest,
   DbUserHasQuestStatus,
+  DbUserHarvestedCrop,
 } from "./types";
 import {
   CROP_DATA,
@@ -1422,4 +1423,80 @@ export const getQuestLeaderboard = async (
   if (!data.length) return [];
 
   return data;
+};
+
+// User Harvested Crops queries
+export const getUserHarvestedCrops = async (
+  fid: number
+): Promise<DbUserHarvestedCrop[]> => {
+  const { data, error } = await supabase
+    .from("user_harvested_crops")
+    .select("*")
+    .eq("fid", fid);
+
+  if (error) throw error;
+  return data;
+};
+
+export const getUserHarvestedCrop = async (
+  fid: number,
+  crop: string
+): Promise<DbUserHarvestedCrop | null> => {
+  const { data, error } = await supabase
+    .from("user_harvested_crops")
+    .select("*")
+    .eq("fid", fid)
+    .eq("crop", crop)
+    .maybeSingle();
+
+  if (error) throw error;
+  return data;
+};
+
+export const updateUserHarvestedCrop = async (
+  fid: number,
+  crop: string,
+  quantity: number
+): Promise<DbUserHarvestedCrop> => {
+  const { data, error } = await supabase
+    .from("user_harvested_crops")
+    .upsert({ fid, crop, quantity }, { onConflict: "fid,crop" })
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+};
+
+export const incrementUserHarvestedCrop = async (
+  fid: number,
+  crop: string,
+  amount: number = 1
+): Promise<DbUserHarvestedCrop> => {
+  // First try to get existing record
+  const existingCrop = await getUserHarvestedCrop(fid, crop);
+
+  const newQuantity = (existingCrop?.quantity || 0) + amount;
+
+  const { data, error } = await supabase
+    .from("user_harvested_crops")
+    .upsert({ fid, crop, quantity: newQuantity }, { onConflict: "fid,crop" })
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+};
+
+export const deleteUserHarvestedCrop = async (
+  fid: number,
+  crop: string
+): Promise<void> => {
+  const { error } = await supabase
+    .from("user_harvested_crops")
+    .delete()
+    .eq("fid", fid)
+    .eq("crop", crop);
+
+  if (error) throw error;
 };

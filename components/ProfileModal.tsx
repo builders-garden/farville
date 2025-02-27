@@ -2,23 +2,28 @@
 
 import { motion } from "framer-motion";
 import Image from "next/image";
-import { useUserMe } from "@/hooks/use-user-me";
 import { Card, CardContent } from "./ui/card";
+import { useGame } from "@/context/GameContext";
+import { Statistic } from "./profile/Statistic";
+import { useState } from "react";
+import InfoModal from "./InfoModal";
+import { HarvestHonour } from "./profile/HarvestHonour";
 
-const sampleGoldCrops = [
-  "carrot",
-  "tomato",
-  "potato",
-  "wheat",
-  "corn",
-  "lettuce",
-  "pumpkin",
-  "watermelon",
-];
+const sampleGoldCrops = ["carrot", "potato", "corn"];
 // const sampleLegendaryCrops = ["pumpkin", "watermelon"];
 
 export default function ProfileModal({ onClose }: { onClose: () => void }) {
-  const { user } = useUserMe();
+  const { state } = useGame();
+  const [isWhatIsThisOpen, setIsWhatIsThisOpen] = useState(false);
+
+  const harvestHonours = [
+    {
+      crop: "carrot",
+      title: "Carrot King",
+      count: 30,
+      nextGoal: 50,
+    },
+  ];
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-start z-50">
@@ -56,90 +61,141 @@ export default function ProfileModal({ onClose }: { onClose: () => void }) {
 
           <div className="space-y-4 overflow-y-auto h-[calc(100vh-100px)] pb-4 pr-2 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-[#6D4B2B] [&::-webkit-scrollbar-thumb]:bg-[#8A5E3B]">
             {/* Profile Information */}
-            <div className="flex flex-col items-center gap-12">
-              <Card
-                className={`bg-gradient-to-br from-[#6D4C2C] to-[#5B4120] rounded-lg border-none`}
-              >
-                <CardContent className="flex flex-row items-start gap-4 p-4">
-                  <div className="relative">
-                    <div className="-top-8 -left-4 w-28 h-28 absolute z-50">
-                      <Image
-                        src="/images/profile/farmer-hat.png"
-                        alt="Farmer Hat"
-                        width={160}
-                        height={160}
-                      />
+            <div className="flex flex-col items-center gap-8">
+              <Card className="bg-gradient-to-br from-[#6D4C2C] to-[#5B4120] rounded-lg border-none w-full max-w-2xl">
+                <CardContent className="flex flex-row justify-between w-full gap-4 p-4">
+                  <div className="flex flex-col gap-4 w-[45%]">
+                    <div className="relative mt-2">
+                      <div className="w-20 h-20 relative rounded-full overflow-hidden border-4 border-[#feb938]">
+                        <Image
+                          src={
+                            state.user?.avatarUrl || "/images/icons/avatar.png"
+                          }
+                          alt="Profile"
+                          layout="fill"
+                        />
+                      </div>
+                      <div className="absolute -top-2 right-2 bg-[#5ae88e] rounded-lg flex items-center justify-center z-80 p-1">
+                        <span className="text-[#7E4E31] font-bold text-[10px]">
+                          Level {state.level}
+                        </span>
+                      </div>
                     </div>
-                    <div className="top-8 w-20 h-20 relative rounded-full overflow-hidden [image-rendering:pixelated] border-4 border-[#feb938]">
-                      <Image
-                        src={user?.avatarUrl || "/images/icons/avatar.png"}
-                        alt="Profile"
-                        layout="fill"
-                      />
+                    <div className="flex flex-col gap-1">
+                      <h3 className="text-white/90 font-bold text-[10px]">
+                        {state.user?.displayName.length > 10
+                          ? state.user?.displayName.slice(0, 10) + "..."
+                          : state.user?.displayName}
+                      </h3>
+                      <p className="text-white/70 text-[8px]">
+                        {state.user?.username}
+                      </p>
                     </div>
                   </div>
-                  <div className="flex flex-col gap-2">
-                    <h3 className="text-white/90 font-bold text-sm">
-                      {user?.displayName}
-                    </h3>
-                    <p className="text-white/70 text-xs">{user?.username}</p>
-                    <p className="text-white/50 text-[8px]">
-                      Farmer since 2025-02-24
-                    </p>
-                    <hr className="opacity-30 my-2" />
-                    <div className="flex flex-row items-center justify-between w-full">
-                      <div className="flex flex-row items-center gap-1 text-white/80">
-                        <span className="text-xs">{123}</span>
-                        <Image
-                          src="/images/special/fire.png"
-                          alt="Streak"
-                          width={24}
-                          height={24}
-                        />
-                      </div>
-                      <div className="flex flex-row items-center gap-1 text-white/80">
-                        <p className="text-xs">
-                          {user?.xp || 0}
-                          <span className="ml-1">XP</span>
-                        </p>
-                        <Image
-                          src="/images/icons/experience.png"
-                          alt="XP"
-                          width={24}
-                          height={24}
-                        />
-                      </div>
-                    </div>
+                  <div className="flex flex-col gap-2 text-white/80 w-[55%]">
+                    <Statistic
+                      title="Experience"
+                      image="/images/icons/experience.png"
+                      value={`${state.user?.xp || 0} XP`}
+                    />
+                    <Statistic
+                      title="Farmer since"
+                      image="/images/icons/farmer.png"
+                      value={new Date(
+                        state.user.createdAt
+                      ).toLocaleDateString()}
+                    />
+                    <Statistic
+                      title="Streak"
+                      image="/images/special/fire.png"
+                      value={`${state.streaks.length.toString()} days`}
+                    />
                   </div>
                 </CardContent>
               </Card>
 
-              <Card
-                className={`bg-gradient-to-br from-[#6D4C2C] to-[#5B4120] rounded-lg border-none w-full max-w-2xl`}
-              >
-                <CardContent className="p-4">
-                  <h4 className="text-white/90 font-bold mb-3">Achievements</h4>
-                  <div className="grid grid-cols-4 gap-4 my-8">
-                    {sampleGoldCrops?.map((crop, index) => (
-                      <div
-                        key={index}
-                        className="relative w-16 h-16 [image-rendering:pixelated] mx-auto rounded-xl
+              {/* Glowing crops section */}
+              <div className="w-full flex flex-col gap-2">
+                <div className="flex flex-row items-center justify-between">
+                  <h3 className="text-white/90 text-sm font-bold">
+                    Glowing crops
+                  </h3>
+                  <button
+                    className="text-[8px] text-white/70 hover:text-white/90 transition-colors px-2 py-1 rounded-md 
+                    border-2 border-[#8A5E3B] hover:border-[#feb938]"
+                    onClick={() => setIsWhatIsThisOpen(true)}
+                  >
+                    What&apos;s this?
+                  </button>
+                  {isWhatIsThisOpen && (
+                    <InfoModal
+                      title="Glowing crops"
+                      onCancel={() => setIsWhatIsThisOpen(false)}
+                      options={{
+                        titleColor: "text-[#feb938]",
+                      }}
+                    >
+                      <div className="flex flex-col gap-4 my-4 text-white/90 text-[10px]">
+                        <p>
+                          Here you can showcase up to 3 of your most prized
+                          crops.
+                        </p>
+                        <p>
+                          These are special crops (gold or legendary) that other
+                          farmers can see when they visit your profile.
+                        </p>
+                        <p>
+                          <strong>Tip:</strong> Select your rarest and most
+                          valuable crops to display your farming achievements to
+                          the community!
+                        </p>
+                      </div>
+                    </InfoModal>
+                  )}
+                </div>
+                <Card
+                  className={`bg-gradient-to-br from-[#6D4C2C] to-[#5B4120] rounded-lg border-none w-full max-w-2xl`}
+                >
+                  <CardContent className="p-4">
+                    <div className="grid grid-cols-3 gap-4">
+                      {sampleGoldCrops?.map((crop, index) => (
+                        <div
+                          key={index}
+                          className="relative w-24 h-24 [image-rendering:pixelated] mx-auto rounded-xl
                         shadow-lg shadow-yellow-400/50 transition-shadow duration-300
                         bg-gradient-to-br from-yellow-300 via-yellow-500 to-yellow-300
-                        before:absolute before:inset-0 before:border-2 before:border-yellow-400 before:rounded-xl
-                        before:animate-[borderMove_2s_linear_infinite]"
-                      >
-                        <Image
-                          src={`/images/crop/${crop}.png`}
-                          alt={crop}
-                          layout="fill"
-                          className="animate-[bounce_2s_ease-in-out_infinite]"
-                        />
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
+                        before:absolute before:inset-0 before:border-2 before:border-yellow-400 before:rounded-xl"
+                        >
+                          <Image
+                            src={`/images/crop/${crop}.png`}
+                            alt={crop}
+                            layout="fill"
+                            className="animate-[pulse_2s_ease-in-out_infinite]"
+                            style={{
+                              animation: "pulse 4s ease-in-out infinite",
+                            }}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              <div className="w-full flex flex-col gap-2">
+                <h3 className="text-white/90 text-sm font-bold">
+                  Harvest Honours
+                </h3>
+                {harvestHonours.map((honour, index) => (
+                  <HarvestHonour
+                    key={index}
+                    crop={honour.crop}
+                    title={honour.title}
+                    count={honour.count}
+                    nextGoal={honour.nextGoal}
+                  />
+                ))}
+              </div>
             </div>
           </div>
         </div>

@@ -1,0 +1,58 @@
+import { Card, CardContent } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
+import Image from "next/image";
+
+interface HarvestHonourProps {
+  crop: string;
+  title: string;
+  count: number;
+  nextGoal: number;
+}
+
+export const HarvestHonour = ({
+  crop,
+  title,
+  count,
+  nextGoal,
+}: HarvestHonourProps) => {
+  const trophies = [1, 2, 3, 4];
+
+  return (
+    <Card className="bg-gradient-to-br from-[#6D4C2C] to-[#5B4120] rounded-lg border-none w-full">
+      <CardContent className="flex flex-col items-center gap-2 p-4">
+        <div className="flex flex-row justify-between w-full">
+          {
+            // render trophies
+            trophies.map((trophy) => (
+              <div
+                key={trophy}
+                className="h-12 w-12 bg-[#7E4E31] rounded-lg flex items-center justify-center"
+              >
+                🏆
+              </div>
+            ))
+          }
+        </div>
+        <hr className="w-full opacity-30 my-2" />
+        <div className="flex flex-row w-full gap-4">
+          <div className="relative w-12 h-12 mx-auto rounded-md [image-rendering:pixelated] bg-[#7E4E31]">
+            <Image src={`/images/crop/${crop}.png`} alt={crop} layout="fill" />
+          </div>
+
+          <div className="flex-1 text-white/90">
+            <div className="flex flex-row justify-between items-center">
+              <p className="text-sm font-bold">{title}</p>
+              <p className="text-xs">
+                {count}/{nextGoal}
+              </p>
+            </div>
+            <Progress
+              value={(count / nextGoal) * 100}
+              className="mt-2 bg-[#7E4E31]"
+            />
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};

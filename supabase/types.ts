@@ -146,3 +146,12 @@ export type DbUserFrost = {
   streakId: number;
   frozenAt: Date;
 };
+
+export interface DbUserHarvestedCrop {
+  fid: number;
+  crop: string;
+  quantity: number;
+  createdAt: string;
+}
+
+export type InsertDbUserHarvestedCrop = Omit<DbUserHarvestedCrop, "createdAt">;
