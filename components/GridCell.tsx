@@ -242,7 +242,7 @@ export default function GridCell({ cell }: GridCellProps) {
       (item) => item.item.slug === boostType
     );
     if (boostItem) {
-      playSound("boost");
+      playSound("fertilize");
 
       addGridOperation({
         action: ActionType.ApplyPerk,
@@ -294,10 +294,11 @@ export default function GridCell({ cell }: GridCellProps) {
       ) {
         return;
       }
+
       if (
         selectedPerk &&
-        ((selectedPerk.item.slug === "fertilizer" && isValidFertilizerTarget) ||
-          (selectedPerk.item.slug !== "fertilizer" && isValidSpeedBoostTarget))
+        selectedPerk.item.slug !== "fertilizer" &&
+        isValidSpeedBoostTarget
       ) {
         playSound("fertilize");
 
@@ -317,6 +318,45 @@ export default function GridCell({ cell }: GridCellProps) {
             harvestAt: new Date(
               new Date(cell.harvestAt!).getTime() - boostTime
             ).toISOString(),
+            speedBoostedAt: new Date().toISOString(),
+          },
+        ]);
+
+        updateUserItems([
+          {
+            itemId: selectedPerk.itemId,
+            quantity: remainingUses - 1,
+            item: {
+              ...selectedPerk.item,
+              category: "perk",
+            },
+          },
+        ]);
+
+        setRemainingUses(remainingUses - 1);
+        if (remainingUses <= 1) {
+          setSelectedPerk(null);
+        }
+        return;
+      }
+
+      if (
+        selectedPerk &&
+        selectedPerk.item.slug === "fertilizer" &&
+        isValidFertilizerTarget
+      ) {
+        playSound("fertilize");
+
+        addGridOperation({
+          action: ActionType.Fertilize,
+          cells: [{ x: cell.x, y: cell.y }],
+        });
+
+        updateGridCells([
+          {
+            x: cell.x,
+            y: cell.y,
+            harvestAt: new Date().toISOString(),
             speedBoostedAt: new Date().toISOString(),
           },
         ]);
@@ -454,10 +494,39 @@ export default function GridCell({ cell }: GridCellProps) {
     }
   };
 
-  // TODO: handle fertilize with new bulk API
   const handleFertilize = async () => {
-    if (hasFertilizer) {
-      // fertilize({ x: cell.x, y: cell.y, setIsLoading });
+    const fertilizerItem = state.inventory.find(
+      (item) => item.item.slug === "fertilizer"
+    );
+    if (hasFertilizer && fertilizerItem) {
+      playSound("fertilize");
+
+      addGridOperation({
+        action: ActionType.Fertilize,
+        cells: [{ x: cell.x, y: cell.y }],
+      });
+
+      updateGridCells([
+        {
+          x: cell.x,
+          y: cell.y,
+          harvestAt: new Date().toISOString(),
+          speedBoostedAt: new Date().toISOString(),
+        },
+      ]);
+
+      updateUserItems([
+        {
+          itemId: fertilizerItem.id,
+          quantity: remainingUses - 1,
+          item: {
+            ...fertilizerItem.item,
+            category: "fertilizer",
+          },
+        },
+      ]);
+
+      setRemainingUses(remainingUses - 1);
       setShowPopup(false);
     }
   };

@@ -5,6 +5,7 @@ interface ConfirmationModalProps {
   message: string;
   onConfirm: () => void;
   onCancel: () => void;
+  confirmDisabled?: boolean;
 }
 
 export default function ConfirmationModal({
@@ -12,6 +13,7 @@ export default function ConfirmationModal({
   message,
   onConfirm,
   onCancel,
+  confirmDisabled = false,
 }: ConfirmationModalProps) {
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60]">
@@ -33,8 +35,13 @@ export default function ConfirmationModal({
           </button>
           <button
             onClick={onConfirm}
-            className="flex-1 py-2 px-4 rounded bg-[#FFB938] text-[#7E4E31] hover:bg-[#ffc65c] 
-                     transition-colors text-sm font-medium"
+            className={`flex-1 py-2 px-4 rounded bg-[#FFB938] text-[#7E4E31] hover:bg-[#ffc65c] 
+                 transition-colors text-sm font-medium ${
+                   confirmDisabled
+                     ? "opacity-50 cursor-not-allowed hover:bg-[#FFB938]"
+                     : ""
+                 }`}
+            disabled={confirmDisabled}
           >
             Confirm
           </button>

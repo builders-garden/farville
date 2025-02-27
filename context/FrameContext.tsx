@@ -26,7 +26,9 @@ export const useFrameContext = () => {
         } else {
           setError("Failed to load Farcaster context");
         }
-        await sdk.actions.ready();
+        await sdk.actions.ready({
+          disableNativeGestures: true,
+        });
       } catch (err) {
         setError(
           err instanceof Error ? err.message : "Failed to initialize SDK"
