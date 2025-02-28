@@ -541,31 +541,6 @@ export const ACHIEVEMENTS_THRESHOLDS = [
     ],
   },
   {
-    crop: CropType.Pumpkin,
-    thresholds: [100, 1000, 10000, 1000000],
-    titles: [
-      "Pumpkin Pie",
-      "Great Pumpkin",
-      "Headless Horseman",
-      "Jack Skellington",
-    ],
-  },
-  {
-    crop: CropType.Tomato,
-    thresholds: [100, 1000, 10000, 1000000],
-    titles: ["Tomato Newbie", "Sauce Boss", "Ketchup King", "Lord of Lycopene"],
-  },
-  {
-    crop: CropType.Potato,
-    thresholds: [100, 1000, 10000, 1000000],
-    titles: [
-      "Small Fry",
-      "Spud Buddy",
-      "Tater Emperor",
-      "Couch Potato Supreme",
-    ],
-  },
-  {
     crop: CropType.Wheat,
     thresholds: [100, 1000, 10000, 1000000],
     titles: ["Wheat Lover", "Wheat Farmer", "Wheat King", "Bread Winner"],
@@ -583,6 +558,16 @@ export const ACHIEVEMENTS_THRESHOLDS = [
       "Salad Tosser",
       "Caesar Supreme",
       "Lettuce Legend",
+    ],
+  },
+  {
+    crop: CropType.Potato,
+    thresholds: [100, 1000, 10000, 1000000],
+    titles: [
+      "Small Fry",
+      "Spud Buddy",
+      "Tater Emperor",
+      "Couch Potato Supreme",
     ],
   },
   {
@@ -606,6 +591,11 @@ export const ACHIEVEMENTS_THRESHOLDS = [
     ],
   },
   {
+    crop: CropType.Tomato,
+    thresholds: [100, 1000, 10000, 1000000],
+    titles: ["Tomato Newbie", "Sauce Boss", "Ketchup King", "Lord of Lycopene"],
+  },
+  {
     crop: CropType.Strawberry,
     thresholds: [100, 1000, 10000, 1000000],
     titles: [
@@ -623,6 +613,16 @@ export const ACHIEVEMENTS_THRESHOLDS = [
       "Seed Spitter",
       "Rind Ruler",
       "Lord of the Rinds",
+    ],
+  },
+  {
+    crop: CropType.Pumpkin,
+    thresholds: [100, 1000, 10000, 1000000],
+    titles: [
+      "Pumpkin Pie",
+      "Great Pumpkin",
+      "Headless Horseman",
+      "Jack Skellington",
     ],
   },
 ];

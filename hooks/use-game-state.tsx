@@ -1,13 +1,20 @@
 import { useUserItems, UserItem } from "./use-user-items";
 import { useEffect, useState, useCallback } from "react";
 import { useGridCells } from "./use-grid-cells";
-import { DbGridCell, DbItem, DbStreak, DbUser } from "@/supabase/types";
+import {
+  DbGridCell,
+  DbItem,
+  DbStreak,
+  DbUser,
+  DbUserHarvestedCrop,
+} from "@/supabase/types";
 import { useItems } from "./use-items";
 import { getCurrentDayStreak, getCurrentLevelAndProgress } from "@/lib/utils";
 import { useUserMe } from "./use-user-me";
 import { useUserQuests } from "./use-quests";
 import { useUpdateUserFrosts, useUserStreaks } from "./use-user-streaks";
 import { useUserFrosts } from "./use-user-frosts";
+import { useUserHarvestedCrops } from "./use-user-harvested-crops";
 
 export interface RefetchType {
   all: () => Promise<void>;
@@ -39,12 +46,14 @@ export interface GameState {
   claimableQuests: boolean;
   streakUpdated: boolean;
   streaks: DbStreak[];
+  currentStreakDays: number;
   specialItems: UserItem[];
   frosts: {
     allFrostsDates: Date[];
     lastStreakDates: Date[];
   };
   claimableStreakReward: boolean;
+  harvestedCropsSummary: DbUserHarvestedCrop[];
 }
 
 export const useGameState = () => {
@@ -67,12 +76,14 @@ export const useGameState = () => {
     claimableQuests: false,
     streakUpdated: false,
     streaks: [],
+    currentStreakDays: 0,
     specialItems: [],
     frosts: {
       allFrostsDates: [],
       lastStreakDates: [],
     },
     claimableStreakReward: false,
+    harvestedCropsSummary: [],
   });
   const {
     userItems,
@@ -107,6 +118,12 @@ export const useGameState = () => {
     refetchUserItems,
     refetchFrosts,
   });
+
+  const {
+    userHarvestedCrops,
+    isLoading: isUserHarvestedCropsLoading,
+    refetch: refetchUserHarvestedCrops,
+  } = useUserHarvestedCrops(state?.user?.fid);
 
   const updateUserState = useCallback(() => {
     if (user) {
@@ -190,6 +207,15 @@ export const useGameState = () => {
     }
   }, [userFrosts]);
 
+  const updateUserHarvestedCropsState = useCallback(() => {
+    if (userHarvestedCrops) {
+      setState((prevState) => ({
+        ...prevState!,
+        harvestedCropsSummary: userHarvestedCrops,
+      }));
+    }
+  }, [userHarvestedCrops]);
+
   useEffect(() => {
     updateUserState();
   }, [user, updateUserState]);
@@ -251,11 +277,13 @@ export const useGameState = () => {
       if (currentDayStreak > lastClaimed) {
         setState((prevState) => ({
           ...prevState!,
+          currentStreakDays: currentDayStreak,
           claimableStreakReward: true,
         }));
       } else {
         setState((prevState) => ({
           ...prevState!,
+          currentStreakDays: currentDayStreak,
           claimableStreakReward: false,
         }));
       }
@@ -266,6 +294,12 @@ export const useGameState = () => {
     updateUserFrostsState();
   }, [userFrosts, updateUserFrostsState]);
 
+  useEffect(() => {
+    if (state.user?.fid) {
+      updateUserHarvestedCropsState();
+    }
+  }, [userHarvestedCrops, updateUserHarvestedCropsState, state.user?.fid]);
+
   const refetchAll = useCallback(async () => {
     await Promise.all([
       refetchUserItems(),
@@ -274,6 +308,7 @@ export const useGameState = () => {
       refetchItems(),
       refetchClaimableQuests(),
       refetchStreaks(),
+      refetchUserHarvestedCrops(),
     ]);
   }, [
     refetchUserItems,
@@ -282,6 +317,7 @@ export const useGameState = () => {
     refetchItems,
     refetchClaimableQuests,
     refetchStreaks,
+    refetchUserHarvestedCrops,
   ]);
 
   // Add new method to update grid cells directly
@@ -369,6 +405,20 @@ export const useGameState = () => {
     });
   }, []);
 
+  const updateUserHarvestedCrops = useCallback(
+    (newHarvestedCrops: DbUserHarvestedCrop[]) => {
+      setState((prevState) => {
+        if (!prevState) return prevState;
+
+        return {
+          ...prevState,
+          harvestedCropsSummary: newHarvestedCrops,
+        };
+      });
+    },
+    []
+  );
+
   const updateUser = useCallback(
     (newParams: {
       xp?: number;
@@ -404,7 +454,8 @@ export const useGameState = () => {
       gridCellsLoading ||
       claimableQuestsLoading ||
       streaksLoading ||
-      frostsLoading,
+      frostsLoading ||
+      isUserHarvestedCropsLoading,
     refetch: {
       all: refetchAll,
       userItems: async () => {
@@ -432,5 +483,6 @@ export const useGameState = () => {
     updateGridCells,
     updateUserItems,
     updateUser,
+    updateUserHarvestedCrops,
   };
 };

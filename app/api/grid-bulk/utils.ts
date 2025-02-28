@@ -12,7 +12,11 @@ import {
   updateUserXP,
 } from "@/lib/prisma/queries";
 import { getBoostTime } from "@/lib/utils";
-import { addUserItem, getGridCells } from "@/supabase/queries";
+import {
+  addUserItem,
+  getGridCells,
+  upsertUserHarvestedCrop,
+} from "@/supabase/queries";
 import { DbGridCell } from "@/supabase/types";
 import { ActionType, PerkType, SeedType } from "@/types/game";
 import { NextResponse } from "next/server";
@@ -174,6 +178,7 @@ export const harvestBulk = async (
       CROP_DATA[cropType].id,
       harvestCropSummary[cropType]
     );
+    await upsertUserHarvestedCrop(fid, cropType, harvestCropSummary[cropType]);
     await sendQuestsCalculation(
       fid,
       ActionType.Harvest,

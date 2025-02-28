@@ -6,31 +6,45 @@ interface HarvestHonourProps {
   crop: string;
   title: string;
   count: number;
-  nextGoal: number;
+  currentGoal: number;
+  step: number;
 }
 
 export const HarvestHonour = ({
   crop,
   title,
   count,
-  nextGoal,
+  currentGoal,
+  step,
 }: HarvestHonourProps) => {
   const trophies = [1, 2, 3, 4];
 
+  console.log(
+    `crop: ${crop}, count: ${count}, currentGoal: ${currentGoal}, step: ${step}`
+  );
   return (
     <Card className="bg-gradient-to-br from-[#6D4C2C] to-[#5B4120] rounded-lg border-none w-full">
       <CardContent className="flex flex-col items-center gap-2 p-4">
         <div className="flex flex-row justify-between w-full">
           {
             // render trophies
-            trophies.map((trophy) => (
-              <div
-                key={trophy}
-                className="h-12 w-12 bg-[#7E4E31] rounded-lg flex items-center justify-center"
-              >
-                🏆
-              </div>
-            ))
+            trophies.map((trophy) =>
+              step <= trophy ? (
+                <div
+                  key={trophy}
+                  className="h-12 w-12 bg-[#7E4E31] rounded-lg flex items-center justify-center opacity-50"
+                >
+                  🏆
+                </div>
+              ) : (
+                <div
+                  key={trophy}
+                  className="h-12 w-12 bg-[#7E4E31] rounded-lg flex items-center justify-center"
+                >
+                  🏆
+                </div>
+              )
+            )
           }
         </div>
         <hr className="w-full opacity-30 my-2" />
@@ -41,13 +55,13 @@ export const HarvestHonour = ({
 
           <div className="flex-1 text-white/90">
             <div className="flex flex-row justify-between items-center">
-              <p className="text-sm font-bold">{title}</p>
+              <p className="text-xs font-bold">{title}</p>
               <p className="text-xs">
-                {count}/{nextGoal}
+                {count}/{currentGoal}
               </p>
             </div>
             <Progress
-              value={(count / nextGoal) * 100}
+              value={(count / currentGoal) * 100}
               className="mt-2 bg-[#7E4E31]"
             />
           </div>

@@ -25,10 +25,10 @@ model User {
   user_donations_history_user_donations_history_donatorFidTousers  UserDonationHistory[] @relation("user_donations_history_donatorFidTousers")
   user_donations_history_user_donations_history_receiverFidTousers UserDonationHistory[] @relation("user_donations_history_receiverFidTousers")
   gridCells                                                        GridCell[]
+  UserHarvestedCrop                                                UserHarvestedCrop[]
   items                                                            UserHasItem[]
   quests                                                           UserHasQuest[]
   notifications                                                    UserNotification[]
-  UserHarvestedCrop                                                UserHarvestedCrop[]
 
   @@map("users")
 }
@@ -47,8 +47,8 @@ model Item {
   quests            Quest[]
   requests          Request[]
   user_grid_cells   GridCell[]
-  userItems         UserHasItem[]
   UserHarvestedCrop UserHarvestedCrop[]
+  userItems         UserHasItem[]
 
   @@map("items")
 }
@@ -192,20 +192,20 @@ model UserFrosts {
   @@map("user_frosts")
 }
 
+model UserHarvestedCrop {
+  fid       Int
+  crop      String
+  quantity  Int      @default(0)
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  cropItem  Item     @relation(fields: [crop], references: [slug], onDelete: NoAction, onUpdate: NoAction)
+  user      User     @relation(fields: [fid], references: [fid], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([fid, crop])
+  @@map("user_harvested_crops")
+}
+
 enum UserHasQuestStatus {
   incomplete
   completed
   claimed
-}
-
-model UserHarvestedCrop {
-  fid       Int
-  crop      String
-  quantity  Int
-  createdAt DateTime @default(now()) @db.Timestamptz(6)
-  user      User     @relation(fields: [fid], references: [fid], onDelete: NoAction, onUpdate: NoAction)
-  cropItem  Item     @relation(fields: [crop], references: [slug], onDelete: NoAction, onUpdate: NoAction)
-
-  @@id([fid, crop])
-  @@map("user_harvested_crops")
 }

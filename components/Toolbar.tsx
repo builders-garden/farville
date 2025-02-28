@@ -189,10 +189,11 @@ export default function Toolbar({
             className="w-12 h-12 rounded-lg flex items-center justify-center bg-[#8B5E3C] hover:bg-[#6d4c2c] transition-colors"
           >
             <Image
-              src="/images/icons/farmer.png"
+              src={state.user?.avatarUrl || "/images/icons/farmer.png"}
               alt="Profile"
               width={36}
               height={36}
+              className={state.user?.avatarUrl ? "rounded-full" : "rounded-md"}
             />
           </motion.button>
           <span className="text-[6px] text-white mt-1">Profile</span>

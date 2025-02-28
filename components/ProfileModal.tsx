@@ -8,22 +8,51 @@ import { Statistic } from "./profile/Statistic";
 import { useState } from "react";
 import InfoModal from "./InfoModal";
 import { HarvestHonour } from "./profile/HarvestHonour";
+import { DbUserHarvestedCrop } from "@/supabase/types";
+import { ACHIEVEMENTS_THRESHOLDS } from "@/lib/game-constants";
 
 const sampleGoldCrops = ["carrot", "potato", "corn"];
 // const sampleLegendaryCrops = ["pumpkin", "watermelon"];
 
+const calculateHarvestHonours = (userHarvestedCrops: DbUserHarvestedCrop[]) => {
+  // calculate the achievements status based on the user's harvested crops and the thresholds
+  console.log("userHarvestedCrops", userHarvestedCrops);
+  const achievements = ACHIEVEMENTS_THRESHOLDS.map((threshold) => {
+    const count =
+      userHarvestedCrops.find((crop) => crop.crop === threshold.crop)
+        ?.quantity || 0;
+
+    // calculate the title and current goal based on the count and the threshold
+    let currentGoal = 0;
+    let title = "";
+    let achievementStep = 1;
+
+    for (const goal of threshold.thresholds) {
+      if (count < goal) {
+        currentGoal = goal;
+        title = threshold.titles[achievementStep - 1];
+        break;
+      } else {
+        achievementStep++;
+      }
+    }
+
+    return {
+      step: achievementStep,
+      crop: threshold.crop,
+      title,
+      count,
+      currentGoal,
+    };
+  });
+
+  return achievements;
+};
+
 export default function ProfileModal({ onClose }: { onClose: () => void }) {
   const { state } = useGame();
   const [isWhatIsThisOpen, setIsWhatIsThisOpen] = useState(false);
-
-  const harvestHonours = [
-    {
-      crop: "carrot",
-      title: "Carrot King",
-      count: 30,
-      nextGoal: 50,
-    },
-  ];
+  const harvestHonours = calculateHarvestHonours(state.harvestedCropsSummary);
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-start z-50">
@@ -108,7 +137,7 @@ export default function ProfileModal({ onClose }: { onClose: () => void }) {
                     <Statistic
                       title="Streak"
                       image="/images/special/fire.png"
-                      value={`${state.streaks.length.toString()} days`}
+                      value={`${state.currentStreakDays} days`}
                     />
                   </div>
                 </CardContent>
@@ -192,7 +221,8 @@ export default function ProfileModal({ onClose }: { onClose: () => void }) {
                     crop={honour.crop}
                     title={honour.title}
                     count={honour.count}
-                    nextGoal={honour.nextGoal}
+                    currentGoal={honour.currentGoal}
+                    step={honour.step}
                   />
                 ))}
               </div>

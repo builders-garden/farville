@@ -7,75 +7,86 @@ import { getCurrentLevelAndProgress } from "@/lib/utils";
 import Image from "next/image";
 
 export default function Header() {
-  const { state, setShowTimeline } = useGame();
+  const { state, setShowTimeline, setShowStreaks } = useGame();
   const { progress } = getCurrentLevelAndProgress(state.experience);
 
   return (
-    <div className="bg-[#8B5E3C]/40 px-3 py-2 shadow-lg bg-opacity-95 backdrop-blur-sm border-b-2 border-[#6d4c2c]/50 z-30">
-      <div className="flex justify-between items-center max-w-4xl mx-auto">
-        <div
-          className="h-[42px] px-4 rounded-xl flex items-center cursor-pointer"
-          onClick={() => setShowTimeline(true)}
-        >
-          <div className="w-fit">
-            <div className="flex items-center justify-between gap-1">
-              <span className="text-white/90 font-semibold tracking-wide text-xs flex items-center gap-1">
-                <Image
-                  src="/images/icons/experience.png"
-                  alt="Level"
-                  width={16}
-                  height={16}
-                />
-                {state.level}
-              </span>
-              <span className="text-white/70 text-[8px]">
-                ({state.experience.toLocaleString()}/
-                {(
-                  LEVEL_XP_THRESHOLDS[
-                    Math.min(
-                      LEVEL_XP_THRESHOLDS.findIndex(
-                        (threshold) => state.experience < threshold
-                      ),
-                      LEVEL_XP_THRESHOLDS.length - 1
-                    )
-                  ] || LEVEL_XP_THRESHOLDS[LEVEL_XP_THRESHOLDS.length - 1]
-                ).toLocaleString()}
-                <span className="ml-0.5 text-[8px]">XP</span>)
-              </span>
-            </div>
-            <div className="mt-1.5 h-1.5 w-full bg-[#5d3c1c] rounded-full overflow-hidden">
-              <motion.div
-                className="h-full bg-[#FFB938]"
-                initial={{ width: 0 }}
-                animate={{ width: `${progress}%` }}
-                transition={{ duration: 0.5 }}
+    <div className="bg-[#8B5E3C]/40 flex flex-row justify-between items-center px-3 py-2 shadow-lg bg-opacity-95 backdrop-blur-sm border-b-2 border-[#6d4c2c]/50 z-30">
+      <div
+        className="h-[42px] px-4 rounded-xl flex items-center cursor-pointer"
+        onClick={() => setShowTimeline(true)}
+      >
+        <div className="w-fit">
+          <div className="flex items-center justify-between gap-1">
+            <span className="text-white/90 font-semibold tracking-wide text-xs flex items-center gap-1">
+              <Image
+                src="/images/icons/experience.png"
+                alt="Level"
+                width={16}
+                height={16}
               />
-            </div>
+              {state.level}
+            </span>
+            <span className="text-white/70 text-[8px]">
+              ({state.experience.toLocaleString()}/
+              {(
+                LEVEL_XP_THRESHOLDS[
+                  Math.min(
+                    LEVEL_XP_THRESHOLDS.findIndex(
+                      (threshold) => state.experience < threshold
+                    ),
+                    LEVEL_XP_THRESHOLDS.length - 1
+                  )
+                ] || LEVEL_XP_THRESHOLDS[LEVEL_XP_THRESHOLDS.length - 1]
+              ).toLocaleString()}
+              <span className="ml-0.5 text-[8px]">XP</span>)
+            </span>
+          </div>
+          <div className="mt-1.5 h-1.5 w-full bg-[#5d3c1c] rounded-full overflow-hidden">
+            <motion.div
+              className="h-full bg-[#FFB938]"
+              initial={{ width: 0 }}
+              animate={{ width: `${progress}%` }}
+              transition={{ duration: 0.5 }}
+            />
           </div>
         </div>
-
-        <motion.div
-          className="h-[42px] px-3 flex gap-1 items-center text-white/90 tracking-wide font-bold"
-          whileHover={{ scale: 1.02 }}
-          animate={{ rotate: [0, -1, 1, -1, 1, 0] }}
-          transition={{ duration: 0.5, repeat: Infinity, repeatDelay: 5 }}
-        >
-          <span
-            className={`${
-              state.coins > 9999 ? "text-sm" : "text-lg"
-            } mb-1 mr-1 mt-[-5px]`}
-          >
-            🪙
-          </span>
-          <span
-            className={`${
-              state.coins > 9999 ? "text-xs" : "text-lg"
-            } mb-1 mr-1`}
-          >
-            {state.coins}
-          </span>
-        </motion.div>
       </div>
+
+      {/* streak counter button */}
+      <motion.div
+        className="h-[42px] flex flex-row flex gap-1 items-center text-white/90 tracking-wide font-bold cursor-pointer"
+        whileHover={{ scale: 1.02 }}
+        animate={{ rotate: [0, -1, 1, -1, 1, 0] }}
+        transition={{ duration: 0.5, repeat: Infinity, repeatDelay: 5 }}
+        onClick={() => setShowStreaks(true)}
+      >
+        <Image
+          src="/images/special/fire.png"
+          alt="Streak"
+          width={20}
+          height={20}
+        />
+        <p
+          className={`${
+            state.currentStreakDays > 9999 ? "text-xs" : "text-md"
+          }`}
+        >
+          {state.currentStreakDays}
+        </p>
+      </motion.div>
+
+      <motion.div
+        className={`h-[42px] mr-1 flex gap-1 items-center text-white/90 tracking-wide font-bold ${
+          state.coins > 9999 ? "text-sm" : "text-md"
+        }`}
+        whileHover={{ scale: 1.02 }}
+        animate={{ rotate: [0, -1, 1, -1, 1, 0] }}
+        transition={{ duration: 0.5, repeat: Infinity, repeatDelay: 5 }}
+      >
+        <span className="mt-[-5px]">🪙</span>
+        <span>{state.coins}</span>
+      </motion.div>
     </div>
   );
 }

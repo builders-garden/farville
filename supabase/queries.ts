@@ -25,13 +25,14 @@ import {
   LEVEL_XP_THRESHOLDS,
   SPEED_BOOST,
 } from "@/lib/game-constants";
-import { PerkType } from "@/types/game";
+import { CropType, PerkType } from "@/types/game";
 import { getBoostTime, getCurrentLevelAndProgress } from "@/lib/utils";
 import {
   generateDailyQuests,
   generateMonthlyQuests,
   generateWeeklyQuests,
 } from "./quests";
+import { prisma } from "@/lib/prisma/client";
 
 export const getUsers = async (
   offset: number = 0,
@@ -1453,34 +1454,58 @@ export const getUserHarvestedCrop = async (
   return data;
 };
 
-export const updateUserHarvestedCrop = async (
+export const incrementUserHarvestedCrop = async (
+  fid: number,
+  crop: CropType,
+  amount: number
+): Promise<DbUserHarvestedCrop> => {
+  const updatedUserHarvestedCrop = await prisma.userHarvestedCrop.update({
+    where: {
+      fid_crop: {
+        fid,
+        crop,
+      },
+    },
+    data: {
+      quantity: {
+        increment: amount,
+      },
+    },
+  });
+
+  return {
+    fid: updatedUserHarvestedCrop.fid,
+    crop: updatedUserHarvestedCrop.crop,
+    quantity: updatedUserHarvestedCrop.quantity,
+    createdAt: updatedUserHarvestedCrop.createdAt.toLocaleDateString(),
+  };
+};
+
+export const upsertUserHarvestedCrop = async (
   fid: number,
   crop: string,
   quantity: number
 ): Promise<DbUserHarvestedCrop> => {
-  const { data, error } = await supabase
+  // First fetch the current user harvested crop
+  const { data: currentCrop } = await supabase
     .from("user_harvested_crops")
-    .upsert({ fid, crop, quantity }, { onConflict: "fid,crop" })
-    .select()
+    .select("*")
+    .eq("fid", fid)
+    .eq("crop", crop)
     .single();
 
-  if (error) throw error;
-  return data;
-};
-
-export const incrementUserHarvestedCrop = async (
-  fid: number,
-  crop: string,
-  amount: number = 1
-): Promise<DbUserHarvestedCrop> => {
-  // First try to get existing record
-  const existingCrop = await getUserHarvestedCrop(fid, crop);
-
-  const newQuantity = (existingCrop?.quantity || 0) + amount;
-
   const { data, error } = await supabase
     .from("user_harvested_crops")
-    .upsert({ fid, crop, quantity: newQuantity }, { onConflict: "fid,crop" })
+    .upsert(
+      {
+        fid,
+        crop,
+        quantity: currentCrop ? currentCrop.quantity + quantity : quantity,
+      },
+      {
+        onConflict: "fid,crop",
+      }
+    )
     .select()
     .single();
 
