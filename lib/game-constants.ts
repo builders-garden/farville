@@ -528,3 +528,5 @@ export const MAX_FROSTS_QUANTITY = 2;
 export const FIRST_FROST_QUANTITY = 1;
 
 export const FROST_COST = 10000;
+
+export const XP_PER_DONATED_ITEM = 5;

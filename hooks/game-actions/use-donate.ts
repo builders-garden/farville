@@ -1,3 +1,4 @@
+import { useGame } from "@/context/GameContext";
 import { useApiMutation } from "../use-api-mutation";
 
 interface DonateVariables {
@@ -12,6 +13,8 @@ interface DonateResponse {
 }
 
 export const useDonate = () => {
+  const { refetchUserItems } = useGame();
+
   const { mutateAsync: donate } = useApiMutation<
     DonateResponse,
     DonateVariables
@@ -22,6 +25,9 @@ export const useDonate = () => {
       toFid: variables.toFid,
       requestId: variables.requestId,
     }),
+    onSuccess: () => {
+      refetchUserItems();
+    },
   });
 
   return { donate };

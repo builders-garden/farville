@@ -62,6 +62,7 @@ interface GameContextType {
   refetchState: () => Promise<void>;
   refetchUser: () => Promise<void>;
   refetchClaimableQuests: () => Promise<void>;
+  refetchUserItems: () => Promise<void>;
   showInventory: boolean;
   showMarket: boolean;
   showLeaderboard: boolean;
@@ -339,6 +340,7 @@ export function GameProvider({
         refetchState: refetch.all,
         refetchUser: refetch.user,
         refetchClaimableQuests: refetch.claimableQuests,
+        refetchUserItems: refetch.userItems,
         showInventory,
         showMarket,
         showLeaderboard,

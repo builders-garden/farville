@@ -1,10 +1,14 @@
 import { sendQuestsCalculation } from "@/app/api/grid-cells/utils";
-import { MAX_DAILY_ALLOWED_DONATION_BETWEEN_USERS } from "@/lib/game-constants";
+import {
+  MAX_DAILY_ALLOWED_DONATION_BETWEEN_USERS,
+  XP_PER_DONATED_ITEM,
+} from "@/lib/game-constants";
 import { sendDelayedNotification } from "@/lib/game-notifications";
 import { trackEvent } from "@/lib/posthog/server";
 import {
   getUserDonationByReceiver,
   updateUserDonationHistory,
+  updateUserXP,
 } from "@/lib/prisma/queries";
 import {
   getItemById,
@@ -69,6 +73,7 @@ export const POST = async (
 
   await removeUserItem(Number(fid), itemId, quantity);
   await addUserItem(Number(toFid), itemId, quantity);
+  await updateUserXP(Number(fid), quantity * XP_PER_DONATED_ITEM);
 
   if (requestId) {
     await incrementRequestFilledQuantity(Number(requestId), quantity);

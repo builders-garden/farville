@@ -2,6 +2,7 @@ import { UserItem } from "@/hooks/use-user-items";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import { DbItem } from "@/supabase/types";
+import { Slider } from "@/components/ui/slider";
 
 interface ItemDetailsPopupProps {
   item: DbItem;
@@ -22,7 +23,7 @@ export default function ItemDetailsPopup({
   requestQuantity,
   onRequestQuantityChange,
 }: ItemDetailsPopupProps) {
-  const maxRequestAmount = item.category === "perk" ? 1 : 5;
+  const maxRequestAmount = item.category === "perk" ? 1 : 10;
 
   return (
     <motion.div
@@ -57,40 +58,45 @@ export default function ItemDetailsPopup({
         </div>
 
         <p className="text-white/80 mb-4">{item.description}</p>
-        <p className="text-white/90 mb-6">Owned: {userItem?.quantity || 0}</p>
 
         <div className="flex flex-col gap-3">
           {item.category !== "perk" && (
             <>
-              <div className="flex items-center justify-center gap-4 p-4">
-                <button
-                  onClick={() =>
-                    onRequestQuantityChange(Math.max(1, requestQuantity - 1))
-                  }
-                  className="w-8 h-8 bg-[#6d4c2c] rounded-full flex items-center justify-center text-white/90
-                           hover:bg-[#5d3c1c] transition-colors"
-                >
-                  -
-                </button>
-                <span className="text-white/90 font-bold text-lg">
-                  {requestQuantity}
-                </span>
-                <button
-                  onClick={() =>
-                    onRequestQuantityChange(
-                      Math.min(maxRequestAmount, requestQuantity + 1)
-                    )
-                  }
-                  className="w-8 h-8 bg-[#6d4c2c] rounded-full flex items-center justify-center text-white/90
-                           hover:bg-[#5d3c1c] transition-colors"
-                >
-                  +
-                </button>
-              </div>
+              <div className="bg-[#6d4c2c] rounded-lg p-4 mb-2">
+                <div className="flex justify-between items-center mb-3">
+                  <div className="w-full flex justify-between items-center gap-2">
+                    <span className="text-white/80 text-sm">In inventory:</span>
+                    <span className="text-white font-bold text-md bg-[#5A4129] px-2 py-0.5 rounded">
+                      {userItem?.quantity || 0}
+                    </span>
+                  </div>
+                </div>
 
-              <p className="text-white/70 text-[10px] text-center mb-4">
-                You can request max {maxRequestAmount} {item.name} at a time
-              </p>
+                <div className="flex flex-col gap-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-white/80 text-sm">
+                      Request quantity:
+                    </span>
+                    <span className="text-[#FFB938] font-bold text-lg">
+                      {requestQuantity}
+                    </span>
+                  </div>
+
+                  <Slider
+                    variant="yellow-brown"
+                    value={[requestQuantity]}
+                    min={1}
+                    max={maxRequestAmount}
+                    step={1}
+                    onValueChange={(value) => onRequestQuantityChange(value[0])}
+                    className="cursor-pointer"
+                  />
+
+                  <p className="text-white/70 text-xs text-right">
+                    Max: {maxRequestAmount}
+                  </p>
+                </div>
+              </div>
 
               <button
                 onClick={onRequest}
