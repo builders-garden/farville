@@ -11,16 +11,13 @@ import { DbItem } from "@/supabase/types";
 import { requestItemComposeCastUrl } from "@/lib/utils";
 import sdk from "@farcaster/frame-sdk";
 import { useCreateRequest } from "@/hooks/game-actions/use-create-request";
-import { useClipboard } from "@/hooks/use-clipboard";
 import InventoryItem from "./InventoryItem";
-import CopyNotification from "./ui/copy-notification";
 
 export default function InventoryModal({ onClose }: { onClose: () => void }) {
   const { state, setSelectedSeed, setSelectedPerk } = useGame();
   const { safeAreaInsets, context } = useFrameContext();
   const [selectedItem, setSelectedItem] = useState<DbItem | null>(null);
   const [requestQuantity, setRequestQuantity] = useState(1);
-  const { copied, copy } = useClipboard();
   const { mutate: createRequest } = useCreateRequest();
 
   const handlePerkClick = (perk: UserItem) => {
@@ -56,27 +53,14 @@ export default function InventoryModal({ onClose }: { onClose: () => void }) {
         },
         {
           onSuccess: async (data) => {
-            const { requestUrl, castUrl } = requestItemComposeCastUrl(
+            const { castUrl } = requestItemComposeCastUrl(
               data.id,
               item,
               requestQuantity
             );
-
-            // Copy URL to clipboard and show notification
-            const copySuccess = await copy(requestUrl);
-            if (copySuccess) {
-              // Wait 1 second before opening URL
-              setTimeout(async () => {
-                await sdk.actions.openUrl(castUrl);
-                setSelectedItem(null);
-                setRequestQuantity(1); // Reset quantity after request
-              }, 1000);
-            } else {
-              // If copy fails, just open the URL immediately
-              await sdk.actions.openUrl(castUrl);
-              setSelectedItem(null);
-              setRequestQuantity(1);
-            }
+            await sdk.actions.openUrl(castUrl);
+            setSelectedItem(null);
+            setRequestQuantity(1);
           },
           onError: (error) => {
             console.error("Error creating requests", error);
@@ -195,8 +179,6 @@ export default function InventoryModal({ onClose }: { onClose: () => void }) {
           </div>
         </div>
       </motion.div>
-
-      <CopyNotification show={copied} />
 
       {selectedItem && (
         <ItemDetailsPopup
