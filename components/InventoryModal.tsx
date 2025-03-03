@@ -11,13 +11,16 @@ import { DbItem } from "@/supabase/types";
 import { requestItemComposeCastUrl } from "@/lib/utils";
 import sdk from "@farcaster/frame-sdk";
 import { useCreateRequest } from "@/hooks/game-actions/use-create-request";
+import { useClipboard } from "@/hooks/use-clipboard";
+import InventoryItem from "./InventoryItem";
+import CopyNotification from "./ui/copy-notification";
 
 export default function InventoryModal({ onClose }: { onClose: () => void }) {
   const { state, setSelectedSeed, setSelectedPerk } = useGame();
   const { safeAreaInsets, context } = useFrameContext();
   const [selectedItem, setSelectedItem] = useState<DbItem | null>(null);
   const [requestQuantity, setRequestQuantity] = useState(1);
-  const [copied, setCopied] = useState(false);
+  const { copied, copy } = useClipboard();
   const { mutate: createRequest } = useCreateRequest();
 
   const handlePerkClick = (perk: UserItem) => {
@@ -42,34 +45,6 @@ export default function InventoryModal({ onClose }: { onClose: () => void }) {
     setSelectedItem(null);
   };
 
-  const copyToClipboard = async (text: string) => {
-    try {
-      // Fallback method using document.execCommand
-      const textArea = document.createElement("textarea");
-      textArea.value = text;
-
-      // Make the textarea out of viewport
-      textArea.style.position = "fixed";
-      textArea.style.left = "-999999px";
-      textArea.style.top = "-999999px";
-      document.body.appendChild(textArea);
-
-      // Focus and select the text
-      textArea.focus();
-      textArea.select();
-
-      // Execute copy command
-      const success = document.execCommand("copy");
-
-      // Clean up
-      document.body.removeChild(textArea);
-      return success;
-    } catch (err) {
-      console.error("Failed to copy: ", err);
-      return false;
-    }
-  };
-
   const handleRequestItem = async (item: DbItem) => {
     if (!context?.user.fid) return;
 
@@ -88,14 +63,11 @@ export default function InventoryModal({ onClose }: { onClose: () => void }) {
             );
 
             // Copy URL to clipboard and show notification
-            const copySuccess = await copyToClipboard(requestUrl);
+            const copySuccess = await copy(requestUrl);
             if (copySuccess) {
-              setCopied(true);
-
               // Wait 1 second before opening URL
               setTimeout(async () => {
                 await sdk.actions.openUrl(castUrl);
-                setCopied(false);
                 setSelectedItem(null);
                 setRequestQuantity(1); // Reset quantity after request
               }, 1000);
@@ -107,13 +79,59 @@ export default function InventoryModal({ onClose }: { onClose: () => void }) {
             }
           },
           onError: (error) => {
-            console.error("Error creating requestssssss", error);
+            console.error("Error creating requests", error);
           },
         }
       );
     } catch (error) {
       console.error("Error handling request:", error);
     }
+  };
+
+  // Render categories section
+  const renderCategorySection = (
+    category: string,
+    emoji: string,
+    title: string
+  ) => {
+    const filteredItems = state.items.filter(
+      (item) => item.category === category
+    );
+
+    // Get the appropriate collection based on category
+    const userItems =
+      category === "seed"
+        ? state.seeds
+        : category === "crop"
+        ? state.crops
+        : state.perks;
+
+    return (
+      <div>
+        <motion.h3
+          className="text-white/90 font-bold text-lg mb-4 flex items-center gap-2"
+          initial={{ x: -20, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+        >
+          <span className="text-2xl">{emoji}</span> {title}
+        </motion.h3>
+        <div className="grid grid-cols-6 gap-4 md:grid-cols-8">
+          {filteredItems.map((item) => {
+            const userItem = userItems.find((ui) => ui.item.slug === item.slug);
+            const quantity = userItem?.quantity || 0;
+
+            return (
+              <InventoryItem
+                key={item.id}
+                item={item}
+                quantity={quantity}
+                onClick={() => handleItemClick(item)}
+              />
+            );
+          })}
+        </div>
+      </div>
+    );
   };
 
   return (
@@ -170,161 +188,15 @@ export default function InventoryModal({ onClose }: { onClose: () => void }) {
         <div className="flex-1 overflow-y-auto">
           <div className="max-w-4xl mx-auto p-6">
             <div className="space-y-8">
-              <div>
-                <motion.h3
-                  className="text-white/90 font-bold text-lg mb-4 flex items-center gap-2"
-                  initial={{ x: -20, opacity: 0 }}
-                  animate={{ x: 0, opacity: 1 }}
-                >
-                  <span className="text-2xl">🌱</span> Seeds
-                </motion.h3>
-                <div className="grid grid-cols-6 gap-4 md:grid-cols-8">
-                  {state.items
-                    .filter((item) => item.category === "seed")
-                    .map((item) => {
-                      const seedQuantity =
-                        state.seeds.find((seed) => seed.item.slug === item.slug)
-                          ?.quantity || 0;
-
-                      return (
-                        <motion.div
-                          key={item.id}
-                          className="bg-[#6d4c2c] aspect-square rounded-lg relative flex items-center justify-center
-                                 shadow-lg hover:shadow-xl transition-shadow duration-200
-                                 border-2 border-[#8B5E3C]"
-                          whileHover={{ scale: 1.02 }}
-                          onClick={() => handleItemClick(item)}
-                        >
-                          <motion.img
-                            src={`/images${item.icon}`}
-                            alt={`${item.name} seed`}
-                            className="w-8 h-8 object-contain"
-                            animate={{ y: [0, -2, 0] }}
-                            transition={{ duration: 1.5, repeat: Infinity }}
-                          />
-                          <motion.div
-                            className="absolute -top-2 -right-2 bg-[#FFB938] text-[#7E4E31] text-xs px-2 py-0.5 
-                                   rounded-full font-bold shadow-md border border-[#7E4E31]"
-                            animate={{
-                              scale: seedQuantity ? [1, 1.1, 1] : 1,
-                            }}
-                            transition={{ duration: 0.3 }}
-                          >
-                            {seedQuantity}
-                          </motion.div>
-                        </motion.div>
-                      );
-                    })}
-                </div>
-              </div>
-
-              <div>
-                <motion.h3
-                  className="text-white/90 font-bold text-lg mb-4 flex items-center gap-2"
-                  initial={{ x: -20, opacity: 0 }}
-                  animate={{ x: 0, opacity: 1 }}
-                >
-                  <span className="text-2xl">🌾</span> Harvested Crops
-                </motion.h3>
-                <div className="grid grid-cols-6 gap-4 md:grid-cols-8">
-                  {state.items
-                    .filter((item) => item.category === "crop")
-                    .map((item) => {
-                      const cropQuantity =
-                        state.crops.find((crop) => crop.item.slug === item.slug)
-                          ?.quantity || 0;
-
-                      return (
-                        <motion.div
-                          key={item.id}
-                          className="bg-[#6d4c2c] aspect-square rounded-lg relative flex items-center justify-center
-                                 shadow-lg hover:shadow-xl transition-shadow duration-200
-                                 border-2 border-[#8B5E3C]"
-                          onClick={() => handleItemClick(item)}
-                        >
-                          <motion.img
-                            src={`/images${item.icon}`}
-                            alt={`${item.name} crop`}
-                            className="w-8 h-8 object-contain"
-                            animate={{ y: [0, -2, 0] }}
-                            transition={{ duration: 1.5, repeat: Infinity }}
-                          />
-                          <motion.div
-                            className="absolute -top-2 -right-2 bg-[#FFB938] text-[#7E4E31] text-xs px-2 py-0.5 
-                                   rounded-full font-bold shadow-md border border-[#7E4E31]"
-                            animate={{
-                              scale: cropQuantity > 0 ? [1, 1.1, 1] : 1,
-                            }}
-                            transition={{ duration: 0.3 }}
-                          >
-                            {cropQuantity}
-                          </motion.div>
-                        </motion.div>
-                      );
-                    })}
-                </div>
-              </div>
-
-              <div>
-                <motion.h3
-                  className="text-white/90 font-bold text-lg mb-4 flex items-center gap-2"
-                  initial={{ x: -20, opacity: 0 }}
-                  animate={{ x: 0, opacity: 1 }}
-                >
-                  <span className="text-2xl">✨</span> Perks
-                </motion.h3>
-                <div className="grid grid-cols-6 gap-4 md:grid-cols-8">
-                  {state.items
-                    .filter((item) => item.category === "perk")
-                    .map((perk) => {
-                      const userPerk = state.perks.find(
-                        (p) => p.item.slug === perk.slug
-                      );
-                      const perkQuantity = userPerk?.quantity || 0;
-
-                      return (
-                        <motion.div
-                          key={perk.id}
-                          className="bg-[#6d4c2c] aspect-square rounded-lg relative flex items-center justify-center
-                                 shadow-lg hover:shadow-xl transition-shadow duration-200
-                                 border-2 border-[#8B5E3C]"
-                          whileHover={{ scale: 1.05 }}
-                          title={perk.description}
-                          onClick={() => handleItemClick(perk)}
-                        >
-                          <motion.img
-                            src={`/images${perk.icon}`}
-                            alt={`${perk.name} perk`}
-                            className="w-8 h-8 object-contain"
-                            animate={{ y: [0, -2, 0] }}
-                            transition={{ duration: 1.5, repeat: Infinity }}
-                          />
-
-                          <motion.div
-                            className="absolute -top-2 -right-2 bg-[#FFB938] text-[#7E4E31] text-xs px-2 py-0.5 
-                                     rounded-full font-bold shadow-md border border-[#7E4E31]"
-                            animate={{
-                              scale: perkQuantity > 0 ? [1, 1.1, 1] : 1,
-                            }}
-                            transition={{ duration: 0.3 }}
-                          >
-                            {perkQuantity}
-                          </motion.div>
-                        </motion.div>
-                      );
-                    })}
-                </div>
-              </div>
+              {renderCategorySection("seed", "🌱", "Seeds")}
+              {renderCategorySection("crop", "🌾", "Harvested Crops")}
+              {renderCategorySection("perk", "✨", "Perks")}
             </div>
           </div>
         </div>
       </motion.div>
 
-      {copied && (
-        <div className="fixed text-md top-5 left-1/2 transform -translate-x-1/2 bg-green-600 text-white px-4 py-2 rounded-md z-[9999] shadow-lg">
-          Copied to clipboard!
-        </div>
-      )}
+      <CopyNotification show={copied} />
 
       {selectedItem && (
         <ItemDetailsPopup
