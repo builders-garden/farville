@@ -217,17 +217,17 @@ export default function ProfileModal({ onClose }: { onClose: () => void }) {
                           }}
                         >
                           <div className="absolute inset-0 flex items-center justify-center">
-                            <div className="relative w-16 h-16 [image-rendering:pixelated]">
-                              <Image
-                                src={`/images/crop/${crop.item.slug}.png`}
-                                alt={crop.item.name}
-                                layout="fill"
-                                className="animate-[pulse_2s_ease-in-out_infinite]"
-                                style={{
-                                  animation: "pulse 4s ease-in-out infinite",
-                                }}
-                              />
-                            </div>
+                            {/* <div className="relative w-20 h-20 [image-rendering:pixelated]"> */}
+                            <Image
+                              src={`/images/crop/${crop.item.slug}.png`}
+                              alt={crop.item.name}
+                              layout="fill"
+                              className="animate-[pulse_2s_ease-in-out_infinite]"
+                              style={{
+                                animation: "pulse 4s ease-in-out infinite",
+                              }}
+                            />
+                            {/* </div> */}
                           </div>
                         </div>
                       ))}
