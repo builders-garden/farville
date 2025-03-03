@@ -5,18 +5,17 @@ import Image from "next/image";
 import { Card, CardContent } from "./ui/card";
 import { useGame } from "@/context/GameContext";
 import { Statistic } from "./profile/Statistic";
-import { useState } from "react";
-import InfoModal from "./InfoModal";
+import { useEffect, useState } from "react";
+import InfoModal from "./modals/InfoModal";
 import { HarvestHonour } from "./profile/HarvestHonour";
 import { DbUserHarvestedCrop } from "@/supabase/types";
 import { ACHIEVEMENTS_THRESHOLDS } from "@/lib/game-constants";
-
-const sampleGoldCrops = ["carrot", "potato", "corn"];
-// const sampleLegendaryCrops = ["pumpkin", "watermelon"];
+import ChooseGlowingCrop from "@/components/modals/ChooseGlowingCrop";
+import { Plus } from "lucide-react";
+import { UserItem } from "@/hooks/use-user-items";
 
 const calculateHarvestHonours = (userHarvestedCrops: DbUserHarvestedCrop[]) => {
   // calculate the achievements status based on the user's harvested crops and the thresholds
-  console.log("userHarvestedCrops", userHarvestedCrops);
   const achievements = ACHIEVEMENTS_THRESHOLDS.map((threshold) => {
     const count =
       userHarvestedCrops.find((crop) => crop.crop === threshold.crop)
@@ -52,7 +51,28 @@ const calculateHarvestHonours = (userHarvestedCrops: DbUserHarvestedCrop[]) => {
 export default function ProfileModal({ onClose }: { onClose: () => void }) {
   const { state } = useGame();
   const [isWhatIsThisOpen, setIsWhatIsThisOpen] = useState(false);
+  const [chooseGlowingCropOpen, setChooseGlowingCropOpen] = useState(false);
+  const [selectedCrops, setSelectedCrops] = useState<UserItem[]>([]);
+  const [cropIndex, setCropIndex] = useState<number | undefined>(undefined);
   const harvestHonours = calculateHarvestHonours(state.harvestedCropsSummary);
+
+  const onChooseCrop = (crop: UserItem) => {
+    if (cropIndex !== undefined) {
+      const newCrops = [...selectedCrops];
+      newCrops[cropIndex] = crop;
+      console.log("newCrops", newCrops);
+      setSelectedCrops(newCrops);
+    }
+  };
+
+  useEffect(() => {
+    setSelectedCrops(state.specialCrops || []);
+  }, [state.specialCrops]);
+
+  console.log({
+    selectedCrops,
+    cropIndex,
+  });
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-start z-50">
@@ -187,25 +207,47 @@ export default function ProfileModal({ onClose }: { onClose: () => void }) {
                 >
                   <CardContent className="p-4">
                     <div className="grid grid-cols-3 gap-4">
-                      {sampleGoldCrops?.map((crop, index) => (
+                      {selectedCrops?.map((crop, index) => (
                         <div
                           key={index}
-                          className="relative w-24 h-24 [image-rendering:pixelated] mx-auto rounded-xl
-                        shadow-lg shadow-yellow-400/50 transition-shadow duration-300
-                        bg-gradient-to-br from-yellow-300 via-yellow-500 to-yellow-300
-                        before:absolute before:inset-0 before:border-2 before:border-yellow-400 before:rounded-xl"
+                          className="relative w-24 h-24 mx-auto rounded-lg bg-[#7E4E31] cursor-pointer"
+                          onClick={() => {
+                            setChooseGlowingCropOpen(true);
+                            setCropIndex(index);
+                          }}
                         >
-                          <Image
-                            src={`/images/crop/${crop}.png`}
-                            alt={crop}
-                            layout="fill"
-                            className="animate-[pulse_2s_ease-in-out_infinite]"
-                            style={{
-                              animation: "pulse 4s ease-in-out infinite",
-                            }}
-                          />
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <div className="relative w-16 h-16 [image-rendering:pixelated]">
+                              <Image
+                                src={`/images/crop/${crop.item.slug}.png`}
+                                alt={crop.item.name}
+                                layout="fill"
+                                className="animate-[pulse_2s_ease-in-out_infinite]"
+                                style={{
+                                  animation: "pulse 4s ease-in-out infinite",
+                                }}
+                              />
+                            </div>
+                          </div>
                         </div>
                       ))}
+                      {selectedCrops.length < 3 &&
+                        Array.from({ length: 3 - selectedCrops.length }).map(
+                          (_, index) => (
+                            <div
+                              key={index}
+                              className="w-24 h-24 mx-auto rounded-lg bg-[#7E4E31] flex items-center justify-center cursor-pointer"
+                              onClick={() => {
+                                setChooseGlowingCropOpen(true);
+                                setCropIndex(selectedCrops.length + index);
+                              }}
+                            >
+                              <div className="text-white/70 text-[10px]">
+                                <Plus size={24} />
+                              </div>
+                            </div>
+                          )
+                        )}
                     </div>
                   </CardContent>
                 </Card>
@@ -228,6 +270,14 @@ export default function ProfileModal({ onClose }: { onClose: () => void }) {
               </div>
             </div>
           </div>
+
+          {chooseGlowingCropOpen && (
+            <ChooseGlowingCrop
+              onChooseCrop={onChooseCrop}
+              specialCrops={state.specialCrops}
+              onCancel={() => setChooseGlowingCropOpen(false)}
+            />
+          )}
         </div>
       </motion.div>
     </div>

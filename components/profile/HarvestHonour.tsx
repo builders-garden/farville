@@ -19,9 +19,6 @@ export const HarvestHonour = ({
 }: HarvestHonourProps) => {
   const trophies = [1, 2, 3, 4];
 
-  console.log(
-    `crop: ${crop}, count: ${count}, currentGoal: ${currentGoal}, step: ${step}`
-  );
   return (
     <Card className="bg-gradient-to-br from-[#6D4C2C] to-[#5B4120] rounded-lg border-none w-full">
       <CardContent className="flex flex-col items-center gap-2 p-4">

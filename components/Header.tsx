@@ -57,15 +57,13 @@ export default function Header() {
       <motion.div
         className="h-[42px] flex flex-row flex gap-1 items-center text-white/90 tracking-wide font-bold cursor-pointer"
         whileHover={{ scale: 1.02 }}
-        animate={{ rotate: [0, -1, 1, -1, 1, 0] }}
-        transition={{ duration: 0.5, repeat: Infinity, repeatDelay: 5 }}
         onClick={() => setShowStreaks(true)}
       >
         <Image
           src="/images/special/fire.png"
           alt="Streak"
-          width={20}
-          height={20}
+          width={22}
+          height={22}
         />
         <p
           className={`${

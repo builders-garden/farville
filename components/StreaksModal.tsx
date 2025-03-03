@@ -19,8 +19,8 @@ import { motion } from "framer-motion";
 import { Plus } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import ConfirmationModal from "./ConfirmationModal";
-import InfoModal from "./InfoModal";
+import ConfirmationModal from "./modals/ConfirmationModal";
+import InfoModal from "./modals/InfoModal";
 
 interface StreakReward {
   day: number;

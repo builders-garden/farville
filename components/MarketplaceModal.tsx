@@ -5,7 +5,7 @@ import { useState } from "react";
 import { useGame } from "../context/GameContext";
 import { CROP_DATA, EXPANSION_COSTS } from "../lib/game-constants";
 import Image from "next/image";
-import ConfirmationModal from "./ConfirmationModal";
+import ConfirmationModal from "./modals/ConfirmationModal";
 import { DbItem } from "@/supabase/types";
 import { trackEvent } from "../lib/posthog/client";
 

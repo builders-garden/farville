@@ -29,6 +29,7 @@ model User {
   items                                                            UserHasItem[]
   quests                                                           UserHasQuest[]
   notifications                                                    UserNotification[]
+  UserBachecaCrops                                                 UserBachecaCrops[]
 
   @@map("users")
 }
@@ -49,6 +50,7 @@ model Item {
   user_grid_cells   GridCell[]
   UserHarvestedCrop UserHarvestedCrop[]
   userItems         UserHasItem[]
+  UserBachecaCrops  UserBachecaCrops[]
 
   @@map("items")
 }
@@ -202,6 +204,18 @@ model UserHarvestedCrop {
 
   @@id([fid, crop])
   @@map("user_harvested_crops")
+}
+
+model UserBachecaCrops {
+  fid       Int
+  crop      String
+  position  Int
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  cropItem  Item     @relation(fields: [crop], references: [slug], onDelete: NoAction, onUpdate: NoAction)
+  user      User     @relation(fields: [fid], references: [fid], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([fid, crop])
+  @@map("user_bacheca_crops")
 }
 
 enum UserHasQuestStatus {

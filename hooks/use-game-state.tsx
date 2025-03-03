@@ -48,6 +48,7 @@ export interface GameState {
   streaks: DbStreak[];
   currentStreakDays: number;
   specialItems: UserItem[];
+  specialCrops: UserItem[];
   frosts: {
     allFrostsDates: Date[];
     lastStreakDates: Date[];
@@ -78,6 +79,7 @@ export const useGameState = () => {
     streaks: [],
     currentStreakDays: 0,
     specialItems: [],
+    specialCrops: [],
     frosts: {
       allFrostsDates: [],
       lastStreakDates: [],
@@ -149,6 +151,9 @@ export const useGameState = () => {
         inventory: userItems,
         specialItems: userItems.filter(
           (item) => item.item.category === "special"
+        ),
+        specialCrops: userItems.filter(
+          (item) => item.item.category === "special-crop"
         ),
       }));
     }
