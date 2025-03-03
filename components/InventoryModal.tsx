@@ -17,6 +17,7 @@ export default function InventoryModal({ onClose }: { onClose: () => void }) {
   const { safeAreaInsets, context } = useFrameContext();
   const [selectedItem, setSelectedItem] = useState<DbItem | null>(null);
   const [requestQuantity, setRequestQuantity] = useState(1);
+  const [copied, setCopied] = useState(false);
   const { mutate: createRequest } = useCreateRequest();
 
   const handlePerkClick = (perk: UserItem) => {
@@ -41,6 +42,34 @@ export default function InventoryModal({ onClose }: { onClose: () => void }) {
     setSelectedItem(null);
   };
 
+  const copyToClipboard = async (text: string) => {
+    try {
+      // Fallback method using document.execCommand
+      const textArea = document.createElement("textarea");
+      textArea.value = text;
+
+      // Make the textarea out of viewport
+      textArea.style.position = "fixed";
+      textArea.style.left = "-999999px";
+      textArea.style.top = "-999999px";
+      document.body.appendChild(textArea);
+
+      // Focus and select the text
+      textArea.focus();
+      textArea.select();
+
+      // Execute copy command
+      const success = document.execCommand("copy");
+
+      // Clean up
+      document.body.removeChild(textArea);
+      return success;
+    } catch (err) {
+      console.error("Failed to copy: ", err);
+      return false;
+    }
+  };
+
   const handleRequestItem = async (item: DbItem) => {
     if (!context?.user.fid) return;
 
@@ -52,14 +81,30 @@ export default function InventoryModal({ onClose }: { onClose: () => void }) {
         },
         {
           onSuccess: async (data) => {
-            const url = requestItemComposeCastUrl(
+            const { requestUrl, castUrl } = requestItemComposeCastUrl(
               data.id,
               item,
               requestQuantity
             );
-            await sdk.actions.openUrl(url);
-            setSelectedItem(null);
-            setRequestQuantity(1); // Reset quantity after request
+
+            // Copy URL to clipboard and show notification
+            const copySuccess = await copyToClipboard(requestUrl);
+            if (copySuccess) {
+              setCopied(true);
+
+              // Wait 1 second before opening URL
+              setTimeout(async () => {
+                await sdk.actions.openUrl(castUrl);
+                setCopied(false);
+                setSelectedItem(null);
+                setRequestQuantity(1); // Reset quantity after request
+              }, 1000);
+            } else {
+              // If copy fails, just open the URL immediately
+              await sdk.actions.openUrl(castUrl);
+              setSelectedItem(null);
+              setRequestQuantity(1);
+            }
           },
           onError: (error) => {
             console.error("Error creating requestssssss", error);
@@ -274,6 +319,12 @@ export default function InventoryModal({ onClose }: { onClose: () => void }) {
           </div>
         </div>
       </motion.div>
+
+      {copied && (
+        <div className="fixed text-md top-5 left-1/2 transform -translate-x-1/2 bg-green-600 text-white px-4 py-2 rounded-md z-[9999] shadow-lg">
+          Copied to clipboard!
+        </div>
+      )}
 
       {selectedItem && (
         <ItemDetailsPopup

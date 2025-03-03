@@ -15,15 +15,18 @@ export const useUserStreaks = () => {
 export const useUpdateUserStreaks = ({
   refetchStreaks,
   refetchUserItems,
+  refetchFrosts,
 }: {
   refetchStreaks: () => void;
   refetchUserItems: () => void;
+  refetchFrosts: () => void;
 }) => {
   return useApiMutation<unknown>({
     url: () => `/api/users/me/streaks`,
     onSuccess: () => {
       refetchStreaks();
       refetchUserItems();
+      refetchFrosts();
     },
   });
 };

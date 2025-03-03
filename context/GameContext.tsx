@@ -156,6 +156,7 @@ export function GameProvider({
   const { mutate: updateUserStreaks } = useUpdateUserStreaks({
     refetchStreaks: refetch.streaks,
     refetchUserItems: refetch.userItems,
+    refetchFrosts: refetch.frosts,
   });
 
   const updateUserStreaksOnFirstDailyAction = () => {

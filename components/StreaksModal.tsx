@@ -16,7 +16,7 @@ import {
 } from "@/lib/game-constants";
 import { getCurrentDayStreak, getStreakDates } from "@/lib/utils";
 import { motion } from "framer-motion";
-import { Plus } from "lucide-react";
+import { Clock, Plus } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import ConfirmationModal from "./ConfirmationModal";
@@ -48,11 +48,37 @@ export default function StreaksModal({ onClose }: { onClose: () => void }) {
   );
   const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
   const [isFrostInfoOpen, setIsFrostInfoOpen] = useState(false);
+  const [timeUntilNextDay, setTimeUntilNextDay] = useState<{
+    hours: number;
+    minutes: number;
+    seconds: number;
+  }>({ hours: 0, minutes: 0, seconds: 0 });
 
   const currentDayStreak = getCurrentDayStreak(
     state.streaks[0],
     state.frosts.lastStreakDates
   );
+
+  // Calculate time until next day (UTC)
+  useEffect(() => {
+    const calculateTimeUntilNextDay = () => {
+      const now = new Date();
+      const nextDay = new Date();
+      nextDay.setUTCHours(24, 0, 0, 0); // Next day at 00:00 UTC
+
+      const diffMs = nextDay.getTime() - now.getTime();
+      const hours = Math.floor(diffMs / (1000 * 60 * 60));
+      const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((diffMs % (1000 * 60)) / 1000);
+
+      setTimeUntilNextDay({ hours, minutes, seconds });
+    };
+
+    calculateTimeUntilNextDay();
+    const intervalId = setInterval(calculateTimeUntilNextDay, 1000);
+
+    return () => clearInterval(intervalId);
+  }, []);
 
   const handleClaim = (day: number) => {
     const reward = rewards.find((r) => r.day === day);
@@ -186,6 +212,32 @@ export default function StreaksModal({ onClose }: { onClose: () => void }) {
           </div>
         </div>
         <div className="p-6 flex flex-col gap-4">
+          {/* Next Day Countdown */}
+          <div className="bg-gradient-to-br from-[#8B5c3C] to-[#6d4c2c] rounded-xl p-3 border border-[#ffa07a]/20">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-white/80">
+                <Clock
+                  size={18}
+                  className="text-[#FFB938]"
+                />
+                <span className="text-[9px]">Next day in:</span>
+              </div>
+              <div className="flex gap-1 text-white font-bold">
+                <div className="bg-[#6d4c2c] px-2 py-1 rounded-md text-xs min-w-[30px] text-center">
+                  {timeUntilNextDay.hours.toString().padStart(2, "0")}
+                </div>
+                <span className="text-[#FFB938]">:</span>
+                <div className="bg-[#6d4c2c] px-2 py-1 rounded-md text-xs min-w-[30px] text-center">
+                  {timeUntilNextDay.minutes.toString().padStart(2, "0")}
+                </div>
+                <span className="text-[#FFB938]">:</span>
+                <div className="bg-[#6d4c2c] px-2 py-1 rounded-md text-xs min-w-[30px] text-center">
+                  {timeUntilNextDay.seconds.toString().padStart(2, "0")}
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* New Streak Status Section */}
           <motion.div
             animate={{
