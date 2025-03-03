@@ -33,13 +33,14 @@ export async function POST(req: NextRequest) {
   const { fid, title, text, category } = requestBody.data;
   const parsedFid = parseInt(fid);
   const timestamp = new Date();
-  const tenMinutesAgo = new Date(timestamp.getTime() - 10 * 60 * 1000);
+  const minutes = 30;
+  const xMinutesAgo = new Date(timestamp.getTime() - minutes * 60 * 1000);
 
   // Run initial checks in parallel
   const [notificationDetails, lastNotification] = await Promise.all([
     getUserNotificationDetails(parsedFid),
     getUserNotificationsByCategory(parsedFid, category, 1, {
-      createdAfter: tenMinutesAgo,
+      createdAfter: xMinutesAgo,
     }),
   ]);
 
@@ -52,11 +53,11 @@ export async function POST(req: NextRequest) {
 
   if (lastNotification?.length) {
     console.warn(
-      `[send-notification-${timestamp.toISOString()}] user ${fid} has already received a notification of type "${category}" in the last 3 minutes. Skipping...`
+      `[send-notification-${timestamp.toISOString()}] user ${fid} has already received a notification of type "${category}" in the last ${minutes} minutes. Skipping...`
     );
     return Response.json({
       success: true,
-      message: "Notification skipped due to rate limiting",
+      message: `Notification skipped - already sent a notification of type "${category}" in the last ${minutes} minutes`,
     });
   }
 
