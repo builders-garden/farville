@@ -20,6 +20,7 @@ import RequestModal from "./RequestModal";
 import TutorialOverlay from "./TutorialOverlay";
 import { useEffect } from "react";
 import TimelineModal from "./TimelineModal";
+import { useUserQuests } from "@/hooks/use-quests";
 
 // const WelcomeOverlay = dynamic(() => import("./../components/WelcomeOverlay"), {
 //   ssr: false,
@@ -111,17 +112,46 @@ const BACKGROUND_PATTERN = `
 
 // Add new container component
 function QuestsModalContainer() {
-  const { showQuests, setShowQuests, refetchClaimableQuests } = useGame();
+  const {
+    state,
+    showQuests,
+    setShowQuests,
+    refetchClaimableQuests,
+    refetchUser,
+  } = useGame();
+
+  const {
+    quests: incompleteQuests,
+    isLoading: isLoadingIncompleteQuests,
+    refetch: refetchIncompleteQuests,
+  } = useUserQuests(state?.user?.fid, "incomplete");
 
   useEffect(() => {
     if (showQuests) {
       refetchClaimableQuests();
+      refetchIncompleteQuests();
+      refetchUser();
     }
-  }, [showQuests]);
+  }, [
+    showQuests,
+    refetchClaimableQuests,
+    refetchIncompleteQuests,
+    refetchUser,
+  ]);
 
   return (
     <AnimatePresence>
-      {showQuests && <QuestsModal onClose={() => setShowQuests(false)} />}
+      {showQuests && (
+        <QuestsModal
+          incompleteQuests={incompleteQuests}
+          completedQuests={state.completedQuests}
+          isLoadingUserQuests={isLoadingIncompleteQuests}
+          refetchUser={refetchUser}
+          refetchClaimableQuests={refetchClaimableQuests}
+          refetchIncompleteQuests={refetchIncompleteQuests}
+          onClose={() => setShowQuests(false)}
+        />
+      )}
     </AnimatePresence>
   );
 }

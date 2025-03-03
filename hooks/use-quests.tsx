@@ -62,7 +62,7 @@ export const useUserQuests = (fid: number | undefined, status: string) => {
     url: `/api/users/${fid}/quests?status=${status}`,
     isProtected: true,
     enabled: !!fid,
-    staleTime: 30000
+    staleTime: 30000,
   });
 
   return {
