@@ -8,45 +8,10 @@ import { Statistic } from "./profile/Statistic";
 import { useEffect, useState } from "react";
 import InfoModal from "./modals/InfoModal";
 import { HarvestHonour } from "./profile/HarvestHonour";
-import { DbUserHarvestedCrop } from "@/supabase/types";
-import { ACHIEVEMENTS_THRESHOLDS } from "@/lib/game-constants";
 import ChooseGlowingCrop from "@/components/modals/ChooseGlowingCrop";
 import { Plus } from "lucide-react";
 import { UserItem } from "@/hooks/use-user-items";
-
-const calculateHarvestHonours = (userHarvestedCrops: DbUserHarvestedCrop[]) => {
-  // calculate the achievements status based on the user's harvested crops and the thresholds
-  const achievements = ACHIEVEMENTS_THRESHOLDS.map((threshold) => {
-    const count =
-      userHarvestedCrops.find((crop) => crop.crop === threshold.crop)
-        ?.quantity || 0;
-
-    // calculate the title and current goal based on the count and the threshold
-    let currentGoal = 0;
-    let title = "";
-    let achievementStep = 1;
-
-    for (const goal of threshold.thresholds) {
-      if (count < goal) {
-        currentGoal = goal;
-        title = threshold.titles[achievementStep - 1];
-        break;
-      } else {
-        achievementStep++;
-      }
-    }
-
-    return {
-      step: achievementStep,
-      crop: threshold.crop,
-      title,
-      count,
-      currentGoal,
-    };
-  });
-
-  return achievements;
-};
+import { calculateHarvestAchievements } from "@/lib/utils";
 
 export default function ProfileModal({ onClose }: { onClose: () => void }) {
   const { state } = useGame();
@@ -54,7 +19,9 @@ export default function ProfileModal({ onClose }: { onClose: () => void }) {
   const [chooseGlowingCropOpen, setChooseGlowingCropOpen] = useState(false);
   const [selectedCrops, setSelectedCrops] = useState<UserItem[]>([]);
   const [cropIndex, setCropIndex] = useState<number | undefined>(undefined);
-  const harvestHonours = calculateHarvestHonours(state.harvestedCropsSummary);
+  const harvestHonours = calculateHarvestAchievements(
+    state.harvestedCropsSummary
+  );
 
   const onChooseCrop = (crop: UserItem) => {
     if (cropIndex !== undefined) {
@@ -69,10 +36,7 @@ export default function ProfileModal({ onClose }: { onClose: () => void }) {
     setSelectedCrops(state.specialCrops || []);
   }, [state.specialCrops]);
 
-  console.log({
-    selectedCrops,
-    cropIndex,
-  });
+  console.log(state);
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-start z-50">
@@ -207,7 +171,7 @@ export default function ProfileModal({ onClose }: { onClose: () => void }) {
                 >
                   <CardContent className="p-4">
                     <div className="grid grid-cols-3 gap-4">
-                      {selectedCrops?.map((crop, index) => (
+                      {selectedCrops?.slice(0, 3).map((crop, index) => (
                         <div
                           key={index}
                           className="relative w-24 h-24 mx-auto rounded-lg bg-[#7E4E31] cursor-pointer"
@@ -217,17 +181,17 @@ export default function ProfileModal({ onClose }: { onClose: () => void }) {
                           }}
                         >
                           <div className="absolute inset-0 flex items-center justify-center">
-                            {/* <div className="relative w-20 h-20 [image-rendering:pixelated]"> */}
-                            <Image
-                              src={`/images/crop/${crop.item.slug}.png`}
-                              alt={crop.item.name}
-                              layout="fill"
-                              className="animate-[pulse_2s_ease-in-out_infinite]"
-                              style={{
-                                animation: "pulse 4s ease-in-out infinite",
-                              }}
-                            />
-                            {/* </div> */}
+                            <div className="relative w-16 h-16">
+                              <Image
+                                src={`/images/crop/${crop.item.slug}-glowing.png`}
+                                alt={crop.item.name}
+                                layout="fill"
+                                className="animate-[pulse_2s_ease-in-out_infinite]"
+                                style={{
+                                  animation: "pulse 3s ease-in-out infinite",
+                                }}
+                              />
+                            </div>
                           </div>
                         </div>
                       ))}

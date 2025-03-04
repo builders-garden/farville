@@ -357,6 +357,7 @@ export const useGameState = () => {
       const newPerks = [...prevState.perks];
       const newCrops = [...prevState.crops];
       const newSpecialItems = [...prevState.specialItems];
+      const newSpecialCrops = [...prevState.specialCrops];
 
       updatedItems.forEach((updatedItem) => {
         if (updatedItem.item && updatedItem.item.category === "seed") {
@@ -384,6 +385,21 @@ export const useGameState = () => {
           }
         } else if (
           updatedItem.item &&
+          updatedItem.item.category === "special-crop"
+        ) {
+          const index = newSpecialCrops.findIndex(
+            (item) => item.item?.id === updatedItem.item?.id
+          );
+          if (index !== -1) {
+            newSpecialCrops[index] = {
+              ...newSpecialCrops[index],
+              ...updatedItem,
+            };
+          } else {
+            newSpecialCrops.push(updatedItem as UserItem);
+          }
+        } else if (
+          updatedItem.item &&
           updatedItem.item.category === "special"
         ) {
           const index = newSpecialItems.findIndex(
@@ -406,6 +422,7 @@ export const useGameState = () => {
         perks: newPerks,
         crops: newCrops,
         specialItems: newSpecialItems,
+        specialCrops: newSpecialCrops,
       };
     });
   }, []);

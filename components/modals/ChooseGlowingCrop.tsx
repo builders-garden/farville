@@ -37,13 +37,12 @@ export default function ChooseGlowingCrop({
           <p>Choose here a glowing crop to display on your profile.</p>
           <hr className="w-full opacity-30" />
           <p className="text-white/80 text-[12px] font-bold">Available crops</p>
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-2 max-h-[300px] overflow-y-auto no-scrollbar">
             {specialCrops.map((crop) => (
               <div
                 key={crop.itemId}
                 className="flex flex-row items-center justify-between py-2 px-1 rounded-md 
-                   hover:bg-white/10 transition-all cursor-pointer
-                   hover:scale-[1.02] active:scale-[0.98]"
+                   hover:bg-white/10 transition-all cursor-pointer"
                 onClick={() => {
                   onChooseCrop(crop);
                   onCancel();

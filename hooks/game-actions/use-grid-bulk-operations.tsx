@@ -49,13 +49,19 @@ export const useGridBulkOperations = ({
             },
             {} as Record<string, { amount: number }>
           );
+          // add inside crops also the gold crops
+          if (crops && data.data.rewards?.goldCrops) {
+            for (const goldCrop of data.data.rewards.goldCrops) {
+              if (!crops[goldCrop.crop]) {
+                crops[goldCrop.crop] = { amount: 0 };
+              }
+              crops[goldCrop.crop].amount += goldCrop.amount;
+            }
+          }
           const cropMessages = crops
             ? Object.entries(crops).map(([crop, { amount }]) => {
                 return (
-                  <div
-                    className="flex items-center gap-2"
-                    key={crop}
-                  >
+                  <div className="flex items-center gap-2" key={crop}>
                     <span>+{amount}</span>
                     <div className="flex gap-1">
                       <Image
@@ -65,7 +71,7 @@ export const useGridBulkOperations = ({
                         height={18}
                         className="inline-block ml-2"
                       />
-                      <span>{crop}</span>
+                      <span>{crop.replace("-", " ")}</span>
                     </div>
                   </div>
                 );

@@ -1,8 +1,14 @@
-import { DbItem, DbStreak } from "@/supabase/types";
+import { DbItem, DbStreak, DbUserHarvestedCrop } from "@/supabase/types";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
-import { LEVEL_XP_THRESHOLDS, SPEED_BOOST } from "./game-constants";
-import { PerkType } from "@/types/game";
+import {
+  ACHIEVEMENTS_GOLD_MULTIPLIER,
+  ACHIEVEMENTS_THRESHOLDS,
+  BASE_GOLD_CROP_PERCENTAGE,
+  LEVEL_XP_THRESHOLDS,
+  SPEED_BOOST,
+} from "./game-constants";
+import { CropType, PerkType } from "@/types/game";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -121,4 +127,79 @@ export const getCurrentDayStreak = (streak?: DbStreak, frostsDays?: Date[]) => {
   const differenceInTime = lastActionDate.getTime() - startDate.getTime();
   const differenceInDays = Math.ceil(differenceInTime / (1000 * 3600 * 24));
   return differenceInDays + 1 - totalFrostsDays;
+};
+
+export const calculateHarvestAchievements = (
+  userHarvestedCrops: DbUserHarvestedCrop[]
+) => {
+  // calculate the achievements status based on the user's harvested crops and the thresholds
+  return ACHIEVEMENTS_THRESHOLDS.map((threshold) => {
+    const progress = getAchievementProgressByCrop(
+      userHarvestedCrops,
+      threshold.crop
+    );
+    return {
+      step: progress.step,
+      crop: threshold.crop,
+      title: threshold.titles[progress.step - 1],
+      count: progress.count,
+      currentGoal: progress.currentGoal,
+    };
+  });
+};
+
+export const getAchievementProgressByCrop = (
+  userHarvestedCrops: DbUserHarvestedCrop[],
+  crop: CropType
+) => {
+  const cropAchievement = ACHIEVEMENTS_THRESHOLDS.find(
+    (threshold) => threshold.crop === crop
+  );
+
+  if (!cropAchievement) {
+    throw new Error(`Achievement thresholds not found for crop ${crop}`);
+  }
+
+  const count =
+    userHarvestedCrops.find((crop) => crop.crop === cropAchievement.crop)
+      ?.quantity || 0;
+
+  let achievementStep = 1;
+
+  for (const goal of cropAchievement.thresholds) {
+    if (count < goal) {
+      return {
+        step: achievementStep,
+        count,
+        currentGoal: goal,
+      };
+    } else {
+      achievementStep++;
+    }
+  }
+
+  return {
+    step: achievementStep,
+    count,
+    currentGoal:
+      cropAchievement.thresholds[cropAchievement.thresholds.length - 1],
+  };
+};
+
+export const calculateGoldCropsInBatch = (
+  amount: number,
+  achievementStep: number,
+  basePercentage: number = BASE_GOLD_CROP_PERCENTAGE
+): number => {
+  // Increase chance based on achievement step (2.5x for each step above 1)
+  const percentage =
+    achievementStep > 1
+      ? basePercentage * (achievementStep - 1) * ACHIEVEMENTS_GOLD_MULTIPLIER
+      : basePercentage;
+
+  // Generate all random rolls at once
+  const rolls = Array.from({ length: amount }, () => Math.random());
+
+  // Count how many rolls are below the threshold
+  return rolls.filter((roll) => roll < percentage).length;
 };

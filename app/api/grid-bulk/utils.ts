@@ -11,14 +11,19 @@ import {
   updateGridCellsBulk,
   updateUserXP,
 } from "@/lib/prisma/queries";
-import { getBoostTime } from "@/lib/utils";
+import {
+  calculateGoldCropsInBatch,
+  getAchievementProgressByCrop,
+  getBoostTime,
+} from "@/lib/utils";
 import {
   addUserItem,
   getGridCells,
+  getUserHarvestedCrops,
   upsertUserHarvestedCrop,
 } from "@/supabase/queries";
 import { DbGridCell } from "@/supabase/types";
-import { ActionType, PerkType, SeedType } from "@/types/game";
+import { ActionType, CropType, PerkType, SeedType } from "@/types/game";
 import { NextResponse } from "next/server";
 import { sendQuestsCalculation } from "../grid-cells/utils";
 
@@ -38,6 +43,10 @@ export interface GridBulkResult {
     }[];
     didLevelUp: boolean;
     newXP: number;
+    goldCrops?: {
+      crop: string;
+      amount: number;
+    }[];
   };
 }
 
@@ -171,19 +180,47 @@ export const harvestBulk = async (
     }
   });
 
-  // for each crop type, update the user items
+  const goldCrops: {
+    crop: string;
+    amount: number;
+  }[] = [];
+  const userHarvestedCrops = await getUserHarvestedCrops(fid);
+
+  // Process each crop type in a single pass
   for (const cropType in harvestCropSummary) {
-    await addUserItem(
-      fid,
-      CROP_DATA[cropType].id,
-      harvestCropSummary[cropType]
+    const amount = harvestCropSummary[cropType];
+    const achievementProgress = getAchievementProgressByCrop(
+      userHarvestedCrops,
+      cropType as CropType
     );
-    await upsertUserHarvestedCrop(fid, cropType, harvestCropSummary[cropType]);
+
+    const goldCropCount = calculateGoldCropsInBatch(
+      amount,
+      achievementProgress.step
+    );
+
+    if (goldCropCount > 0) {
+      console.log(
+        `User ${fid} harvested ${goldCropCount} gold ${cropType}! 🌟`
+      );
+      await addUserItem(fid, CROP_DATA[cropType].goldId, goldCropCount);
+      goldCrops.push({
+        crop: "gold-" + cropType,
+        amount: goldCropCount,
+      });
+    }
+
+    const regularCropAmount = amount - goldCropCount;
+    if (regularCropAmount > 0) {
+      await addUserItem(fid, CROP_DATA[cropType].id, regularCropAmount);
+    }
+
+    await upsertUserHarvestedCrop(fid, cropType, amount);
     await sendQuestsCalculation(
       fid,
       ActionType.Harvest,
       CROP_DATA[cropType].id,
-      harvestCropSummary[cropType]
+      amount
     );
   }
 
@@ -205,7 +242,10 @@ export const harvestBulk = async (
       ok: harvestableCells,
       nok: notHarvestableCells,
     },
-    rewards,
+    rewards: {
+      ...rewards,
+      goldCrops,
+    },
   };
 };
 
