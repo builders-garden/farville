@@ -1,7 +1,13 @@
 import { useUserItems, UserItem } from "./use-user-items";
 import { useEffect, useState, useCallback } from "react";
 import { useGridCells } from "./use-grid-cells";
-import { DbGridCell, DbItem, DbStreak, DbUser } from "@/supabase/types";
+import {
+  DbGridCell,
+  DbItem,
+  DbStreak,
+  DbUser,
+  DbUserHasQuestWithQuest,
+} from "@/supabase/types";
 import { useItems } from "./use-items";
 import { getCurrentDayStreak, getCurrentLevelAndProgress } from "@/lib/utils";
 import { useUserMe } from "./use-user-me";
@@ -20,6 +26,13 @@ export interface RefetchType {
   frosts: () => Promise<void>;
 }
 
+export interface AllQuests {
+  daily: DbUserHasQuestWithQuest[];
+  weekly: DbUserHasQuestWithQuest[];
+  monthly: DbUserHasQuestWithQuest[];
+  farmer: DbUserHasQuestWithQuest[];
+}
+
 export interface GameState {
   coins: number;
   level: number;
@@ -36,6 +49,7 @@ export interface GameState {
   items: DbItem[];
   inventory: UserItem[];
   user: DbUser;
+  completedQuests: AllQuests;
   claimableQuests: boolean;
   streakUpdated: boolean;
   streaks: DbStreak[];
@@ -64,6 +78,12 @@ export const useGameState = () => {
     items: [],
     inventory: [],
     user: {} as DbUser,
+    completedQuests: {
+      daily: [],
+      weekly: [],
+      monthly: [],
+      farmer: [],
+    },
     claimableQuests: false,
     streakUpdated: false,
     streaks: [],
@@ -87,8 +107,8 @@ export const useGameState = () => {
   } = useGridCells();
   const { items, isLoading: itemsLoading, refetch: refetchItems } = useItems();
   const {
-    quests: claimableQuests,
-    isLoading: claimableQuestsLoading,
+    quests: completedQuests,
+    isLoading: completedQuestsLoading,
     refetch: refetchClaimableQuests,
   } = useUserQuests(state?.user?.fid, "completed");
   const {
@@ -160,17 +180,23 @@ export const useGameState = () => {
   }, [items]);
 
   const updateClaimableQuestsState = useCallback(() => {
-    if (claimableQuests) {
+    if (completedQuests) {
       setState((prevState) => ({
         ...prevState!,
+        completedQuests: {
+          daily: completedQuests.daily,
+          weekly: completedQuests.weekly,
+          monthly: completedQuests.monthly,
+          farmer: completedQuests.farmer,
+        },
         claimableQuests:
-          (claimableQuests?.daily?.length ?? 0) > 0 ||
-          (claimableQuests?.weekly?.length ?? 0) > 0 ||
-          (claimableQuests?.monthly?.length ?? 0) > 0 ||
-          (claimableQuests?.farmer?.length ?? 0) > 0,
+          (completedQuests.daily?.length ?? 0) > 0 ||
+          (completedQuests.weekly?.length ?? 0) > 0 ||
+          (completedQuests.monthly?.length ?? 0) > 0 ||
+          (completedQuests.farmer?.length ?? 0) > 0,
       }));
     }
-  }, [claimableQuests]);
+  }, [completedQuests]);
 
   const updateStreaksState = useCallback(() => {
     if (userStreaks) {
@@ -218,7 +244,7 @@ export const useGameState = () => {
 
   useEffect(() => {
     updateClaimableQuestsState();
-  }, [claimableQuests, updateClaimableQuestsState]);
+  }, [completedQuests, updateClaimableQuestsState]);
 
   useEffect(() => {
     updateStreaksState();
@@ -402,7 +428,7 @@ export const useGameState = () => {
       itemsLoading ||
       userLoading ||
       gridCellsLoading ||
-      claimableQuestsLoading ||
+      completedQuestsLoading ||
       streaksLoading ||
       frostsLoading,
     refetch: {

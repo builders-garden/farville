@@ -59,23 +59,6 @@ export type Crops = {
   [key in CropType]: number;
 };
 
-export interface GameState {
-  coins: number;
-  level: number;
-  experience: number;
-  seeds: Seeds;
-  crops: Crops;
-  inventoryCapacity: number;
-  grid: GridCell[][];
-  gridSize: GridSize;
-  perks: Perks;
-  showInventory: boolean;
-  showMarketplace: boolean;
-  showSettings: boolean;
-  showLeaderboard: boolean;
-  expansionLevel: number;
-}
-
 export interface GridCell {
   id: string;
   x: number;
