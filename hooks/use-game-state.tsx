@@ -428,9 +428,22 @@ export const useGameState = () => {
   }, []);
 
   const updateUserHarvestedCrops = useCallback(
-    (newHarvestedCrops: DbUserHarvestedCrop[]) => {
+    (updatedUserHarvestedCrops: DbUserHarvestedCrop[]) => {
       setState((prevState) => {
         if (!prevState) return prevState;
+
+        const newHarvestedCrops = [...prevState.harvestedCropsSummary];
+
+        updatedUserHarvestedCrops.forEach((updatedHarvestedCrop) => {
+          const index = newHarvestedCrops.findIndex(
+            (harvestedCrop) => harvestedCrop.crop === updatedHarvestedCrop.crop
+          );
+          if (index !== -1) {
+            newHarvestedCrops[index] = updatedHarvestedCrop;
+          } else {
+            newHarvestedCrops.push(updatedHarvestedCrop);
+          }
+        });
 
         return {
           ...prevState,

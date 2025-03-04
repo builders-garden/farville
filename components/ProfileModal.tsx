@@ -36,8 +36,6 @@ export default function ProfileModal({ onClose }: { onClose: () => void }) {
     setSelectedCrops(state.specialCrops || []);
   }, [state.specialCrops]);
 
-  console.log(state);
-
   return (
     <div className="fixed inset-0 bg-black/50 flex items-start z-50">
       <motion.div

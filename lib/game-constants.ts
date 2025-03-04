@@ -72,6 +72,7 @@ export interface CropData {
   power: number;
   tier: string;
   id: number;
+  goldId: number;
 }
 
 export const MAX_DAILY_ALLOWED_DONATION_BETWEEN_USERS = 2;
@@ -87,6 +88,7 @@ export const CROP_DATA: { [key: string]: CropData } = {
     power: 1.4,
     tier: "C",
     id: 17,
+    goldId: 31,
   },
   carrot: {
     growthTime: 4 * millisecondsInHour, // 6h
@@ -95,6 +97,7 @@ export const CROP_DATA: { [key: string]: CropData } = {
     power: 1.2,
     tier: "C",
     id: 5,
+    goldId: 30,
   },
   radish: {
     growthTime: 6 * millisecondsInHour, // 6h
@@ -103,6 +106,7 @@ export const CROP_DATA: { [key: string]: CropData } = {
     power: 1.4,
     tier: "C",
     id: 18,
+    goldId: 41,
   },
   lettuce: {
     growthTime: 10 * millisecondsInHour, // 10h
@@ -111,6 +115,7 @@ export const CROP_DATA: { [key: string]: CropData } = {
     power: 3,
     tier: "B",
     id: 19,
+    goldId: 34,
   },
   potato: {
     growthTime: 12 * millisecondsInHour, // 12h
@@ -119,6 +124,7 @@ export const CROP_DATA: { [key: string]: CropData } = {
     power: 3,
     tier: "B",
     id: 8,
+    goldId: 35,
   },
   corn: {
     growthTime: 12 * millisecondsInHour, // 12h
@@ -127,6 +133,7 @@ export const CROP_DATA: { [key: string]: CropData } = {
     power: 3,
     tier: "B",
     id: 20,
+    goldId: 32,
   },
   eggplant: {
     growthTime: 15 * millisecondsInHour, // 16h
@@ -135,6 +142,7 @@ export const CROP_DATA: { [key: string]: CropData } = {
     power: 4.2,
     tier: "A",
     id: 21,
+    goldId: 33,
   },
   tomato: {
     growthTime: 16 * millisecondsInHour, // 16h
@@ -143,6 +151,7 @@ export const CROP_DATA: { [key: string]: CropData } = {
     power: 5,
     tier: "A",
     id: 7,
+    goldId: 36,
   },
   strawberry: {
     growthTime: 24 * millisecondsInHour, // 24h
@@ -151,6 +160,7 @@ export const CROP_DATA: { [key: string]: CropData } = {
     power: 4.8,
     tier: "A",
     id: 22,
+    goldId: 40,
   },
   watermelon: {
     growthTime: 36 * millisecondsInHour, // 36h
@@ -159,6 +169,7 @@ export const CROP_DATA: { [key: string]: CropData } = {
     power: 30,
     tier: "S",
     id: 23,
+    goldId: 39,
   },
   pumpkin: {
     growthTime: 48 * millisecondsInHour, // 48h
@@ -167,6 +178,7 @@ export const CROP_DATA: { [key: string]: CropData } = {
     power: 30,
     tier: "S",
     id: 6,
+    goldId: 38,
   },
 };
 
@@ -626,3 +638,7 @@ export const ACHIEVEMENTS_THRESHOLDS = [
     ],
   },
 ];
+
+// 1 in 1000 chance
+export const BASE_GOLD_CROP_PERCENTAGE = 0.001;
+export const ACHIEVEMENTS_GOLD_MULTIPLIER = 2.5;

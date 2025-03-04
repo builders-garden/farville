@@ -26,17 +26,26 @@ export const HarvestHonour = ({
           {
             // render trophies
             trophies.map((trophy) =>
-              step <= trophy ? (
+              step < trophy ? (
                 <div
                   key={trophy}
                   className="h-12 w-12 bg-[#7E4E31] rounded-lg flex items-center justify-center opacity-50"
                 >
-                  🏆
+                  <Image
+                    src={`/images/profile/question-mark-yellow.png`}
+                    alt="Yellow question mark"
+                    width={24}
+                    height={24}
+                  />
                 </div>
               ) : (
                 <div
                   key={trophy}
-                  className="h-12 w-12 bg-[#7E4E31] rounded-lg flex items-center justify-center"
+                  className={`h-12 w-12 bg-[#7E4E31] rounded-lg flex items-center justify-center ${
+                    step === trophy
+                      ? "opacity-50 bg-[#9d5427] border-2 border-[#f2a311] border-opacity-50"
+                      : ""
+                  }`}
                 >
                   🏆
                 </div>
