@@ -2,6 +2,7 @@ import { LeaderboardResponse } from "@/hooks/use-leadeboard";
 import { getUser } from "@/supabase/queries";
 import { getCurrentLevelAndProgress } from "@/lib/utils";
 import { ImageResponse } from "next/og";
+import { getActiveStreaksCount } from "@/lib/prisma/queries";
 
 export const dynamic = "force-dynamic";
 const size = {
@@ -44,6 +45,7 @@ export async function GET(
     const { searchParams } = new URL(request.url);
     const friends = searchParams.get("friends") === "true";
     const type = searchParams.get("type") || "xp";
+
     const appUrl = process.env.NEXT_PUBLIC_URL;
 
     if (!fid) {
@@ -53,6 +55,7 @@ export async function GET(
     }
 
     const user = await getUser(Number(fid));
+    const totActiveStreaks = await getActiveStreaksCount();
 
     // Build query parameters for leaderboard request
     const leaderboardQueryParams = new URLSearchParams();
@@ -171,9 +174,6 @@ export async function GET(
       userProfilePics.push(profilePic);
     }
 
-    console.log(displayUsers);
-    console.log(userProfilePics);
-
     const fontData = await loadGoogleFont(
       "Press+Start+2P",
       // put here all the text that it's potentially going to be displayed
@@ -244,29 +244,47 @@ export async function GET(
               <div
                 style={{
                   display: "flex",
+                  flexDirection: "column",
+                  gap: "4px",
                 }}
               >
+                <div
+                  style={{
+                    display: "flex",
+                  }}
+                >
+                  <span
+                    style={{
+                      fontSize: "20px",
+                      marginRight: "10px",
+                    }}
+                  >
+                    🏆
+                  </span>
+                  <h1
+                    style={{
+                      fontSize: "24px",
+                      fontWeight: "bold",
+                      margin: 0,
+                      color: "#FFD700",
+                      textShadow: "0 2px 4px rgba(0,0,0,0.5)",
+                      fontFamily: "PressStart2P",
+                    }}
+                  >
+                    LEADERBOARD
+                  </h1>
+                </div>
                 <span
                   style={{
-                    fontSize: "20px",
-                    marginRight: "10px",
+                    fontSize: "9px",
+                    color: "#ffffff",
                   }}
                 >
-                  🏆
+                  +{totActiveStreaks}{" "}
+                  <span style={{ marginLeft: "5px" }}>farmers are playing</span>
                 </span>
-                <h1
-                  style={{
-                    fontSize: "24px",
-                    fontWeight: "bold",
-                    margin: 0,
-                    color: "#FFD700",
-                    textShadow: "0 2px 4px rgba(0,0,0,0.5)",
-                    fontFamily: "PressStart2P",
-                  }}
-                >
-                  LEADERBOARD
-                </h1>
               </div>
+
               <div
                 style={{
                   display: "flex",
