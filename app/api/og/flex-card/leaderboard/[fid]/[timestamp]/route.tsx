@@ -90,19 +90,6 @@ export async function GET(
     );
     const bgImage = await bgImageRes.arrayBuffer();
 
-    // Load user profile picture if available
-    let profilePic = null;
-    if (user?.avatarUrl) {
-      try {
-        const profilePicRes = await fetch(user.avatarUrl);
-        if (profilePicRes.ok) {
-          profilePic = await profilePicRes.arrayBuffer();
-        }
-      } catch (e) {
-        console.error("Failed to load profile picture", e);
-      }
-    }
-
     // Format XP to shorter version (e.g., 110,000 -> 110k)
     const formatXP = (xp: number): string => {
       if (xp >= 1000000) {
