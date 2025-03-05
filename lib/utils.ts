@@ -43,6 +43,31 @@ export const streakFlexCardComposeCastUrl = (
   };
 };
 
+export const leaderboardFlexCardComposeCastUrl = (
+  fid: number,
+  type: "quests" | "xp",
+  isFriends: boolean
+) => {
+  const timestamp = Date.now();
+  const frameUrl = `https://farville.farm/flex-card/leaderboard/${fid}/${timestamp}?friends=${isFriends}&type=${type}`;
+
+  const text =
+    type === "quests"
+      ? `yo farmers! crushing ${
+          isFriends ? "friends" : "global"
+        } quests on /farville! 🧑‍🌾 LFF 🚜💨`
+      : `peep my XP gains on /farville! 🌱 ${
+          isFriends ? "friends" : "global"
+        } leaderboard flex! LFF 🚜💨`;
+
+  const urlFriendlyText = encodeURIComponent(text);
+
+  return {
+    frameUrl,
+    castUrl: `https://warpcast.com/~/compose?text=${urlFriendlyText}&embeds[]=${frameUrl}`,
+  };
+};
+
 export const getCurrentLevelAndProgress = (experience: number) => {
   const currentLevel = LEVEL_XP_THRESHOLDS.findIndex(
     (threshold) => experience < threshold
