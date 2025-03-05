@@ -29,6 +29,20 @@ export const requestItemComposeCastUrl = (
   };
 };
 
+export const streakFlexCardComposeCastUrl = (
+  fid: number,
+  streakNumber: number
+) => {
+  const timestamp = Date.now();
+  const frameUrl = `https://farville.farm/flex-card/streak/${fid}/${timestamp}`;
+  const text = `yo farmers, look here! my /farville streak is ${streakNumber} 🔥 LFF 🚜💨🚜💨`;
+  const urlFriendlyText = encodeURIComponent(text);
+  return {
+    frameUrl,
+    castUrl: `https://warpcast.com/~/compose?text=${urlFriendlyText}&embeds[]=${frameUrl}`,
+  };
+};
+
 export const getCurrentLevelAndProgress = (experience: number) => {
   const currentLevel = LEVEL_XP_THRESHOLDS.findIndex(
     (threshold) => experience < threshold

@@ -14,13 +14,18 @@ import {
   MAX_FROSTS_QUANTITY,
   MONTHLY_REWARDS,
 } from "@/lib/game-constants";
-import { getCurrentDayStreak, getStreakDates } from "@/lib/utils";
+import {
+  getCurrentDayStreak,
+  getStreakDates,
+  streakFlexCardComposeCastUrl,
+} from "@/lib/utils";
 import { motion } from "framer-motion";
-import { Clock, Plus } from "lucide-react";
+import { Clock, Plus, Share2 } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import ConfirmationModal from "./ConfirmationModal";
 import InfoModal from "./InfoModal";
+import sdk from "@farcaster/frame-sdk";
 
 interface StreakReward {
   day: number;
@@ -95,6 +100,14 @@ export default function StreaksModal({ onClose }: { onClose: () => void }) {
         rewards,
       });
     }
+  };
+
+  const handleShareStreak = async () => {
+    const { castUrl } = streakFlexCardComposeCastUrl(
+      state.user.fid,
+      currentDayStreak
+    );
+    await sdk.actions.openUrl(castUrl);
   };
 
   const streakDates = getStreakDates(state.streaks);
@@ -239,6 +252,20 @@ export default function StreaksModal({ onClose }: { onClose: () => void }) {
           </div>
 
           {/* New Streak Status Section */}
+          {/* Share Streak Button */}
+          <div className="flex items-center justify-between">
+            <span className="text-white/90 text-xs">Share it now!</span>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="bg-[#FFB938] text-[#5B4120] p-1 rounded-md flex items-center justify-center 
+                   hover:bg-[#ffd57a] transition-colors shadow-[0_0_10px_rgba(255,165,0,0.2)]"
+              onClick={handleShareStreak}
+            >
+              <Share2 size={14} />
+            </motion.button>
+          </div>
+
           <motion.div
             animate={{
               boxShadow: [
@@ -249,7 +276,7 @@ export default function StreaksModal({ onClose }: { onClose: () => void }) {
             }}
             transition={{ duration: 2, repeat: Infinity }}
             className="bg-gradient-to-br from-[#a13810] to-[#822800] 
-                      rounded-2xl p-4 border-2 border-[#ffa07a]/30"
+                  rounded-2xl p-4 border-2 border-[#ffa07a]/30"
           >
             <div className="flex items-center justify-between">
               <div className="flex flex-col gap-2">
