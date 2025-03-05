@@ -332,3 +332,101 @@ export const SPEED_BOOST: {
     applyTo: [CropType.Strawberry, CropType.Watermelon, CropType.Pumpkin],
   },
 };
+
+export const ACHIEVEMENTS_THRESHOLDS = [
+  {
+    crop: CropType.Carrot,
+    thresholds: [100, 1000, 10000, 1000000],
+    titles: [
+      "Carrot Rookie",
+      "Bugs Bunny",
+      "24 Carrot Gold",
+      "Carrot Overlord",
+    ],
+  },
+  {
+    crop: CropType.Wheat,
+    thresholds: [100, 1000, 10000, 1000000],
+    titles: ["Wheat Lover", "Wheat Farmer", "Wheat King", "Bread Winner"],
+  },
+  {
+    crop: CropType.Radish,
+    thresholds: [100, 1000, 10000, 1000000],
+    titles: ["Rad-ish Rookie", "Root Master", "Radish King", "Radish God"],
+  },
+  {
+    crop: CropType.Lettuce,
+    thresholds: [100, 1000, 10000, 1000000],
+    titles: [
+      "Lettuce Begin",
+      "Salad Tosser",
+      "Caesar Supreme",
+      "Lettuce Legend",
+    ],
+  },
+  {
+    crop: CropType.Potato,
+    thresholds: [100, 1000, 10000, 1000000],
+    titles: [
+      "Small Fry",
+      "Spud Buddy",
+      "Tater Emperor",
+      "Couch Potato Supreme",
+    ],
+  },
+  {
+    crop: CropType.Corn,
+    thresholds: [100, 1000, 10000, 1000000],
+    titles: [
+      "Corn Rookie",
+      "Kernel Sanders",
+      "Pop Star",
+      "Children of the Corn",
+    ],
+  },
+  {
+    crop: CropType.Eggplant,
+    thresholds: [100, 1000, 10000, 1000000],
+    titles: [
+      "Eggplant Novice",
+      "Aubergine Dream",
+      "Purple Reign",
+      "Emoji Master 🍆",
+    ],
+  },
+  {
+    crop: CropType.Tomato,
+    thresholds: [100, 1000, 10000, 1000000],
+    titles: ["Tomato Newbie", "Sauce Boss", "Ketchup King", "Lord of Lycopene"],
+  },
+  {
+    crop: CropType.Strawberry,
+    thresholds: [100, 1000, 10000, 1000000],
+    titles: [
+      "Berry Beginner",
+      "Jam Master",
+      "Shortcake Sovereign",
+      "Berry Potter",
+    ],
+  },
+  {
+    crop: CropType.Watermelon,
+    thresholds: [100, 1000, 10000, 1000000],
+    titles: [
+      "Melon Apprentice",
+      "Seed Spitter",
+      "Rind Ruler",
+      "Lord of the Rinds",
+    ],
+  },
+  {
+    crop: CropType.Pumpkin,
+    thresholds: [100, 1000, 10000, 1000000],
+    titles: [
+      "Pumpkin Pie",
+      "Great Pumpkin",
+      "Headless Horseman",
+      "Jack Skellington",
+    ],
+  },
+];

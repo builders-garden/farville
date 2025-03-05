@@ -28,12 +28,6 @@ export default function InfoModal({
         className="bg-[#7E4E31] p-6 rounded-lg max-w-sm w-full mx-4 border border-[#8B5E3C]/50"
       >
         <div className="flex flex-row items-center gap-2 mb-4">
-          <h3
-            className={`
-            ${options?.titleColor || "text-white/90"} font-bold text-lg`}
-          >
-            {title}
-          </h3>
           {
             // if icon is a string, render an image
             typeof icon === "string" ? (
@@ -43,6 +37,12 @@ export default function InfoModal({
               icon
             )
           }
+          <h3
+            className={`
+            ${options?.titleColor || "text-white/90"} font-bold text-lg`}
+          >
+            {title}
+          </h3>
         </div>
         {children}
         <div className="flex gap-3">

@@ -255,7 +255,7 @@ export default function TimelineModal({ onClose }: { onClose: () => void }) {
                                     item.rewards.crops.length > 0 && (
                                       <div className="flex flex-row items-start justify-between">
                                         <span>New crops 🆕</span>
-                                        <div className="flex flex-row flex-wrap gap-2">
+                                        <div className="flex flex-row flex-wrap gap-2 max-w-[50%]">
                                           {item.rewards.crops.map((crop) => (
                                             <div
                                               key={crop}

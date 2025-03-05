@@ -6,6 +6,7 @@ import {
   millisecondsInHour,
   CropType,
   PerkType,
+  ACHIEVEMENTS_THRESHOLDS,
 } from "./constants";
 
 const getBoostTime = (perkSlug: PerkType) => {
@@ -38,50 +39,54 @@ function maxPerksApplicationsByCrop(
   return k - 1;
 }
 
-const calculateQuestXP = (
+// const calculateQuestXP = (
+//   level: number,
+//   cropData: CropData,
+//   amount: number
+// ): number => {
+//   const xpBonus: Record<"5" | "10" | "15" | "20", number> = {
+//     "5": 5,
+//     "10": 10,
+//     "15": 20,
+//     "20": 30,
+//   };
+
+//   const userCellsWidth =
+//     EXPANSION_COSTS.filter((cost) => cost.level <= level).pop()?.nextSize
+//       .width ?? 2;
+//   const userCellsBasedOnLevel = userCellsWidth * userCellsWidth;
+//   const T =
+//     (cropData.growthTime / millisecondsInHour) *
+//     Math.ceil(amount / userCellsBasedOnLevel);
+
+//   const bonusLevel = Object.keys(xpBonus)
+//     .filter((key) => Number(key) <= level)
+//     .pop();
+//   const bonusApplied = bonusLevel
+//     ? xpBonus[bonusLevel as keyof typeof xpBonus]
+//     : 0;
+
+//   const xpAmount =
+//     Math.ceil(
+//       (amount / cropData.power) *
+//         cropData.rewardXP *
+//         (1 + T / (CROP_DATA["pumpkin"].growthTime / millisecondsInHour))
+//     ) + bonusApplied;
+
+//   // return here the xpAmount rounded to the nearest integer value which is to be a multiple of 10 (if xpAmount < 1000) or 100 (if xpAmount >= 1000)
+//   if (xpAmount < 1000) {
+//     return Math.round(xpAmount / 10) * 10;
+//   } else {
+//     return Math.round(xpAmount / 100) * 100;
+//   }
+// };
+
+const calculateValidAmount = (
+  crop: CropData,
   level: number,
-  cropData: CropData,
-  amount: number
-): number => {
-  const xpBonus: Record<"5" | "10" | "15" | "20", number> = {
-    "5": 5,
-    "10": 10,
-    "15": 20,
-    "20": 30,
-  };
-
-  const userCellsWidth =
-    EXPANSION_COSTS.filter((cost) => cost.level <= level).pop()?.nextSize
-      .width ?? 2;
-  const userCellsBasedOnLevel = userCellsWidth * userCellsWidth;
-  const T =
-    (cropData.growthTime / millisecondsInHour) *
-    Math.ceil(amount / userCellsBasedOnLevel);
-
-  const bonusLevel = Object.keys(xpBonus)
-    .filter((key) => Number(key) <= level)
-    .pop();
-  const bonusApplied = bonusLevel
-    ? xpBonus[bonusLevel as keyof typeof xpBonus]
-    : 0;
-
-  const xpAmount =
-    Math.ceil(
-      (amount / cropData.power) *
-        cropData.rewardXP *
-        (1 + T / (CROP_DATA["pumpkin"].growthTime / millisecondsInHour))
-    ) + bonusApplied;
-
-  // return here the xpAmount rounded to the nearest integer value which is to be a multiple of 10 (if xpAmount < 1000) or 100 (if xpAmount >= 1000)
-  if (xpAmount < 1000) {
-    return Math.round(xpAmount / 10) * 10;
-  } else {
-    return Math.round(xpAmount / 100) * 100;
-  }
-};
-
-const calculateValidAmount = (crop: CropData, level: number) => {
-  const questTimeInHours = 40;
+  requiredHours: number
+) => {
+  const questTimeInHours = requiredHours;
   const userAvailableCells =
     (EXPANSION_COSTS.filter((cost) => cost.level <= level).pop()?.nextSize
       .width ?? 2) ** 2;
@@ -112,15 +117,32 @@ const calculateValidAmount = (crop: CropData, level: number) => {
 };
 
 const main = () => {
-  const level = 17;
+  const level = 20;
+  const requiredDays = [15, 45, 150, 540]; // used 10, 30, 100, 360 but multiplied by 1.5 to take care of the harvest possibility to get more then 1 crop per cell
   console.log(`User at level: ${level}\n`);
   Object.values(CropType).forEach((cropSlug) => {
     const cropData = CROP_DATA[cropSlug];
-    const validAmount = calculateValidAmount(cropData, level);
-    const questXP = calculateQuestXP(level, cropData, validAmount);
-    console.log(
-      `Crop id: ${cropData.id}\tValid amount: ${validAmount}\tXP: ${questXP}\tCrop: ${cropSlug}\t`
+    const achievementThresholds = ACHIEVEMENTS_THRESHOLDS.find(
+      (threshold) => threshold.crop === cropSlug
     );
+
+    console.log(`\nAchievement thresholds for ${cropSlug}:`);
+    let i = 0;
+    for (const threshold of achievementThresholds?.titles ?? []) {
+      const validAmount = calculateValidAmount(
+        cropData,
+        level,
+        requiredDays[i] * 24
+      );
+      console.log(`\t${threshold}:\t${validAmount}\t${requiredDays[i]} days`);
+      i++;
+    }
+
+    // const validAmount = calculateValidAmount(cropData, level, requiredHours);
+    // const questXP = calculateQuestXP(level, cropData, validAmount);
+    // console.log(
+    //   `Crop id: ${cropData.id}\tValid amount: ${validAmount}\tXP: ${questXP}\tCrop: ${cropSlug}\t`
+    // );
   });
 };
 

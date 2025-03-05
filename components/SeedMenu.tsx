@@ -128,7 +128,7 @@ export default function SeedMenu() {
         )}
         <div
           ref={scrollContainerRef}
-          className="flex gap-2 overflow-x-auto py-3 px-6 scrollbar-none"
+          className="flex gap-2 overflow-x-auto py-3 px-6 no-scrollbar"
         >
           {state.items
             .filter(
