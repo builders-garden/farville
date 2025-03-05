@@ -252,20 +252,6 @@ export default function StreaksModal({ onClose }: { onClose: () => void }) {
           </div>
 
           {/* New Streak Status Section */}
-          {/* Share Streak Button */}
-          <div className="flex items-center justify-between">
-            <span className="text-white/90 text-xs">Share it now!</span>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="bg-[#FFB938] text-[#5B4120] p-1 rounded-md flex items-center justify-center 
-                   hover:bg-[#ffd57a] transition-colors shadow-[0_0_10px_rgba(255,165,0,0.2)]"
-              onClick={handleShareStreak}
-            >
-              <Share2 size={14} />
-            </motion.button>
-          </div>
-
           <motion.div
             animate={{
               boxShadow: [
@@ -276,14 +262,28 @@ export default function StreaksModal({ onClose }: { onClose: () => void }) {
             }}
             transition={{ duration: 2, repeat: Infinity }}
             className="bg-gradient-to-br from-[#a13810] to-[#822800] 
-                  rounded-2xl p-4 border-2 border-[#ffa07a]/30"
+              rounded-2xl p-4 border-2 border-[#ffa07a]/30"
           >
             <div className="flex items-center justify-between">
               <div className="flex flex-col gap-2">
-                <span className="text-[#ffa07a] text-sm">Current Streak</span>
-                <span className="text-5xl font-bold text-white/90">
-                  {currentDayStreak}
-                </span>
+                <div className="flex items-center gap-4">
+                  <span className="text-[#ffa07a] text-sm">Your Streak</span>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="bg-gradient-to-r from-[#a13810] to-[#822800] text-[#ffa07a] p-1.5 rounded-md flex items-center justify-center 
+                  hover:bg-gradient-to-r hover:from-[#b44c1e] hover:to-[#943000] transition-colors border border-[#ffa07a]/30
+                  shadow-[0_0_10px_rgba(255,160,122,0.3)]"
+                    onClick={handleShareStreak}
+                  >
+                    <Share2 size={14} />
+                  </motion.button>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-5xl font-bold text-white/90">
+                    {currentDayStreak}
+                  </span>
+                </div>
               </div>
               <motion.div
                 animate={
@@ -301,8 +301,8 @@ export default function StreaksModal({ onClose }: { onClose: () => void }) {
                       : "/images/special/frost.png"
                   }
                   alt={hasPlayedToday ? "Active Streak" : "Inactive Streak"}
-                  width={70}
-                  height={70}
+                  width={80}
+                  height={80}
                   className="drop-shadow-[0_2px_8px_rgba(255,165,0,0.5)]"
                 />
               </motion.div>
