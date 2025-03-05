@@ -108,6 +108,8 @@ interface GameContextType {
   updateUserHarvestedCrops: (
     updatedUserHarvestedCrops: DbUserHarvestedCrop[]
   ) => void;
+  showHarvestedNewGoldCrops: boolean;
+  setShowHarvestedNewGoldCrops: Dispatch<SetStateAction<boolean>>;
 }
 
 export const GameContext = createContext<GameContextType | null>(null);
@@ -148,6 +150,8 @@ export function GameProvider({
   const [floatingNumbers, setFloatingNumbers] = useState<FloatingNumberData[]>(
     []
   );
+  const [showHarvestedNewGoldCrops, setShowHarvestedNewGoldCrops] =
+    useState(false);
   const [remainingUses, setRemainingUses] = useState<number>(0);
 
   const [gridBulkOperations, setGridBulkOperations] =
@@ -380,6 +384,7 @@ export function GameProvider({
             gridBulkResult.rewards.goldCrops,
             state
           );
+          setShowHarvestedNewGoldCrops(true);
         }
         updateUserItemsStateFromReward(rewards, state);
         updateUserHarvestedCropsFromReward(rewards, state);
@@ -491,6 +496,8 @@ export function GameProvider({
         updateUser,
         claimRewards,
         updateUserHarvestedCrops,
+        showHarvestedNewGoldCrops,
+        setShowHarvestedNewGoldCrops,
       }}
     >
       {children}

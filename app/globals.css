@@ -87,6 +87,37 @@ body {
   }
 }
 
+@keyframes golden-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes golden-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 15px rgba(234, 179, 8, 0.4),
+      inset 0 0 15px rgba(234, 179, 8, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(234, 179, 8, 0.7),
+      inset 0 0 20px rgba(234, 179, 8, 0.5);
+  }
+}
+
 .growth-progress {
   @apply absolute bottom-0 left-0 w-full h-1 bg-black/20;
   transform-origin: left;
@@ -193,6 +224,22 @@ body {
   }
   50% {
     @apply ring-opacity-100;
+  }
+}
+
+@keyframes border-move {
+  0%,
+  100% {
+    clip-path: inset(0 -2px 95% -2px);
+  }
+  25% {
+    clip-path: inset(-2px 95% -2px 0);
+  }
+  50% {
+    clip-path: inset(95% -2px 0 -2px);
+  }
+  75% {
+    clip-path: inset(-2px 0 -2px 95%);
   }
 }
 
