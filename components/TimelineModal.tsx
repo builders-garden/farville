@@ -144,8 +144,48 @@ export default function TimelineModal({ onClose }: { onClose: () => void }) {
             </div>
 
             {/* Content area */}
-            <div className="flex-1 overflow-y-auto mt-4 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-[#6D4B2B] [&::-webkit-scrollbar-thumb]:bg-[#8A5E3B]">
-              <Timeline className="mr-2">
+            <div className="flex-1 overflow-y-auto mt-4 no-scrollbar">
+              <Card className="flex items-center bg-[#5B4120] border-none mb-4">
+                <CardContent className="w-full p-4 gap-4">
+                  <h3 className="text-white/90 font-semibold text-lg mb-2">
+                    Level progress
+                  </h3>
+                  <div className="flex items-end justify-between">
+                    <span className="text-white/90 font-semibold tracking-wide text-lg flex items-center gap-1">
+                      <Image
+                        src="/images/icons/experience.png"
+                        alt="Level"
+                        width={24}
+                        height={24}
+                      />
+                      {state.level}
+                    </span>
+                    <span className="text-white/70 text-xs">
+                      ({state.experience.toLocaleString()}/
+                      {(
+                        LEVEL_XP_THRESHOLDS[
+                          Math.min(
+                            LEVEL_XP_THRESHOLDS.findIndex(
+                              (threshold) => state.experience < threshold
+                            ),
+                            LEVEL_XP_THRESHOLDS.length - 1
+                          )
+                        ] || LEVEL_XP_THRESHOLDS[LEVEL_XP_THRESHOLDS.length - 1]
+                      ).toLocaleString()}
+                      <span className="ml-0.5 text-[8px]">XP</span>)
+                    </span>
+                  </div>
+                  <div className="mt-1.5 h-1.5 w-full bg-[#b37437] rounded-full overflow-hidden">
+                    <motion.div
+                      className="h-full bg-[#FFB938]"
+                      initial={{ width: 0 }}
+                      animate={{ width: `${userStats?.progress}%` }}
+                      transition={{ duration: 0.5 }}
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+              <Timeline>
                 {timelineData.length > 0 && userStats ? (
                   timelineData.map((item) => (
                     <TimelineItem key={item.level}>

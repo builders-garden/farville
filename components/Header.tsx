@@ -28,8 +28,20 @@ export default function Header() {
               {state.level}
             </span>
             <span className="text-white/70 text-[8px]">
-              ({state.experience.toLocaleString()}/
-              {(
+              (
+              {(state.experience >= 1000000
+                ? (state.experience / 1000000).toFixed(1) + "M"
+                : state.experience >= 1000
+                ? (state.experience / 1000).toFixed(1) + "K"
+                : state.experience.toString()
+              ).replace(/\.0([KM])$/, "$1")}
+              /
+              {((threshold) =>
+                threshold >= 1000000
+                  ? (threshold / 1000000).toFixed(1) + "M"
+                  : threshold >= 1000
+                  ? (threshold / 1000).toFixed(1) + "K"
+                  : threshold)(
                 LEVEL_XP_THRESHOLDS[
                   Math.min(
                     LEVEL_XP_THRESHOLDS.findIndex(
@@ -38,7 +50,9 @@ export default function Header() {
                     LEVEL_XP_THRESHOLDS.length - 1
                   )
                 ] || LEVEL_XP_THRESHOLDS[LEVEL_XP_THRESHOLDS.length - 1]
-              ).toLocaleString()}
+              )
+                .toString()
+                .replace(/\.0([KM])$/, "$1")}
               <span className="ml-0.5 text-[8px]">XP</span>)
             </span>
           </div>
@@ -55,19 +69,28 @@ export default function Header() {
 
       {/* streak counter button */}
       <motion.div
-        className="h-[42px] flex flex-row flex gap-1 items-center text-white/90 tracking-wide font-bold cursor-pointer"
+        className={`h-[42px] flex flex-row flex gap-1 items-center text-white/90 tracking-wide font-bold cursor-pointer relative
+          ${state.claimableStreakReward ? "bg-transparent animate-pulse" : ""}`}
         whileHover={{ scale: 1.02 }}
         onClick={() => setShowStreaks(true)}
       >
+        {state.claimableStreakReward && (
+          <div className="absolute -top-[-3px] -right-1 w-3 h-3 bg-[#FFD700] rounded-full z-30" />
+        )}
         <Image
           src="/images/special/fire.png"
           alt="Streak"
           width={22}
           height={22}
+          className="mt-[-2px]"
         />
         <p
           className={`${
             state.currentStreakDays > 9999 ? "text-xs" : "text-md"
+          } ${
+            state.claimableStreakReward
+              ? "drop-shadow-[0_0_3px_rgba(255,255,255,0.7)]"
+              : ""
           }`}
         >
           {state.currentStreakDays}

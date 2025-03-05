@@ -1,5 +1,9 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import {
+  ACHIEVEMENTS_GOLD_MULTIPLIER,
+  BASE_GOLD_CROP_PERCENTAGE,
+} from "@/lib/game-constants";
 import Image from "next/image";
 
 interface HarvestHonourProps {
@@ -19,6 +23,10 @@ export const HarvestHonour = ({
 }: HarvestHonourProps) => {
   const trophies = [1, 2, 3, 4];
 
+  const goldCropChancePercentage =
+    step > 1
+      ? BASE_GOLD_CROP_PERCENTAGE * (step - 1) * ACHIEVEMENTS_GOLD_MULTIPLIER
+      : BASE_GOLD_CROP_PERCENTAGE;
   return (
     <Card className="bg-gradient-to-br from-[#6D4C2C] to-[#5B4120] rounded-lg border-none w-full">
       <CardContent className="flex flex-col items-center gap-2 p-4">
@@ -60,16 +68,29 @@ export const HarvestHonour = ({
           </div>
 
           <div className="flex-1 text-white/90">
-            <div className="flex flex-row justify-between items-center">
+            <div className="flex flex-row justify-between items-end">
               <p className="text-xs font-bold">{title}</p>
-              <p className="text-xs">
-                {count}/{currentGoal}
+              <p className="text-[10px]">
+                ({count}/{currentGoal})
               </p>
             </div>
             <Progress
               value={(count / currentGoal) * 100}
               className="mt-2 bg-[#7E4E31]"
             />
+          </div>
+
+          {/* gold crop percentage value */}
+          <div className="flex flex-col items-center justify-center">
+            <Image
+              src="/images/special/gold.png"
+              alt="Gold ingot"
+              width={32}
+              height={32}
+            />
+            <p className="text-[8px] font-bold text-[#FFD700]">
+              {goldCropChancePercentage * 100}%
+            </p>
           </div>
         </div>
       </CardContent>

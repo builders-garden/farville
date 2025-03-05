@@ -71,8 +71,8 @@ export default function ProfileModal({ onClose }: { onClose: () => void }) {
           </div>
 
           <div className="space-y-4 overflow-y-auto h-[calc(100vh-100px)] pb-4 pr-2 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-[#6D4B2B] [&::-webkit-scrollbar-thumb]:bg-[#8A5E3B]">
-            {/* Profile Information */}
             <div className="flex flex-col items-center gap-8">
+              {/* Profile Information */}
               <Card className="bg-gradient-to-br from-[#6D4C2C] to-[#5B4120] rounded-lg border-none w-full max-w-2xl">
                 <CardContent className="flex flex-row justify-between w-full gap-4 p-4">
                   <div className="flex flex-col gap-4 w-[45%]">

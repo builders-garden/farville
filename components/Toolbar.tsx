@@ -16,7 +16,7 @@ export default function Toolbar({
     setShowProfile,
     setShowLeaderboard,
     setShowQuests,
-    setShowStreaks,
+    // setShowStreaks,
     state,
   } = useGame();
 
@@ -125,7 +125,7 @@ export default function Toolbar({
           <span className="text-[6px] text-white mt-1">Inventory</span>
         </div>
 
-        <div className="flex flex-col items-center w-[48px]">
+        {/* <div className="flex flex-col items-center w-[48px]">
           <motion.button
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.95 }}
@@ -158,7 +158,7 @@ export default function Toolbar({
           >
             Streaks
           </span>
-        </div>
+        </div> */}
 
         <div className="flex flex-col items-center w-[48px]">
           <motion.button
