@@ -6,19 +6,19 @@ const appUrl = process.env.NEXT_PUBLIC_URL;
 
 export async function generateMetadata({
   params,
+  searchParams,
 }: {
-  params: Promise<{
-    scope: "global" | "friends";
-    type: "experience" | "quests";
-    fid: string;
-    timestamp: string;
-  }>;
+  params: Promise<{ fid: string; timestamp: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }): Promise<Metadata> {
-  const { scope, type, fid, timestamp } = await params;
+  const { fid, timestamp } = await params;
+  const searchParamsObj = await searchParams;
+  const friends = searchParamsObj.friends === "true";
+  const type = searchParamsObj.type || "xp";
 
   const user = await getUser(Number(fid));
 
-  if (!user || !scope || !type || !timestamp) {
+  if (!user || !timestamp) {
     return {
       title: "FarVille",
       openGraph: {
@@ -29,18 +29,18 @@ export async function generateMetadata({
   }
 
   const imageUrl = new URL(
-    `${appUrl}/api/og/flex-card/leaderboard/${scope}/${type}/${fid}/${timestamp}`
+    `${appUrl}/api/og/flex-card/leaderboard/${fid}/${timestamp}?friends=${friends}&type=${type}`
   );
 
   const frame = {
     version: "next",
     imageUrl: imageUrl.toString(),
     button: {
-      title: `Play FarVille 🧑‍🌾`,
+      title: "Play FarVille 🧑‍🌾",
       action: {
         type: "launch_frame",
         name: "FarVille",
-        url: `${appUrl}`,
+        url: appUrl,
         splashImageUrl: `${appUrl}/images/splash.png`,
         splashBackgroundColor: "#f7f7f7",
       },
@@ -48,9 +48,9 @@ export async function generateMetadata({
   };
 
   return {
-    title: `Play FarVille 🧑‍🌾`,
+    title: "Play FarVille 🧑‍🌾",
     openGraph: {
-      title: `Play FarVille 🧑‍🌾`,
+      title: "Play FarVille 🧑‍🌾",
       description: "Plant, grow, and harvest crops with your friends.",
       images: [{ url: imageUrl.toString() }],
     },

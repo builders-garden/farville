@@ -32,17 +32,18 @@ export async function GET(
     params,
   }: {
     params: Promise<{
-      scope: "global" | "friends";
-      type: "experience" | "quests";
       fid: string;
       timestamp: string;
     }>;
   }
 ) {
   try {
-    const { fid, scope, type } = await params;
+    const { fid } = await params;
+    const { searchParams } = new URL(request.url);
+    const friends = searchParams.get("friends") === "true";
+    const type = searchParams.get("type") || "xp";
 
-    if (!fid || !scope || !type) {
+    if (!fid) {
       return new Response("Farmer ID, scope and type are required", {
         status: 400,
       });
