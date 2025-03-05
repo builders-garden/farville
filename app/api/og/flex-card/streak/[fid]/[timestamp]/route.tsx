@@ -341,7 +341,7 @@ export async function GET(
                             objectFit: "cover",
                             border: "1px solid #322214",
                             borderRadius: "100%",
-                            marginLeft: index > 0 ? "-5px" : "0", // Create overlapping effect
+                            marginLeft: index > 0 ? "-12px" : "0", // Create overlapping effect with more overlap
                             boxShadow: "0 0 3px rgba(0, 0, 0, 0.5)",
                             zIndex: 5 - index, // Higher z-index for elements that should appear on top
                           }}

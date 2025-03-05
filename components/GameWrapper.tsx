@@ -21,6 +21,7 @@ import TutorialOverlay from "./TutorialOverlay";
 import { useEffect } from "react";
 import TimelineModal from "./TimelineModal";
 import { useUserQuests } from "@/hooks/use-quests";
+import ClickEffect from "./ClickEffect";
 
 // const WelcomeOverlay = dynamic(() => import("./../components/WelcomeOverlay"), {
 //   ssr: false,
@@ -192,6 +193,8 @@ export default function GameWrapper() {
 
   return (
     <div className="relative z-10">
+      <ClickEffect />
+
       {/* Render tutorial overlay */}
       {activeOverlay?.type === "tutorial" && (
         <AnimatePresence>
