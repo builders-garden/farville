@@ -1,34 +1,31 @@
 import { Metadata } from "next";
 import App from "@/app/app";
+import { getUser } from "@/supabase/queries";
 
 const appUrl = process.env.NEXT_PUBLIC_URL;
 
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ fid: string }>;
+  params: Promise<{ fid: string; timestamp: string }>;
 }): Promise<Metadata> {
-  const fid = (await params).fid;
-  // const streak = await getStreakByFid(Number(fid));
-  // if (!streak) {
-  //   return {
-  //     title: "FarVille",
-  //   };
-  // }
-  // const user = await getUser(Number(fid));
+  const { fid, timestamp } = await params;
 
-  // Construct the dynamic image URL
-  const imageUrl = new URL(`${appUrl}/api/og/flex-card/streak/${fid}`);
+  const user = await getUser(Number(fid));
 
-  // if (!user) {
-  //   return {
-  //     title: "FarVille",
-  //     openGraph: {
-  //       title: "FarVille",
-  //       description: "Plant, grow, and harvest crops with your friends.",
-  //     },
-  //   };
-  // }
+  if (!user) {
+    return {
+      title: "FarVille",
+      openGraph: {
+        title: "FarVille",
+        description: "Plant, grow, and harvest crops with your friends.",
+      },
+    };
+  }
+
+  const imageUrl = new URL(
+    `${appUrl}/api/og/flex-card/streak/${fid}/${timestamp}`
+  );
 
   const frame = {
     version: "next",

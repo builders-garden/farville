@@ -1,5 +1,12 @@
+import {
+  getActiveStreaksCount,
+  getTopStreaks,
+  getUserCurrentStreakNumber,
+  TopStreaksResult,
+} from "@/lib/prisma/queries";
+import { getUser } from "@/supabase/queries";
+import { DbUser } from "@/supabase/types";
 import { ImageResponse } from "next/og";
-// import { getUser } from "@/supabase/queries";
 
 export const dynamic = "force-dynamic";
 const size = {
@@ -33,6 +40,7 @@ export async function GET(
   }: {
     params: Promise<{
       fid: string;
+      timestamp: string;
     }>;
   }
 ) {
@@ -45,32 +53,34 @@ export async function GET(
       });
     }
 
-    // For production, replace this with real data fetching:
-    // const user = await getUser(Number(fid));
-    // const streakData = await getUserStreak(Number(fid));
+    const user = await getUser(Number(fid));
+    const currentStreak = await getUserCurrentStreakNumber(Number(fid));
+    const topStreaks: TopStreaksResult[] = await getTopStreaks();
+    const totActiveStreaks = await getActiveStreaksCount();
 
-    // Mock data for now
-    const mockUser = {
-      username: "farmer_joe",
-      avatarUrl: "https://avatars.githubusercontent.com/u/124",
-    };
-
-    const mockStreakData = {
-      currentStreak: 132,
-    };
-
-    // Use mock data for development
-    const user = mockUser;
-    const streakData = mockStreakData;
+    const topStreaksUsers: DbUser[] = [];
+    for (const streak of topStreaks) {
+      const user = await getUser(streak.fid);
+      if (user) {
+        topStreaksUsers.push(user);
+      }
+    }
+    const topStreaksUserPfps: ArrayBuffer[] = [];
+    for (const user of topStreaksUsers) {
+      if (user.avatarUrl) {
+        const profilePicRes = await fetch(user.avatarUrl);
+        if (profilePicRes.ok) {
+          topStreaksUserPfps.push(await profilePicRes.arrayBuffer());
+        }
+      }
+    }
 
     const appUrl = process.env.NEXT_PUBLIC_URL;
-    // Fetch background image
+
     const bgImageRes = await fetch(
       new URL(`${appUrl}/images/bg-empty.png`, import.meta.url)
     );
     const bgImage = await bgImageRes.arrayBuffer();
-
-    // Fetch fire icon
     const fireIconRes = await fetch(
       new URL(`${appUrl}/images/special/fire.png`, import.meta.url)
     );
@@ -93,7 +103,6 @@ export async function GET(
     );
     const farmerSvg = await farmerRes.text();
 
-    // Format current date
     const today = new Date();
     const formattedDate = `${today.getDate().toString().padStart(2, "0")}/${(
       today.getMonth() + 1
@@ -108,9 +117,11 @@ export async function GET(
       username +
         "Streak" +
         "I'm on a " +
-        streakData.currentStreak +
+        currentStreak +
         " days streak on FarVille!" +
-        "let's farm 🌱" +
+        "+" +
+        totActiveStreaks +
+        "active streaks" +
         formattedDate
     );
 
@@ -150,18 +161,20 @@ export async function GET(
               display: "flex",
               width: "90%",
               height: "80%",
-              background: "linear-gradient(135deg, #7E4E31 0%, #6d4c2c 100%)",
+              background:
+                "linear-gradient(135deg, #8B5A38 0%, #5D3A1F 50%, #4E2E16 100%)",
               borderRadius: "16px",
-              border: "3px solid #593F23",
+              border: "3px solid #6D4626",
               overflow: "hidden",
-              boxShadow: "0 8px 16px rgba(0, 0, 0, 0.5)",
+              boxShadow:
+                "0 8px 20px rgba(0, 0, 0, 0.6), 0 0 15px rgba(255, 215, 0, 0.3)",
               position: "relative",
               flexDirection: "column",
-              padding: "20px",
+              padding: "15px",
               justifyContent: "space-between",
             }}
           >
-            {/* Title - Matching the game's headers */}
+            {/* Card Header */}
             <div
               style={{
                 fontSize: "14px",
@@ -175,13 +188,15 @@ export async function GET(
                 width: "100%",
               }}
             >
+              {/* User */}
               <div
                 style={{
                   display: "flex",
                   alignItems: "center",
                   gap: "10px",
                   padding: "7.5px 10px",
-                  background: "rgba(0, 0, 0, 0.2)",
+                  background:
+                    "linear-gradient(to right, rgba(0,0,0,0.3), rgba(0,0,0,0.2))",
                   borderRadius: "12px",
                 }}
               >
@@ -194,16 +209,16 @@ export async function GET(
                 />
                 {username}
               </div>
-              {/* Date display instead of profile picture */}
+              {/* Date */}
               <div
                 style={{
                   display: "flex",
                   alignItems: "center",
                   gap: "10px",
-                  background: "rgba(0, 0, 0, 0.2)",
+                  background:
+                    "linear-gradient(to right, rgba(0,0,0,0.3), rgba(0,0,0,0.2))",
                   padding: "7.5px 10px",
                   borderRadius: "12px",
-                  border: "1px solid rgba(255, 255, 255, 0.1)",
                 }}
               >
                 <img
@@ -225,17 +240,20 @@ export async function GET(
                 </p>
               </div>
             </div>
-            {/* Left Section - Details */}
+            {/* Streak Info */}
             <div
               style={{
                 display: "flex",
-                background: "rgba(0, 0, 0, 0.2)",
+                background:
+                  "linear-gradient(145deg, rgba(43, 27, 16, 0.7) 0%, rgba(0, 0, 0, 0.4) 100%)",
                 borderRadius: "10px",
                 padding: "7px",
                 width: "100%",
+                boxShadow:
+                  "inset 0 0 10px rgba(0, 0, 0, 0.3), 0 0 5px rgba(255, 215, 0, 0.15)",
               }}
             >
-              {/* Playful message about the streak */}
+              {/* Left Part */}
               <div
                 style={{
                   display: "flex",
@@ -243,7 +261,7 @@ export async function GET(
                   padding: "15px",
                   fontFamily: "PressStart2P",
                   alignItems: "flex-start",
-                  gap: "12px",
+                  gap: "10px",
                 }}
               >
                 <span
@@ -259,12 +277,13 @@ export async function GET(
                 <span
                   style={{
                     fontSize: "40px",
-                    color: "#FFB938",
-                    textShadow: "0px 3px 6px rgba(0, 0, 0, 0.8)",
+                    color: "#FFD700",
+                    textShadow: "0px 3px 10px rgba(255, 215, 0, 0.6)",
                     marginBottom: "8px",
+                    position: "relative",
                   }}
                 >
-                  {streakData.currentStreak}
+                  {currentStreak}
                 </span>
                 <div
                   style={{
@@ -294,17 +313,54 @@ export async function GET(
                   >
                     on FarVille!
                   </span>
+                  {/* Top Streaks Users */}
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "7px",
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "row",
+                        alignItems: "center",
+                        gap: "7px",
+                      }}
+                    >
+                      {topStreaksUserPfps.slice(0, 5).map((pfp, index) => (
+                        <img
+                          key={index}
+                          src={`data:image/png;base64,${Buffer.from(
+                            pfp
+                          ).toString("base64")}`}
+                          width="30px"
+                          height="30px"
+                          style={{
+                            objectFit: "cover",
+                            border: "1px solid #322214",
+                            borderRadius: "100%",
+                            marginLeft: index > 0 ? "-5px" : "0", // Create overlapping effect
+                            boxShadow: "0 0 3px rgba(0, 0, 0, 0.5)",
+                            zIndex: 5 - index, // Higher z-index for elements that should appear on top
+                          }}
+                        />
+                      ))}
+                    </div>
+                    <span
+                      style={{
+                        fontSize: "9px",
+                        color: "#ffffff",
+                      }}
+                    >
+                      +{totActiveStreaks}{" "}
+                      <span style={{ marginLeft: "5px" }}>active streaks</span>
+                    </span>
+                  </div>
                 </div>
-                <span
-                  style={{
-                    fontSize: "14px",
-                    color: "#7BF054",
-                    textShadow: "0px 2px 4px rgba(0, 0, 0, 0.7)",
-                  }}
-                >
-                  let&apos;s farm 🌱
-                </span>
               </div>
+
               {/* Right Section - Profile with fire icons */}
               <div
                 style={{
@@ -316,21 +372,34 @@ export async function GET(
                   marginLeft: "20px",
                 }}
               >
+                {/* Gold aura around profile picture */}
+                <div
+                  style={{
+                    position: "absolute",
+                    width: "165px",
+                    height: "165px",
+                    borderRadius: "100%",
+                    background:
+                      "radial-gradient(circle, rgba(255,215,0,0.4) 0%, rgba(255,215,0,0) 70%)",
+                    zIndex: 0,
+                  }}
+                />
                 {/* Profile picture in center */}
                 <div
                   style={{
                     width: "145px",
                     height: "145px",
                     borderRadius: "100%",
-                    border: "3px solid #FFB938",
                     overflow: "hidden",
-                    backgroundColor: "#5B4120",
+                    background:
+                      "linear-gradient(135deg, #6B4D23 0%, #4A3419 100%)",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
                     position: "relative",
                     zIndex: 1,
-                    boxShadow: "0 5px 15px rgba(0,0,0,0.5)",
+                    boxShadow:
+                      "0 8px 20px rgba(0,0,0,0.7), 0 0 25px rgba(255,215,0,0.6), 0 0 10px #FFD700",
                   }}
                 >
                   {profilePic && (
@@ -348,7 +417,7 @@ export async function GET(
                 </div>
                 {/* Small fire icons around profile picture */}
                 {[
-                  // Top position
+                  // Top left
                   {
                     top: "-5px",
                     left: "60%",
@@ -356,7 +425,7 @@ export async function GET(
                     rotation: "-20deg",
                     size: "65px",
                   },
-                  // Right position
+                  // Top right
                   {
                     top: "60%",
                     marginTop: "-20px",
@@ -364,7 +433,7 @@ export async function GET(
                     rotation: "10deg",
                     size: "90px",
                   },
-                  // Bottom position
+                  // Bottom right
                   {
                     bottom: "5px",
                     left: "40%",
@@ -372,7 +441,7 @@ export async function GET(
                     rotation: "0deg",
                     size: "50px",
                   },
-                  // Left position
+                  // Bottom left
                   {
                     top: "40%",
                     marginTop: "-55px",
@@ -392,6 +461,7 @@ export async function GET(
                       position: "absolute",
                       objectFit: "contain",
                       transform: `rotate(${position.rotation})`,
+                      filter: "drop-shadow(0 0 3px rgba(255,215,0,0.5))",
                       ...position,
                       zIndex: 2,
                     }}

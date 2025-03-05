@@ -8,6 +8,7 @@ import {
   DbUserFrost,
 } from "@/supabase/types";
 import { UserHasItem } from "@prisma/client";
+import { getCurrentDayStreak } from "../utils";
 
 export async function getQuestLeaderboard({
   limit,
@@ -429,4 +430,69 @@ export const getUserFrostsByStreakId = async (streakId: number) => {
       frozenAt: "desc",
     },
   });
+};
+
+export const getUserCurrentStreakNumber = async (fid: number) => {
+  const streaks = await getUserStreaks(fid);
+  const currentStreak = streaks[0];
+  if (!currentStreak) {
+    return 0;
+  }
+
+  const frostDays = (await getUserFrostsByStreakId(currentStreak.id)).map(
+    (frost) => new Date(frost.frozenAt)
+  );
+  const currentStreakNumber = getCurrentDayStreak(currentStreak, frostDays);
+
+  return currentStreakNumber;
+};
+
+export interface TopStreaksResult {
+  id: number;
+  fid: number;
+  startedAt: string;
+  lastActionAt: string;
+  frozen_days: number;
+  streak_length: number;
+}
+
+export const getTopStreaks = async () => {
+  const topStreaks = await prisma.$queryRaw`
+    WITH streak_durations AS (
+      SELECT 
+        s.id,
+        s.fid,
+        s."startedAt",
+        s."lastActionAt",
+        COUNT(f."frozenAt") AS frozen_days,
+        LEAST(
+          (s."lastActionAt" - s."startedAt") + 1, 
+          (CURRENT_DATE - s."startedAt") + 1 - COUNT(f."frozenAt")
+        ) AS streak_length
+      FROM public.streaks s
+      LEFT JOIN public.user_frosts f ON s.id = f."streakId"
+      WHERE s."endedAt" IS NULL
+      GROUP BY s.id, s.fid, s."startedAt", s."lastActionAt"
+    )
+    SELECT * FROM streak_durations
+    ORDER BY streak_length DESC
+    LIMIT 5;
+  `;
+
+  return topStreaks as TopStreaksResult[];
+};
+
+interface StreaksCountResult {
+  active_streaks_count: number;
+}
+
+export const getActiveStreaksCount = async (): Promise<number> => {
+  const result = await prisma.$queryRaw<StreaksCountResult[]>`
+    SELECT COUNT(*) AS active_streaks_count
+    FROM public.streaks s
+    WHERE s."endedAt" IS NULL
+      AND s."lastActionAt" = CURRENT_DATE;
+  `;
+
+  return result[0].active_streaks_count; // Return the count from the result
 };
