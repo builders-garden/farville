@@ -653,3 +653,20 @@ export async function getQuestPartialLeaderboardFromFids({
     position: start + index + 1,
   }));
 }
+
+export const getUser = async (fid: number) => {
+  const user = await prisma.user.findUnique({
+    where: {
+      fid,
+      xp: {
+        gt: 0,
+      },
+    },
+  });
+
+  if (!user) {
+    return null;
+  }
+
+  return user;
+};

@@ -3,13 +3,13 @@ import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { LEVEL_XP_THRESHOLDS, SPEED_BOOST } from "./game-constants";
 import { PerkType } from "@/types/game";
-import { getUser } from "@/supabase/queries";
 import { fetchUsersFollowedBy } from "./neynar";
 import {
   getPartialLeaderboardFromFids,
   getPartialLeaderboardFromUserPosition,
   getQuestPartialLeaderboard,
   getQuestPartialLeaderboardFromFids,
+  getUser,
   getUserPosition,
 } from "./prisma/queries";
 
