@@ -65,15 +65,6 @@ export async function GET(
         topStreaksUsers.push(user);
       }
     }
-    const topStreaksUserPfps: ArrayBuffer[] = [];
-    for (const user of topStreaksUsers) {
-      if (user.avatarUrl) {
-        const profilePicRes = await fetch(user.avatarUrl);
-        if (profilePicRes.ok) {
-          topStreaksUserPfps.push(await profilePicRes.arrayBuffer());
-        }
-      }
-    }
 
     const appUrl = process.env.NEXT_PUBLIC_URL;
 
@@ -86,13 +77,13 @@ export async function GET(
     );
     const fireIcon = await fireIconRes.arrayBuffer();
 
-    let profilePic = null;
-    if (user?.avatarUrl) {
-      const profilePicRes = await fetch(user.avatarUrl);
-      if (profilePicRes.ok) {
-        profilePic = await profilePicRes.arrayBuffer();
-      }
-    }
+    // let profilePic = null;
+    // if (user?.avatarUrl) {
+    //   const profilePicRes = await fetch(user.avatarUrl);
+    //   if (profilePicRes.ok) {
+    //     profilePic = await profilePicRes.arrayBuffer();
+    //   }
+    // }
 
     const calendarRes = await fetch(
       new URL(`${appUrl}/images/flex-cards/calendar.svg`, import.meta.url)
@@ -329,24 +320,25 @@ export async function GET(
                         gap: "7px",
                       }}
                     >
-                      {topStreaksUserPfps.slice(0, 5).map((pfp, index) => (
-                        <img
-                          key={index}
-                          src={`data:image/png;base64,${Buffer.from(
-                            pfp
-                          ).toString("base64")}`}
-                          width="30px"
-                          height="30px"
-                          style={{
-                            objectFit: "cover",
-                            border: "1px solid #322214",
-                            borderRadius: "100%",
-                            marginLeft: index > 0 ? "-12px" : "0", // Create overlapping effect with more overlap
-                            boxShadow: "0 0 3px rgba(0, 0, 0, 0.5)",
-                            zIndex: 5 - index, // Higher z-index for elements that should appear on top
-                          }}
-                        />
-                      ))}
+                      {topStreaksUsers.slice(0, 5).map(
+                        (streakUser, index) =>
+                          streakUser.avatarUrl && (
+                            <img
+                              key={index}
+                              src={streakUser.avatarUrl}
+                              width="30px"
+                              height="30px"
+                              style={{
+                                objectFit: "cover",
+                                border: "1px solid #322214",
+                                borderRadius: "100%",
+                                marginLeft: index > 0 ? "-12px" : "0", // Create overlapping effect with more overlap
+                                boxShadow: "0 0 3px rgba(0, 0, 0, 0.5)",
+                                zIndex: 5 - index, // Higher z-index for elements that should appear on top
+                              }}
+                            />
+                          )
+                      )}
                     </div>
                     <span
                       style={{
@@ -402,11 +394,9 @@ export async function GET(
                       "0 8px 20px rgba(0,0,0,0.7), 0 0 25px rgba(255,215,0,0.6), 0 0 10px #FFD700",
                   }}
                 >
-                  {profilePic && (
+                  {user?.avatarUrl && (
                     <img
-                      src={`data:image/png;base64,${Buffer.from(
-                        profilePic
-                      ).toString("base64")}`}
+                      src={user.avatarUrl}
                       width="100%"
                       height="100%"
                       style={{

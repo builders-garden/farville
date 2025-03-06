@@ -3,6 +3,15 @@ import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { LEVEL_XP_THRESHOLDS, SPEED_BOOST } from "./game-constants";
 import { PerkType } from "@/types/game";
+import { getUser } from "@/supabase/queries";
+import { fetchUsersFollowedBy } from "./neynar";
+import {
+  getPartialLeaderboardFromFids,
+  getPartialLeaderboardFromUserPosition,
+  getQuestPartialLeaderboard,
+  getQuestPartialLeaderboardFromFids,
+  getUserPosition,
+} from "./prisma/queries";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -163,4 +172,64 @@ export const getCurrentDayStreak = (streak?: DbStreak, frostsDays?: Date[]) => {
   const differenceInTime = lastActionDate.getTime() - startDate.getTime();
   const differenceInDays = Math.ceil(differenceInTime / (1000 * 3600 * 24));
   return differenceInDays + 1 - totalFrostsDays;
+};
+
+export const getPartialLeaderboardBasedOnFid = async (
+  targetFid: string,
+  options: {
+    friends: boolean;
+    type: "quests" | "xp";
+    limit: number;
+  }
+) => {
+  const user = await getUser(Number(targetFid));
+
+  if (!user) {
+    throw new Error("Failed to fetch leaderboard: user not found");
+  }
+
+  if (options.friends && targetFid) {
+    // Optimize followed users fetch with proper pagination
+    const followedUsers = await fetchUsersFollowedBy(
+      targetFid,
+      500,
+      "desc_chron"
+    );
+    const followedFids = followedUsers.map((user) => user.fid.toString());
+    const userFids = [...new Set(followedFids.concat(targetFid))]; // Remove duplicates
+
+    if (options.type === "quests") {
+      const users = await getQuestPartialLeaderboardFromFids({
+        fids: userFids,
+        targetFid,
+        limit: Number(options.limit),
+      });
+      return users;
+    }
+
+    const users = await getPartialLeaderboardFromFids(
+      userFids,
+      targetFid,
+      Number(options.limit)
+    );
+    return users;
+  }
+
+  // Default behavior with caching
+  if (options.type === "quests") {
+    const users = await getQuestPartialLeaderboard({
+      targetFid: targetFid,
+      limit: Number(options.limit),
+    });
+    return users;
+  }
+
+  const userPosition = await getUserPosition(user.xp);
+  console.log(`User ${targetFid} position is: ${userPosition}`);
+  const partialLeaderboard = await getPartialLeaderboardFromUserPosition(
+    userPosition,
+    Number(options.limit)
+  );
+
+  return partialLeaderboard;
 };

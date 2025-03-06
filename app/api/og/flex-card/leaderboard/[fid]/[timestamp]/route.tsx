@@ -1,14 +1,21 @@
-import { LeaderboardResponse } from "@/hooks/use-leadeboard";
-import { getUser } from "@/supabase/queries";
-import { getCurrentLevelAndProgress } from "@/lib/utils";
+import {
+  getCurrentLevelAndProgress,
+  getPartialLeaderboardBasedOnFid,
+} from "@/lib/utils";
 import { ImageResponse } from "next/og";
 import { getActiveStreaksCount } from "@/lib/prisma/queries";
+import { User } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
 const size = {
   width: 600,
   height: 400,
 };
+
+interface PartialLeaderboard extends User {
+  questCount?: number;
+  position: number;
+}
 
 async function loadGoogleFont(font: string, text: string) {
   const url = `https://fonts.googleapis.com/css2?family=${font}&text=${encodeURIComponent(
@@ -54,35 +61,13 @@ export async function GET(
       });
     }
 
-    const user = await getUser(Number(fid));
     const totActiveStreaks = await getActiveStreaksCount();
 
-    // Build query parameters for leaderboard request
-    const leaderboardQueryParams = new URLSearchParams();
-    leaderboardQueryParams.append("targetFid", fid);
-    if (friends) leaderboardQueryParams.append("friends", "true");
-    if (type === "quests") leaderboardQueryParams.append("type", "quests");
-
-    // Make the API request to the leaderboard endpoint with a special header
-    const leaderboardRes = await fetch(
-      new URL(
-        `${appUrl}/api/leaderboard?${leaderboardQueryParams.toString()}`,
-        import.meta.url
-      ),
-      {
-        headers: {
-          "Content-Type": "application/json",
-          "User-Agent": "Next.js OG Image Generator",
-        },
-      }
-    );
-
-    if (!leaderboardRes.ok) {
-      throw new Error("Failed to fetch leaderboard data");
-    }
-
-    const leaderboardData =
-      (await leaderboardRes.json()) as LeaderboardResponse;
+    const leaderboardData = (await getPartialLeaderboardBasedOnFid(fid, {
+      friends,
+      type: type as "quests" | "xp",
+      limit: 5,
+    })) as PartialLeaderboard[];
 
     // Load background image
     const bgImageRes = await fetch(
@@ -100,66 +85,6 @@ export async function GET(
         return `${xp} XP`;
       }
     };
-
-    // Find target user and determine which users to display
-    const targetFid = Number(fid);
-    const allUsers = leaderboardData.users || [];
-    const targetPosition = leaderboardData.targetPosition || 0;
-    let displayUsers = [];
-
-    const targetIndex = allUsers.findIndex((u) => u.fid === targetFid);
-
-    if (targetIndex === -1) {
-      // User not in the list - show user on top and top 4 users
-      if (user) {
-        // Create user entry with data from targetPosition and questCount
-        const userEntry = {
-          ...user,
-          questCount:
-            type === "quests" ? leaderboardData.questCount || 0 : undefined,
-        };
-
-        // Add user at the top, then up to 4 top users from leaderboard
-        displayUsers = [userEntry, ...allUsers.slice(0, 4)];
-      } else {
-        // If no user data, just show top 5 users
-        displayUsers = allUsers.slice(0, 5);
-      }
-    } else {
-      // User is in the list - show 5 users with target user included
-      // Calculate the ideal starting position to keep target user roughly in the middle
-      const idealStart = Math.max(0, targetIndex - 2);
-      const availableUsersAfter = allUsers.length - (idealStart + 1);
-      const displayCount = Math.min(5, allUsers.length);
-
-      // If we don't have enough users after the target, adjust the start position
-      const finalStart =
-        availableUsersAfter < displayCount - 1
-          ? Math.max(0, allUsers.length - displayCount)
-          : idealStart;
-
-      displayUsers = allUsers.slice(finalStart, finalStart + displayCount);
-    }
-
-    // Fetch profile pictures for all users in displayUsers
-    const userProfilePics: (ArrayBuffer | null)[] = [];
-    for (const entry of displayUsers) {
-      let profilePic = null;
-      if (entry?.avatarUrl) {
-        try {
-          const profilePicRes = await fetch(entry.avatarUrl);
-          if (profilePicRes.ok) {
-            profilePic = await profilePicRes.arrayBuffer();
-          }
-        } catch (e) {
-          console.error(
-            `Failed to load profile picture for user ${entry.fid}`,
-            e
-          );
-        }
-      }
-      userProfilePics.push(profilePic);
-    }
 
     const fontData = await loadGoogleFont(
       "Press+Start+2P",
@@ -313,24 +238,8 @@ export async function GET(
                 width: "100%",
               }}
             >
-              {displayUsers.map((entry, index) => {
+              {leaderboardData.map((entry) => {
                 const isCurrentUser = entry.fid === Number(fid);
-
-                // Calculate the correct rank for each user
-                let rank;
-                if (targetIndex === -1 && index === 0) {
-                  // If user is not in the list but added manually (first position in displayUsers)
-                  rank = targetPosition;
-                } else if (targetIndex === -1) {
-                  // For other users when target user is not in the original list
-                  rank = index; // Index in the original list (0-indexed, so position is index + 1)
-                } else {
-                  // When target user is in the original list
-                  const positionInOriginalList = allUsers.findIndex(
-                    (u) => u.fid === entry.fid
-                  );
-                  rank = positionInOriginalList + 1; // +1 because positions are 1-indexed
-                }
 
                 const level = getCurrentLevelAndProgress(entry.xp).currentLevel;
 
@@ -371,7 +280,7 @@ export async function GET(
                           minWidth: "24px",
                         }}
                       >
-                        #{rank}
+                        #{entry.position}
                       </span>
 
                       {/* Avatar with profile picture */}
@@ -388,11 +297,9 @@ export async function GET(
                           overflow: "hidden",
                         }}
                       >
-                        {userProfilePics[index] ? (
+                        {entry.avatarUrl ? (
                           <img
-                            src={`data:image/png;base64,${Buffer.from(
-                              userProfilePics[index]!
-                            ).toString("base64")}`}
+                            src={entry.avatarUrl}
                             width="100%"
                             height="100%"
                             style={{
