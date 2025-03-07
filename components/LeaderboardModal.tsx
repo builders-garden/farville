@@ -1,17 +1,17 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { useState } from "react";
-import { useFrameContext } from "../context/FrameContext";
-import { useLeaderboard } from "@/hooks/use-leadeboard";
-import Image from "next/image";
-import sdk from "@farcaster/frame-sdk";
 import { useGame } from "@/context/GameContext";
+import { useLeaderboard } from "@/hooks/use-leadeboard";
 import {
   getCurrentLevelAndProgress,
   leaderboardFlexCardComposeCastUrl,
 } from "@/lib/utils";
+import sdk from "@farcaster/frame-sdk";
+import { motion } from "framer-motion";
 import { Share2 } from "lucide-react";
+import Image from "next/image";
+import { useState } from "react";
+import { useFrameContext } from "../context/FrameContext";
 
 const shimmerAnimation = `
   @keyframes shine {
@@ -42,7 +42,12 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
     const { castUrl } = leaderboardFlexCardComposeCastUrl(
       state.user.fid,
       leaderboardType,
+      activeTab === "friends",
       activeTab === "friends"
+        ? leaderboardType === "xp"
+          ? friendsData
+          : questsFriendsData
+        : undefined
     );
     await sdk.actions.openUrl(castUrl);
   };
