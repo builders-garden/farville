@@ -9,7 +9,7 @@ datasource db {
 }
 
 model User {
-  fid                                                              Int                   @id
+  fid                                                              Int                    @id
   username                                                         String
   displayName                                                      String
   avatarUrl                                                        String?
@@ -18,13 +18,14 @@ model User {
   coins                                                            Int
   expansions                                                       Int
   notificationDetails                                              String?
-  createdAt                                                        DateTime              @default(now()) @db.Timestamptz(6)
+  createdAt                                                        DateTime               @default(now()) @db.Timestamptz(6)
   referrals                                                        Referral[]
   requests                                                         Request[]
   streaks                                                          Streaks[]
-  user_donations_history_user_donations_history_donatorFidTousers  UserDonationHistory[] @relation("user_donations_history_donatorFidTousers")
-  user_donations_history_user_donations_history_receiverFidTousers UserDonationHistory[] @relation("user_donations_history_receiverFidTousers")
+  user_donations_history_user_donations_history_donatorFidTousers  UserDonationHistory[]  @relation("user_donations_history_donatorFidTousers")
+  user_donations_history_user_donations_history_receiverFidTousers UserDonationHistory[]  @relation("user_donations_history_receiverFidTousers")
   gridCells                                                        GridCell[]
+  user_harvested_crops                                             user_harvested_crops[]
   items                                                            UserHasItem[]
   quests                                                           UserHasQuest[]
   notifications                                                    UserNotification[]
@@ -33,20 +34,21 @@ model User {
 }
 
 model Item {
-  id              Int           @id @default(autoincrement())
-  name            String
-  description     String?
-  icon            String
-  category        String
-  buyPrice        Int?
-  sellPrice       Int?
-  requiredLevel   Int
-  createdAt       DateTime      @default(now()) @db.Timestamptz(6)
-  slug            String?       @unique
-  quests          Quest[]
-  requests        Request[]
-  user_grid_cells GridCell[]
-  userItems       UserHasItem[]
+  id                   Int                    @id @default(autoincrement())
+  name                 String
+  description          String?
+  icon                 String
+  category             String
+  buyPrice             Int?
+  sellPrice            Int?
+  requiredLevel        Int
+  createdAt            DateTime               @default(now()) @db.Timestamptz(6)
+  slug                 String?                @unique
+  quests               Quest[]
+  requests             Request[]
+  user_grid_cells      GridCell[]
+  user_harvested_crops user_harvested_crops[]
+  userItems            UserHasItem[]
 
   @@map("items")
 }
@@ -141,7 +143,7 @@ model UserHasQuest {
   progress    Int
   status      String    @default("incomplete")
   user        User      @relation(fields: [fid], references: [fid], onDelete: Cascade, onUpdate: NoAction)
-  quest       Quest     @relation(fields: [questId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  quest       Quest     @relation(fields: [questId], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
   @@unique([fid, questId], map: "user_has_quests_fid_quest_id_key")
   @@index([fid], map: "idx_user_has_quests_fid")
@@ -188,6 +190,18 @@ model UserFrosts {
 
   @@unique([streakId, frozenAt], map: "user_frosts_streak_frozen_unique")
   @@map("user_frosts")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model user_harvested_crops {
+  fid       Int
+  crop      String
+  quantity  Int      @default(0)
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  items     Item     @relation(fields: [crop], references: [slug], onDelete: NoAction, onUpdate: NoAction)
+  users     User     @relation(fields: [fid], references: [fid], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([fid, crop])
 }
 
 enum UserHasQuestStatus {

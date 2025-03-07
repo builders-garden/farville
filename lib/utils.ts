@@ -3,16 +3,29 @@ import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { LEVEL_XP_THRESHOLDS, SPEED_BOOST } from "./game-constants";
 import { PerkType } from "@/types/game";
+import { fetchUsersFollowedBy } from "./neynar";
+import {
+  getPartialLeaderboardFromFids,
+  getPartialLeaderboardFromUserPosition,
+  getQuestLeaderboard,
+  getQuestPartialLeaderboard,
+  getQuestPartialLeaderboardFromFids,
+  getUser,
+  getUserPosition,
+  getUsersByXp,
+} from "./prisma/queries";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
 export const warpcastComposeCastUrl = () => {
-  const frameUrl = `https://farville.farm`;
+  const frameUrl = `${process.env.NEXT_PUBLIC_URL}`;
   const text = `I'm tired of touching grass IRL, and I can't wait to touch PIXEL grass in /farville...\n\nBuild my dream farm and grow quirky crops. It's honest work, but way more fun than real farming!🧑‍🌾`;
   const urlFriendlyText = encodeURIComponent(text);
-  return `https://warpcast.com/~/compose?text=${urlFriendlyText}&embeds[]=${frameUrl}`;
+  return `https://warpcast.com/~/compose?text=${urlFriendlyText}&embeds[]=${encodeURIComponent(
+    frameUrl
+  )}&channelKey=farville`;
 };
 
 export const requestItemComposeCastUrl = (
@@ -20,12 +33,61 @@ export const requestItemComposeCastUrl = (
   item: DbItem,
   quantity: number
 ) => {
-  const frameUrl = `https://farville.farm/requests/${requestId}`;
+  const frameUrl = `${process.env.NEXT_PUBLIC_URL}/requests/${requestId}`;
   const text = `I'm looking for ${quantity} ${item.name} on /farville 🧑‍🌾`;
   const urlFriendlyText = encodeURIComponent(text);
   return {
     requestUrl: frameUrl,
-    castUrl: `https://warpcast.com/~/compose?text=${urlFriendlyText}&embeds[]=${frameUrl}`,
+    castUrl: `https://warpcast.com/~/compose?text=${urlFriendlyText}&embeds[]=${encodeURIComponent(
+      frameUrl
+    )}&channelKey=farville`,
+  };
+};
+
+export const streakFlexCardComposeCastUrl = (
+  fid: number,
+  streakNumber: number
+) => {
+  const timestamp = Date.now();
+  const frameUrl = `${process.env.NEXT_PUBLIC_URL}/flex-card/streak/${fid}/${timestamp}`;
+  const text = `yo farmers, look here! my /farville streak is ${streakNumber} 🔥 LFF 🚜💨🚜💨`;
+  const urlFriendlyText = encodeURIComponent(text);
+  return {
+    frameUrl,
+    castUrl: `https://warpcast.com/~/compose?text=${urlFriendlyText}&embeds[]=${encodeURIComponent(
+      frameUrl
+    )}&channelKey=farville`,
+  };
+};
+
+export const leaderboardFlexCardComposeCastUrl = (
+  fid: number,
+  type: "quests" | "xp",
+  isFriends: boolean
+) => {
+  const timestamp = Date.now();
+  const frameUrl = `${
+    process.env.NEXT_PUBLIC_URL
+  }/flex-card/leaderboard/${fid}/${timestamp}${
+    isFriends ? "" : "/short"
+  }?friends=${isFriends}&quests=${type === "quests"}`;
+
+  const text =
+    type === "quests"
+      ? `yo farmers! crushing ${
+          isFriends ? "friends" : "global"
+        } quests on /farville! 🧑‍🌾 LFF 🚜💨`
+      : `peep my XP gains on /farville! 🌱 ${
+          isFriends ? "friends" : "global"
+        } leaderboard flex! LFF 🚜💨`;
+
+  const urlFriendlyText = encodeURIComponent(text);
+
+  return {
+    frameUrl,
+    castUrl: `https://warpcast.com/~/compose?text=${urlFriendlyText}&embeds[]=${encodeURIComponent(
+      frameUrl
+    )}&channelKey=farville`,
   };
 };
 
@@ -124,4 +186,84 @@ export const getCurrentDayStreak = (streak?: DbStreak, frostsDays?: Date[]) => {
   const differenceInTime = lastActionDate.getTime() - startDate.getTime();
   const differenceInDays = Math.ceil(differenceInTime / (1000 * 3600 * 24));
   return differenceInDays + 1 - totalFrostsDays;
+};
+
+export const getPartialLeaderboardBasedOnFid = async (
+  targetFid: string,
+  options: {
+    friends: boolean;
+    type: "quests" | "xp";
+    limit: number;
+  }
+) => {
+  const user = await getUser(Number(targetFid));
+
+  if (!user) {
+    throw new Error("Failed to fetch leaderboard: user not found");
+  }
+
+  if (options.friends && targetFid) {
+    // Optimize followed users fetch with proper pagination
+    const followedUsers = await fetchUsersFollowedBy(
+      targetFid,
+      500,
+      "desc_chron"
+    );
+    const followedFids = followedUsers.map((user) => user.fid.toString());
+    const userFids = [...new Set(followedFids.concat(targetFid))]; // Remove duplicates
+
+    if (options.type === "quests") {
+      const users = await getQuestPartialLeaderboardFromFids({
+        fids: userFids,
+        targetFid,
+        limit: Number(options.limit),
+      });
+      return users;
+    }
+
+    const users = await getPartialLeaderboardFromFids(
+      userFids,
+      targetFid,
+      Number(options.limit)
+    );
+    return users;
+  }
+
+  // Default behavior with caching
+  if (options.type === "quests") {
+    const users = await getQuestPartialLeaderboard({
+      targetFid: targetFid,
+      limit: Number(options.limit),
+    });
+    return users;
+  }
+
+  const userPosition = await getUserPosition(user.xp);
+  console.log(`User ${targetFid} position is: ${userPosition}`);
+  const partialLeaderboard = await getPartialLeaderboardFromUserPosition(
+    userPosition,
+    Number(options.limit)
+  );
+
+  return partialLeaderboard;
+};
+
+export const getGlobalLeaderboard = async (
+  targetFid: string,
+  type: "quests" | "xp" = "xp",
+  limit: number = 20
+) => {
+  let users;
+  if (type === "quests") {
+    users = await getQuestLeaderboard({
+      limit,
+      targetFid: targetFid ? targetFid : undefined,
+    });
+  } else {
+    users = await getUsersByXp(
+      limit,
+      targetFid ? Number(targetFid) : undefined
+    );
+  }
+  return users;
 };
