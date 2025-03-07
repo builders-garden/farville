@@ -148,7 +148,7 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
             <div className="w-full flex justify-between items-center mb-4">
               <div className="flex gap-3">
                 {[
-                  { id: "xp", label: "Experience", icon: "⭐" },
+                  { id: "xp", label: "XP", icon: "⭐" },
                   { id: "quests", label: "Quests", icon: "🎯" },
                 ].map((tab) => (
                   <motion.button
