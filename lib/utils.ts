@@ -1,8 +1,9 @@
+import { LeaderboardResponse } from "@/hooks/use-leadeboard";
 import { DbItem, DbStreak } from "@/supabase/types";
+import { PerkType } from "@/types/game";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { LEVEL_XP_THRESHOLDS, SPEED_BOOST } from "./game-constants";
-import { PerkType } from "@/types/game";
 import { fetchUsersFollowedBy } from "./neynar";
 import {
   getPartialLeaderboardFromFids,
@@ -63,8 +64,10 @@ export const streakFlexCardComposeCastUrl = (
 export const leaderboardFlexCardComposeCastUrl = (
   fid: number,
   type: "quests" | "xp",
-  isFriends: boolean
+  isFriends: boolean,
+  friendsData?: LeaderboardResponse
 ) => {
+  console.log("friendsData", friendsData);
   const timestamp = Date.now();
   const frameUrl = `${
     process.env.NEXT_PUBLIC_URL
@@ -72,7 +75,7 @@ export const leaderboardFlexCardComposeCastUrl = (
     isFriends ? "" : "/short"
   }?friends=${isFriends}&quests=${type === "quests"}`;
 
-  const text =
+  let text =
     type === "quests"
       ? `yo farmers! crushing ${
           isFriends ? "friends" : "global"
@@ -80,6 +83,32 @@ export const leaderboardFlexCardComposeCastUrl = (
       : `peep my XP gains on /farville! 🌱 ${
           isFriends ? "friends" : "global"
         } leaderboard flex! LFF 🚜💨`;
+
+  if (isFriends && friendsData) {
+    const targetPosition =
+      friendsData.targetPosition ??
+      friendsData.users.findIndex((user) => user.fid === fid);
+
+    const aboveUsers = friendsData.users
+      .slice(0, targetPosition)
+      .slice(-2)
+      .map((user) => `@${user.username}`);
+
+    const belowUsers = friendsData.users
+      .slice(targetPosition + 1)
+      .slice(0, 2)
+      .map((user) => `@${user.username}`);
+
+    // Add text for above users if they exist
+    if (aboveUsers.length > 0) {
+      text += `\n\ncoming for u ${aboveUsers.join(", ")} 👀`;
+    }
+
+    // Add text for below users if they exist
+    if (belowUsers.length > 0) {
+      text += `\n\nyou better catch up ${belowUsers.join(", ")}!!`;
+    }
+  }
 
   const urlFriendlyText = encodeURIComponent(text);
 
