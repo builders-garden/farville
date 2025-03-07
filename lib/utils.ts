@@ -20,10 +20,10 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export const warpcastComposeCastUrl = () => {
-  const frameUrl = `https://farville.farm`;
+  const frameUrl = `${process.env.NEXT_PUBLIC_URL}`;
   const text = `I'm tired of touching grass IRL, and I can't wait to touch PIXEL grass in /farville...\n\nBuild my dream farm and grow quirky crops. It's honest work, but way more fun than real farming!🧑‍🌾`;
   const urlFriendlyText = encodeURIComponent(text);
-  return `https://warpcast.com/~/compose?text=${urlFriendlyText}&embeds[]=${frameUrl}`;
+  return `https://warpcast.com/~/compose?text=${urlFriendlyText}&embeds[]=${frameUrl}&channelKey=farville`;
 };
 
 export const requestItemComposeCastUrl = (
@@ -31,12 +31,12 @@ export const requestItemComposeCastUrl = (
   item: DbItem,
   quantity: number
 ) => {
-  const frameUrl = `https://farville.farm/requests/${requestId}`;
+  const frameUrl = `${process.env.NEXT_PUBLIC_URL}/requests/${requestId}`;
   const text = `I'm looking for ${quantity} ${item.name} on /farville 🧑‍🌾`;
   const urlFriendlyText = encodeURIComponent(text);
   return {
     requestUrl: frameUrl,
-    castUrl: `https://warpcast.com/~/compose?text=${urlFriendlyText}&embeds[]=${frameUrl}`,
+    castUrl: `https://warpcast.com/~/compose?text=${urlFriendlyText}&embeds[]=${frameUrl}&channelKey=farville`,
   };
 };
 
@@ -45,12 +45,12 @@ export const streakFlexCardComposeCastUrl = (
   streakNumber: number
 ) => {
   const timestamp = Date.now();
-  const frameUrl = `https://farville.farm/flex-card/streak/${fid}/${timestamp}`;
+  const frameUrl = `${process.env.NEXT_PUBLIC_URL}/flex-card/streak/${fid}/${timestamp}`;
   const text = `yo farmers, look here! my /farville streak is ${streakNumber} 🔥 LFF 🚜💨🚜💨`;
   const urlFriendlyText = encodeURIComponent(text);
   return {
     frameUrl,
-    castUrl: `https://warpcast.com/~/compose?text=${urlFriendlyText}&embeds[]=${frameUrl}`,
+    castUrl: `https://warpcast.com/~/compose?text=${urlFriendlyText}&embeds[]=${frameUrl}&channelKey=farville`,
   };
 };
 
@@ -60,7 +60,11 @@ export const leaderboardFlexCardComposeCastUrl = (
   isFriends: boolean
 ) => {
   const timestamp = Date.now();
-  const frameUrl = `https://farville.farm/flex-card/leaderboard/${fid}/${timestamp}?friends=${isFriends}&type=${type}`;
+  const frameUrl = `${
+    process.env.NEXT_PUBLIC_URL
+  }/flex-card/leaderboard/${fid}/${timestamp}${
+    isFriends ? "" : "/short"
+  }?friends=${isFriends}&type=${type}`;
 
   const text =
     type === "quests"
@@ -75,7 +79,7 @@ export const leaderboardFlexCardComposeCastUrl = (
 
   return {
     frameUrl,
-    castUrl: `https://warpcast.com/~/compose?text=${urlFriendlyText}&embeds[]=${frameUrl}`,
+    castUrl: `https://warpcast.com/~/compose?text=${urlFriendlyText}&embeds[]=${frameUrl}&channelKey=farville`,
   };
 };
 
