@@ -64,7 +64,7 @@ export const leaderboardFlexCardComposeCastUrl = (
     process.env.NEXT_PUBLIC_URL
   }/flex-card/leaderboard/${fid}/${timestamp}${
     isFriends ? "" : "/short"
-  }?friends=${isFriends}&type=${type}`;
+  }?friends=${isFriends}&quests=${type === "quests"}`;
 
   const text =
     type === "quests"

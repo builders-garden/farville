@@ -56,7 +56,7 @@ export async function GET(
     const { fid } = await params;
     const { searchParams } = new URL(request.url);
     // const friends = searchParams.get("friends") === "true";
-    const type = searchParams.get("type") === "quests" ? "quests" : "xp";
+    const quests = searchParams.get("quests") === "true";
 
     const appUrl = process.env.NEXT_PUBLIC_URL;
 
@@ -71,7 +71,7 @@ export async function GET(
 
     const leaderboardData = (await getGlobalLeaderboard(
       fid,
-      type as "quests" | "xp",
+      quests ? "quests" : "xp",
       5
     )) as LeaderboardData;
 
@@ -294,7 +294,7 @@ export async function GET(
                       fontWeight: "bold",
                     }}
                   >
-                    {type === "xp" ? "Experience" : "Quests"}
+                    {quests ? "Quests" : "Experience"}
                   </div>
                   <div
                     style={{

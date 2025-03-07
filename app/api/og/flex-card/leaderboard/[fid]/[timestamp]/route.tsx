@@ -51,7 +51,7 @@ export async function GET(
     const { fid } = await params;
     const { searchParams } = new URL(request.url);
     const friends = searchParams.get("friends") === "true";
-    const type = searchParams.get("type") || "xp";
+    const quests = searchParams.get("quests") === "true";
 
     const appUrl = process.env.NEXT_PUBLIC_URL;
 
@@ -65,7 +65,7 @@ export async function GET(
 
     const leaderboardData = (await getPartialLeaderboardBasedOnFid(fid, {
       friends,
-      type: type as "quests" | "xp",
+      type: quests ? "quests" : "xp",
       limit: 5,
     })) as PartialLeaderboard[];
 
@@ -215,7 +215,7 @@ export async function GET(
                     fontWeight: "bold",
                   }}
                 >
-                  {type === "xp" ? "Experience" : "Quests"}
+                  {quests ? "Quests" : "Experience"}
                 </div>
                 <div
                   style={{
@@ -348,7 +348,7 @@ export async function GET(
                         height: "100%",
                       }}
                     >
-                      {type === "xp" ? (
+                      {!quests ? (
                         <div
                           style={{
                             display: "flex",
