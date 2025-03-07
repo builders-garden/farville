@@ -39,7 +39,6 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
   };
 
   const handleShareLeaderboard = async () => {
-    console.log("Sharing leaderboard");
     const { castUrl } = leaderboardFlexCardComposeCastUrl(
       state.user.fid,
       leaderboardType,

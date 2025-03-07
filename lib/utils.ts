@@ -67,7 +67,6 @@ export const leaderboardFlexCardComposeCastUrl = (
   isFriends: boolean,
   friendsData?: LeaderboardResponse
 ) => {
-  console.log("friendsData", friendsData);
   const timestamp = Date.now();
   const frameUrl = `${
     process.env.NEXT_PUBLIC_URL
