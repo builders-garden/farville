@@ -13,8 +13,9 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { fid, timestamp } = await params;
   const searchParamsObj = await searchParams;
+  console.log("searchParamsObj", searchParamsObj);
   const friends = searchParamsObj.friends === "true";
-  const type = searchParamsObj.type || "xp";
+  const type = searchParamsObj.type == "quests" ? "quests" : "xp";
 
   const user = await getUser(Number(fid));
 
