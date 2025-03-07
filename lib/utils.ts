@@ -23,7 +23,9 @@ export const warpcastComposeCastUrl = () => {
   const frameUrl = `${process.env.NEXT_PUBLIC_URL}`;
   const text = `I'm tired of touching grass IRL, and I can't wait to touch PIXEL grass in /farville...\n\nBuild my dream farm and grow quirky crops. It's honest work, but way more fun than real farming!🧑‍🌾`;
   const urlFriendlyText = encodeURIComponent(text);
-  return `https://warpcast.com/~/compose?text=${urlFriendlyText}&embeds[]=${frameUrl}&channelKey=farville`;
+  return `https://warpcast.com/~/compose?text=${urlFriendlyText}&embeds[]=${encodeURIComponent(
+    frameUrl
+  )}&channelKey=farville`;
 };
 
 export const requestItemComposeCastUrl = (
@@ -36,7 +38,9 @@ export const requestItemComposeCastUrl = (
   const urlFriendlyText = encodeURIComponent(text);
   return {
     requestUrl: frameUrl,
-    castUrl: `https://warpcast.com/~/compose?text=${urlFriendlyText}&embeds[]=${frameUrl}&channelKey=farville`,
+    castUrl: `https://warpcast.com/~/compose?text=${urlFriendlyText}&embeds[]=${encodeURIComponent(
+      frameUrl
+    )}&channelKey=farville`,
   };
 };
 
@@ -50,7 +54,9 @@ export const streakFlexCardComposeCastUrl = (
   const urlFriendlyText = encodeURIComponent(text);
   return {
     frameUrl,
-    castUrl: `https://warpcast.com/~/compose?text=${urlFriendlyText}&embeds[]=${frameUrl}&channelKey=farville`,
+    castUrl: `https://warpcast.com/~/compose?text=${urlFriendlyText}&embeds[]=${encodeURIComponent(
+      frameUrl
+    )}&channelKey=farville`,
   };
 };
 
@@ -79,7 +85,9 @@ export const leaderboardFlexCardComposeCastUrl = (
 
   return {
     frameUrl,
-    castUrl: `https://warpcast.com/~/compose?text=${urlFriendlyText}&embeds[]=${frameUrl}&channelKey=farville`,
+    castUrl: `https://warpcast.com/~/compose?text=${urlFriendlyText}&embeds[]=${encodeURIComponent(
+      frameUrl
+    )}&channelKey=farville`,
   };
 };
 
