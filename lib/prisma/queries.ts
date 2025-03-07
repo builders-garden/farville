@@ -491,7 +491,7 @@ export const getActiveStreaksCount = async (): Promise<number> => {
     SELECT COUNT(*) AS active_streaks_count
     FROM public.streaks s
     WHERE s."endedAt" IS NULL
-      AND s."lastActionAt" = CURRENT_DATE;
+      AND s."lastActionAt" >= CURRENT_DATE - INTERVAL '1 day';
   `;
 
   return result[0].active_streaks_count; // Return the count from the result
@@ -669,4 +669,63 @@ export const getUser = async (fid: number) => {
   }
 
   return user;
+};
+
+export const getPlayerCount = async () => {
+  return await prisma.user.count({
+    where: {
+      xp: {
+        gt: 0,
+      },
+    },
+  });
+};
+
+export const getUsersByXp = async (
+  limit?: number,
+  targetFid?: number
+): Promise<{
+  users: DbUser[];
+  targetPosition?: number;
+}> => {
+  // Get users ordered by XP
+  const users = await prisma.user.findMany({
+    where: {
+      xp: {
+        gt: 0,
+      },
+    },
+    orderBy: {
+      xp: "desc",
+    },
+    ...(limit ? { take: limit } : {}),
+  });
+
+  let targetPosition: number | undefined;
+  if (targetFid) {
+    // Get target user's XP
+    const targetUser = await prisma.user.findUnique({
+      where: { fid: targetFid },
+      select: { xp: true },
+    });
+
+    if (targetUser) {
+      // Count users with higher or equal XP to get position
+      targetPosition = await prisma.user.count({
+        where: {
+          xp: {
+            gte: targetUser.xp,
+          },
+        },
+      });
+    }
+  }
+
+  return {
+    users: users.map((user) => ({
+      ...user,
+      createdAt: user.createdAt.toISOString(),
+    })),
+    targetPosition,
+  };
 };

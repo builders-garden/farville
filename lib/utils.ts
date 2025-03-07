@@ -7,10 +7,12 @@ import { fetchUsersFollowedBy } from "./neynar";
 import {
   getPartialLeaderboardFromFids,
   getPartialLeaderboardFromUserPosition,
+  getQuestLeaderboard,
   getQuestPartialLeaderboard,
   getQuestPartialLeaderboardFromFids,
   getUser,
   getUserPosition,
+  getUsersByXp,
 } from "./prisma/queries";
 
 export function cn(...inputs: ClassValue[]) {
@@ -232,4 +234,24 @@ export const getPartialLeaderboardBasedOnFid = async (
   );
 
   return partialLeaderboard;
+};
+
+export const getGlobalLeaderboard = async (
+  targetFid: string,
+  type: "quests" | "xp" = "xp",
+  limit: number = 20
+) => {
+  let users;
+  if (type === "quests") {
+    users = await getQuestLeaderboard({
+      limit,
+      targetFid: targetFid ? targetFid : undefined,
+    });
+  } else {
+    users = await getUsersByXp(
+      limit,
+      targetFid ? Number(targetFid) : undefined
+    );
+  }
+  return users;
 };
