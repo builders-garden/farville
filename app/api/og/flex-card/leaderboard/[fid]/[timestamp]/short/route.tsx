@@ -397,7 +397,7 @@ export async function GET(
                     }}
                   >
                     +{playerCount}{" "}
-                    <span style={{ marginLeft: "5px" }}>farmers</span>
+                    <span style={{ marginLeft: "5px" }}>active farmers</span>
                   </span>
                 </div>
               </div>
