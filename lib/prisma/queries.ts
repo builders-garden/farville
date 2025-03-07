@@ -491,7 +491,7 @@ export const getActiveStreaksCount = async (): Promise<number> => {
     SELECT COUNT(*) AS active_streaks_count
     FROM public.streaks s
     WHERE s."endedAt" IS NULL
-      AND s."lastActionAt" >= CURRENT_DATE - INTERVAL '1 day';
+      AND s."lastActionAt" >= CURRENT_DATE - INTERVAL '3 days';
   `;
 
   return result[0].active_streaks_count; // Return the count from the result

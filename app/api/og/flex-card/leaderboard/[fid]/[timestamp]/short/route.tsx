@@ -1,4 +1,4 @@
-import { getPlayerCount } from "@/lib/prisma/queries";
+import { getActiveStreaksCount } from "@/lib/prisma/queries";
 import { getGlobalLeaderboard } from "@/lib/utils";
 import { getUser } from "@/supabase/queries";
 import { DbUser } from "@/supabase/types";
@@ -67,7 +67,7 @@ export async function GET(
     }
 
     const user = await getUser(Number(fid));
-    const playerCount = await getPlayerCount();
+    const totActivePlayers = await getActiveStreaksCount();
 
     const leaderboardData = (await getGlobalLeaderboard(
       fid,
@@ -396,7 +396,7 @@ export async function GET(
                       color: "#ffffff",
                     }}
                   >
-                    +{playerCount}{" "}
+                    +{totActivePlayers}{" "}
                     <span style={{ marginLeft: "5px" }}>active farmers</span>
                   </span>
                 </div>
