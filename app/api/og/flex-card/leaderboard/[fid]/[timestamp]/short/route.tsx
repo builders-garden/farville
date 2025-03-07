@@ -56,7 +56,7 @@ export async function GET(
     const { fid } = await params;
     const { searchParams } = new URL(request.url);
     // const friends = searchParams.get("friends") === "true";
-    const type = searchParams.get("type") || "xp";
+    const type = searchParams.get("type") === "quests" ? "quests" : "xp";
 
     const appUrl = process.env.NEXT_PUBLIC_URL;
 
