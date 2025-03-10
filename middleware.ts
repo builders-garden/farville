@@ -7,11 +7,14 @@ export const config = {
 };
 
 export default async function middleware(req: NextRequest) {
-  // Skip auth check for sign-in endpoint
+  // Skip auth check for sign-in endpoint and other public endpoints
   if (
     req.nextUrl.pathname === "/api/sign-in" ||
     req.nextUrl.pathname.includes("/api/og") ||
-    req.nextUrl.pathname.includes("/api/webhook")
+    req.nextUrl.pathname.includes("/api/webhook") ||
+    // Skip auth check for leaderboard API when called from server-side OG image generation
+    (req.nextUrl.pathname === "/api/leaderboard" &&
+      req.headers.get("user-agent")?.includes("Next.js OG"))
   ) {
     return NextResponse.next();
   }

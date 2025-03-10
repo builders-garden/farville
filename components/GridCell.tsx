@@ -7,16 +7,12 @@ import CropSprite from "./CropSprite";
 import FloatingNumber from "./animations/FloatingNumber";
 import { useState, useRef, useEffect, useMemo, Fragment } from "react";
 import { DbGridCell } from "@/supabase/types";
-import {
-  CROP_DATA,
-  LEVEL_REWARDS,
-  LEVEL_XP_THRESHOLDS,
-  SPEED_BOOST,
-} from "@/lib/game-constants";
+import { CROP_DATA, SPEED_BOOST } from "@/lib/game-constants";
 import Confetti from "./animations/Confetti";
 import { createPortal } from "react-dom";
 import { formatTime, getBoostTime } from "@/lib/utils";
 import { useAudio } from "@/context/AudioContext";
+import { useUserXp } from "@/hooks/use-user-xp";
 
 interface GridCellProps {
   cell: DbGridCell;
@@ -191,7 +187,6 @@ export default function GridCell({ cell }: GridCellProps) {
     setSelectedSeed,
     setSelectedPerk,
     showLevelUpConfetti,
-    setShowLevelUpConfetti,
     floatingNumbers,
     setFloatingNumbers,
     remainingUses,
@@ -199,8 +194,8 @@ export default function GridCell({ cell }: GridCellProps) {
     state,
     updateGridCells,
     updateUserItems,
-    updateUser,
   } = useGame();
+  const { addUserXpsAndCheckLevelUp } = useUserXp();
   const { playSound } = useAudio();
   const cellRef = useRef<HTMLDivElement>(null);
   const [showPopup, setShowPopup] = useState(false);
@@ -417,27 +412,7 @@ export default function GridCell({ cell }: GridCellProps) {
           };
           setFloatingNumbers((prev) => [...prev, newFloatingNumber]);
 
-          if (
-            state.experience < LEVEL_XP_THRESHOLDS[state.level] &&
-            state.experience + cropXP >= LEVEL_XP_THRESHOLDS[state.level]
-          ) {
-            updateUser({
-              xp: state.experience + cropXP,
-              level: state.level + 1,
-              coins: state.coins + LEVEL_REWARDS[state.level].coins,
-            });
-            // Show level up confetti if player leveled up
-            setShowLevelUpConfetti(true);
-            playSound("levelUp");
-            // Reset confetti after animation
-            setTimeout(() => {
-              setShowLevelUpConfetti(false);
-            }, 3000);
-          } else {
-            updateUser({
-              xp: state.experience + cropXP,
-            });
-          }
+          addUserXpsAndCheckLevelUp(cropXP);
         }
         return;
       }

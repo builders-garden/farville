@@ -9,7 +9,12 @@ import { useDonate } from "@/hooks/game-actions/use-donate";
 import { useGame } from "@/context/GameContext";
 import { useRequest } from "@/hooks/use-request";
 import { useDonationHistory } from "@/hooks/use-donation-history";
-import { MAX_DAILY_ALLOWED_DONATION_BETWEEN_USERS } from "@/lib/game-constants";
+import {
+  MAX_DAILY_ALLOWED_DONATION_BETWEEN_USERS,
+  XP_PER_DONATED_ITEM,
+} from "@/lib/game-constants";
+import FloatingNumber from "./animations/FloatingNumber";
+import { useUserXp } from "@/hooks/use-user-xp";
 
 export default function RequestModal({
   onClose,
@@ -21,8 +26,11 @@ export default function RequestModal({
   const { safeAreaInsets } = useFrameContext();
   const { request, isLoading } = useRequest(id);
   const { donate } = useDonate();
-  const { state } = useGame();
+  const { state, updateUserItems } = useGame();
   const { lastDonation } = useDonationHistory(state.user?.fid, request?.fid);
+  const [showFloatingNumber, setShowFloatingNumber] = useState(false);
+  const [rewardedXp, setRewardedXp] = useState(0);
+  const { addUserXpsAndCheckLevelUp } = useUserXp();
 
   // Add check for user's own request
   const isOwnRequest = request?.fid === state.user?.fid;
@@ -270,7 +278,8 @@ export default function RequestModal({
                     selectedQuantity === 0 ||
                     selectedQuantity > currentQuantity ||
                     selectedQuantity > remainingQuantity ||
-                    remainingQuantity === 0
+                    remainingQuantity === 0 ||
+                    showFloatingNumber
                   }
                   onClick={() => {
                     // Add safety check here as well
@@ -279,13 +288,26 @@ export default function RequestModal({
                       remainingQuantity,
                       currentQuantity
                     );
+                    const rewardedXp = safeQuantity * XP_PER_DONATED_ITEM;
+                    setRewardedXp(rewardedXp);
                     donate({
                       itemId: request?.itemId,
                       quantity: safeQuantity,
                       toFid: request?.fid,
                       requestId: request?.id,
                     });
-                    onClose();
+                    updateUserItems([
+                      {
+                        itemId: request?.itemId,
+                        quantity: currentQuantity - safeQuantity,
+                        item: request?.item,
+                      },
+                    ]);
+                    setShowFloatingNumber(true);
+                    addUserXpsAndCheckLevelUp(rewardedXp);
+                    setTimeout(() => {
+                      onClose();
+                    }, 1000);
                   }}
                   className="px-6 sm:px-8 py-2.5 bg-green-600/80 hover:bg-green-600 disabled:bg-green-600/20 
                            disabled:text-white/50 disabled:cursor-not-allowed rounded-lg text-white transition-colors 
@@ -298,6 +320,15 @@ export default function RequestModal({
               )}
             </div>
           </div>
+
+          {showFloatingNumber && rewardedXp > 0 && (
+            <FloatingNumber
+              number={rewardedXp}
+              x={window.innerWidth / 2}
+              y={window.innerHeight / 2}
+              type="xp"
+            />
+          )}
         </div>
       </motion.div>
     </div>

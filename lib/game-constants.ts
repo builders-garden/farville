@@ -627,3 +627,4 @@ export const ACHIEVEMENTS_THRESHOLDS = [
 // 1 in 1000 chance
 export const BASE_GOLD_CROP_PERCENTAGE = 0.001;
 export const ACHIEVEMENTS_GOLD_MULTIPLIER = 2.5;
+export const XP_PER_DONATED_ITEM = 5;

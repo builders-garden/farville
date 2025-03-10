@@ -36,6 +36,7 @@ export const useGridBulkOperations = ({
       { toastId }
     ) => {
       if (data.data.type !== ActionType.Harvest) {
+        setGridBulkResult(data.data);
         toast.dismiss(toastId);
       } else {
         if (data.success) {

@@ -26,13 +26,16 @@ async function loadGoogleFont(font: string, text: string) {
   throw new Error("failed to load font data");
 }
 
-export async function GET(request: Request, {
-    params
-}: {
-  params: Promise<{
-    id: string;
-  }>;
-}) {
+export async function GET(
+  request: Request,
+  {
+    params,
+  }: {
+    params: Promise<{
+      id: string;
+    }>;
+  }
+) {
   try {
     const { id } = await params;
 
@@ -44,25 +47,24 @@ export async function GET(request: Request, {
       });
     }
 
-    const {user, item, quantity} = request;
+    const { user, item, quantity } = request;
 
     const text = user ? `is looking for` : "FarVille";
     const secondaryText = item && quantity ? `${quantity} ${item.name}` : "";
 
     const appUrl = process.env.NEXT_PUBLIC_URL;
-    const [bgImage, profilePic, itemIcon] = await Promise.all([
+    const [bgImage, itemIcon] = await Promise.all([
       fetch(new URL(`${appUrl}/images/bg-empty.png`, import.meta.url)).then(
         (res) => res.arrayBuffer()
       ),
-      user?.avatarUrl
-        ? fetch(user.avatarUrl).then((res) => res.arrayBuffer())
-        : null,
       item?.icon
         ? fetch(new URL(`${appUrl}/images${item.icon}`, import.meta.url)).then(
             (res) => res.arrayBuffer()
           )
         : null,
     ]);
+
+    const profilePic = user.avatarUrl;
 
     const fontData = await loadGoogleFont(
       "Press+Start+2P",
@@ -147,9 +149,7 @@ export async function GET(request: Request, {
                     }}
                   >
                     <img
-                      src={`data:image/png;base64,${Buffer.from(
-                        profilePic
-                      ).toString("base64")}`}
+                      src={profilePic}
                       width="50"
                       height="50"
                       style={{

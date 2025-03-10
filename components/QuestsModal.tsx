@@ -3,35 +3,34 @@
 import { motion } from "framer-motion";
 import { useState } from "react";
 import { useFrameContext } from "../context/FrameContext";
-import { useUserQuests } from "@/hooks/use-quests";
 import Quest from "./Quest";
-import { useGame } from "@/context/GameContext";
 import FloatingNumber from "@/components/animations/FloatingNumber";
 import Confetti from "./animations/Confetti";
+import { AllQuests } from "@/hooks/use-game-state";
 
 type Tab = "active" | "claimable" | "expired";
 type SubTab = "daily" | "weekly" | "farmer";
 
-export default function QuestsModal({ onClose }: { onClose: () => void }) {
+export default function QuestsModal({
+  onClose,
+  completedQuests,
+  incompleteQuests,
+  isLoadingUserQuests,
+  refetchIncompleteQuests,
+  refetchClaimableQuests,
+  refetchUser,
+}: {
+  onClose: () => void;
+  completedQuests: AllQuests | undefined;
+  incompleteQuests: AllQuests | undefined;
+  isLoadingUserQuests: boolean;
+  refetchIncompleteQuests: () => void;
+  refetchClaimableQuests: () => void;
+  refetchUser: () => Promise<void>;
+}) {
   const { safeAreaInsets } = useFrameContext();
   const [activeTab, setActiveTab] = useState<Tab>("active");
   const [activeSubTab, setActiveSubTab] = useState<SubTab>("daily");
-  const {
-    state,
-    refetchUser,
-    refetchClaimableQuests: refetchClaimableQuestsState,
-  } = useGame();
-  const { quests, isLoading: isLoadingActiveQuests } = useUserQuests(
-    state?.user?.fid,
-    "incomplete"
-  );
-  const {
-    quests: claimableQuests,
-    isLoading: isLoadingClaimableQuests,
-    refetch: refetchClaimableQuests,
-  } = useUserQuests(state?.user?.fid, "completed");
-
-  const isLoading = isLoadingActiveQuests || isLoadingClaimableQuests;
 
   const tabs: { id: Tab; label: string; icon: string }[] = [
     { id: "active", label: "Active", icon: "⏰" },
@@ -61,10 +60,10 @@ export default function QuestsModal({ onClose }: { onClose: () => void }) {
     didLevelUp: boolean
   ) => {
     const quest = [
-      ...(claimableQuests?.daily || []),
-      ...(claimableQuests?.weekly || []),
-      ...(claimableQuests?.monthly || []),
-      ...(claimableQuests?.farmer || []),
+      ...(completedQuests?.daily || []),
+      ...(completedQuests?.weekly || []),
+      ...(completedQuests?.monthly || []),
+      ...(completedQuests?.farmer || []),
     ].find((q) => q.questId === questId);
 
     if (quest) {
@@ -84,8 +83,8 @@ export default function QuestsModal({ onClose }: { onClose: () => void }) {
       }
 
       setTimeout(() => setRewardAnimation(null), 5000);
+      refetchIncompleteQuests();
       refetchClaimableQuests();
-      refetchClaimableQuestsState();
       refetchUser();
     }
   };
@@ -196,7 +195,7 @@ export default function QuestsModal({ onClose }: { onClose: () => void }) {
 
           {/* Content area */}
           <div className="flex-1 overflow-y-auto min-h-0">
-            {isLoading ? (
+            {isLoadingUserQuests ? (
               <div className="flex items-center justify-center h-full">
                 <motion.div
                   animate={{ rotate: 360 }}
@@ -211,10 +210,10 @@ export default function QuestsModal({ onClose }: { onClose: () => void }) {
                 {activeTab === "active" && (
                   <div className="flex flex-col text-white/70 text-sm gap-2">
                     {activeSubTab === "daily" &&
-                      (quests?.daily.length === 0 ? (
+                      (incompleteQuests?.daily.length === 0 ? (
                         <div>No daily quests available.</div>
                       ) : (
-                        quests?.daily.map((quest) => (
+                        incompleteQuests?.daily.map((quest) => (
                           <Quest
                             quest={quest}
                             key={quest.id}
@@ -223,10 +222,10 @@ export default function QuestsModal({ onClose }: { onClose: () => void }) {
                         ))
                       ))}
                     {activeSubTab === "weekly" &&
-                      (quests?.weekly.length === 0 ? (
+                      (incompleteQuests?.weekly.length === 0 ? (
                         <div>No weekly quests available.</div>
                       ) : (
-                        quests?.weekly.map((quest) => (
+                        incompleteQuests?.weekly.map((quest) => (
                           <Quest
                             quest={quest}
                             key={quest.id}
@@ -261,7 +260,7 @@ export default function QuestsModal({ onClose }: { onClose: () => void }) {
 
                 {activeTab === "claimable" && (
                   <div className="flex flex-col gap-2">
-                    {claimableQuests?.daily.map((quest) => (
+                    {completedQuests?.daily.map((quest) => (
                       <Quest
                         quest={quest}
                         key={quest.id}
@@ -269,7 +268,7 @@ export default function QuestsModal({ onClose }: { onClose: () => void }) {
                         onClaim={handleQuestClaim}
                       />
                     ))}
-                    {claimableQuests?.weekly.map((quest) => (
+                    {completedQuests?.weekly.map((quest) => (
                       <Quest
                         quest={quest}
                         key={quest.id}
@@ -277,7 +276,7 @@ export default function QuestsModal({ onClose }: { onClose: () => void }) {
                         onClaim={handleQuestClaim}
                       />
                     ))}
-                    {claimableQuests?.monthly.map((quest) => (
+                    {completedQuests?.monthly.map((quest) => (
                       <Quest
                         quest={quest}
                         key={quest.id}
@@ -285,7 +284,7 @@ export default function QuestsModal({ onClose }: { onClose: () => void }) {
                         onClaim={handleQuestClaim}
                       />
                     ))}
-                    {claimableQuests?.farmer.map((quest) => (
+                    {completedQuests?.farmer.map((quest) => (
                       <Quest
                         quest={quest}
                         key={quest.id}

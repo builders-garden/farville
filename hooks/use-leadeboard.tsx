@@ -1,6 +1,12 @@
 import { DbUser } from "@/supabase/types";
 import { useApiQuery } from "./use-api-query";
 
+export interface LeaderboardResponse {
+  users: (DbUser & { questCount?: number })[];
+  targetPosition?: number;
+  questCount?: number;
+}
+
 export const useLeaderboard = (
   friends: boolean,
   targetFid?: number,

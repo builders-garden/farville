@@ -1362,27 +1362,27 @@ export const getExpiredBoostCellsCount = async (
   return count || 0;
 };
 
-export const getUsersByFids = async (
-  fids: string[]
-): Promise<{
-  users: DbUser[];
-}> => {
-  const { data, error } = await supabase
-    .from("users")
-    .select("*")
-    .in("fid", fids)
-    .gt("xp", 0)
-    .order("xp", { ascending: false });
+// export const getUsersByFids = async (
+//   fids: string[]
+// ): Promise<{
+//   users: DbUser[];
+// }> => {
+//   const { data, error } = await supabase
+//     .from("users")
+//     .select("*")
+//     .in("fid", fids)
+//     .gt("xp", 0)
+//     .order("xp", { ascending: false });
 
-  if (error) {
-    console.error("Error fetching users by fids:", error);
-    throw error;
-  }
+//   if (error) {
+//     console.error("Error fetching users by fids:", error);
+//     throw error;
+//   }
 
-  return {
-    users: data,
-  };
-};
+//   return {
+//     users: data,
+//   };
+// };
 
 export interface QuestLeaderboardEntry {
   fid: number;

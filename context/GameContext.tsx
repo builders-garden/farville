@@ -62,6 +62,7 @@ interface GameContextType {
   refetchState: () => Promise<void>;
   refetchUser: () => Promise<void>;
   refetchClaimableQuests: () => Promise<void>;
+  refetchUserItems: () => Promise<void>;
   showInventory: boolean;
   showMarket: boolean;
   showLeaderboard: boolean;
@@ -169,6 +170,7 @@ export function GameProvider({
   const { mutate: updateUserStreaks } = useUpdateUserStreaks({
     refetchStreaks: refetch.streaks,
     refetchUserItems: refetch.userItems,
+    refetchFrosts: refetch.frosts,
   });
 
   const updateUserStreaksOnFirstDailyAction = () => {
@@ -236,171 +238,58 @@ export function GameProvider({
     }
   }, [gridBulkOperations, sendGridBulkOperations, toastIds]);
 
-  const updateUserItemsStateFromReward = (
-    rewards: {
-      crop: string;
-      amount: number;
-    }[],
-    state: GameState
-  ) => {
-    const updatedItems: Partial<UserItem>[] = [];
-    for (const reward of rewards) {
-      let crop = state.crops.find((item) => item.item?.slug === reward.crop);
-      if (!crop) {
-        const cropItem = state.items.find((item) => item.slug === reward.crop);
-        if (cropItem) {
-          crop = {
-            item: cropItem,
-            quantity: 0,
-            id: cropItem.id,
-            userFid: state.user.fid,
-            itemId: cropItem.id,
-            createdAt: new Date().toISOString(),
-          };
-        } else {
-          console.error("Crop item not found", reward.crop);
-          continue;
-        }
-      }
-      const index = updatedItems.findIndex(
-        (item) => item.item?.id === crop?.item?.id
-      );
-      if (index !== -1) {
-        updatedItems[index].quantity! += reward.amount;
-      } else {
-        updatedItems.push({
-          item: {
-            ...crop.item,
-            category: "crop",
-          },
-          quantity: crop?.quantity + reward.amount,
-          itemId: crop.item.id,
-          userFid: state.user.fid,
-          createdAt: new Date().toISOString(),
-        });
-      }
-    }
-    updateUserItems(updatedItems);
-  };
-
-  const updateUserHarvestedCropsFromReward = (
-    rewards: {
-      crop: string;
-      amount: number;
-    }[],
-    state: GameState
-  ) => {
-    const updatedUserHarvestedCrops: DbUserHarvestedCrop[] = [];
-    for (const reward of rewards) {
-      let userHarvestedCropSummary = state.harvestedCropsSummary.find(
-        (item) => item.crop === reward.crop
-      );
-      if (!userHarvestedCropSummary) {
-        userHarvestedCropSummary = {
-          fid: state.user.fid,
-          crop: reward.crop,
-          quantity: 0,
-          createdAt: new Date().toISOString(),
-        };
-      }
-      const updatedUserHarvestedCrop = updatedUserHarvestedCrops.findIndex(
-        (item) => item.crop === reward.crop
-      );
-      if (updatedUserHarvestedCrop !== -1) {
-        updatedUserHarvestedCrops[updatedUserHarvestedCrop].quantity +=
-          reward.amount;
-      } else {
-        updatedUserHarvestedCrops.push({
-          ...userHarvestedCropSummary,
-          quantity: userHarvestedCropSummary.quantity + reward.amount,
-        });
-      }
-    }
-    updateUserHarvestedCrops(updatedUserHarvestedCrops);
-  };
-
-  const updateUserSpecialCropsFromReward = (
-    newGoldCrops: {
-      crop: string;
-      amount: number;
-    }[],
-    state: GameState
-  ) => {
-    const updatedSpecialCrops: Partial<UserItem>[] = [];
-    for (const newGoldCrop of newGoldCrops) {
-      let specialCrop = state.specialCrops.find(
-        (item) => item.item.slug === newGoldCrop.crop
-      );
-      if (!specialCrop) {
-        const cropItem = state.items.find(
-          (item) => item.slug === newGoldCrop.crop
-        );
-        if (cropItem) {
-          specialCrop = {
-            item: cropItem,
-            quantity: 0,
-            id: cropItem.id,
-            userFid: state.user.fid,
-            itemId: cropItem.id,
-            createdAt: new Date().toISOString(),
-          };
-        } else {
-          console.error("Special crop item not found", newGoldCrop.crop);
-          continue;
-        }
-      }
-      const index = updatedSpecialCrops.findIndex(
-        (item) => item.item?.id === specialCrop?.item?.id
-      );
-      if (index !== -1) {
-        updatedSpecialCrops[index].quantity! += newGoldCrop.amount;
-      } else {
-        updatedSpecialCrops.push({
-          item: {
-            ...specialCrop.item,
-            category: "special-crop",
-          },
-          quantity: specialCrop?.quantity + newGoldCrop.amount,
-          itemId: specialCrop.item.id,
-          userFid: state.user.fid,
-          createdAt: new Date().toISOString(),
-        });
-      }
-    }
-    updateUserItems(updatedSpecialCrops);
-  };
-
   useEffect(() => {
-    if (gridBulkResult?.type === ActionType.Harvest) {
-      const rewards:
-        | {
-            crop: string;
-            amount: number;
-          }[]
-        | undefined = gridBulkResult.rewards?.cropsWithRewards;
-      if (rewards && state) {
-        if (
-          gridBulkResult.rewards?.goldCrops &&
-          gridBulkResult.rewards?.goldCrops.length > 0
-        ) {
-          updateUserSpecialCropsFromReward(
-            gridBulkResult.rewards.goldCrops,
-            state
-          );
-          setShowHarvestedNewGoldCrops(true);
+    if (gridBulkResult) {
+      if (gridBulkResult?.type === ActionType.Harvest) {
+        const rewards = gridBulkResult.rewards?.cropsWithRewards;
+        if (rewards && state) {
+          const updatedItems: Partial<UserItem>[] = [];
+          for (const reward of rewards) {
+            let crop = state.crops.find(
+              (item) => item.item?.slug === reward.crop
+            );
+            if (!crop) {
+              const cropItem = state.items.find(
+                (item) => item.slug === reward.crop
+              );
+              if (cropItem) {
+                crop = {
+                  item: cropItem,
+                  quantity: 0,
+                  id: cropItem.id,
+                  userFid: state.user.fid,
+                  itemId: cropItem.id,
+                  createdAt: new Date().toISOString(),
+                };
+              } else {
+                console.error("Crop item not found", reward.crop);
+                continue;
+              }
+            }
+            const index = updatedItems.findIndex(
+              (item) => item.item?.id === crop?.item?.id
+            );
+            if (index !== -1) {
+              updatedItems[index].quantity! += reward.amount;
+            } else {
+              updatedItems.push({
+                item: {
+                  ...crop.item,
+                  category: "crop",
+                },
+                quantity: crop?.quantity + reward.amount,
+                itemId: crop.item.id,
+                userFid: state.user.fid,
+                createdAt: new Date().toISOString(),
+              });
+            }
+          }
+          updateUserItems(updatedItems);
         }
-        updateUserItemsStateFromReward(rewards, state);
-        updateUserHarvestedCropsFromReward(rewards, state);
       }
-    }
-  }, [gridBulkResult]);
-
-  useEffect(() => {
-    if (gridBulkResult?.type === ActionType.Harvest) {
-      const newBadges = gridBulkResult.rewards?.newBadges;
-      if (newBadges && newBadges.length > 0) {
-        setShowAchievedNewBadges(true);
-      }
+      setTimeout(() => {
+        refetch.claimableQuests();
+      }, 6000);
     }
   }, [gridBulkResult]);
 
@@ -471,6 +360,7 @@ export function GameProvider({
         refetchState: refetch.all,
         refetchUser: refetch.user,
         refetchClaimableQuests: refetch.claimableQuests,
+        refetchUserItems: refetch.userItems,
         showInventory,
         showMarket,
         showLeaderboard,

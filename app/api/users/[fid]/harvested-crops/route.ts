@@ -14,7 +14,7 @@ export async function GET(
     const { fid: stringFid } = await params; // keep this await
     const fid = parseInt(stringFid);
     if (isNaN(fid)) {
-      return { status: 400, json: { error: "Invalid FID" } };
+      return NextResponse.json({ error: "Invalid FID" }, { status: 400 });
     }
 
     const userHarvestedCrops = await getUserHarvestedCrops(fid);
@@ -22,10 +22,13 @@ export async function GET(
     return NextResponse.json(userHarvestedCrops);
   } catch (error) {
     console.error("Error fetching user harvested crops:", error);
-    return {
-      status: 500,
-      json: { error: "Failed to fetch user harvested crops" },
-    };
+    return NextResponse.json(
+      {
+        status: "nok",
+        error: "Failed to fetch user harvested crops",
+      },
+      { status: 500 }
+    );
   }
 }
 
@@ -42,18 +45,12 @@ export async function POST(
     const { fid: stringFid } = await params;
     const fid = parseInt(stringFid);
     if (isNaN(fid)) {
-      return { status: 400, json: { error: "Invalid FID" } };
+      return NextResponse.json({ error: "Invalid FID" }, { status: 400 });
     }
 
     const requestBody = requestSchema.safeParse(await request.json());
     if (!requestBody.success) {
-      return {
-        status: 400,
-        json: {
-          error: "Invalid request body",
-          errors: requestBody.error.errors,
-        },
-      };
+      return NextResponse.json({ error: requestBody.error }, { status: 400 });
     }
 
     const harvestedCropData = await upsertUserHarvestedCrop(
@@ -65,9 +62,12 @@ export async function POST(
     return NextResponse.json({ harvestedCropData });
   } catch (error) {
     console.error("Error creating user harvested crop:", error);
-    return {
-      status: 500,
-      json: { error: "Failed to create user harvested crop" },
-    };
+    return NextResponse.json(
+      {
+        status: "nok",
+        error: "Failed to create user harvested crop",
+      },
+      { status: 500 }
+    );
   }
 }

@@ -8,6 +8,7 @@ import {
   DbUserFrost,
 } from "@/supabase/types";
 import { UserHasItem } from "@prisma/client";
+import { getCurrentDayStreak } from "../utils";
 
 export async function getQuestLeaderboard({
   limit,
@@ -429,4 +430,302 @@ export const getUserFrostsByStreakId = async (streakId: number) => {
       frozenAt: "desc",
     },
   });
+};
+
+export const getUserCurrentStreakNumber = async (fid: number) => {
+  const streaks = await getUserStreaks(fid);
+  const currentStreak = streaks[0];
+  if (!currentStreak) {
+    return 0;
+  }
+
+  const frostDays = (await getUserFrostsByStreakId(currentStreak.id)).map(
+    (frost) => new Date(frost.frozenAt)
+  );
+  const currentStreakNumber = getCurrentDayStreak(currentStreak, frostDays);
+
+  return currentStreakNumber;
+};
+
+export interface TopStreaksResult {
+  id: number;
+  fid: number;
+  startedAt: string;
+  lastActionAt: string;
+  frozen_days: number;
+  streak_length: number;
+}
+
+export const getTopStreaks = async () => {
+  const topStreaks = await prisma.$queryRaw`
+    WITH streak_durations AS (
+      SELECT 
+        s.id,
+        s.fid,
+        s."startedAt",
+        s."lastActionAt",
+        COUNT(f."frozenAt") AS frozen_days,
+        LEAST(
+          (s."lastActionAt" - s."startedAt") + 1, 
+          (CURRENT_DATE - s."startedAt") + 1 - COUNT(f."frozenAt")
+        ) AS streak_length
+      FROM public.streaks s
+      LEFT JOIN public.user_frosts f ON s.id = f."streakId"
+      WHERE s."endedAt" IS NULL
+      GROUP BY s.id, s.fid, s."startedAt", s."lastActionAt"
+    )
+    SELECT * FROM streak_durations
+    ORDER BY streak_length DESC
+    LIMIT 5;
+  `;
+
+  return topStreaks as TopStreaksResult[];
+};
+
+interface StreaksCountResult {
+  active_streaks_count: number;
+}
+
+export const getActiveStreaksCount = async (): Promise<number> => {
+  const result = await prisma.$queryRaw<StreaksCountResult[]>`
+    SELECT COUNT(*) AS active_streaks_count
+    FROM public.streaks s
+    WHERE s."endedAt" IS NULL
+      AND s."lastActionAt" >= CURRENT_DATE - INTERVAL '1 day';
+  `;
+
+  return result[0].active_streaks_count; // Return the count from the result
+};
+
+// this function is used to get the leaderboard with a limit number of users
+// where the fid of the user is exactly in the middle of this partial leaderboard
+// the limit is the number of users to be returned
+export const getPartialLeaderboardFromUserPosition = async (
+  position: number,
+  limit: number = 5
+) => {
+  const skip = Math.max(0, position - Math.ceil(limit / 2));
+  const partialLeaderboard = await prisma.user.findMany({
+    where: {
+      xp: {
+        gt: 0,
+      },
+    },
+    orderBy: {
+      xp: "desc",
+    },
+    skip,
+    take: limit,
+  });
+
+  return partialLeaderboard.map((user, index) => ({
+    ...user,
+    position: skip + index + 1,
+  }));
+};
+
+export const getPartialLeaderboardFromFids = async (
+  fids: string[],
+  targetFid: string,
+  limit: number = 5
+) => {
+  const fullLeaderboard = await getUsersByFids(fids);
+  const targetIndex = fullLeaderboard.users.findIndex(
+    (user) => user.fid === Number(targetFid)
+  );
+
+  if (targetIndex === -1) {
+    return [];
+  }
+
+  const start = Math.max(0, targetIndex - Math.floor(limit / 2));
+  const end = Math.min(start + limit, fullLeaderboard.users.length);
+
+  return fullLeaderboard.users.slice(start, end).map((user, index) => ({
+    ...user,
+    position: start + index + 1,
+  }));
+};
+
+export const getUsersByFids = async (
+  fids: string[]
+): Promise<{
+  users: DbUser[];
+}> => {
+  const users = await prisma.user.findMany({
+    where: {
+      fid: {
+        in: fids.map(Number), // Convert string[] to number[]
+      },
+      xp: {
+        gt: 0,
+      },
+    },
+    orderBy: {
+      xp: "desc",
+    },
+  });
+
+  return {
+    users: users.map((user, index) => ({
+      ...user,
+      createdAt: user.createdAt.toISOString(),
+      position: index + 1,
+    })),
+  };
+};
+
+export const getUserPosition = async (targetXp: number): Promise<number> => {
+  const count = await prisma.user.count({
+    where: {
+      xp: {
+        gte: targetXp,
+      },
+    },
+  });
+  return count || 0;
+};
+
+export async function getQuestPartialLeaderboard({
+  targetFid,
+  limit = 5,
+}: {
+  targetFid: string;
+  limit?: number;
+}) {
+  const fullLeaderboard = (await getQuestLeaderboard({})) as {
+    questCount: number;
+    fid: number;
+    username: string;
+    displayName: string;
+    avatarUrl: string | null;
+  }[];
+  const targetIndex = fullLeaderboard.findIndex(
+    (user) => user.fid === Number(targetFid)
+  );
+
+  if (targetIndex === -1) {
+    return [];
+  }
+
+  const start = Math.max(0, targetIndex - Math.floor(limit / 2));
+  const end = Math.min(start + limit, fullLeaderboard.length);
+
+  return fullLeaderboard.slice(start, end).map((user, index) => ({
+    ...user,
+    position: start + index + 1,
+  }));
+}
+
+export async function getQuestPartialLeaderboardFromFids({
+  fids,
+  targetFid,
+  limit = 5,
+}: {
+  fids: string[];
+  targetFid: string;
+  limit?: number;
+}) {
+  const fullLeaderboard = (await getQuestLeaderboard({
+    fids,
+    targetFid,
+  })) as {
+    fid: number;
+    username: string;
+    displayName: string;
+    avatarUrl: string | null;
+    questCount: number;
+  }[];
+
+  const targetIndex = fullLeaderboard.findIndex(
+    (user) => user.fid === Number(targetFid)
+  );
+
+  if (targetIndex === -1) {
+    return [];
+  }
+
+  const start = Math.max(0, targetIndex - Math.floor(limit / 2));
+  const end = Math.min(start + limit, fullLeaderboard.length);
+
+  return fullLeaderboard.slice(start, end).map((user, index) => ({
+    ...user,
+    position: start + index + 1,
+  }));
+}
+
+export const getUser = async (fid: number) => {
+  const user = await prisma.user.findUnique({
+    where: {
+      fid,
+      xp: {
+        gt: 0,
+      },
+    },
+  });
+
+  if (!user) {
+    return null;
+  }
+
+  return user;
+};
+
+export const getPlayerCount = async () => {
+  return await prisma.user.count({
+    where: {
+      xp: {
+        gt: 0,
+      },
+    },
+  });
+};
+
+export const getUsersByXp = async (
+  limit?: number,
+  targetFid?: number
+): Promise<{
+  users: DbUser[];
+  targetPosition?: number;
+}> => {
+  // Get users ordered by XP
+  const users = await prisma.user.findMany({
+    where: {
+      xp: {
+        gt: 0,
+      },
+    },
+    orderBy: {
+      xp: "desc",
+    },
+    ...(limit ? { take: limit } : {}),
+  });
+
+  let targetPosition: number | undefined;
+  if (targetFid) {
+    // Get target user's XP
+    const targetUser = await prisma.user.findUnique({
+      where: { fid: targetFid },
+      select: { xp: true },
+    });
+
+    if (targetUser) {
+      // Count users with higher or equal XP to get position
+      targetPosition = await prisma.user.count({
+        where: {
+          xp: {
+            gte: targetUser.xp,
+          },
+        },
+      });
+    }
+  }
+
+  return {
+    users: users.map((user) => ({
+      ...user,
+      createdAt: user.createdAt.toISOString(),
+    })),
+    targetPosition,
+  };
 };

@@ -1,13 +1,17 @@
 "use client";
 
+import { useGame } from "@/context/GameContext";
+import { useLeaderboard } from "@/hooks/use-leadeboard";
+import {
+  getCurrentLevelAndProgress,
+  leaderboardFlexCardComposeCastUrl,
+} from "@/lib/utils";
+import sdk from "@farcaster/frame-sdk";
 import { motion } from "framer-motion";
+import { Share2 } from "lucide-react";
+import Image from "next/image";
 import { useState } from "react";
 import { useFrameContext } from "../context/FrameContext";
-import { useLeaderboard } from "@/hooks/use-leadeboard";
-import Image from "next/image";
-import sdk from "@farcaster/frame-sdk";
-import { useGame } from "@/context/GameContext";
-import { getCurrentLevelAndProgress } from "@/lib/utils";
 
 const shimmerAnimation = `
   @keyframes shine {
@@ -32,6 +36,20 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
 
   const handleClose = () => {
     onClose();
+  };
+
+  const handleShareLeaderboard = async () => {
+    const { castUrl } = leaderboardFlexCardComposeCastUrl(
+      state.user.fid,
+      leaderboardType,
+      activeTab === "friends",
+      activeTab === "friends"
+        ? leaderboardType === "xp"
+          ? friendsData
+          : questsFriendsData
+        : undefined
+    );
+    await sdk.actions.openUrl(castUrl);
   };
 
   if (typeof document !== "undefined") {
@@ -132,43 +150,59 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
             </div>
 
             {/* Secondary tabs for XP/Quests */}
-            <div className="flex gap-3 mb-4 px-1">
-              {[
-                { id: "xp", label: "Experience", icon: "⭐" },
-                { id: "quests", label: "Quests", icon: "🎯" },
-              ].map((tab) => (
-                <motion.button
-                  key={tab.id}
-                  initial={{ opacity: 0, y: -20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  onClick={() => setLeaderboardType(tab.id as "xp" | "quests")}
-                  className={`px-3 py-1 rounded-full flex items-center justify-center gap-1.5 transition-all duration-200 text-xs
-                    ${
-                      leaderboardType === tab.id
-                        ? "bg-[#FFB938] text-[#5c4121] font-semibold shadow-md"
-                        : "text-white/70 hover:bg-white/10 border border-white/20"
-                    }`}
-                  whileHover={{
-                    scale: leaderboardType === tab.id ? 1.05 : 1.02,
-                  }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  <motion.span
-                    animate={{
-                      rotate: leaderboardType === tab.id ? [0, -5, 5, 0] : 0,
+            <div className="w-full flex justify-between items-center mb-4">
+              <div className="flex gap-3">
+                {[
+                  { id: "xp", label: "Experience", icon: "⭐" },
+                  { id: "quests", label: "Quests", icon: "🎯" },
+                ].map((tab) => (
+                  <motion.button
+                    key={tab.id}
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    onClick={() =>
+                      setLeaderboardType(tab.id as "xp" | "quests")
+                    }
+                    className={`px-3 py-1 rounded-full flex items-center justify-center gap-1.5 transition-all duration-200 text-xs
+                      ${
+                        leaderboardType === tab.id
+                          ? "bg-[#FFB938] text-[#5c4121] font-semibold shadow-md"
+                          : "text-white/70 hover:bg-white/10 border border-white/20"
+                      }`}
+                    whileHover={{
+                      scale: leaderboardType === tab.id ? 1.05 : 1.02,
                     }}
-                    transition={{
-                      duration: 0.5,
-                      repeat: Infinity,
-                      repeatDelay: 2,
-                    }}
-                    className="text-sm mb-1"
+                    whileTap={{ scale: 0.98 }}
                   >
-                    {tab.icon}
-                  </motion.span>
-                  <span>{tab.label}</span>
-                </motion.button>
-              ))}
+                    <motion.span
+                      animate={{
+                        rotate: leaderboardType === tab.id ? [0, -5, 5, 0] : 0,
+                      }}
+                      transition={{
+                        duration: 0.5,
+                        repeat: Infinity,
+                        repeatDelay: 2,
+                      }}
+                      className="text-sm mb-1"
+                    >
+                      {tab.icon}
+                    </motion.span>
+                    <span>{tab.label}</span>
+                  </motion.button>
+                ))}
+              </div>
+              <motion.button
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="p-2 rounded-full flex items-center justify-center 
+                  bg-[#6d4c2c] text-white/70 border border-white/20 hover:bg-[#8B5E3C]
+                  transition-all duration-200"
+                onClick={handleShareLeaderboard}
+              >
+                <Share2 size={14} />
+              </motion.button>
             </div>
           </div>
 
