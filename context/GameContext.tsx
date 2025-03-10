@@ -110,6 +110,8 @@ interface GameContextType {
   ) => void;
   showHarvestedNewGoldCrops: boolean;
   setShowHarvestedNewGoldCrops: Dispatch<SetStateAction<boolean>>;
+  showAchievedNewBadges: boolean;
+  setShowAchievedNewBadges: Dispatch<SetStateAction<boolean>>;
 }
 
 export const GameContext = createContext<GameContextType | null>(null);
@@ -152,6 +154,7 @@ export function GameProvider({
   );
   const [showHarvestedNewGoldCrops, setShowHarvestedNewGoldCrops] =
     useState(false);
+  const [showAchievedNewBadges, setShowAchievedNewBadges] = useState(false);
   const [remainingUses, setRemainingUses] = useState<number>(0);
 
   const [gridBulkOperations, setGridBulkOperations] =
@@ -392,6 +395,15 @@ export function GameProvider({
     }
   }, [gridBulkResult]);
 
+  useEffect(() => {
+    if (gridBulkResult?.type === ActionType.Harvest) {
+      const newBadges = gridBulkResult.rewards?.newBadges;
+      if (newBadges && newBadges.length > 0) {
+        setShowAchievedNewBadges(true);
+      }
+    }
+  }, [gridBulkResult]);
+
   const { mutate: buyItem } = useBuyItem({
     refetchUser: refetch.user,
     refetchUserItems: refetch.userItems,
@@ -498,6 +510,8 @@ export function GameProvider({
         updateUserHarvestedCrops,
         showHarvestedNewGoldCrops,
         setShowHarvestedNewGoldCrops,
+        showAchievedNewBadges,
+        setShowAchievedNewBadges,
       }}
     >
       {children}

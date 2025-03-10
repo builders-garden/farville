@@ -3,6 +3,7 @@
 import { useGame } from "../context/GameContext";
 import GridCell from "./GridCell";
 import { HarvestedGoldCrop } from "./modals/HarvestedGoldCrop";
+import { NewAchievementReached } from "./modals/NewAchievementReached";
 import SeedMenu from "./SeedMenu";
 
 export default function GameGrid() {
@@ -11,6 +12,8 @@ export default function GameGrid() {
     showHarvestedNewGoldCrops,
     gridBulkResult,
     setShowHarvestedNewGoldCrops,
+    showAchievedNewBadges,
+    setShowAchievedNewBadges,
   } = useGame();
 
   // Create a 2D grid from the flat array
@@ -20,11 +23,19 @@ export default function GameGrid() {
 
   return (
     <div className="flex flex-col h-full w-full items-start p-4 justify-start overflow-hidden gap-8">
-      {/* create here an overlay to display the harvested gold crops */}
+      {/* overlay to display the harvested gold crops */}
       {showHarvestedNewGoldCrops && gridBulkResult?.rewards?.goldCrops && (
         <HarvestedGoldCrop
           goldCrops={gridBulkResult.rewards.goldCrops}
           onClose={() => setShowHarvestedNewGoldCrops(false)}
+        />
+      )}
+
+      {/* overlay to display the new achievements */}
+      {showAchievedNewBadges && gridBulkResult?.rewards?.newBadges && (
+        <NewAchievementReached
+          achievements={gridBulkResult.rewards.newBadges}
+          onClose={() => setShowAchievedNewBadges(false)}
         />
       )}
 

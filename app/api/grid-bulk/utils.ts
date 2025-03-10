@@ -47,6 +47,10 @@ export interface GridBulkResult {
       crop: string;
       amount: number;
     }[];
+    newBadges?: {
+      crop: string;
+      step: number;
+    }[];
   };
 }
 
@@ -184,6 +188,10 @@ export const harvestBulk = async (
     crop: string;
     amount: number;
   }[] = [];
+  const newBadges: {
+    crop: string;
+    step: number;
+  }[] = [];
   const userHarvestedCrops = await getUserHarvestedCrops(fid);
 
   // Process each crop type in a single pass
@@ -193,6 +201,17 @@ export const harvestBulk = async (
       userHarvestedCrops,
       cropType as CropType
     );
+
+    // Check if the user has reached a new badge
+    if (
+      achievementProgress.step < 4 &&
+      achievementProgress.count + amount >= achievementProgress.currentGoal
+    ) {
+      newBadges.push({
+        crop: cropType,
+        step: achievementProgress.step,
+      });
+    }
 
     const goldCropCount = calculateGoldCropsInBatch(
       amount,
@@ -245,6 +264,7 @@ export const harvestBulk = async (
     rewards: {
       ...rewards,
       goldCrops,
+      newBadges,
     },
   };
 };
