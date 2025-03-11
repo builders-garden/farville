@@ -1,4 +1,5 @@
 import { EXPANSION_COSTS } from "@/lib/game-constants";
+import { getCurrentLevelAndProgress } from "@/lib/utils";
 import {
   createGridCell,
   getGridCells,
@@ -22,11 +23,13 @@ export const POST = async (req: NextRequest) => {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  // check if user exists
   const user = await getUser(Number(fid));
   if (!user) {
     return NextResponse.json({ error: "User not found" }, { status: 404 });
   }
 
+  // check if the user has reached the maximum expansion level
   if (user.expansions > EXPANSION_COSTS.length) {
     return NextResponse.json(
       { error: "No more expansions available" },
@@ -34,7 +37,17 @@ export const POST = async (req: NextRequest) => {
     );
   }
 
+  // check if the user has reached the required level
   const nextExpansion = EXPANSION_COSTS[user.expansions - 1];
+  const { currentLevel: userLevel } = getCurrentLevelAndProgress(user.xp);
+  if (userLevel < nextExpansion.level) {
+    return NextResponse.json(
+      { error: "User level is too low for this expansion" },
+      { status: 400 }
+    );
+  }
+
+  // check if the user has enough coins to expand
   if (user.coins < nextExpansion.coins) {
     return NextResponse.json({ error: "Insufficient funds" }, { status: 400 });
   }

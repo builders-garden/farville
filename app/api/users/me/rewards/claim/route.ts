@@ -1,16 +1,15 @@
-import { updateStreakLastClaimed } from "@/lib/prisma/queries";
+import { MONTHLY_REWARDS } from "@/lib/game-constants";
+import {
+  getUserCurrentStreakNumber,
+  getUserStreaks,
+  updateStreakLastClaimed,
+} from "@/lib/prisma/queries";
 import { getUserItems, updateUserItem } from "@/supabase/queries";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
 const requestSchema = z.object({
-  streakId: z.number(),
-  rewards: z.array(
-    z.object({
-      itemId: z.number(),
-      quantity: z.number(),
-    })
-  ),
+  streakId: z.number().min(1),
 });
 
 export const POST = async (req: NextRequest) => {
@@ -29,10 +28,38 @@ export const POST = async (req: NextRequest) => {
     );
   }
 
-  const { rewards, streakId } = requestBody.data;
+  const { streakId } = requestBody.data;
 
-  // TODO: validate items
-  console.warn("missing rewards validation");
+  const streaks = await getUserStreaks(Number(fid));
+  if (streaks.length === 0) {
+    return NextResponse.json({ error: "Streak not found" }, { status: 404 });
+  }
+  const lastStreak = streaks[0];
+
+  // check if the streak is available to claim
+  if (lastStreak.endedAt !== null) {
+    return NextResponse.json(
+      { error: "Streak ended! You can not claim rewards from a dead streak" },
+      { status: 400 }
+    );
+  }
+
+  const currentDayStreak = await getUserCurrentStreakNumber(Number(fid));
+
+  if (lastStreak.lastClaimed === currentDayStreak) {
+    return NextResponse.json(
+      { error: "Rewards already claimed" },
+      { status: 400 }
+    );
+  }
+
+  const rewards = MONTHLY_REWARDS.find(
+    (r) => r.day === lastStreak.lastClaimed + 1
+  )?.rewards;
+
+  if (!rewards) {
+    return NextResponse.json({ error: "Rewards not found" }, { status: 500 });
+  }
 
   const userItems = await getUserItems(Number(fid));
 

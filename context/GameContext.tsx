@@ -100,10 +100,7 @@ interface GameContextType {
     level?: number;
     coins?: number;
   }) => void;
-  claimRewards: (variables: {
-    streakId: number;
-    rewards: { itemId: number; quantity: number }[];
-  }) => void;
+  claimRewards: (variables: { streakId: number }) => void;
 }
 
 export const GameContext = createContext<GameContextType | null>(null);
