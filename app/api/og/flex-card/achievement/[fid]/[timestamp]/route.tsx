@@ -274,7 +274,7 @@ export async function GET(
                 gap: "20px",
               }}
             >
-              {/* Left Part */}
+              {/* Left Part - Badge */}
               <div
                 style={{
                   display: "flex",
@@ -286,15 +286,6 @@ export async function GET(
                   width: "200px",
                 }}
               >
-                {/* Badge */}
-                {/* <div
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "flex-start",
-                    gap: "15px",
-                  }}
-                > */}
                 {/* Gold aura around badge picture */}
                 <div
                   style={{
@@ -339,7 +330,6 @@ export async function GET(
                     />
                   }
                 </div>
-                {/* </div> */}
               </div>
 
               {/* Right Section */}
@@ -354,6 +344,7 @@ export async function GET(
                   width: "280px",
                 }}
               >
+                {/* Badge Title */}
                 <span
                   style={{
                     fontSize: "20px",
@@ -365,6 +356,7 @@ export async function GET(
                 >
                   {badgeData.title}
                 </span>
+                {/* Badge Description */}
                 <span
                   style={{
                     fontSize: "12px",
