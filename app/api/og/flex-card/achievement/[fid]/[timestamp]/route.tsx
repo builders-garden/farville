@@ -124,6 +124,8 @@ export async function GET(
       "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+-=[]{}|;':,.<>/?"
     );
 
+    // TODO: add here a stronger validation for crop and step to be secure that the user has achieved this badge
+
     const cropAchievements = ACHIEVEMENTS_THRESHOLDS.find(
       (achievement) => achievement.crop === crop
     );
@@ -131,7 +133,7 @@ export async function GET(
       title:
         cropAchievements?.titles[Number(step) - 1] ||
         `Badge for ${crop} achievement`,
-      description: `Harvesting ${
+      description: `Obtained harvesting ${
         cropAchievements?.thresholds[Number(step) - 1]
       } ${
         crop.endsWith("y")
@@ -139,7 +141,7 @@ export async function GET(
           : crop.endsWith("o")
           ? crop + "es"
           : crop + "s"
-      }!`,
+      }.`,
     };
 
     return new ImageResponse(
@@ -269,6 +271,7 @@ export async function GET(
                 width: "100%",
                 boxShadow:
                   "inset 0 0 10px rgba(0, 0, 0, 0.3), 0 0 5px rgba(255, 215, 0, 0.15)",
+                gap: "20px",
               }}
             >
               {/* Left Part */}
@@ -280,69 +283,106 @@ export async function GET(
                   fontFamily: "PressStart2P",
                   alignItems: "flex-start",
                   gap: "22px",
-                  width: "160px",
+                  width: "200px",
                 }}
               >
                 {/* Badge */}
-                <div
+                {/* <div
                   style={{
                     display: "flex",
                     flexDirection: "column",
                     alignItems: "flex-start",
                     gap: "15px",
                   }}
+                > */}
+                {/* Gold aura around badge picture */}
+                <div
+                  style={{
+                    position: "absolute",
+                    width: "200px",
+                    height: "200px",
+                    borderRadius: "12%",
+                    background:
+                      "radial-gradient(circle, rgba(255,215,0,0.4) 0%, rgba(255,215,0,0) 70%)",
+                    zIndex: 0,
+                  }}
+                />
+                {/* Badge image in center */}
+                <div
+                  style={{
+                    width: "195px",
+                    height: "195px",
+                    borderRadius: "12%",
+                    overflow: "hidden",
+                    background:
+                      "linear-gradient(135deg, #6B4D23 0%, #4A3419 100%)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    position: "relative",
+                    zIndex: 1,
+                    boxShadow:
+                      "0 8px 20px rgba(0,0,0,0.7), 0 0 25px rgba(255,215,0,0.6), 0 0 10px #FFD700",
+                  }}
                 >
-                  {/* Gold aura around badge picture */}
-                  <div
-                    style={{
-                      position: "absolute",
-                      width: "145px",
-                      height: "145px",
-                      borderRadius: "100%",
-                      background:
-                        "radial-gradient(circle, rgba(255,215,0,0.4) 0%, rgba(255,215,0,0) 70%)",
-                      zIndex: 0,
-                    }}
-                  />
-                  {/* Badge image in center */}
-                  <div
-                    style={{
-                      width: "140px",
-                      height: "140px",
-                      borderRadius: "16%",
-                      overflow: "hidden",
-                      background:
-                        "linear-gradient(135deg, #6B4D23 0%, #4A3419 100%)",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      position: "relative",
-                      zIndex: 1,
-                      boxShadow:
-                        "0 8px 20px rgba(0,0,0,0.7), 0 0 25px rgba(255,215,0,0.6), 0 0 10px #FFD700",
-                    }}
-                  >
-                    {
-                      <img
-                        src={`data:image/png;base64,${Buffer.from(
-                          badgeImageBuffer
-                        ).toString("base64")}`}
-                        width="100%"
-                        height="100%"
-                        style={{
-                          objectFit: "contain",
-                          filter: "drop-shadow(0 0 3px rgba(255,215,0,0.5))",
-                        }}
-                      />
-                    }
-                  </div>
+                  {
+                    <img
+                      src={`data:image/png;base64,${Buffer.from(
+                        badgeImageBuffer
+                      ).toString("base64")}`}
+                      width="100%"
+                      height="100%"
+                      style={{
+                        objectFit: "contain",
+                        filter: "drop-shadow(0 0 3px rgba(255,215,0,0.5))",
+                      }}
+                    />
+                  }
                 </div>
+                {/* </div> */}
+              </div>
+
+              {/* Right Section */}
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  position: "relative",
+                  padding: "12px",
+                  wordWrap: "break-word",
+                  gap: "12px",
+                  width: "280px",
+                }}
+              >
+                <span
+                  style={{
+                    fontSize: "20px",
+                    color: "#FFD700",
+                    textShadow: "0px 3px 10px rgba(255, 215, 0, 0.6)",
+                    position: "relative",
+                    lineHeight: "1.5",
+                  }}
+                >
+                  {badgeData.title}
+                </span>
+                <span
+                  style={{
+                    fontSize: "12px",
+                    color: "#ffffff",
+                    textShadow: "0px 2px 4px rgba(0, 0, 0, 0.7)",
+                    textWrap: "wrap",
+                    lineHeight: "1.8",
+                  }}
+                >
+                  {badgeData.description}
+                </span>
                 {/* Top Leaderboard Users */}
                 <div
                   style={{
                     display: "flex",
                     flexDirection: "column",
                     gap: "7px",
+                    marginTop: "auto",
                   }}
                 >
                   <div
@@ -383,50 +423,6 @@ export async function GET(
                     <span style={{ marginLeft: "5px" }}> active farmers</span>
                   </span>
                 </div>
-              </div>
-
-              {/* Right Section */}
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  position: "relative",
-                  padding: "12px",
-                  wordWrap: "break-word",
-                  gap: "8px",
-                  width: "340px",
-                }}
-              >
-                <p
-                  style={{
-                    fontSize: "12px",
-                    color: "#ffffff",
-                    textShadow: "0px 2px 4px rgba(0, 0, 0, 0.7)",
-                  }}
-                >
-                  I got a new badge!
-                </p>
-                <span
-                  style={{
-                    fontSize: "20px",
-                    color: "#FFD700",
-                    textShadow: "0px 3px 10px rgba(255, 215, 0, 0.6)",
-                    position: "relative",
-                  }}
-                >
-                  {badgeData.title}
-                </span>
-                <p
-                  style={{
-                    fontSize: "12px",
-                    color: "#ffffff",
-                    textShadow: "0px 2px 4px rgba(0, 0, 0, 0.7)",
-                    textWrap: "wrap",
-                    lineHeight: "1.8",
-                  }}
-                >
-                  {badgeData.description}
-                </p>
               </div>
             </div>
           </div>
