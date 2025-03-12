@@ -15,6 +15,7 @@
     "@farcaster/auth-client": "^0.3.0",
     "@farcaster/frame-node": "^0.0.10",
     "@farcaster/frame-sdk": "^0.0.26",
+    "@farcaster/frame-wagmi-connector": "^0.0.19",
     "@frames.js/debugger": "^0.4.1",
     "@heroicons/react": "^2.2.0",
     "@prisma/client": "^6.2.1",

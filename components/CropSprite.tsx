@@ -108,25 +108,36 @@ export function PlantedCropSprite({ crop, isDemo }: CropSpriteProps) {
         />
       )}
 
-      {/* Speed Boost Indicator */}
-      {crop.speedBoostedAt &&
-        Date.now() - crop.speedBoostedAt < 1000 * 60 * 60 * 2 && (
-          <div
-            className={clsx(
-              "absolute z-50",
-              isGridSmall ? "top-1 right-1" : "-top-1 -right-1"
-            )}
-          >
+      {/* Speed Boost Glow Effect */}
+      <AnimatePresence>
+        {crop.speedBoostedAt &&
+          Date.now() - crop.speedBoostedAt < 1000 * 60 * 60 * 2 && (
             <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: isGridSmall ? 1 : 0.8 }}
-              className="bg-blue-500/80 rounded-full px-1"
+              className="absolute inset-0 rounded-sm z-10"
+              style={{
+                boxShadow:
+                  "0 0 20px 8px rgba(186, 85, 255, 0.7) inset, 0 0 30px 5px rgba(255, 215, 0, 0.6) inset",
+                background:
+                  "radial-gradient(circle, rgba(186, 85, 255, 0.15) 0%, rgba(255, 215, 0, 0.1) 70%)",
+              }}
+              initial={{ opacity: 0.8 }}
+              animate={{
+                opacity: [0.8, 0.9, 0.8],
+                boxShadow: [
+                  "0 0 15px 5px rgba(186, 85, 255, 0.5) inset, 0 0 25px 3px rgba(255, 215, 0, 0.4) inset",
+                  "0 0 25px 10px rgba(186, 85, 255, 0.8) inset, 0 0 35px 8px rgba(255, 215, 0, 0.7) inset",
+                  "0 0 15px 5px rgba(186, 85, 255, 0.5) inset, 0 0 25px 3px rgba(255, 215, 0, 0.4) inset",
+                ],
+              }}
+              transition={{
+                duration: 2 + Math.random() * 2,
+                repeat: Infinity,
+                ease: "easeInOut",
+              }}
               title={`${crop.speedBoost}x Speed Boost`}
-            >
-              ⚡️
-            </motion.div>
-          </div>
-        )}
+            />
+          )}
+      </AnimatePresence>
 
       {/* Progress Bar - Centered and smaller */}
       {!crop.readyToHarvest && (
