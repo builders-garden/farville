@@ -54,7 +54,7 @@ export const POST = async (req: NextRequest) => {
   }
 
   const rewards = MONTHLY_REWARDS.find(
-    (r) => r.day === lastStreak.lastClaimed + 1
+    (r) => r.day === (lastStreak.lastClaimed % MONTHLY_REWARDS.length) + 1
   )?.rewards;
 
   if (!rewards) {
