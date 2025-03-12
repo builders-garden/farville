@@ -1,6 +1,6 @@
 "use client";
 
-import { LEVEL_XP_THRESHOLDS } from "@/lib/game-constants";
+import { LEVEL_XP_THRESHOLDS, OG_XP_THRESHOLD } from "@/lib/game-constants";
 import { useGame } from "../context/GameContext";
 import { motion } from "framer-motion";
 import { getCurrentLevelAndProgress } from "@/lib/utils";
@@ -54,18 +54,20 @@ export default function Header() {
           </div>
         </div>
 
-        <div className="flex flex-col items-center w-[48px]">
-          <motion.button
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => {
-              setShowMintOGBadge(true);
-            }}
-            className={`py-[9px] px-[6px] bg-[#FFB938] text-[#5d3c1c] rounded-full flex items-center justify-center transition-colors relative shadow-lg shadow-[#A17449]/50 animate-pulse`}
-          >
-            <span className="text-xs">OG</span>
-          </motion.button>
-        </div>
+        {state.user.xp >= OG_XP_THRESHOLD && (
+          <div className="flex flex-col items-center w-[48px]">
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => {
+                setShowMintOGBadge(true);
+              }}
+              className={`py-[9px] px-[6px] bg-[#FFB938] text-[#5d3c1c] rounded-full flex items-center justify-center transition-colors relative shadow-lg shadow-[#A17449]/50 animate-pulse`}
+            >
+              <span className="text-xs">OG</span>
+            </motion.button>
+          </div>
+        )}
 
         <motion.div
           className="h-[42px] px-3 flex gap-1 items-center text-white/90 tracking-wide font-bold"

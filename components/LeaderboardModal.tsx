@@ -12,11 +12,21 @@ import { Share2 } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
 import { useFrameContext } from "../context/FrameContext";
+import { OgBadge } from "./OgBadge";
 
 const shimmerAnimation = `
   @keyframes shine {
     0% { transform: translateX(-100%); }
     50%, 100% { transform: translateX(100%); }
+  }
+  @keyframes diamondShine {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+  @keyframes diamondPulse {
+    0%, 100% { transform: scale(1); opacity: 0.9; }
+    50% { transform: scale(1.05); opacity: 1; }
   }
 `;
 
@@ -65,6 +75,9 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
     }
     return activeTab === "global" ? questsData : questsFriendsData;
   };
+
+  // TODO: change this to the real OG user check
+  const isOgUser = true;
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-start z-50">
@@ -231,13 +244,18 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
 
                 {/* Avatar */}
                 {state.user.avatarUrl ? (
-                  <Image
-                    src={state.user.avatarUrl}
-                    alt={`${state.user.username}'s avatar`}
-                    className="w-10 h-10 rounded-full object-cover border-2 border-[#FFB938] flex-none"
-                    width={40}
-                    height={40}
-                  />
+                  <div className="relative flex-none">
+                    <Image
+                      src={state.user.avatarUrl}
+                      alt={`${state.user.username}'s avatar`}
+                      className={`w-10 h-10 rounded-full object-cover border-2 ${
+                        isOgUser ? "border-[#179ef9]" : "border-[#FFB938]"
+                      }`}
+                      width={40}
+                      height={40}
+                    />
+                    {isOgUser && <OgBadge />}
+                  </div>
                 ) : (
                   <div className="w-10 h-10 rounded-full bg-[#5c4121] flex items-center justify-center text-white/90 flex-none">
                     👤
@@ -305,13 +323,20 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
 
                   {/* Avatar */}
                   {entry.avatarUrl ? (
-                    <Image
-                      src={entry.avatarUrl}
-                      alt={`${entry.username}'s avatar`}
-                      className="w-10 h-10 rounded-full object-cover border-2 border-[#FFB938] flex-none"
-                      width={40}
-                      height={40}
-                    />
+                    <div className="relative flex-none">
+                      <Image
+                        src={entry.avatarUrl}
+                        alt={`${entry.username}'s avatar`}
+                        className={`w-10 h-10 rounded-full object-cover ${
+                          isOgUser
+                            ? "border-2 border-[#179ef9]"
+                            : "border-2 border-[#FFB938]"
+                        }`}
+                        width={40}
+                        height={40}
+                      />
+                      {isOgUser && <OgBadge />}
+                    </div>
                   ) : (
                     <div className="w-10 h-10 rounded-full bg-[#5c4121] flex items-center justify-center text-white/90 flex-none">
                       👤
