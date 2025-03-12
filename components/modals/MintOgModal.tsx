@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { X } from "lucide-react";
 import Image from "next/image";
+import { Separator } from "../ui/separator";
 
 interface MintOgModalProps {
   onCancel: () => void;
@@ -100,10 +101,16 @@ export default function MintOgModal({ onCancel }: MintOgModalProps) {
             </motion.div>
           </div>
         </div>
-        <span className="text-white/70 text-xs text-center">
-          Mint your badge and show the world you&apos;re one of the original
-          Farville farmers!
-        </span>
+        <div className="flex flex-col gap-4 mb-2">
+          <span className="text-yellow-300/90 text-[10px] text-center">
+            A symbol of honor, proving your participation in Farville Alpha.
+          </span>
+          <Separator className="w-[80%] m-auto bg-yellow-500/50" />
+          <span className="text-white/70 text-[8px] text-center px-2">
+            Mint your badge and get a special look to show off in the
+            leaderboards!
+          </span>
+        </div>
         <div className="flex flex-col gap-3">
           <button
             onClick={() => {
