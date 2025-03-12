@@ -18,6 +18,7 @@ export async function POST(request: Request) {
     const treeFilePath = path.join(
       process.cwd(),
       "lib",
+      "contracts",
       "og-nft",
       "merkle-root",
       "merkleRoot.json"
@@ -31,7 +32,10 @@ export async function POST(request: Request) {
     let value = null;
 
     for (const [i, v] of tree.entries()) {
-      if (v[0].toLowerCase() === address.toLowerCase() && v[1] === nftId) {
+      if (
+        v[0].toLowerCase() === address.toLowerCase() &&
+        v[1] === String(nftId)
+      ) {
         proof = tree.getProof(i);
         value = v;
         break;

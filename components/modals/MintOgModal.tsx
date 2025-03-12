@@ -2,12 +2,62 @@ import { motion } from "framer-motion";
 import { X } from "lucide-react";
 import Image from "next/image";
 import { Separator } from "../ui/separator";
+import { useAccount, useWriteContract } from "wagmi";
+import { NFT_OG_BASE_SEPOLIA_ABI } from "@/lib/contracts/og-nft/abi";
+import { useGetMerkleProof } from "@/hooks/use-get-merkle-proof";
+import { useEffect, useState } from "react";
+import { NFT_OG_BASE_SEPOLIA_ADDRESS } from "@/lib/contracts/constants";
+import { merkleValues } from "@/lib/contracts/og-nft/merkle-root/merkleValues";
 
 interface MintOgModalProps {
   onCancel: () => void;
 }
 
 export default function MintOgModal({ onCancel }: MintOgModalProps) {
+  const { writeContract } = useWriteContract();
+  const { address } = useAccount();
+  const [merkleProof, setMerkleProof] = useState<`0x${string}`[] | null>(null);
+  const { mutate: getMerkleProof } = useGetMerkleProof({ setMerkleProof });
+  const [nftId, setNftId] = useState<number>(-1);
+
+  useEffect(() => {
+    if (address) {
+      const userEntry = merkleValues.find(
+        ([addr]) => addr.toLowerCase() === address.toLowerCase()
+      );
+      if (userEntry) {
+        const userNftId = parseInt(userEntry[1], 10);
+        setNftId(userNftId);
+      } else {
+        setNftId(-1);
+      }
+    }
+  }, [address]);
+
+  const handleMint = async () => {
+    if (address) {
+      getMerkleProof({
+        address,
+        nftId,
+      });
+    }
+  };
+
+  useEffect(() => {
+    if (merkleProof && merkleProof.length > 0) {
+      try {
+        writeContract({
+          abi: NFT_OG_BASE_SEPOLIA_ABI,
+          address: NFT_OG_BASE_SEPOLIA_ADDRESS,
+          functionName: "mint",
+          args: [BigInt(nftId), merkleProof],
+        });
+      } catch (error) {
+        console.error("Error minting OG NFT:", error);
+      }
+    }
+  }, [nftId, merkleProof, writeContract]);
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -113,9 +163,8 @@ export default function MintOgModal({ onCancel }: MintOgModalProps) {
         </div>
         <div className="flex flex-col gap-3">
           <button
-            onClick={() => {
-              console.log("missing implementation");
-            }}
+            onClick={handleMint}
+            disabled={!address || nftId === -1}
             className="flex-1 py-2 px-4 rounded bg-yellow-500/20 text-yellow-400 hover:bg-yellow-500/30
           transition-colors text-sm font-medium border border-yellow-500/30 flex items-center justify-center gap-2"
           >
