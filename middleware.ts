@@ -12,6 +12,8 @@ export default async function middleware(req: NextRequest) {
     req.nextUrl.pathname === "/api/sign-in" ||
     req.nextUrl.pathname.includes("/api/og") ||
     req.nextUrl.pathname.includes("/api/webhook") ||
+    req.nextUrl.pathname.includes("/api/og-nft-root") || //TODO: Remove this
+    req.nextUrl.pathname.includes("/api/og-nft-proof") || //TODO: Remove this 
     // Skip auth check for leaderboard API when called from server-side OG image generation
     (req.nextUrl.pathname === "/api/leaderboard" &&
       req.headers.get("user-agent")?.includes("Next.js OG"))
