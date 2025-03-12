@@ -7,7 +7,7 @@ import { getCurrentLevelAndProgress } from "@/lib/utils";
 import Image from "next/image";
 
 export default function Header() {
-  const { state, setShowTimeline } = useGame();
+  const { state, setShowTimeline, setShowMintOGBadge } = useGame();
   const { progress } = getCurrentLevelAndProgress(state.experience);
 
   return (
@@ -52,6 +52,19 @@ export default function Header() {
               />
             </div>
           </div>
+        </div>
+
+        <div className="flex flex-col items-center w-[48px]">
+          <motion.button
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => {
+              setShowMintOGBadge(true);
+            }}
+            className={`py-[9px] px-[6px] bg-[#FFB938] text-[#5d3c1c] rounded-full flex items-center justify-center transition-colors relative shadow-lg shadow-[#A17449]/50 animate-pulse`}
+          >
+            <span className="text-xs">OG</span>
+          </motion.button>
         </div>
 
         <motion.div

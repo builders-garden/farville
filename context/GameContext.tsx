@@ -104,6 +104,8 @@ interface GameContextType {
     streakId: number;
     rewards: { itemId: number; quantity: number }[];
   }) => void;
+  showMintOGBadge: boolean;
+  setShowMintOGBadge: Dispatch<SetStateAction<boolean>>;
 }
 
 export const GameContext = createContext<GameContextType | null>(null);
@@ -124,6 +126,7 @@ export function GameProvider({
   const [showQuests, setShowQuests] = useState(false);
   const [showStreaks, setShowStreaks] = useState(false);
   const [showTimeline, setShowTimeline] = useState(false);
+  const [showMintOGBadge, setShowMintOGBadge] = useState(false);
   const {
     state,
     refetch,
@@ -381,6 +384,8 @@ export function GameProvider({
         updateUserItems,
         updateUser,
         claimRewards,
+        showMintOGBadge,
+        setShowMintOGBadge,
       }}
     >
       {children}
