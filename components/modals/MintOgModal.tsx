@@ -10,11 +10,15 @@ import {
 import { NFT_OG_BASE_SEPOLIA_ABI } from "@/lib/contracts/og-nft/abi";
 import { useGetMerkleProof } from "@/hooks/use-get-merkle-proof";
 import { useEffect, useState } from "react";
-import { NFT_OG_BASE_SEPOLIA_ADDRESS } from "@/lib/contracts/constants";
+import {
+  BASE_SCAN_BASE_URL,
+  NFT_OG_BASE_SEPOLIA_ADDRESS,
+} from "@/lib/contracts/constants";
 import { merkleValues } from "@/lib/contracts/og-nft/merkle-root/merkleValues";
 import Confetti from "../animations/Confetti";
 import { useGame } from "@/context/GameContext";
 import { useUpdateMintOgUser } from "@/hooks/use-update-mint-og-user";
+import sdk from "@farcaster/frame-sdk";
 
 interface MintOgModalProps {
   onCancel: () => void;
@@ -249,6 +253,18 @@ export default function MintOgModal({ onCancel }: MintOgModalProps) {
                 ? "Already Minted"
                 : "Mint"}
             </button>
+            {isReceiptSuccess && txHash && (
+              <p
+                className="text-white/70 text-[8px] text-center underline cursor-pointer"
+                onClick={async () => {
+                  await sdk.actions.openUrl(
+                    BASE_SCAN_BASE_URL + `/tx/${txHash}`
+                  );
+                }}
+              >
+                View transaction on BaseScan
+              </p>
+            )}
           </div>
         </motion.div>
       </motion.div>

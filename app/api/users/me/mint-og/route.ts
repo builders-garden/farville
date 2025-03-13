@@ -42,7 +42,8 @@ export const POST = async (req: NextRequest) => {
 
     // check if tokenOwnerAddress is inside the farcasterUserData.verifications array
     const isOgUser = farcasterUserData.verifications.some(
-      (verifiedAddress) => verifiedAddress === tokenOwnerAddress
+      (verifiedAddress) =>
+        verifiedAddress.toLowerCase() === tokenOwnerAddress.toLowerCase()
     );
 
     // if yes, update the user mintedOG to true
