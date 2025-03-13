@@ -61,6 +61,19 @@ export const streakFlexCardComposeCastUrl = (
   };
 };
 
+export const mintedOgFlexCardComposeCastUrl = (fid: number) => {
+  const timestamp = Date.now();
+  const frameUrl = `${process.env.NEXT_PUBLIC_URL}/flex-card/minted-og/${fid}/${timestamp}`;
+  const text = `I just minted my Farville OG NFT!`;
+  const urlFriendlyText = encodeURIComponent(text);
+  return {
+    frameUrl,
+    castUrl: `https://warpcast.com/~/compose?text=${urlFriendlyText}&embeds[]=${encodeURIComponent(
+      frameUrl
+    )}&channelKey=farville`,
+  };
+};
+
 export const leaderboardFlexCardComposeCastUrl = (
   fid: number,
   type: "quests" | "xp",

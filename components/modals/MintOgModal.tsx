@@ -19,6 +19,7 @@ import Confetti from "../animations/Confetti";
 import { useGame } from "@/context/GameContext";
 import { useUpdateMintOgUser } from "@/hooks/use-update-mint-og-user";
 import sdk from "@farcaster/frame-sdk";
+import { mintedOgFlexCardComposeCastUrl } from "@/lib/utils";
 
 interface MintOgModalProps {
   onCancel: () => void;
@@ -98,6 +99,11 @@ export default function MintOgModal({ onCancel }: MintOgModalProps) {
       setShowConfetti(true);
     }
   }, [isReceiptSuccess]);
+
+  const handleShareMint = async () => {
+    const { castUrl } = mintedOgFlexCardComposeCastUrl(state.user.fid);
+    await sdk.actions.openUrl(castUrl);
+  };
 
   return (
     <>
@@ -221,38 +227,47 @@ export default function MintOgModal({ onCancel }: MintOgModalProps) {
             )}
           </div>
           <div className="flex flex-col gap-3">
-            <button
-              onClick={handleMint}
-              disabled={
-                !address ||
-                nftId === -1 ||
-                isPending ||
-                isReceiptLoading ||
-                state.user.mintedOG
-              }
-              className={`flex-1 py-2 px-4 rounded bg-yellow-500/20 text-yellow-400 ${
-                !address ||
-                nftId === -1 ||
-                isPending ||
-                isReceiptLoading ||
-                state.user.mintedOG
-                  ? "text-yellow-400/50 cursor-not-allowed bg-yellow-500/10"
-                  : "hover:bg-yellow-500/30"
-              } ${
-                isReceiptSuccess
-                  ? "bg-green-500 text-green-200 cursor-not-allowed"
-                  : ""
-              }
+            {state.user.mintedOG ? (
+              <button
+                onClick={handleShareMint}
+                className={`flex-1 py-2 px-4 rounded bg-[#179ef9]/20 text-[#179ef9] hover:bg-[#179ef9]/30 transition-colors text-sm font-medium border border-[#179ef9]/30 flex items-center justify-center gap-2`}
+              >
+                Share
+              </button>
+            ) : (
+              <button
+                onClick={handleMint}
+                disabled={
+                  !address ||
+                  nftId === -1 ||
+                  isPending ||
+                  isReceiptLoading ||
+                  state.user.mintedOG
+                }
+                className={`flex-1 py-2 px-4 rounded bg-yellow-500/20 text-yellow-400 ${
+                  !address ||
+                  nftId === -1 ||
+                  isPending ||
+                  isReceiptLoading ||
+                  state.user.mintedOG
+                    ? "text-yellow-400/50 cursor-not-allowed bg-yellow-500/10"
+                    : "hover:bg-yellow-500/30"
+                } ${
+                  isReceiptSuccess
+                    ? "bg-green-500 text-green-200 cursor-not-allowed"
+                    : ""
+                }
           transition-colors text-sm font-medium border border-yellow-500/30 flex items-center justify-center gap-2`}
-            >
-              {isPending || isReceiptLoading
-                ? "Minting..."
-                : isReceiptSuccess
-                ? "Minted Successfully!"
-                : state.user.mintedOG
-                ? "Already Minted"
-                : "Mint"}
-            </button>
+              >
+                {isPending || isReceiptLoading
+                  ? "Minting..."
+                  : isReceiptSuccess
+                  ? "Minted Successfully!"
+                  : state.user.mintedOG
+                  ? "Already Minted"
+                  : "Mint"}
+              </button>
+            )}
             {isReceiptSuccess && txHash && (
               <p
                 className="text-white/70 text-[8px] text-center underline cursor-pointer"

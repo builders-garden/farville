@@ -1,14 +1,17 @@
 "use client";
 
-import { LEVEL_XP_THRESHOLDS, OG_XP_THRESHOLD } from "@/lib/game-constants";
+import { LEVEL_XP_THRESHOLDS } from "@/lib/game-constants";
 import { useGame } from "../context/GameContext";
 import { motion } from "framer-motion";
 import { getCurrentLevelAndProgress } from "@/lib/utils";
 import Image from "next/image";
+import { OG_FIDS_LIST } from "@/lib/contracts/constants";
 
 export default function Header() {
   const { state, setShowTimeline, setShowMintOGBadge } = useGame();
   const { progress } = getCurrentLevelAndProgress(state.experience);
+
+  const showOgButton = OG_FIDS_LIST.indexOf(state.user.fid) !== -1;
 
   return (
     <div className="bg-[#8B5E3C]/40 px-3 py-2 shadow-lg bg-opacity-95 backdrop-blur-sm border-b-2 border-[#6d4c2c]/50 z-30">
@@ -54,7 +57,7 @@ export default function Header() {
           </div>
         </div>
 
-        {state.user.xp >= OG_XP_THRESHOLD && (
+        {showOgButton && (
           <div className="flex flex-col items-center w-[48px]">
             <motion.button
               whileHover={{ scale: 1.1 }}
