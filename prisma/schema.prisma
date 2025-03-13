@@ -19,6 +19,7 @@ model User {
   expansions                                                       Int
   notificationDetails                                              String?
   createdAt                                                        DateTime               @default(now()) @db.Timestamptz(6)
+  mintedOG                                                         Boolean                @default(false)
   referrals                                                        Referral[]
   requests                                                         Request[]
   streaks                                                          Streaks[]
@@ -120,7 +121,7 @@ model Quest {
   id              Int            @id @default(autoincrement())
   category        String
   itemId          Int?
-  amount          Int?
+  amount          Int            @default(1)
   xp              Int?
   coins           Int?
   startAt         DateTime       @db.Timestamptz(6)

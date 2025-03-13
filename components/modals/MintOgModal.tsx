@@ -2,26 +2,51 @@ import { motion } from "framer-motion";
 import { X } from "lucide-react";
 import Image from "next/image";
 import { Separator } from "../ui/separator";
-import { useAccount, useWriteContract } from "wagmi";
+import {
+  useAccount,
+  useWaitForTransactionReceipt,
+  useWriteContract,
+} from "wagmi";
 import { NFT_OG_BASE_SEPOLIA_ABI } from "@/lib/contracts/og-nft/abi";
 import { useGetMerkleProof } from "@/hooks/use-get-merkle-proof";
 import { useEffect, useState } from "react";
 import { NFT_OG_BASE_SEPOLIA_ADDRESS } from "@/lib/contracts/constants";
 import { merkleValues } from "@/lib/contracts/og-nft/merkle-root/merkleValues";
 import Confetti from "../animations/Confetti";
+import { useGame } from "@/context/GameContext";
+import { useUpdateMintOgUser } from "@/hooks/use-update-mint-og-user";
 
 interface MintOgModalProps {
   onCancel: () => void;
 }
 
 export default function MintOgModal({ onCancel }: MintOgModalProps) {
-  const { writeContract, isError, error, isPending, isSuccess } =
-    useWriteContract();
   const { address } = useAccount();
   const [merkleProof, setMerkleProof] = useState<`0x${string}`[] | null>(null);
   const { mutate: getMerkleProof } = useGetMerkleProof({ setMerkleProof });
   const [nftId, setNftId] = useState<number>(-1);
   const [showConfetti, setShowConfetti] = useState(false);
+  const { state } = useGame();
+
+  const {
+    writeContract,
+    isError,
+    error,
+    isPending,
+    data: txHash,
+  } = useWriteContract();
+  const {
+    isLoading: isReceiptLoading,
+    isSuccess: isReceiptSuccess,
+    isError: isReceiptError,
+    error: receiptError,
+  } = useWaitForTransactionReceipt({
+    hash: txHash,
+    query: {
+      enabled: txHash !== undefined,
+    },
+  });
+  const { mutate: updateMintOgUser } = useUpdateMintOgUser();
 
   useEffect(() => {
     if (address) {
@@ -62,10 +87,13 @@ export default function MintOgModal({ onCancel }: MintOgModalProps) {
   }, [nftId, merkleProof, writeContract]);
 
   useEffect(() => {
-    if (isSuccess) {
+    if (isReceiptSuccess) {
+      updateMintOgUser({
+        nftId,
+      });
       setShowConfetti(true);
     }
-  }, [isSuccess]);
+  }, [isReceiptSuccess]);
 
   return (
     <>
@@ -74,23 +102,25 @@ export default function MintOgModal({ onCancel }: MintOgModalProps) {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
+        transition={{ duration: 0.2 }}
         className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60]"
       >
         <motion.div
-          initial={{ opacity: 0, scale: 0.5, y: 100 }}
+          initial={{ opacity: 0, y: 20 }}
           animate={{
             opacity: 1,
-            scale: 1,
             y: 0,
-            transition: {
-              type: "spring",
-              damping: 15,
-              stiffness: 200,
-            },
           }}
-          exit={{ opacity: 0, scale: 0.8, y: 50 }}
+          exit={{
+            opacity: 0,
+            y: 20,
+          }}
+          transition={{
+            duration: 0.2,
+            ease: [0.4, 0, 0.2, 1], // Custom easing for smooth animation
+          }}
           className="flex flex-col gap-4 bg-gradient-to-br from-[#8B5E3C] to-[#6A4123] p-6 rounded-lg max-w-sm w-full mx-4 border border-[#8B5E3C]/50 
-          [box-shadow:0_0_50px_rgba(234,179,8,0.3)] relative"
+          [box-shadow:0_0_50px_rgba(234,179,8,0.3)] relative will-change-transform"
         >
           <button
             onClick={onCancel}
@@ -177,26 +207,44 @@ export default function MintOgModal({ onCancel }: MintOgModalProps) {
                 {(error.cause as any).details || "Error minting badge."}
               </span>
             )}
+            {isReceiptError && (
+              <span className="bg-red-500 text-red-200 text-[8px] p-2 rounded">
+                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                {(receiptError.cause as any).details || "Tx to mint failed."}
+              </span>
+            )}
           </div>
           <div className="flex flex-col gap-3">
             <button
               onClick={handleMint}
-              disabled={!address || nftId === -1 || isPending}
+              disabled={
+                !address ||
+                nftId === -1 ||
+                isPending ||
+                isReceiptLoading ||
+                state.user.mintedOG
+              }
               className={`flex-1 py-2 px-4 rounded bg-yellow-500/20 text-yellow-400 ${
-                !address || nftId === -1 || isPending
+                !address ||
+                nftId === -1 ||
+                isPending ||
+                isReceiptLoading ||
+                state.user.mintedOG
                   ? "text-yellow-400/50 cursor-not-allowed bg-yellow-500/10"
                   : "hover:bg-yellow-500/30"
               } ${
-                isSuccess
+                isReceiptSuccess
                   ? "bg-green-500 text-green-200 cursor-not-allowed"
                   : ""
               }
           transition-colors text-sm font-medium border border-yellow-500/30 flex items-center justify-center gap-2`}
             >
-              {isPending
+              {isPending || isReceiptLoading
                 ? "Minting..."
-                : isSuccess
+                : isReceiptSuccess
                 ? "Minted Successfully!"
+                : state.user.mintedOG
+                ? "Already Minted"
                 : "Mint"}
             </button>
           </div>

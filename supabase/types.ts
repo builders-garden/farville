@@ -22,6 +22,7 @@ export interface DbUser {
   expansions: number;
   notificationDetails: string | null;
   createdAt: string;
+  mintedOG: boolean;
 }
 
 export interface DbUserHasItem {

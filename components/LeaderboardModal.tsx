@@ -12,7 +12,7 @@ import { Share2 } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
 import { useFrameContext } from "../context/FrameContext";
-import { OgBadge } from "./OgBadge";
+import { LeaderboardUserAvatar } from "./LeaderboardUserAvatar";
 
 const shimmerAnimation = `
   @keyframes shine {
@@ -76,8 +76,12 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
     return activeTab === "global" ? questsData : questsFriendsData;
   };
 
-  // TODO: change this to the real OG user check
-  const isOgUser = true;
+  console.log({
+    globalData,
+    friendsData,
+    questsData,
+    questsFriendsData,
+  });
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-start z-50">
@@ -244,18 +248,11 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
 
                 {/* Avatar */}
                 {state.user.avatarUrl ? (
-                  <div className="relative flex-none">
-                    <Image
-                      src={state.user.avatarUrl}
-                      alt={`${state.user.username}'s avatar`}
-                      className={`w-10 h-10 rounded-full object-cover border-2 ${
-                        isOgUser ? "border-[#179ef9]" : "border-[#FFB938]"
-                      }`}
-                      width={40}
-                      height={40}
-                    />
-                    {isOgUser && <OgBadge />}
-                  </div>
+                  <LeaderboardUserAvatar
+                    pfpUrl={state.user.avatarUrl}
+                    username={state.user.username}
+                    isOgUser={state.user.mintedOG}
+                  />
                 ) : (
                   <div className="w-10 h-10 rounded-full bg-[#5c4121] flex items-center justify-center text-white/90 flex-none">
                     👤
@@ -323,20 +320,11 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
 
                   {/* Avatar */}
                   {entry.avatarUrl ? (
-                    <div className="relative flex-none">
-                      <Image
-                        src={entry.avatarUrl}
-                        alt={`${entry.username}'s avatar`}
-                        className={`w-10 h-10 rounded-full object-cover ${
-                          isOgUser
-                            ? "border-2 border-[#179ef9]"
-                            : "border-2 border-[#FFB938]"
-                        }`}
-                        width={40}
-                        height={40}
-                      />
-                      {isOgUser && <OgBadge />}
-                    </div>
+                    <LeaderboardUserAvatar
+                      pfpUrl={entry.avatarUrl}
+                      username={entry.username}
+                      isOgUser={entry.mintedOG}
+                    />
                   ) : (
                     <div className="w-10 h-10 rounded-full bg-[#5c4121] flex items-center justify-center text-white/90 flex-none">
                       👤
