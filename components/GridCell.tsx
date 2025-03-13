@@ -542,7 +542,7 @@ export default function GridCell({ cell }: GridCellProps) {
 
   return (
     <>
-      {showLevelUpConfetti && <Confetti />}
+      {showLevelUpConfetti && <Confetti title="LEVEL UP!" />}
       <motion.div
         ref={cellRef}
         onClick={handleClick}

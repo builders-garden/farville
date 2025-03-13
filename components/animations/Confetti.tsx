@@ -3,7 +3,11 @@
 import { useEffect, useState } from "react";
 import confetti from "canvas-confetti";
 
-export default function Confetti() {
+interface ConfettiProps {
+  title: string;
+}
+
+export default function Confetti({ title }: ConfettiProps) {
   const [visible, setVisible] = useState(true);
 
   useEffect(() => {
@@ -44,9 +48,11 @@ export default function Confetti() {
   if (!visible) return null;
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center pointer-events-none z-50">
+    <div className="fixed inset-0 flex items-center justify-center pointer-events-none z-[80]">
       <div
-        className="text-6xl font-bold text-yellow-600 animate-fade-out text-center"
+        className={`text-${
+          title.includes(" ") ? "6xl" : "5xl"
+        } font-bold text-yellow-600 animate-fade-out text-center`}
         style={{
           textShadow: `
             0 0 3px #fff,
@@ -61,7 +67,7 @@ export default function Confetti() {
           animation: "fadeOut 5s ease-in-out forwards",
         }}
       >
-        LEVEL UP!
+        {title}
       </div>
     </div>
   );
