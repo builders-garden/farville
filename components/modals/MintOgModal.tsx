@@ -201,12 +201,14 @@ export default function MintOgModal({ onCancel }: MintOgModalProps) {
               Mint your badge and get a special look to show off in the
               leaderboards!
             </span>
-            {isError && (
-              <span className="bg-red-500 text-red-200 text-[8px] p-2 rounded">
-                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                {(error.cause as any).details || "Error minting badge."}
-              </span>
-            )}
+            {isError &&
+              /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+              !String((error.cause as any)?.details).includes("rejected") && (
+                <span className="bg-red-500 text-red-200 text-[8px] p-2 rounded">
+                  {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                  {(error.cause as any).details || "Error minting badge."}
+                </span>
+              )}
             {isReceiptError && (
               <span className="bg-red-500 text-red-200 text-[8px] p-2 rounded">
                 {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
