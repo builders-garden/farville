@@ -1,6 +1,9 @@
+import { useGame } from "@/context/GameContext";
 import { useApiMutation } from "./use-api-mutation";
 
 export const useUpdateMintOgUser = () => {
+  const { updateUser } = useGame();
+
   return useApiMutation({
     url: () => `/api/users/me/mint-og`,
     method: "POST",
@@ -9,7 +12,7 @@ export const useUpdateMintOgUser = () => {
     }),
     onSuccess: () => {
       // update the user mintedOG to true
-      console.log("Minted OG NFT successfully");
+      updateUser({ mintedOG: true });
     },
   });
 };

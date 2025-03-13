@@ -99,6 +99,7 @@ interface GameContextType {
     xp?: number;
     level?: number;
     coins?: number;
+    mintedOG?: boolean;
   }) => void;
   claimRewards: (variables: {
     streakId: number;
