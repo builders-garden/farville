@@ -91,7 +91,7 @@ export default function QuestsModal({
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-start z-50">
-      {showLevelUpConfetti && <Confetti />}
+      {showLevelUpConfetti && <Confetti title="LEVEL UP!" />}
       <motion.div
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}

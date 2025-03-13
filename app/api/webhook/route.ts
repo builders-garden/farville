@@ -65,6 +65,7 @@ export async function POST(request: NextRequest) {
             coins: 0,
             expansions: 1,
             notificationDetails: JSON.stringify(event.notificationDetails),
+            mintedOG: false,
           });
           trackEvent(fid, "signup", {
             fid,
