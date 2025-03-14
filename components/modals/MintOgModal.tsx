@@ -1,28 +1,29 @@
-import { motion } from "framer-motion";
-import { X } from "lucide-react";
-import Image from "next/image";
-import { Separator } from "../ui/separator";
-import {
-  useAccount,
-  useSwitchChain,
-  useWaitForTransactionReceipt,
-  useWriteContract,
-} from "wagmi";
-import { NFT_OG_BASE_ABI } from "@/lib/contracts/og-nft/abi";
+import { useGame } from "@/context/GameContext";
 import { useGetMerkleProof } from "@/hooks/use-get-merkle-proof";
-import { useEffect, useState } from "react";
+import { useUpdateMintOgUser } from "@/hooks/use-update-mint-og-user";
 import {
   BASE_SCAN_BASE_URL,
   NFT_OG_BASE_ADDRESS,
 } from "@/lib/contracts/constants";
+import { NFT_OG_BASE_ABI } from "@/lib/contracts/og-nft/abi";
 import { merkleValues } from "@/lib/contracts/og-nft/merkle-root/merkleValues";
-import Confetti from "../animations/Confetti";
-import { useGame } from "@/context/GameContext";
-import { useUpdateMintOgUser } from "@/hooks/use-update-mint-og-user";
-import sdk from "@farcaster/frame-sdk";
-import { mintedOgFlexCardComposeCastUrl } from "@/lib/utils";
-import { base } from "viem/chains";
 import { missingUsers } from "@/lib/contracts/og-nft/merkle-root/missingUsers";
+import { mintedOgFlexCardComposeCastUrl } from "@/lib/utils";
+import sdk from "@farcaster/frame-sdk";
+import { motion } from "framer-motion";
+import { X } from "lucide-react";
+import Image from "next/image";
+import { useEffect, useState } from "react";
+import { base } from "viem/chains";
+import {
+  useAccount,
+  useBalance,
+  useSwitchChain,
+  useWaitForTransactionReceipt,
+  useWriteContract,
+} from "wagmi";
+import Confetti from "../animations/Confetti";
+import { Separator } from "../ui/separator";
 
 interface MintOgModalProps {
   onCancel: () => void;
@@ -40,6 +41,13 @@ export default function MintOgModal({ onCancel }: MintOgModalProps) {
   const { switchChain } = useSwitchChain();
   const missingUsersKeys = Object.keys(missingUsers).map((key) => Number(key));
   const isUserFidMissing = missingUsersKeys.includes(state.user.fid);
+
+  const { data: balance } = useBalance({
+    address,
+    chainId: base.id,
+  });
+
+  const hasInsufficientBalance = !balance || balance.value <= BigInt(0);
 
   useEffect(() => {
     if (chainId !== base.id) {
@@ -244,6 +252,12 @@ export default function MintOgModal({ onCancel }: MintOgModalProps) {
                 {(receiptError.cause as any).details || "Tx to mint failed."}
               </span>
             )}
+            {hasInsufficientBalance && (
+              <span className="bg-red-500 text-red-200 text-[8px] p-2 rounded">
+                Insufficient ETH balance to mint. Please add some ETH to your
+                wallet.
+              </span>
+            )}
           </div>
           <div className="flex flex-col gap-3">
             {!isUserFidMissing && state.user.mintedOG ? (
@@ -263,7 +277,8 @@ export default function MintOgModal({ onCancel }: MintOgModalProps) {
                   isPending ||
                   isReceiptLoading ||
                   state.user.mintedOG ||
-                  isUserFidMissing
+                  isUserFidMissing ||
+                  hasInsufficientBalance
                 }
                 className={`${
                   isUserFidMissing && "opacity-70"
@@ -274,7 +289,8 @@ export default function MintOgModal({ onCancel }: MintOgModalProps) {
                   isPending ||
                   isReceiptLoading ||
                   state.user.mintedOG ||
-                  isUserFidMissing
+                  isUserFidMissing ||
+                  hasInsufficientBalance
                     ? "text-yellow-400/50 cursor-not-allowed bg-yellow-500/10"
                     : "hover:bg-yellow-500/30"
                 } ${
