@@ -32,8 +32,20 @@ export default function Header() {
                 {state.level}
               </span>
               <span className="text-white/70 text-[8px]">
-                ({state.experience.toLocaleString()}/
-                {(
+                (
+                {(state.experience >= 1000000
+                  ? (state.experience / 1000000).toFixed(1) + "M"
+                  : state.experience >= 1000
+                  ? (state.experience / 1000).toFixed(1) + "K"
+                  : state.experience.toString()
+                ).replace(/\.0([KM])$/, "$1")}
+                /
+                {((threshold) =>
+                  threshold >= 1000000
+                    ? (threshold / 1000000).toFixed(1) + "M"
+                    : threshold >= 1000
+                    ? (threshold / 1000).toFixed(1) + "K"
+                    : threshold)(
                   LEVEL_XP_THRESHOLDS[
                     Math.min(
                       LEVEL_XP_THRESHOLDS.findIndex(
@@ -42,7 +54,9 @@ export default function Header() {
                       LEVEL_XP_THRESHOLDS.length - 1
                     )
                   ] || LEVEL_XP_THRESHOLDS[LEVEL_XP_THRESHOLDS.length - 1]
-                ).toLocaleString()}
+                )
+                  .toString()
+                  .replace(/\.0([KM])$/, "$1")}
                 <span className="ml-0.5 text-[8px]">XP</span>)
               </span>
             </div>
@@ -80,7 +94,7 @@ export default function Header() {
         >
           <span
             className={`${
-              state.coins > 9999 ? "text-sm" : "text-lg"
+              state.coins > 9999 ? "text-md" : "text-lg"
             } mb-1 mr-1 mt-[-5px] pt-2`}
           >
             🪙
