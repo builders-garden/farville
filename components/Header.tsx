@@ -14,10 +14,10 @@ export default function Header() {
   const showOgButton = OG_FIDS_LIST.indexOf(state.user.fid) !== -1;
 
   return (
-    <div className="bg-[#8B5E3C]/40 px-3 py-2 shadow-lg bg-opacity-95 backdrop-blur-sm border-b-2 border-[#6d4c2c]/50 z-30">
+    <div className="bg-[#8B5E3C]/40 px-4 py-2 shadow-lg bg-opacity-95 backdrop-blur-sm border-b-2 border-[#6d4c2c]/50 z-30">
       <div className="flex justify-between items-center max-w-4xl mx-auto">
         <div
-          className="h-[42px] px-4 rounded-xl flex items-center cursor-pointer"
+          className="h-[42px] rounded-xl flex items-center cursor-pointer"
           onClick={() => setShowTimeline(true)}
         >
           <div className="w-fit">
@@ -73,7 +73,7 @@ export default function Header() {
         )}
 
         <motion.div
-          className="h-[42px] px-3 flex gap-1 items-center text-white/90 tracking-wide font-bold"
+          className="h-[42px] flex gap-1 items-center text-white/90 tracking-wide font-bold"
           whileHover={{ scale: 1.02 }}
           animate={{ rotate: [0, -1, 1, -1, 1, 0] }}
           transition={{ duration: 0.5, repeat: Infinity, repeatDelay: 5 }}
