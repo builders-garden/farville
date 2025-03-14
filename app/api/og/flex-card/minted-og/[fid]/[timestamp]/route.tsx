@@ -1,9 +1,10 @@
-import { OG_FIDS_LIST } from "@/lib/contracts/constants";
 import { getPlayerCount } from "@/lib/prisma/queries";
 import { getGlobalLeaderboard } from "@/lib/utils";
 import { getUser } from "@/supabase/queries";
 import { DbUser } from "@/supabase/types";
 import { ImageResponse } from "next/og";
+import { fetchUser } from "@/lib/neynar";
+import { merkleValues } from "@/lib/contracts/og-nft/merkle-root/merkleValues";
 
 export const dynamic = "force-dynamic";
 const size = {
@@ -65,6 +66,7 @@ export async function GET(
     }
 
     const user = await getUser(Number(fid));
+    const userData = await fetchUser(fid);
 
     if (!user?.mintedOG) {
       return new Response("User has not minted an OG NFT", {
@@ -106,7 +108,29 @@ export async function GET(
       "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+-=[]{}|;':,.<>/?"
     );
 
-    const nftId = OG_FIDS_LIST.indexOf(Number(fid)) + 1;
+    let nftId = -1;
+
+    // Check if user has verified addresses and find matching merkle value
+    if (userData?.verifications && userData.verifications.length > 0) {
+      for (const address of userData.verifications) {
+        const normalizedAddress = address.toLowerCase();
+        // Search for the address in merkleValues array
+        const match = merkleValues.find(
+          ([addr]) => addr.toLowerCase() === normalizedAddress
+        );
+
+        if (match) {
+          nftId = parseInt(match[1], 10);
+          break; // Use the first match found
+        }
+      }
+    }
+
+    if (nftId === -1) {
+      return new Response("User has not minted an OG NFT", {
+        status: 400,
+      });
+    }
 
     return new ImageResponse(
       (
