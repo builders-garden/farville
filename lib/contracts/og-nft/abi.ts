@@ -1,4 +1,4 @@
-export const NFT_OG_BASE_SEPOLIA_ABI = [
+export const NFT_OG_BASE_ABI = [
 	{
 		"inputs": [
 			{
@@ -222,6 +222,16 @@ export const NFT_OG_BASE_SEPOLIA_ABI = [
 	},
 	{
 		"inputs": [],
+		"name": "EnforcedPause",
+		"type": "error"
+	},
+	{
+		"inputs": [],
+		"name": "ExpectedPause",
+		"type": "error"
+	},
+	{
+		"inputs": [],
 		"name": "InvalidMerkleProof",
 		"type": "error"
 	},
@@ -273,12 +283,30 @@ export const NFT_OG_BASE_SEPOLIA_ABI = [
 	{
 		"inputs": [
 			{
-				"internalType": "bytes32",
-				"name": "_merkleRoot",
-				"type": "bytes32"
+				"internalType": "address",
+				"name": "operator",
+				"type": "address"
+			},
+			{
+				"internalType": "bool",
+				"name": "approved",
+				"type": "bool"
 			}
 		],
-		"name": "setMerkleRoot",
+		"name": "setApprovalForAll",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "string",
+				"name": "newURI",
+				"type": "string"
+			}
+		],
+		"name": "setURI",
 		"outputs": [],
 		"stateMutability": "nonpayable",
 		"type": "function"
@@ -359,6 +387,26 @@ export const NFT_OG_BASE_SEPOLIA_ABI = [
 	},
 	{
 		"inputs": [],
+		"name": "pause",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"internalType": "address",
+				"name": "account",
+				"type": "address"
+			}
+		],
+		"name": "Paused",
+		"type": "event"
+	},
+	{
+		"inputs": [],
 		"name": "renounceOwnership",
 		"outputs": [],
 		"stateMutability": "nonpayable",
@@ -418,30 +466,12 @@ export const NFT_OG_BASE_SEPOLIA_ABI = [
 	{
 		"inputs": [
 			{
-				"internalType": "address",
-				"name": "operator",
-				"type": "address"
-			},
-			{
-				"internalType": "bool",
-				"name": "approved",
-				"type": "bool"
+				"internalType": "bytes32",
+				"name": "newMerkleRoot",
+				"type": "bytes32"
 			}
 		],
-		"name": "setApprovalForAll",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "string",
-				"name": "newURI",
-				"type": "string"
-			}
-		],
-		"name": "setURI",
+		"name": "setMerkleRoot",
 		"outputs": [],
 		"stateMutability": "nonpayable",
 		"type": "function"
@@ -506,6 +536,26 @@ export const NFT_OG_BASE_SEPOLIA_ABI = [
 		"outputs": [],
 		"stateMutability": "nonpayable",
 		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "unpause",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"internalType": "address",
+				"name": "account",
+				"type": "address"
+			}
+		],
+		"name": "Unpaused",
+		"type": "event"
 	},
 	{
 		"inputs": [
@@ -602,19 +652,6 @@ export const NFT_OG_BASE_SEPOLIA_ABI = [
 		"type": "function"
 	},
 	{
-		"inputs": [],
-		"name": "merkleRoot",
-		"outputs": [
-			{
-				"internalType": "bytes32",
-				"name": "",
-				"type": "bytes32"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
 		"inputs": [
 			{
 				"internalType": "uint256",
@@ -673,6 +710,19 @@ export const NFT_OG_BASE_SEPOLIA_ABI = [
 				"internalType": "address",
 				"name": "",
 				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "paused",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "",
+				"type": "bool"
 			}
 		],
 		"stateMutability": "view",
