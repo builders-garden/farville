@@ -1,6 +1,6 @@
 
 //import { StandardMerkleTree } from "@openzeppelin/merkle-tree";
-//import { merkleValues } from "../../../lib/og-nft/merkle-root/merkleValues";
+//import { merkleValues } from "../../../lib/contracts/og-nft/merkle-root/merkleValues";
 import { NextResponse } from "next/server";
 //import fs from "fs";
 //import path from "path";
@@ -22,7 +22,7 @@ export async function GET() {
     const root = tree.root;
     // Save the root to the merkleRoot.json file in the lib/og-nft/merkle-root/ directory
     fs.writeFileSync(
-      path.join(process.cwd(), "lib", "og-nft", "merkle-root", "merkleRoot.json"),
+      path.join(process.cwd(), "lib", "contracts", "og-nft", "merkle-root", "merkleRoot.json"),
       JSON.stringify(tree.dump())
     );
 

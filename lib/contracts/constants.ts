@@ -3,7 +3,7 @@ export const MESSAGE_EXPIRATION_TIME = 24 * 60 * 60 * 1000; // 24 hours
 export const COOKIE_AGE = 60 * 60 * 24 * 30; // 30 days
 
 export const NFT_OG_BASE_ADDRESS =
-  "0x081aA7bbe0601980924d8B56F114a6e08531DB23";
+  "0x1eef03fa9ff38d9f4249875f3870859ec2215dc9";
 
 export const BASE_SCAN_BASE_URL = "https://basescan.org";
 
