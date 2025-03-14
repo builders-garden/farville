@@ -265,13 +265,16 @@ export default function MintOgModal({ onCancel }: MintOgModalProps) {
                   state.user.mintedOG ||
                   isUserFidMissing
                 }
-                className={`flex-1 py-2 px-4 rounded bg-yellow-500/20 text-yellow-400 ${
+                className={`${
+                  isUserFidMissing && "opacity-70"
+                } flex-1 py-2 px-4 rounded bg-yellow-500/20 text-yellow-400 ${
                   !address ||
                   nftId === -1 ||
                   isLoading ||
                   isPending ||
                   isReceiptLoading ||
-                  state.user.mintedOG
+                  state.user.mintedOG ||
+                  isUserFidMissing
                     ? "text-yellow-400/50 cursor-not-allowed bg-yellow-500/10"
                     : "hover:bg-yellow-500/30"
                 } ${
