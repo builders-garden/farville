@@ -7,12 +7,12 @@ import {
   useWaitForTransactionReceipt,
   useWriteContract,
 } from "wagmi";
-import { NFT_OG_BASE_SEPOLIA_ABI } from "@/lib/contracts/og-nft/abi";
+import { NFT_OG_BASE_ABI } from "@/lib/contracts/og-nft/abi";
 import { useGetMerkleProof } from "@/hooks/use-get-merkle-proof";
 import { useEffect, useState } from "react";
 import {
   BASE_SCAN_BASE_URL,
-  NFT_OG_BASE_SEPOLIA_ADDRESS,
+  NFT_OG_BASE_ADDRESS,
 } from "@/lib/contracts/constants";
 import { merkleValues } from "@/lib/contracts/og-nft/merkle-root/merkleValues";
 import Confetti from "../animations/Confetti";
@@ -81,8 +81,8 @@ export default function MintOgModal({ onCancel }: MintOgModalProps) {
     if (merkleProof && merkleProof.length > 0) {
       try {
         writeContract({
-          abi: NFT_OG_BASE_SEPOLIA_ABI,
-          address: NFT_OG_BASE_SEPOLIA_ADDRESS,
+          abi: NFT_OG_BASE_ABI,
+          address: NFT_OG_BASE_ADDRESS,
           functionName: "mint",
           args: [BigInt(nftId), merkleProof],
           chainId: base.id,

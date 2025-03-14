@@ -1,7 +1,7 @@
 import { updateUser } from "@/supabase/queries";
 import { NextRequest, NextResponse } from "next/server";
-import { NFT_OG_BASE_SEPOLIA_ADDRESS } from "@/lib/contracts/constants";
-import { NFT_OG_BASE_SEPOLIA_ABI } from "@/lib/contracts/og-nft/abi";
+import { NFT_OG_BASE_ADDRESS } from "@/lib/contracts/constants";
+import { NFT_OG_BASE_ABI } from "@/lib/contracts/og-nft/abi";
 import { z } from "zod";
 import { fetchUser } from "@/lib/neynar";
 import { publicClient } from "@/lib/viem";
@@ -32,8 +32,8 @@ export const POST = async (req: NextRequest) => {
     // check if the user has minted an OG NFT
     // get viem public client from Wagmi config
     const tokenOwnerAddress = await publicClient.readContract({
-      abi: NFT_OG_BASE_SEPOLIA_ABI,
-      address: NFT_OG_BASE_SEPOLIA_ADDRESS,
+      abi: NFT_OG_BASE_ABI,
+      address: NFT_OG_BASE_ADDRESS,
       functionName: "ownerOf",
       args: [BigInt(tokenId)],
     });
