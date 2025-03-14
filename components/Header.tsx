@@ -81,14 +81,14 @@ export default function Header() {
           <span
             className={`${
               state.coins > 9999 ? "text-sm" : "text-lg"
-            } mb-1 mr-1 mt-[-5px]`}
+            } mb-1 mr-1 mt-[-5px] pt-2`}
           >
             🪙
           </span>
           <span
             className={`${
               state.coins > 9999 ? "text-xs" : "text-lg"
-            } mb-1 mr-1`}
+            } mb-1 mr-1 pt-2`}
           >
             {state.coins}
           </span>
