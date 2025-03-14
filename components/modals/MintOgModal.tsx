@@ -20,6 +20,7 @@ import { useGame } from "@/context/GameContext";
 import { useUpdateMintOgUser } from "@/hooks/use-update-mint-og-user";
 import sdk from "@farcaster/frame-sdk";
 import { mintedOgFlexCardComposeCastUrl } from "@/lib/utils";
+import { base } from "viem/chains";
 
 interface MintOgModalProps {
   onCancel: () => void;
@@ -84,6 +85,7 @@ export default function MintOgModal({ onCancel }: MintOgModalProps) {
           address: NFT_OG_BASE_SEPOLIA_ADDRESS,
           functionName: "mint",
           args: [BigInt(nftId), merkleProof],
+          chainId: base.id,
         });
       } catch (error) {
         console.error("Error minting OG NFT:", error);
