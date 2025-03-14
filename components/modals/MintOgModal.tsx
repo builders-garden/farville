@@ -4,6 +4,7 @@ import Image from "next/image";
 import { Separator } from "../ui/separator";
 import {
   useAccount,
+  useSwitchChain,
   useWaitForTransactionReceipt,
   useWriteContract,
 } from "wagmi";
@@ -33,6 +34,17 @@ export default function MintOgModal({ onCancel }: MintOgModalProps) {
   const [nftId, setNftId] = useState<number>(-1);
   const [showConfetti, setShowConfetti] = useState(false);
   const { state } = useGame();
+  const [isLoading, setIsLoading] = useState(false);
+  const { chainId } = useAccount();
+  const { switchChain } = useSwitchChain();
+
+  useEffect(() => {
+    if (chainId !== base.id) {
+      switchChain({
+        chainId: base.id,
+      });
+    }
+  }, [chainId, switchChain]);
 
   const {
     writeContract,
@@ -70,6 +82,7 @@ export default function MintOgModal({ onCancel }: MintOgModalProps) {
 
   const handleMint = async () => {
     if (address) {
+      setIsLoading(true);
       getMerkleProof({
         address,
         nftId,
@@ -78,7 +91,8 @@ export default function MintOgModal({ onCancel }: MintOgModalProps) {
   };
 
   useEffect(() => {
-    if (merkleProof && merkleProof.length > 0) {
+    setIsLoading(false);
+    if (merkleProof && merkleProof.length > 0 && chainId === base.id) {
       try {
         writeContract({
           abi: NFT_OG_BASE_ABI,
@@ -91,7 +105,7 @@ export default function MintOgModal({ onCancel }: MintOgModalProps) {
         console.error("Error minting OG NFT:", error);
       }
     }
-  }, [nftId, merkleProof, writeContract]);
+  }, [nftId, merkleProof, writeContract, chainId]);
 
   useEffect(() => {
     if (isReceiptSuccess) {
@@ -240,6 +254,7 @@ export default function MintOgModal({ onCancel }: MintOgModalProps) {
               <button
                 onClick={handleMint}
                 disabled={
+                  isLoading ||
                   !address ||
                   nftId === -1 ||
                   isPending ||
@@ -249,6 +264,7 @@ export default function MintOgModal({ onCancel }: MintOgModalProps) {
                 className={`flex-1 py-2 px-4 rounded bg-yellow-500/20 text-yellow-400 ${
                   !address ||
                   nftId === -1 ||
+                  isLoading ||
                   isPending ||
                   isReceiptLoading ||
                   state.user.mintedOG
@@ -261,7 +277,7 @@ export default function MintOgModal({ onCancel }: MintOgModalProps) {
                 }
           transition-colors text-sm font-medium border border-yellow-500/30 flex items-center justify-center gap-2`}
               >
-                {isPending || isReceiptLoading
+                {isLoading || isPending || isReceiptLoading
                   ? "Minting..."
                   : isReceiptSuccess
                   ? "Minted Successfully!"
