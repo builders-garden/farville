@@ -101,6 +101,17 @@ export const getUsers = async (
   return data;
 };
 
+export const getUsersByFids = async (fids: number[]): Promise<DbUser[]> => {
+  const { data, error } = await supabase
+    .from("users")
+    .select("*")
+    .in("fid", fids)
+    .order("xp", { ascending: false });
+
+  if (error) throw error;
+  return data;
+};
+
 export const createUser = async (user: InsertDbUser): Promise<DbUser> => {
   const { data, error } = await supabase
     .from("users")
