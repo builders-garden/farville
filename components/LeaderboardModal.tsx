@@ -76,13 +76,6 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
     return activeTab === "global" ? questsData : questsFriendsData;
   };
 
-  console.log({
-    globalData,
-    friendsData,
-    questsData,
-    questsFriendsData,
-  });
-
   return (
     <div className="fixed inset-0 bg-black/50 flex items-start z-50">
       <motion.div

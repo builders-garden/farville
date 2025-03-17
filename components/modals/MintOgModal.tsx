@@ -132,6 +132,8 @@ export default function MintOgModal({ onCancel }: MintOgModalProps) {
     await sdk.actions.openUrl(castUrl);
   };
 
+  console.log("user state", state.user);
+
   return (
     <>
       {showConfetti && <Confetti title="MINTED!" />}
@@ -252,7 +254,7 @@ export default function MintOgModal({ onCancel }: MintOgModalProps) {
                 {(receiptError.cause as any).details || "Tx to mint failed."}
               </span>
             )}
-            {hasInsufficientBalance && (
+            {hasInsufficientBalance && state.user.mintedOG === false && (
               <span className="bg-red-500 text-red-200 text-[8px] p-2 rounded">
                 Insufficient ETH balance to mint. Please add some ETH to your
                 wallet.
