@@ -24,7 +24,7 @@ import { z } from "zod";
 
 const requestSchema = z.object({
   quantity: z.number().min(1).max(10),
-  toFid: z.string().min(1),
+  toFid: z.number().min(1),
   requestId: z.number().optional(),
 });
 
