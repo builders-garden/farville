@@ -10,6 +10,8 @@ export async function sendDelayedNotification(
   category: string,
   delay?: number | `${bigint}s` | `${bigint}m` | `${bigint}h` | `${bigint}d`
 ) {
+  // temporary stop sending notifications
+  return;
   if (process.env.NEXT_PUBLIC_URL === "http://localhost:3000") {
     return;
   }
