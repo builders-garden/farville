@@ -16,7 +16,7 @@ type SelectedItemDetails = {
   id: number;
   name: string;
   icon: string;
-  buyPrice?: number;
+  buyPrice: number | null;
   harvestXp?: number;
   description?: string;
   growthTime?: number;
@@ -235,6 +235,7 @@ export default function MarketplaceModal({
                         <span className="text-xs w-fit text-white/90">Buy</span>
                         <div className="flex gap-2 w-full">
                           {state.level >= item.requiredLevel &&
+                            item.buyPrice !== null &&
                             [1, 5, 10, gridSize].map((amount) => (
                               <motion.button
                                 key={amount}
@@ -247,7 +248,7 @@ export default function MarketplaceModal({
                                       itemId: item.id,
                                       quantity: amount,
                                       itemName: item.name,
-                                      price: item.buyPrice * amount,
+                                      price: item.buyPrice! * amount,
                                     });
                                   } else {
                                     buyItem({
@@ -256,7 +257,7 @@ export default function MarketplaceModal({
                                     });
                                   }
                                 }}
-                                disabled={state.coins < item.buyPrice * amount}
+                                disabled={state.coins < item.buyPrice! * amount}
                                 className="w-full py-1.5 bg-[#2B593B] text-white/90 rounded hover:bg-[#346344] 
                                       transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-xs font-medium
                                       border border-white/10"
@@ -347,7 +348,7 @@ export default function MarketplaceModal({
                                       itemId: item.id,
                                       quantity: quantityToSell,
                                       itemName: item.name,
-                                      price: item.sellPrice * quantityToSell,
+                                      price: item.sellPrice! * quantityToSell,
                                     });
                                   } else {
                                     sellItem({
@@ -548,12 +549,12 @@ export default function MarketplaceModal({
                                         itemId: perk.id,
                                         quantity: amount,
                                         itemName: perk.name,
-                                        price: perk.buyPrice * amount,
+                                        price: perk.buyPrice! * amount,
                                       });
                                     }
                                   }}
                                   disabled={
-                                    state.coins < perk.buyPrice * amount
+                                    state.coins < perk.buyPrice! * amount
                                   }
                                   className="w-full px-2 py-1.5 bg-[#2B593B] text-white/90 rounded hover:bg-[#346344] 
                                   transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-sm font-medium

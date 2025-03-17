@@ -1,6 +1,7 @@
 import { getUserQuests, updateUserQuest } from "@/supabase/queries";
 
 import { DbUserHasQuestStatus } from "@/supabase/types";
+import { QuestStatus } from "@/types/game";
 
 export const calculateUserQuestsProgress = async (
   fid: number,
@@ -10,7 +11,7 @@ export const calculateUserQuestsProgress = async (
 ) => {
   // Get all quests that require harvesting this crop
   const quests = await getUserQuests(fid, {
-    status: "incomplete",
+    status: QuestStatus.Incomplete,
     category,
     itemId,
   });

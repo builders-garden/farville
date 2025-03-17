@@ -6,6 +6,7 @@ import {
   DbQuestWithItem,
   DbUserHasQuestWithQuest,
 } from "@/supabase/types";
+import { QuestStatus } from "@/types/game";
 import { motion } from "framer-motion";
 import Image from "next/image";
 
@@ -108,7 +109,7 @@ export default function Quest({
   claimable = false,
   onClaim,
 }: QuestProps) {
-  const { isActionInProgress, setIsActionInProgress} = useGame();
+  const { isActionInProgress, setIsActionInProgress } = useGame();
   const { mutate: updateUserQuest, isPending } = useUpdateUserQuest({
     isActionInProgress,
     setIsActionInProgress,
@@ -204,7 +205,7 @@ export default function Quest({
               const y = rect.y + rect.height / 2;
 
               updateUserQuest(
-                { questId: quest.questId, status: "claimed" },
+                { questId: quest.questId, status: QuestStatus.Claimed },
                 {
                   onSuccess: (data) => {
                     onClaim?.(quest.questId, x, y, data.didLevelUp);
