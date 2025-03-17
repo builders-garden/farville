@@ -32,6 +32,7 @@ export const qstashPublishJSON = async (req: QStashPublishJSONRequest) => {
       },
       delay: req.delay,
       notBefore: req.notBefore,
+      retries: 1,
     });
 
     return res;

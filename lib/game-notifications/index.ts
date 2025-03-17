@@ -1,7 +1,6 @@
 import { SeedType } from "@/types/game";
 import { qstashPublishJSON } from "../qstash";
 import { CROP_DATA } from "@/lib/game-constants";
-// import { getUserNotifications } from "@/supabase/queries";
 
 export async function sendDelayedNotification(
   fid: string,
@@ -10,8 +9,6 @@ export async function sendDelayedNotification(
   category: string,
   delay?: number | `${bigint}s` | `${bigint}m` | `${bigint}h` | `${bigint}d`
 ) {
-  // temporary stop sending notifications
-  return;
   if (process.env.NEXT_PUBLIC_URL === "http://localhost:3000") {
     return;
   }
