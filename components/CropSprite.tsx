@@ -6,6 +6,7 @@ import { useGame } from "../context/GameContext";
 import { useEffect, useState } from "react";
 import { formatTime } from "@/lib/utils";
 import clsx from "clsx";
+import { SPEED_BOOST } from "@/lib/game-constants";
 
 interface CropSpriteCropProp {
   type: CropType;
@@ -38,6 +39,18 @@ export function EmptyCropSprite() {
 export function PlantedCropSprite({ crop, isDemo }: CropSpriteProps) {
   const { state } = useGame();
   const [, setForceUpdate] = useState(0);
+
+  const getSpeedBoostColor = (cropType: CropType, opacity: number = 0.7) => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    for (const [_, boost] of Object.entries(SPEED_BOOST)) {
+      if (boost.applyTo.includes(cropType)) {
+        return opacity !== undefined
+          ? `${boost.color}${Math.round(opacity * 100)}`
+          : boost.color;
+      }
+    }
+    return `rgba(31, 150, 243, ${opacity})`; // Default color
+  };
 
   useEffect(() => {
     if (isDemo || crop.readyToHarvest || !crop.harvestAt) return;
@@ -109,35 +122,23 @@ export function PlantedCropSprite({ crop, isDemo }: CropSpriteProps) {
       )}
 
       {/* Speed Boost Glow Effect */}
-      <AnimatePresence>
-        {crop.speedBoostedAt &&
-          Date.now() - crop.speedBoostedAt < 1000 * 60 * 60 * 2 && (
-            <motion.div
-              className="absolute inset-0 rounded-sm z-10"
-              style={{
-                boxShadow:
-                  "0 0 20px 8px rgba(186, 85, 255, 0.7) inset, 0 0 30px 5px rgba(255, 215, 0, 0.6) inset",
-                background:
-                  "radial-gradient(circle, rgba(186, 85, 255, 0.15) 0%, rgba(255, 215, 0, 0.1) 70%)",
-              }}
-              initial={{ opacity: 0.8 }}
-              animate={{
-                opacity: [0.8, 0.9, 0.8],
-                boxShadow: [
-                  "0 0 15px 5px rgba(186, 85, 255, 0.5) inset, 0 0 25px 3px rgba(255, 215, 0, 0.4) inset",
-                  "0 0 25px 10px rgba(186, 85, 255, 0.8) inset, 0 0 35px 8px rgba(255, 215, 0, 0.7) inset",
-                  "0 0 15px 5px rgba(186, 85, 255, 0.5) inset, 0 0 25px 3px rgba(255, 215, 0, 0.4) inset",
-                ],
-              }}
-              transition={{
-                duration: 2 + Math.random() * 2,
-                repeat: Infinity,
-                ease: "easeInOut",
-              }}
-              title={`${crop.speedBoost}x Speed Boost`}
-            />
-          )}
-      </AnimatePresence>
+      {crop.speedBoostedAt &&
+        Date.now() - crop.speedBoostedAt < 1000 * 60 * 60 * 2 && (
+          <div
+            className="absolute inset-0 rounded-sm z-10"
+            style={{
+              boxShadow: `0 0 20px 8px ${getSpeedBoostColor(
+                crop.type,
+                0.8
+              )} inset`,
+              background: `radial-gradient(circle, ${getSpeedBoostColor(
+                crop.type,
+                0.3
+              )} 0%, transparent 70%)`,
+            }}
+            title={`${crop.speedBoost}x Speed Boost`}
+          />
+        )}
 
       {/* Progress Bar - Centered and smaller */}
       {!crop.readyToHarvest && (

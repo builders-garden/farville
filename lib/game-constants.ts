@@ -277,12 +277,18 @@ export const LEVEL_REWARDS = [
 ];
 
 export const SPEED_BOOST: {
-  [key: string]: { boost: number; duration: number; applyTo: CropType[] };
+  [key: string]: {
+    boost: number;
+    duration: number;
+    applyTo: CropType[];
+    color: string;
+  };
 } = {
   nitrogen: {
     boost: 1.25,
     duration: 7200000, // 2 hours
     applyTo: [CropType.Carrot, CropType.Wheat, CropType.Radish],
+    color: "#87F6DE",
   },
   potassium: {
     boost: 1.5,
@@ -295,11 +301,13 @@ export const SPEED_BOOST: {
       CropType.Eggplant,
       CropType.Tomato,
     ],
+    color: "#A884F3",
   },
   phosphorus: {
     boost: 2,
     duration: 7200000, // 2 hours
     applyTo: [CropType.Strawberry, CropType.Watermelon, CropType.Pumpkin],
+    color: "#ffc596",
   },
 };
 
