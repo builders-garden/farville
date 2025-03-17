@@ -8,6 +8,8 @@ import {
   updateUserXP,
 } from "@/supabase/queries";
 import { trackEvent } from "@/lib/posthog/server";
+import { z } from "zod";
+import { QuestStatus } from "@/types/game";
 
 export async function GET(
   request: NextRequest,
@@ -34,16 +36,31 @@ export async function GET(
   }
 }
 
+const requestSchema = z.object({
+  status: z.nativeEnum(QuestStatus),
+});
+
 export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  const { status } = await req.json();
   const fid = req.headers.get("x-user-fid");
   if (!fid) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+  const requestJson = await req.json();
+  const requestBody = requestSchema.safeParse(requestJson);
+
+  if (requestBody.success === false) {
+    return NextResponse.json(
+      { success: false, errors: requestBody.error.errors },
+      { status: 400 }
+    );
+  }
+
+  const { status } = requestBody.data;
+
   const user = await getUser(Number(fid));
   if (!user) {
     return NextResponse.json({ error: "User not found" }, { status: 404 });
@@ -55,9 +72,38 @@ export async function POST(
       { status: 404 }
     );
   }
+  // Check if the quest is already in the requested status
   if (userQuest.status === status) {
-    return NextResponse.json({ error: "Quest already in this status" }, { status: 400 });
+    return NextResponse.json(
+      { error: "Quest already in this status" },
+      { status: 400 }
+    );
   }
+  // Check if the quest is in a valid status transition
+  if (
+    (userQuest.status === QuestStatus.Incomplete &&
+      status !== QuestStatus.Completed) ||
+    (userQuest.status === QuestStatus.Completed &&
+      status !== QuestStatus.Claimed) ||
+    userQuest.status === QuestStatus.Claimed
+  ) {
+    return NextResponse.json(
+      { error: "Invalid status transition" },
+      { status: 400 }
+    );
+  }
+  // check if the quest is completed
+  if (
+    status === QuestStatus.Completed &&
+    userQuest.progress < userQuest.quest.amount
+  ) {
+    return NextResponse.json(
+      { error: "Quest is not completed yet" },
+      { status: 400 }
+    );
+  }
+
+  // Update the user quest status
   await updateUserQuest(Number(fid), Number(id), { status });
   let didLevelUp = false;
   if (status === "claimed") {

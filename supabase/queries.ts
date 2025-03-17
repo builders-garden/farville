@@ -24,7 +24,7 @@ import {
   LEVEL_XP_THRESHOLDS,
   SPEED_BOOST,
 } from "@/lib/game-constants";
-import { PerkType } from "@/types/game";
+import { PerkType, QuestStatus } from "@/types/game";
 import { getBoostTime, getCurrentLevelAndProgress } from "@/lib/utils";
 import {
   generateDailyQuests,
@@ -381,7 +381,7 @@ export const giftStarterPack = async (userFid: number) => {
 // Notifications queries
 export const getUserNotificationDetails = async (
   fid: number
-): Promise<FrameNotificationDetails> => {
+): Promise<FrameNotificationDetails | undefined> => {
   const { data, error } = await supabase
     .from("users")
     .select("notificationDetails")
@@ -391,7 +391,7 @@ export const getUserNotificationDetails = async (
   if (error) throw error;
   return data?.notificationDetails
     ? JSON.parse(data.notificationDetails)
-    : null;
+    : undefined;
 };
 
 export const setUserNotificationDetails = async (
@@ -1252,7 +1252,7 @@ export const initDailyUserQuests = async (fid: number): Promise<void> => {
         fid,
         questId: quest.id,
         completedAt: null,
-        status: "incomplete",
+        status: QuestStatus.Incomplete,
         progress: 0,
       })
     )
@@ -1283,7 +1283,7 @@ export const initWeeklyUserQuests = async (fid: number): Promise<void> => {
         fid,
         questId: quest.id,
         completedAt: null,
-        status: "incomplete",
+        status: QuestStatus.Incomplete,
         progress: 0,
       })
     )
@@ -1314,7 +1314,7 @@ export const initMonthlyUserQuests = async (fid: number): Promise<void> => {
         fid,
         questId: quest.id,
         completedAt: null,
-        status: "incomplete",
+        status: QuestStatus.Incomplete,
         progress: 0,
       })
     )
@@ -1359,28 +1359,6 @@ export const getExpiredBoostCellsCount = async (
   if (error) throw error;
   return count || 0;
 };
-
-// export const getUsersByFids = async (
-//   fids: string[]
-// ): Promise<{
-//   users: DbUser[];
-// }> => {
-//   const { data, error } = await supabase
-//     .from("users")
-//     .select("*")
-//     .in("fid", fids)
-//     .gt("xp", 0)
-//     .order("xp", { ascending: false });
-
-//   if (error) {
-//     console.error("Error fetching users by fids:", error);
-//     throw error;
-//   }
-
-//   return {
-//     users: data,
-//   };
-// };
 
 export interface QuestLeaderboardEntry {
   fid: number;

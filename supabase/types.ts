@@ -1,11 +1,13 @@
+import { QuestStatus } from "@/types/game";
+
 export interface DbItem {
   id: number;
   name: string;
   description: string;
   icon: string;
   category: string;
-  buyPrice: number;
-  sellPrice: number;
+  buyPrice: number | null;
+  sellPrice: number | null;
   requiredLevel: number;
   slug: string;
   createdAt: string;
@@ -93,7 +95,7 @@ export interface DbQuest {
   category: string;
   type: "daily" | "weekly" | "monthly" | null;
   itemId: number | null;
-  amount: number | null;
+  amount: number;
   xp: number | null;
   coins: number | null;
   startAt: string | null;
@@ -107,7 +109,7 @@ export type InsertDbQuest = Omit<DbQuest, "id" | "createdAt">;
 
 export type DbQuestWithItem = DbQuest & { items: DbItem | null };
 
-export type DbUserHasQuestStatus = "incomplete" | "completed" | "claimed";
+export type DbUserHasQuestStatus = QuestStatus;
 
 export interface DbUserHasQuest {
   id: number;

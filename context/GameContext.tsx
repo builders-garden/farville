@@ -101,10 +101,7 @@ interface GameContextType {
     coins?: number;
     mintedOG?: boolean;
   }) => void;
-  claimRewards: (variables: {
-    streakId: number;
-    rewards: { itemId: number; quantity: number }[];
-  }) => void;
+  claimRewards: (variables: { streakId: number }) => void;
   showMintOGBadge: boolean;
   setShowMintOGBadge: Dispatch<SetStateAction<boolean>>;
 }
