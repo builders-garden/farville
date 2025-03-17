@@ -4,6 +4,7 @@ import { useUpdateMintOgUser } from "@/hooks/use-update-mint-og-user";
 import {
   BASE_SCAN_BASE_URL,
   NFT_OG_BASE_ADDRESS,
+  OG_FIDS_LIST,
 } from "@/lib/contracts/constants";
 import { NFT_OG_BASE_ABI } from "@/lib/contracts/og-nft/abi";
 import { merkleValues } from "@/lib/contracts/og-nft/merkle-root/merkleValues";
@@ -132,7 +133,11 @@ export default function MintOgModal({ onCancel }: MintOgModalProps) {
     await sdk.actions.openUrl(castUrl);
   };
 
-  console.log("user state", state.user);
+  const userIsEligibleButWrongAddress =
+    OG_FIDS_LIST.includes(state.user.fid) &&
+    !merkleValues.find(
+      ([addr]) => addr.toLowerCase() === address?.toLowerCase()
+    );
 
   return (
     <>
@@ -315,6 +320,17 @@ export default function MintOgModal({ onCancel }: MintOgModalProps) {
               <span className="text-center text-[9px] text-white/70 border border-white/70 rounded w-fit px-4 py-2 m-auto mt-2">
                 You are eligible, but you need to link a wallet first. Enable
                 your Warpcast Wallet, or contact limone.eth!
+              </span>
+            )}
+            {!address && (
+              <span className="text-center text-[9px] text-white/70 border border-white/70 rounded w-fit px-4 py-2 m-auto mt-2">
+                Please connect a wallet to mint the badge.
+              </span>
+            )}
+            {userIsEligibleButWrongAddress && (
+              <span className="text-center text-[9px] text-white/70 border border-white/70 rounded w-fit px-4 py-2 m-auto mt-2">
+                You are eligible to mint the badge, but you need to connect a
+                wallet that you verified in Warpcast.
               </span>
             )}
             {isReceiptSuccess && txHash && (
