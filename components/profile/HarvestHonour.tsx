@@ -13,7 +13,8 @@ import AchievementBadgeModal from "../modals/AchievementBadgeModal";
 interface HarvestHonourProps {
   crop: string;
   title: string;
-  count: number;
+  totalCount: number;
+  currentCount: number;
   currentGoal: number;
   step: number;
 }
@@ -28,7 +29,8 @@ interface BadgeModalData {
 export const HarvestHonour = ({
   crop,
   title,
-  count,
+  totalCount,
+  currentCount,
   currentGoal,
   step,
 }: HarvestHonourProps) => {
@@ -47,69 +49,56 @@ export const HarvestHonour = ({
         <div className="flex flex-row justify-between w-full">
           {
             // render trophies
-            [1, 2, 3, 4].map(
-              (trophy) =>
-                step < trophy ? (
-                  <div
-                    key={trophy}
-                    className="h-12 w-12 bg-[#7E4E31] rounded-lg flex items-center justify-center opacity-50"
-                  >
-                    <Image
-                      src={`/images/profile/question-mark-yellow.png`}
-                      alt="Yellow question mark"
-                      width={24}
-                      height={24}
-                    />
-                  </div>
-                ) : (
-                  <div
-                    key={trophy}
-                    className={`h-12 w-12 bg-[#7E4E31] rounded-lg flex items-center justify-center border-2 border-[#f2a311] cursor-pointer ${
-                      step === trophy ? "opacity-50 border-opacity-50" : ""
-                    }`}
-                    onClick={() => {
-                      const cropAchievements = ACHIEVEMENTS_THRESHOLDS.find(
-                        (achievement) => achievement.crop === crop
-                      );
-                      setBadgeModalData({
-                        title:
-                          cropAchievements?.titles[trophy - 1] ||
-                          `Badge for ${crop} achievement`,
-                        description: `A badge issued to those who demonstrated mastery of the ${crop} by harvesting ${
-                          cropAchievements?.thresholds[trophy - 1]
-                        } ${
-                          crop.endsWith("y")
-                            ? crop.slice(0, crop.length - 1) + "ies"
-                            : crop.endsWith("o")
-                            ? crop + "es"
-                            : crop + "s"
-                        }!`,
-                        badgeUrl: `/images/badge/${crop}-${trophy}.png`,
-                        step: trophy,
-                      });
-                    }}
-                  >
-                    <Image
-                      src={`/images/badge/${crop}-${trophy}.png`}
-                      alt={`Badge ${trophy}`}
-                      width={50}
-                      height={50}
-                      className="rounded-lg"
-                    />
-                  </div>
-                )
-              // <div
-              //   key={trophy}
-              //   className="h-12 w-12 bg-[#7E4E31] rounded-lg flex items-center justify-center"
-              // >
-              //   <Image
-              //     src={`/images/badge/${crop}-${trophy}.png`}
-              //     alt={`Badge ${trophy} for ${crop}`}
-              //     width={50}
-              //     height={50}
-              //     className="rounded-lg"
-              //   />
-              // </div>
+            [1, 2, 3, 4].map((trophy) =>
+              step < trophy ? (
+                <div
+                  key={trophy}
+                  className="h-12 w-12 bg-[#7E4E31] rounded-lg flex items-center justify-center opacity-50"
+                >
+                  <Image
+                    src={`/images/profile/question-mark-yellow.png`}
+                    alt="Yellow question mark"
+                    width={24}
+                    height={24}
+                  />
+                </div>
+              ) : (
+                <div
+                  key={trophy}
+                  className={`h-12 w-12 bg-[#7E4E31] rounded-lg flex items-center justify-center border-2 border-[#f2a311] cursor-pointer ${
+                    step === trophy ? "opacity-50 border-opacity-50" : ""
+                  }`}
+                  onClick={() => {
+                    const cropAchievements = ACHIEVEMENTS_THRESHOLDS.find(
+                      (achievement) => achievement.crop === crop
+                    );
+                    setBadgeModalData({
+                      title:
+                        cropAchievements?.titles[trophy - 1] ||
+                        `Badge for ${crop} achievement`,
+                      description: `A badge issued to those who demonstrated mastery of the ${crop} by harvesting ${
+                        cropAchievements?.thresholds[trophy - 1]
+                      } ${
+                        crop.endsWith("y")
+                          ? crop.slice(0, crop.length - 1) + "ies"
+                          : crop.endsWith("o")
+                          ? crop + "es"
+                          : crop + "s"
+                      }!`,
+                      badgeUrl: `/images/badge/${crop}-${trophy}.png`,
+                      step: trophy,
+                    });
+                  }}
+                >
+                  <Image
+                    src={`/images/badge/${crop}-${trophy}.png`}
+                    alt={`Badge ${trophy}`}
+                    width={50}
+                    height={50}
+                    className="rounded-lg"
+                  />
+                </div>
+              )
             )
           }
         </div>
@@ -123,11 +112,11 @@ export const HarvestHonour = ({
             <div className="flex flex-row justify-between items-end">
               <p className="text-xs font-bold">{title}</p>
               <p className="text-[10px]">
-                ({count}/{currentGoal})
+                ({totalCount}/{currentGoal})
               </p>
             </div>
             <Progress
-              value={(count / currentGoal) * 100}
+              value={(currentCount / currentGoal) * 100}
               className="mt-2 bg-[#7E4E31]"
             />
           </div>

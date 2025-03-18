@@ -244,11 +244,18 @@ export const calculateHarvestAchievements = (
       userHarvestedCrops,
       threshold.crop
     );
+
+    // Calculate current count by subtracting previous threshold
+    const previousThreshold =
+      progress.step > 1 ? threshold.thresholds[progress.step - 2] : 0;
+    const currentCount = progress.count - previousThreshold;
+
     return {
       step: progress.step,
       crop: threshold.crop,
       title: threshold.titles[progress.step - 1],
-      count: progress.count,
+      totalCount: progress.count,
+      currentCount,
       currentGoal: progress.currentGoal,
     };
   });

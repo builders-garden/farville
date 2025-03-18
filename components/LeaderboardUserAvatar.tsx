@@ -5,19 +5,28 @@ interface LeaderboardUserAvatarProps {
   pfpUrl: string;
   username?: string;
   isOgUser?: boolean;
+  size?: {
+    width: number;
+    height: number;
+  };
+  borderSize?: number;
 }
 
 export function LeaderboardUserAvatar({
   pfpUrl,
   username,
   isOgUser = false,
+  size = { width: 10, height: 10 },
+  borderSize = 2,
 }: LeaderboardUserAvatarProps) {
   return (
     <div className="relative flex-none">
       <Image
         src={pfpUrl}
         alt={`${username ?? "user"}'s avatar`}
-        className={`w-10 h-10 rounded-full object-cover border-2 ${
+        className={`w-${size.width} h-${
+          size.height
+        } rounded-full object-cover border-${borderSize} ${
           isOgUser ? "border-[#179ef9]" : "border-[#FFB938]"
         }`}
         width={40}

@@ -12,6 +12,8 @@ import ChooseGlowingCrop from "@/components/modals/ChooseGlowingCrop";
 import { Plus } from "lucide-react";
 import { UserItem } from "@/hooks/use-user-items";
 import { calculateHarvestAchievements } from "@/lib/utils";
+import { LeaderboardUserAvatar } from "./LeaderboardUserAvatar";
+import sdk from "@farcaster/frame-sdk";
 
 export default function ProfileModal({ onClose }: { onClose: () => void }) {
   const { state } = useGame();
@@ -73,17 +75,32 @@ export default function ProfileModal({ onClose }: { onClose: () => void }) {
           <div className="space-y-4 overflow-y-auto h-[calc(100vh-100px)] pb-4 pr-2 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-[#6D4B2B] [&::-webkit-scrollbar-thumb]:bg-[#8A5E3B]">
             <div className="flex flex-col items-center gap-8">
               {/* Profile Information */}
-              <Card className="bg-gradient-to-br from-[#6D4C2C] to-[#5B4120] rounded-lg border-none w-full max-w-2xl">
+              <Card
+                className={`bg-gradient-to-br from-[#6D4C2C] to-[#5B4120] rounded-lg border-none w-full max-w-2xl ${
+                  state.user.fid === state.user.fid ? "" : "cursor-pointer"
+                }`}
+                onClick={async () => {
+                  if (state.user.fid === state.user.fid) {
+                    return;
+                  }
+                  await sdk.actions.viewProfile({
+                    fid: state.user?.fid,
+                  });
+                }}
+              >
                 <CardContent className="flex flex-row justify-between w-full gap-4 p-4">
                   <div className="flex flex-col gap-4 w-[45%]">
                     <div className="relative mt-2">
-                      <div className="w-20 h-20 relative rounded-full overflow-hidden border-4 border-[#feb938]">
-                        <Image
-                          src={
-                            state.user?.avatarUrl || "/images/icons/avatar.png"
-                          }
-                          alt="Profile"
-                          layout="fill"
+                      <div className="relative flex-none w-fit">
+                        <LeaderboardUserAvatar
+                          pfpUrl={state.user?.avatarUrl || ""}
+                          username={state.user?.username}
+                          isOgUser={state.user?.mintedOG}
+                          size={{
+                            width: 20,
+                            height: 20,
+                          }}
+                          borderSize={4}
                         />
                       </div>
                       <div className="absolute -top-2 right-2 bg-[#5ae88e] rounded-lg flex items-center justify-center z-80 p-1">
@@ -215,6 +232,7 @@ export default function ProfileModal({ onClose }: { onClose: () => void }) {
                 </Card>
               </div>
 
+              {/* Harvest Honours section */}
               <div className="w-full flex flex-col gap-2">
                 <h3 className="text-white/90 text-sm font-bold">
                   Harvest Honours
@@ -224,7 +242,8 @@ export default function ProfileModal({ onClose }: { onClose: () => void }) {
                     key={index}
                     crop={honour.crop}
                     title={honour.title}
-                    count={honour.count}
+                    totalCount={honour.totalCount}
+                    currentCount={honour.currentCount}
                     currentGoal={honour.currentGoal}
                     step={honour.step}
                   />
