@@ -85,13 +85,13 @@ export const HarvestHonour = ({
                           ? crop + "es"
                           : crop + "s"
                       }!`,
-                      badgeUrl: `/images/badge/${crop}-${trophy}.png`,
+                      badgeUrl: `/images/badge/honours/${crop}-${trophy}.png`,
                       step: trophy,
                     });
                   }}
                 >
                   <Image
-                    src={`/images/badge/${crop}-${trophy}.png`}
+                    src={`/images/badge/honours/${crop}-${trophy}.png`}
                     alt={`Badge ${trophy}`}
                     width={50}
                     height={50}

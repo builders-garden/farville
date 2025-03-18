@@ -8,8 +8,8 @@ import { Statistic } from "./profile/Statistic";
 import { useEffect, useState } from "react";
 import InfoModal from "./modals/InfoModal";
 import { HarvestHonour } from "./profile/HarvestHonour";
-import ChooseGlowingCrop from "@/components/modals/ChooseGlowingCrop";
-import { Plus } from "lucide-react";
+// import ChooseGlowingCrop from "@/components/modals/ChooseGlowingCrop";
+// import { Plus } from "lucide-react";
 import { UserItem } from "@/hooks/use-user-items";
 import { calculateHarvestAchievements } from "@/lib/utils";
 import { LeaderboardUserAvatar } from "./LeaderboardUserAvatar";
@@ -18,21 +18,21 @@ import sdk from "@farcaster/frame-sdk";
 export default function ProfileModal({ onClose }: { onClose: () => void }) {
   const { state } = useGame();
   const [isWhatIsThisOpen, setIsWhatIsThisOpen] = useState(false);
-  const [chooseGlowingCropOpen, setChooseGlowingCropOpen] = useState(false);
+  // const [chooseGlowingCropOpen, setChooseGlowingCropOpen] = useState(false);
   const [selectedCrops, setSelectedCrops] = useState<UserItem[]>([]);
-  const [cropIndex, setCropIndex] = useState<number | undefined>(undefined);
+  // const [cropIndex, setCropIndex] = useState<number | undefined>(undefined);
   const harvestHonours = calculateHarvestAchievements(
     state.harvestedCropsSummary
   );
 
-  const onChooseCrop = (crop: UserItem) => {
-    if (cropIndex !== undefined) {
-      const newCrops = [...selectedCrops];
-      newCrops[cropIndex] = crop;
-      console.log("newCrops", newCrops);
-      setSelectedCrops(newCrops);
-    }
-  };
+  // const onChooseCrop = (crop: UserItem) => {
+  //   if (cropIndex !== undefined) {
+  //     const newCrops = [...selectedCrops];
+  //     newCrops[cropIndex] = crop;
+  //     console.log("newCrops", newCrops);
+  //     setSelectedCrops(newCrops);
+  //   }
+  // };
 
   useEffect(() => {
     setSelectedCrops(state.specialCrops || []);
@@ -103,9 +103,9 @@ export default function ProfileModal({ onClose }: { onClose: () => void }) {
                           borderSize={4}
                         />
                       </div>
-                      <div className="absolute -top-2 right-2 bg-[#5ae88e] rounded-lg flex items-center justify-center z-80 p-1">
+                      <div className="absolute -top-2 right-8 bg-[#5ae88e] rounded-lg flex items-center justify-center z-80 p-1">
                         <span className="text-[#7E4E31] font-bold text-[10px]">
-                          Level {state.level}
+                          Lvl {state.level}
                         </span>
                       </div>
                     </div>
@@ -185,48 +185,34 @@ export default function ProfileModal({ onClose }: { onClose: () => void }) {
                   className={`bg-gradient-to-br from-[#6D4C2C] to-[#5B4120] rounded-lg border-none w-full max-w-2xl`}
                 >
                   <CardContent className="p-4">
-                    <div className="grid grid-cols-3 gap-4">
-                      {selectedCrops?.slice(0, 3).map((crop, index) => (
-                        <div
-                          key={index}
-                          className="relative w-24 h-24 mx-auto rounded-lg bg-[#7E4E31] cursor-pointer"
-                          onClick={() => {
-                            setChooseGlowingCropOpen(true);
-                            setCropIndex(index);
-                          }}
-                        >
-                          <div className="absolute inset-0 flex items-center justify-center">
-                            <div className="relative w-16 h-16">
-                              <Image
-                                src={`/images/crop/${crop.item.slug}-glowing.png`}
-                                alt={crop.item.name}
-                                layout="fill"
-                                className="animate-[pulse_2s_ease-in-out_infinite]"
-                                style={{
-                                  animation: "pulse 3s ease-in-out infinite",
-                                }}
-                              />
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                      {selectedCrops.length < 3 &&
-                        Array.from({ length: 3 - selectedCrops.length }).map(
-                          (_, index) => (
-                            <div
-                              key={index}
-                              className="w-24 h-24 mx-auto rounded-lg bg-[#7E4E31] flex items-center justify-center cursor-pointer"
-                              onClick={() => {
-                                setChooseGlowingCropOpen(true);
-                                setCropIndex(selectedCrops.length + index);
-                              }}
-                            >
-                              <div className="text-white/70 text-[10px]">
-                                <Plus size={24} />
+                    <div className="overflow-x-auto [&::-webkit-scrollbar]:h-2 [&::-webkit-scrollbar-track]:bg-[#6D4B2B] [&::-webkit-scrollbar-thumb]:bg-[#8A5E3B]">
+                      <div className="flex flex-row gap-4 min-w-max pb-2">
+                        {selectedCrops.map((crop, index) => (
+                          <div
+                            key={index}
+                            className="relative w-24 h-24 rounded-lg bg-[#7E4E31] cursor-pointer"
+                          >
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              <div className="relative w-16 h-16">
+                                <Image
+                                  src={`/images/crop/${crop.item.slug}-glowing.png`}
+                                  alt={crop.item.name}
+                                  layout="fill"
+                                  className="animate-[pulse_2s_ease-in-out_infinite]"
+                                  style={{
+                                    animation: "pulse 3s ease-in-out infinite",
+                                  }}
+                                />
                               </div>
                             </div>
-                          )
-                        )}
+                            <div className="absolute bottom-1 right-1 bg-[#f2a311] rounded-full w-5 h-5 flex items-center justify-center">
+                              <span className="text-white/90 text-xs font-bold">
+                                {crop.quantity}
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
@@ -252,13 +238,13 @@ export default function ProfileModal({ onClose }: { onClose: () => void }) {
             </div>
           </div>
 
-          {chooseGlowingCropOpen && (
+          {/* {chooseGlowingCropOpen && (
             <ChooseGlowingCrop
               onChooseCrop={onChooseCrop}
               specialCrops={state.specialCrops}
               onCancel={() => setChooseGlowingCropOpen(false)}
             />
-          )}
+          )} */}
         </div>
       </motion.div>
     </div>
