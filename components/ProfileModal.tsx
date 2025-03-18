@@ -65,9 +65,9 @@ export default function ProfileModal({
           animate={{ opacity: 1 }}
           className="bg-[#7E4E31] p-6 w-full min-h-screen"
         >
-          <div className="flex items-center justify-center">
-            <div className="h-8 w-8 border-4 border-t-[#FFB938] border-[#5B4120] rounded-full animate-spin"></div>
-            <span className="ml-2 text-white/80">
+          <div className="flex flex-col items-center justify-center gap-4 min-h-screen">
+            <div className="h-12 w-12 border-4 border-t-[#FFB938] border-[#5B4120] rounded-full animate-spin"></div>
+            <span className="text-white/80 text-center">
               Loading farmer profile...
             </span>
           </div>
