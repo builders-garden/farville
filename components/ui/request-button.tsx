@@ -16,7 +16,8 @@ export default function RequestButton({
   className = "",
   variant = "primary",
 }: RequestButtonProps) {
-  const baseStyles = "px-2 py-1 rounded text-xs font-bold transition-colors";
+  const baseStyles =
+    "px-2 py-1 rounded text-[11px] font-bold transition-colors";
   const variantStyles =
     variant === "primary"
       ? "bg-[#FFB938] text-[#7E4E31] hover:bg-[#ffc661]"
