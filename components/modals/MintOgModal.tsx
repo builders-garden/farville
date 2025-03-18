@@ -134,6 +134,7 @@ export default function MintOgModal({ onCancel }: MintOgModalProps) {
   };
 
   const userIsEligibleButWrongAddress =
+    address &&
     OG_FIDS_LIST.includes(state.user.fid) &&
     !merkleValues.find(
       ([addr]) => addr.toLowerCase() === address?.toLowerCase()
@@ -322,12 +323,12 @@ export default function MintOgModal({ onCancel }: MintOgModalProps) {
                 your Warpcast Wallet, or contact limone.eth!
               </span>
             )}
-            {!address && (
+            {!state.user.mintedOG && !address && (
               <span className="text-center text-[9px] text-white/70 border border-white/70 rounded w-fit px-4 py-2 m-auto mt-2">
                 Please connect a wallet to mint the badge.
               </span>
             )}
-            {userIsEligibleButWrongAddress && (
+            {!state.user.mintedOG && userIsEligibleButWrongAddress && (
               <span className="text-center text-[9px] text-white/70 border border-white/70 rounded w-fit px-4 py-2 m-auto mt-2">
                 You are eligible to mint the badge, but you need to connect a
                 wallet that you verified in Warpcast.
