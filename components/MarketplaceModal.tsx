@@ -288,7 +288,7 @@ export default function MarketplaceModal({
                                 e.stopPropagation();
                                 setSelectedItemForRequest(item);
                               }}
-                              className="bg-[#FFB938] text-[#7E4E31] px-2 py-1 rounded text-xs font-bold hover:bg-[#ffc661] transition-colors"
+                              className="bg-[#5A4129] text-white/80 px-2 py-1 rounded text-[10px] font-bold hover:bg-[#503d2b] transition-colors"
                             >
                               Request
                             </button>
@@ -387,7 +387,7 @@ export default function MarketplaceModal({
                               </span>
                               <button
                                 onClick={() => setSelectedItemForRequest(item)}
-                                className="bg-[#FFB938] text-[#7E4E31] px-2 py-1 rounded text-xs font-bold hover:bg-[#ffc661] transition-colors"
+                                className="bg-[#5A4129] text-white/80 px-2 py-1 rounded text-[10px] font-bold hover:bg-[#503d2b] transition-colors"
                               >
                                 Request
                               </button>
