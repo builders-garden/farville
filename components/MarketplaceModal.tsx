@@ -135,7 +135,7 @@ export default function MarketplaceModal({
             ))}
           </div>
 
-          <div className="overflow-y-auto flex-1 -mr-2 pr-2">
+          <div className="overflow-y-auto flex-1 -mr-2 pr-2 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-[#6D4B2B] [&::-webkit-scrollbar-thumb]:bg-[#8A5E3B]">
             {activeTab === "seeds" && (
               <motion.div
                 className="grid gap-3 pb-6"

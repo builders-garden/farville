@@ -1,6 +1,6 @@
 import { useGame } from "@/context/GameContext";
 import { useUpdateUserQuest } from "@/hooks/game-actions/use-update-user-quest";
-import { getUserNowDate } from "@/lib/utils";
+import { getUserNowDate, requestItemComposeCastUrl } from "@/lib/utils";
 import {
   DbQuest,
   DbQuestWithItem,
@@ -9,6 +9,11 @@ import {
 import { QuestStatus } from "@/types/game";
 import { motion } from "framer-motion";
 import Image from "next/image";
+import { useState } from "react";
+import ItemDetailsPopup from "./ItemDetailsPopup";
+import { useFrameContext } from "@/context/FrameContext";
+import { useCreateRequest } from "@/hooks/game-actions/use-create-request";
+import sdk from "@farcaster/frame-sdk";
 
 interface QuestProps {
   quest: DbUserHasQuestWithQuest;
@@ -21,28 +26,43 @@ interface QuestProps {
   ) => void;
 }
 
-const renderQuestRewards = (quest: DbQuest) => (
-  <div className="flex items-center gap-2 text-xs mt-2">
-    {quest.xp && (
-      <span className="text-white/60 flex items-center">
-        XP{" "}
-        <span className="text-yellow-400 font-medium flex items-center">
-          <span className="text-sm mb-1 ml-1 mr-0.5">⭐</span>
-          {quest.xp}
-        </span>
-      </span>
-    )}
-    {quest.coins !== null && quest.coins !== undefined && quest.coins > 0 && (
-      <div className="flex items-center gap-2 text-xs">
-        <span className="text-white/40">•</span>
+const renderQuestRewards = (
+  quest: DbQuest,
+  showRequestButton = false,
+  onRequestClick: () => void
+) => (
+  <div className="flex items-center justify-between text-xs mt-2">
+    <div className="flex items-center gap-2">
+      {quest.xp && (
         <span className="text-white/60 flex items-center">
-          Coins{" "}
-          <span className="text-[#FFB938] font-medium flex items-center">
-            <span className="text-sm mb-1 ml-1 mr-0.5">🪙</span>
-            {quest.coins}
+          XP{" "}
+          <span className="text-yellow-400 font-medium flex items-center">
+            <span className="text-sm mb-1 ml-1 mr-0.5">⭐</span>
+            {quest.xp}
           </span>
         </span>
-      </div>
+      )}
+      {quest.coins !== null && quest.coins !== undefined && quest.coins > 0 && (
+        <div className="flex items-center gap-2 text-xs">
+          <span className="text-white/40">•</span>
+          <span className="text-white/60 flex items-center">
+            Coins{" "}
+            <span className="text-[#FFB938] font-medium flex items-center">
+              <span className="text-sm mb-1 ml-1 mr-0.5">🪙</span>
+              {quest.coins}
+            </span>
+          </span>
+        </div>
+      )}
+    </div>
+
+    {showRequestButton && (
+      <button
+        onClick={onRequestClick}
+        className="bg-[#FFB938] text-[#7E4E31] px-2 py-1 rounded text-xs font-bold hover:bg-[#ffc661] transition-colors"
+      >
+        Request
+      </button>
     )}
   </div>
 );
@@ -109,11 +129,70 @@ export default function Quest({
   claimable = false,
   onClaim,
 }: QuestProps) {
-  const { isActionInProgress, setIsActionInProgress } = useGame();
+  const { isActionInProgress, setIsActionInProgress, state } = useGame();
+  const { context } = useFrameContext();
   const { mutate: updateUserQuest, isPending } = useUpdateUserQuest({
     isActionInProgress,
     setIsActionInProgress,
   });
+  const { mutate: createRequest } = useCreateRequest();
+  const [selectedItem, setSelectedItem] = useState<
+    DbQuestWithItem["items"] | null
+  >(null);
+  const [requestQuantity, setRequestQuantity] = useState(1);
+
+  // Handle showing item details
+  const handleShowItemDetails = () => {
+    if (quest.quest.items) {
+      setSelectedItem(quest.quest.items);
+    }
+  };
+
+  // Find user item from inventory if it exists
+  const findUserItem = (itemSlug: string) => {
+    const userItem = state.items.find((item) => item.slug === itemSlug);
+    if (!userItem) return undefined;
+
+    const userInventoryItem = [
+      ...state.seeds,
+      ...state.crops,
+      ...state.perks,
+    ].find((ui) => ui.item.slug === itemSlug);
+
+    return userInventoryItem;
+  };
+
+  // Handle requesting an item - similar to InventoryModal
+  const handleRequestItem = async () => {
+    if (!context?.user.fid || !selectedItem) return;
+
+    try {
+      createRequest(
+        {
+          itemId: selectedItem.id,
+          quantity: requestQuantity,
+        },
+        {
+          onSuccess: async (data) => {
+            const { castUrl } = requestItemComposeCastUrl(
+              data.id,
+              selectedItem,
+              requestQuantity
+            );
+            await sdk.actions.openUrl(castUrl);
+            setSelectedItem(null);
+            setRequestQuantity(1);
+          },
+          onError: (error) => {
+            console.error("Error creating request", error);
+          },
+        }
+      );
+    } catch (error) {
+      console.error("Error handling request:", error);
+    }
+  };
+
   return (
     <motion.div
       key={quest.id}
@@ -146,16 +225,24 @@ export default function Quest({
             {quest.quest.category === "receive" && "🤝"}
           </motion.div>
         </div>
-        <div className="flex flex-col gap-2">
-          <h3 className="text-white/90 font-medium">
-            {quest.quest.category.charAt(0).toUpperCase() +
-              quest.quest.category.slice(1)}{" "}
-            Quest
-          </h3>
+        <div className="flex flex-col gap-2 flex-1">
+          <div className="flex items-center justify-between">
+            <h3 className="text-white/90 font-medium">
+              {quest.quest.category.charAt(0).toUpperCase() +
+                quest.quest.category.slice(1)}{" "}
+              Quest
+            </h3>
+          </div>
           <p className="text-white/60 text-xs">
             {questDescription(quest.quest)}
           </p>
-          {renderQuestRewards(quest.quest)}
+          {renderQuestRewards(
+            quest.quest,
+            !claimable &&
+              quest.quest.category === "receive" &&
+              !!quest.quest.items,
+            handleShowItemDetails
+          )}
         </div>
       </div>
       {!claimable && renderQuestProgress(quest)}
@@ -219,6 +306,21 @@ export default function Quest({
             CLAIM
           </motion.button>
         </div>
+      )}
+
+      {/* Item Details Popup */}
+      {selectedItem && (
+        <ItemDetailsPopup
+          item={selectedItem}
+          userItem={findUserItem(selectedItem.slug)}
+          onClose={() => {
+            setSelectedItem(null);
+            setRequestQuantity(1);
+          }}
+          requestQuantity={requestQuantity}
+          onRequestQuantityChange={setRequestQuantity}
+          onRequest={handleRequestItem}
+        />
       )}
     </motion.div>
   );
