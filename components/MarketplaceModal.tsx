@@ -8,6 +8,11 @@ import Image from "next/image";
 import ConfirmationModal from "./modals/ConfirmationModal";
 import { DbItem } from "@/supabase/types";
 import { trackEvent } from "../lib/posthog/client";
+import ItemDetailsPopup from "./ItemDetailsPopup";
+import { useFrameContext } from "@/context/FrameContext";
+import { useCreateRequest } from "@/hooks/game-actions/use-create-request";
+import sdk from "@farcaster/frame-sdk";
+import { requestItemComposeCastUrl } from "@/lib/utils";
 
 type Tab = "seeds" | "crops" | "perks" | "expansions";
 
@@ -16,7 +21,7 @@ type SelectedItemDetails = {
   id: number;
   name: string;
   icon: string;
-  buyPrice?: number;
+  buyPrice: number | null;
   harvestXp?: number;
   description?: string;
   growthTime?: number;
@@ -32,6 +37,8 @@ export default function MarketplaceModal({
 }) {
   const { state, buyItem, sellItem, expandGrid, isActionInProgress } =
     useGame();
+  const { context } = useFrameContext();
+  const { mutate: createRequest } = useCreateRequest();
   const [activeTab, setActiveTab] = useState<Tab>("seeds");
   const [confirmAction, setConfirmAction] = useState<{
     type: "buy" | "sell";
@@ -41,6 +48,9 @@ export default function MarketplaceModal({
     price: number;
   } | null>(null);
   const [selectedItem, setSelectedItem] = useState<SelectedItemDetails>(null);
+  const [selectedItemForRequest, setSelectedItemForRequest] =
+    useState<DbItem | null>(null);
+  const [requestQuantity, setRequestQuantity] = useState(1);
 
   const tabs: { id: Tab; label: string; icon: string }[] = [
     { id: "seeds", label: "Seeds", icon: "🌱" },
@@ -49,7 +59,52 @@ export default function MarketplaceModal({
     { id: "expansions", label: "Expand", icon: "🗺️" },
   ];
 
+  // Handle requesting an item
+  const handleRequestItem = async () => {
+    if (!context?.user.fid || !selectedItemForRequest) return;
+
+    try {
+      createRequest(
+        {
+          itemId: selectedItemForRequest.id,
+          quantity: requestQuantity,
+        },
+        {
+          onSuccess: async (data) => {
+            const { castUrl } = requestItemComposeCastUrl(
+              data.id,
+              selectedItemForRequest,
+              requestQuantity
+            );
+            await sdk.actions.openUrl(castUrl);
+            setSelectedItemForRequest(null);
+            setRequestQuantity(1);
+          },
+          onError: (error) => {
+            console.error("Error creating request", error);
+          },
+        }
+      );
+    } catch (error) {
+      console.error("Error handling request:", error);
+    }
+  };
+
   const gridSize = state.gridSize.width * state.gridSize.height;
+
+  // Find user item from inventory
+  const findUserItem = (itemSlug: string) => {
+    const userItem = state.items.find((item) => item.slug === itemSlug);
+    if (!userItem) return undefined;
+
+    const userInventoryItem = [
+      ...state.seeds,
+      ...state.crops,
+      ...state.perks,
+    ].find((ui) => ui.item.slug === itemSlug);
+
+    return userInventoryItem;
+  };
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-start z-50">
@@ -135,7 +190,7 @@ export default function MarketplaceModal({
             ))}
           </div>
 
-          <div className="overflow-y-auto flex-1 -mr-2 pr-2">
+          <div className="overflow-y-auto flex-1 -mr-2 pr-2 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-[#6D4B2B] [&::-webkit-scrollbar-thumb]:bg-[#8A5E3B]">
             {activeTab === "seeds" && (
               <motion.div
                 className="grid gap-3 pb-6"
@@ -219,7 +274,7 @@ export default function MarketplaceModal({
                               {item.buyPrice}
                             </p>
                           </div>
-                          <div className="flex items-center gap-2 text-[10px]">
+                          <div className="flex items-center justify-between text-[10px]">
                             <span className="text-white/60">
                               Owned:
                               <span className="text-white/90 font-medium">
@@ -228,6 +283,15 @@ export default function MarketplaceModal({
                                 )?.quantity || 0}
                               </span>
                             </span>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedItemForRequest(item);
+                              }}
+                              className="bg-[#FFB938] text-[#7E4E31] px-2 py-1 rounded text-xs font-bold hover:bg-[#ffc661] transition-colors"
+                            >
+                              Request
+                            </button>
                           </div>
                         </div>
                       </div>
@@ -235,6 +299,7 @@ export default function MarketplaceModal({
                         <span className="text-xs w-fit text-white/90">Buy</span>
                         <div className="flex gap-2 w-full">
                           {state.level >= item.requiredLevel &&
+                            item.buyPrice !== null &&
                             [1, 5, 10, gridSize].map((amount) => (
                               <motion.button
                                 key={amount}
@@ -247,7 +312,7 @@ export default function MarketplaceModal({
                                       itemId: item.id,
                                       quantity: amount,
                                       itemName: item.name,
-                                      price: item.buyPrice * amount,
+                                      price: item.buyPrice! * amount,
                                     });
                                   } else {
                                     buyItem({
@@ -256,7 +321,7 @@ export default function MarketplaceModal({
                                     });
                                   }
                                 }}
-                                disabled={state.coins < item.buyPrice * amount}
+                                disabled={state.coins < item.buyPrice! * amount}
                                 className="w-full py-1.5 bg-[#2B593B] text-white/90 rounded hover:bg-[#346344] 
                                       transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-xs font-medium
                                       border border-white/10"
@@ -313,13 +378,19 @@ export default function MarketplaceModal({
                                 {item.sellPrice}
                               </p>
                             </div>
-                            <div className="flex items-center gap-2 text-[10px]">
+                            <div className="flex items-center justify-between text-[10px]">
                               <span className="text-white/60">
                                 Owned:
                                 <span className="text-white/90 font-medium ml-1">
                                   {amount}
                                 </span>
                               </span>
+                              <button
+                                onClick={() => setSelectedItemForRequest(item)}
+                                className="bg-[#FFB938] text-[#7E4E31] px-2 py-1 rounded text-xs font-bold hover:bg-[#ffc661] transition-colors"
+                              >
+                                Request
+                              </button>
                             </div>
                           </div>
                         </div>
@@ -347,7 +418,7 @@ export default function MarketplaceModal({
                                       itemId: item.id,
                                       quantity: quantityToSell,
                                       itemName: item.name,
-                                      price: item.sellPrice * quantityToSell,
+                                      price: item.sellPrice! * quantityToSell,
                                     });
                                   } else {
                                     sellItem({
@@ -548,12 +619,12 @@ export default function MarketplaceModal({
                                         itemId: perk.id,
                                         quantity: amount,
                                         itemName: perk.name,
-                                        price: perk.buyPrice * amount,
+                                        price: perk.buyPrice! * amount,
                                       });
                                     }
                                   }}
                                   disabled={
-                                    state.coins < perk.buyPrice * amount
+                                    state.coins < perk.buyPrice! * amount
                                   }
                                   className="w-full px-2 py-1.5 bg-[#2B593B] text-white/90 rounded hover:bg-[#346344] 
                                   transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-sm font-medium
@@ -573,6 +644,22 @@ export default function MarketplaceModal({
           </div>
         </div>
       </motion.div>
+
+      {/* Item Details Popup for requests */}
+      {selectedItemForRequest && (
+        <ItemDetailsPopup
+          item={selectedItemForRequest}
+          userItem={findUserItem(selectedItemForRequest.slug)}
+          onClose={() => {
+            setSelectedItemForRequest(null);
+            setRequestQuantity(1);
+          }}
+          requestQuantity={requestQuantity}
+          onRequestQuantityChange={setRequestQuantity}
+          onRequest={handleRequestItem}
+        />
+      )}
+
       {confirmAction && (
         <ConfirmationModal
           title={`${confirmAction.type === "buy" ? "Buy" : "Sell"} ${

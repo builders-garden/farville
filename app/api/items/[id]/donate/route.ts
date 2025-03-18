@@ -18,7 +18,15 @@ import {
   incrementRequestFilledQuantity,
   getUser,
 } from "@/supabase/queries";
+import { PerkType, SpecialItemType } from "@/types/game";
 import { NextResponse } from "next/server";
+import { z } from "zod";
+
+const requestSchema = z.object({
+  quantity: z.number().min(1).max(10),
+  toFid: z.number().min(1),
+  requestId: z.number().optional(),
+});
 
 export const POST = async (
   req: Request,
@@ -29,25 +37,53 @@ export const POST = async (
     return new Response("Fid not found", { status: 404 });
   }
   const itemId = Number((await params).id);
-  const { quantity, toFid, requestId } = await req.json();
+  if (isNaN(itemId)) {
+    return new Response("Invalid item id", { status: 400 });
+  }
+
+  const requestJson = await req.json();
+  const requestBody = requestSchema.safeParse(requestJson);
+
+  if (requestBody.success === false) {
+    return NextResponse.json(
+      { success: false, errors: requestBody.error.errors },
+      { status: 400 }
+    );
+  }
+
+  const { quantity, toFid, requestId } = requestBody.data;
+
+  // check if the user is donating to himself
   if (fid.toString() === toFid.toString()) {
     return NextResponse.json(
       { message: "Cannot donate to yourself" },
       { status: 400 }
     );
   }
-  const item = await getItemById(itemId);
 
+  // check if the item exists
+  const item = await getItemById(itemId);
   if (!item) {
     return NextResponse.json({ message: "Item not found" }, { status: 404 });
   }
 
-  const userItem = await getUserItemByItemId(Number(fid), itemId);
-
-  if (!userItem) {
+  // check if the item is available to be donated
+  if (
+    item.slug === SpecialItemType.Frost ||
+    item.slug === PerkType.Fertilizer
+  ) {
     return NextResponse.json(
-      { message: "User item not found" },
-      { status: 404 }
+      { message: "Item cannot be donated" },
+      { status: 400 }
+    );
+  }
+
+  // check if the user has enough items
+  const userItem = await getUserItemByItemId(Number(fid), itemId);
+  if (!userItem || userItem.quantity < quantity) {
+    return NextResponse.json(
+      { message: "Not enough items to donate" },
+      { status: 400 }
     );
   }
 
@@ -79,8 +115,6 @@ export const POST = async (
     await incrementRequestFilledQuantity(Number(requestId), quantity);
   }
 
-  const user = await getUser(Number(fid));
-
   // POST: the user can donate
   // create or update here the user donation history
   await updateUserDonationHistory({
@@ -95,6 +129,7 @@ export const POST = async (
     lastDonation: new Date().toISOString(),
   });
 
+  const user = await getUser(Number(fid));
   await Promise.all([
     sendQuestsCalculation(Number(fid), "donate", itemId, quantity),
     sendQuestsCalculation(Number(toFid), "receive", itemId, quantity),

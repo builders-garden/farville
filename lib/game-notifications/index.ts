@@ -1,7 +1,6 @@
 import { SeedType } from "@/types/game";
 import { qstashPublishJSON } from "../qstash";
 import { CROP_DATA } from "@/lib/game-constants";
-// import { getUserNotifications } from "@/supabase/queries";
 
 export async function sendDelayedNotification(
   fid: string,

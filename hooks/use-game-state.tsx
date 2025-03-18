@@ -482,6 +482,7 @@ export const useGameState = () => {
       coins?: number;
       streaks?: DbStreak[];
       streakUpdated?: boolean;
+      mintedOG?: boolean;
     }) => {
       setState((prevState) => {
         if (!prevState) return prevState;
@@ -493,6 +494,7 @@ export const useGameState = () => {
           user: {
             ...prevState.user,
             xp: newParams.xp ?? prevState.experience,
+            mintedOG: newParams.mintedOG ?? prevState.user.mintedOG,
           },
           coins: newParams.coins ?? prevState.coins,
         };

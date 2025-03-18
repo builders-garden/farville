@@ -21,6 +21,11 @@ export enum ActionType {
   ApplyPerk = "apply-perk",
 }
 
+export enum MarketActionType {
+  Buy = "buy",
+  Sell = "sell",
+}
+
 export enum CropType {
   Carrot = "carrot",
   Pumpkin = "pumpkin",
@@ -41,6 +46,10 @@ export enum PerkType {
   Potassium = "potassium",
   Phosphorus = "phosphorus",
   Fertilizer = "fertilizer",
+}
+
+export enum SpecialItemType {
+  Frost = "frost",
 }
 
 export type Crop = {
@@ -115,4 +124,17 @@ export interface HarvestResponse {
     didLevelUp: boolean;
     newLevel?: number;
   };
+}
+
+export enum QuestStatus {
+  Incomplete = "incomplete",
+  Completed = "completed",
+  Claimed = "claimed",
+}
+
+export enum ItemCategory {
+  Crop = "crop",
+  Seed = "seed",
+  Perk = "perk",
+  Special = "special",
 }

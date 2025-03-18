@@ -1,7 +1,7 @@
 import { sdk } from "@farcaster/frame-sdk";
 import { useFrameContext } from "@/context/FrameContext";
 import { useCallback, useEffect, useState } from "react";
-import { MESSAGE_EXPIRATION_TIME } from "@/lib/constants";
+import { MESSAGE_EXPIRATION_TIME } from "@/lib/contracts/constants";
 import posthog from "posthog-js";
 import * as Sentry from "@sentry/nextjs";
 import { getUserNowDate } from "@/lib/utils";

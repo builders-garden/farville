@@ -5,7 +5,7 @@ import { z } from "zod";
 
 const requestSchema = z.object({
   itemId: z.number().min(1),
-  quantity: z.number().min(1),
+  quantity: z.number().min(1).max(10),
 });
 
 export const POST = async (request: NextRequest) => {
@@ -28,13 +28,6 @@ export const POST = async (request: NextRequest) => {
       { status: 400 }
     );
   }
-
-  // if (!itemId || !quantity) {
-  //   return NextResponse.json(
-  //     { error: "Item ID and quantity are required" },
-  //     { status: 400 }
-  //   );
-  // }
 
   const item = await getItemById(itemId);
 

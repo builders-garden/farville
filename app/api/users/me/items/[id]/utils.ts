@@ -1,3 +1,4 @@
+import { MAX_FROSTS_QUANTITY } from "@/lib/game-constants";
 import {
   addUserItem,
   getItemById,
@@ -6,6 +7,7 @@ import {
   removeUserItem,
   updateUserCoins,
 } from "@/supabase/queries";
+import { PerkType, SpecialItemType } from "@/types/game";
 
 export const buyItem = async (
   fid: number,
@@ -14,19 +16,57 @@ export const buyItem = async (
 ) => {
   const user = await getUser(fid);
   if (!user) {
-    return { error: "User not found" };
+    return {
+      success: false,
+      message: "User not found",
+      status: 404,
+    };
   }
   const item = await getItemById(itemId);
-  if (!item || item.slug === "fertilizer" || !item.buyPrice) {
-    return { error: "Item not found" };
+  if (!item || !item.buyPrice) {
+    return {
+      success: false,
+      message: "Item not found",
+      status: 404,
+    };
+  }
+
+  // Check if item is not available for purchase
+  // if buyPrice is null the item is not available for purchase
+  if (item.slug === PerkType.Fertilizer || item.buyPrice === null) {
+    return {
+      success: false,
+      message: "Item not available for purchase",
+      status: 400,
+    };
+  }
+
+  // frosts quantity cannot exceed MAX_FROSTS_QUANTITY at the same time
+  if (item.slug === SpecialItemType.Frost) {
+    const userFrost = await getUserItemByItemId(user.fid, itemId);
+    if (
+      (userFrost && userFrost.quantity + quantity > MAX_FROSTS_QUANTITY) ||
+      quantity > MAX_FROSTS_QUANTITY
+    ) {
+      return {
+        success: false,
+        message: "Cannot have more than 2 frosts at the same time",
+        status: 400,
+      };
+    }
   }
 
   if (user.coins < item.buyPrice * quantity) {
-    return { error: "Insufficient funds" };
+    return {
+      success: false,
+      message: "Insufficient coins",
+      status: 400,
+    };
   }
 
   await addUserItem(user.fid, itemId, quantity);
   await updateUserCoins(user.fid, user.coins - item.buyPrice * quantity);
+  return { success: true };
 };
 
 export const sellItem = async (
@@ -36,22 +76,41 @@ export const sellItem = async (
 ) => {
   const user = await getUser(fid);
   if (!user) {
-    return { error: "User not found" };
+    return { success: false, message: "User not found", status: 404 };
   }
   const item = await getItemById(itemId);
-  if (!item  || !item.sellPrice) {
-    return { error: "Item not found" };
+  if (!item || !item.sellPrice) {
+    return { success: false, message: "Item not found", status: 404 };
+  }
+
+  // Check if item is not available for selling
+  // if sellPrice is null the item is not available for selling
+  if (item.slug === PerkType.Fertilizer || item.sellPrice === null) {
+    return {
+      success: false,
+      message: "Item not available for selling",
+      status: 400,
+    };
   }
 
   const userItem = await getUserItemByItemId(user.fid, itemId);
   if (!userItem) {
-    return { error: "Item not found" };
+    return {
+      success: false,
+      message: "User does not have this item",
+      status: 404,
+    };
   }
 
   if (userItem.quantity < quantity) {
-    return { error: "Insufficient items" };
+    return {
+      success: false,
+      message: "User does not have enough of this item",
+      status: 400,
+    };
   }
 
   await removeUserItem(user.fid, itemId, quantity);
   await updateUserCoins(user.fid, user.coins + item.sellPrice * quantity);
+  return { success: true };
 };

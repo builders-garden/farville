@@ -19,7 +19,7 @@ export async function GET(request: Request) {
       // Optimize followed users fetch with proper pagination
       const followedUsers = await fetchUsersFollowedBy(
         targetFid,
-        300,
+        500,
         "desc_chron"
       );
       const followedFids = followedUsers.map((user) => user.fid.toString());

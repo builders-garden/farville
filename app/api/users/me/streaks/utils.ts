@@ -22,7 +22,9 @@ export const checkUserActivityAndApplyFrost = async (
   const lastActionAt = new Date(latestStreak.lastActionAt);
   const yesterday = new Date();
   yesterday.setDate(yesterday.getDate() - 1);
-  if (updateStreaks && lastActionAt >= yesterday) {
+  if (updateStreaks && latestStreak.endedAt) {
+    await createUserStreak(Number(streak.fid));
+  } else if (updateStreaks && lastActionAt >= yesterday) {
     await updateUserStreak(streak.id, {
       lastActionAt: new Date(),
     });

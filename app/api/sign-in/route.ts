@@ -33,6 +33,7 @@ export const POST = async (req: NextRequest) => {
       coins: 0,
       expansions: 1,
       notificationDetails: "",
+      mintedOG: false,
     });
 
     if (referrerFid) {

@@ -91,7 +91,7 @@ export default function QuestsModal({
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-start z-50">
-      {showLevelUpConfetti && <Confetti />}
+      {showLevelUpConfetti && <Confetti title="LEVEL UP!" />}
       <motion.div
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
@@ -194,7 +194,7 @@ export default function QuestsModal({
           </div>
 
           {/* Content area */}
-          <div className="flex-1 overflow-y-auto min-h-0">
+          <div className="flex-1 overflow-y-auto min-h-0 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-[#6D4B2B] [&::-webkit-scrollbar-thumb]:bg-[#8A5E3B]">
             {isLoadingUserQuests ? (
               <div className="flex items-center justify-center h-full">
                 <motion.div
@@ -208,7 +208,7 @@ export default function QuestsModal({
             ) : (
               <div className="space-y-3">
                 {activeTab === "active" && (
-                  <div className="flex flex-col text-white/70 text-sm gap-2">
+                  <div className="flex flex-col text-white/70 text-sm gap-4">
                     {activeSubTab === "daily" &&
                       (incompleteQuests?.daily.length === 0 ? (
                         <div>No daily quests available.</div>
@@ -259,7 +259,7 @@ export default function QuestsModal({
                 )}
 
                 {activeTab === "claimable" && (
-                  <div className="flex flex-col gap-2">
+                  <div className="flex flex-col gap-4">
                     {completedQuests?.daily.map((quest) => (
                       <Quest
                         quest={quest}

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getUserQuests, createUserQuest } from "@/supabase/queries";
-import { DbUserHasQuestStatus, InsertDbUserHasQuest } from "@/supabase/types";
+import { getUserQuests } from "@/supabase/queries";
+import { DbUserHasQuestStatus } from "@/supabase/types";
 
 export async function GET(
   request: NextRequest,
@@ -47,28 +47,29 @@ export async function GET(
   }
 }
 
-export async function POST(
-  request: NextRequest,
-  { params }: { params: Promise<{ fid: string }> }
-) {
-  try {
-    const { fid } = await params;
-    if (isNaN(Number(fid))) {
-      return NextResponse.json({ error: "Invalid FID" }, { status: 400 });
-    }
+// not used in the app - just for reference
+// export async function POST(
+//   request: NextRequest,
+//   { params }: { params: Promise<{ fid: string }> }
+// ) {
+//   try {
+//     const { fid } = await params;
+//     if (isNaN(Number(fid))) {
+//       return NextResponse.json({ error: "Invalid FID" }, { status: 400 });
+//     }
 
-    const questData: Omit<InsertDbUserHasQuest, "fid"> = await request.json();
-    const userQuest = await createUserQuest({
-      ...questData,
-      fid: Number(fid),
-    });
+//     const questData: Omit<InsertDbUserHasQuest, "fid"> = await request.json();
+//     const userQuest = await createUserQuest({
+//       ...questData,
+//       fid: Number(fid),
+//     });
 
-    return NextResponse.json(userQuest, { status: 201 });
-  } catch (error) {
-    console.error("Error creating user quest:", error);
-    return NextResponse.json(
-      { error: "Failed to create user quest" },
-      { status: 500 }
-    );
-  }
-}
+//     return NextResponse.json(userQuest, { status: 201 });
+//   } catch (error) {
+//     console.error("Error creating user quest:", error);
+//     return NextResponse.json(
+//       { error: "Failed to create user quest" },
+//       { status: 500 }
+//     );
+//   }
+// }

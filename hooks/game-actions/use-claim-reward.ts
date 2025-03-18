@@ -3,7 +3,6 @@ import { useApiMutation } from "@/hooks/use-api-mutation";
 
 interface ClaimRewardVariables {
   streakId: number;
-  rewards: { itemId: number; quantity: number }[];
 }
 
 export const useClaimReward = ({
@@ -21,7 +20,7 @@ export const useClaimReward = ({
 
   return useApiMutation<unknown, ClaimRewardVariables>({
     url: () => `/api/users/me/rewards/claim`,
-    body: ({ rewards, streakId }) => ({ rewards, streakId }),
+    body: ({ streakId }) => ({ streakId }),
     onMutate: () => {
       if (isActionInProgress) return;
       setIsActionInProgress(true);

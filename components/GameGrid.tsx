@@ -5,6 +5,7 @@ import GridCell from "./GridCell";
 import { HarvestedGoldCrop } from "./modals/HarvestedGoldCrop";
 import { NewAchievementReached } from "./modals/NewAchievementReached";
 import SeedMenu from "./SeedMenu";
+import MintOgModal from "./modals/MintOgModal";
 
 export default function GameGrid() {
   const {
@@ -14,6 +15,8 @@ export default function GameGrid() {
     setShowHarvestedNewGoldCrops,
     showAchievedNewBadges,
     setShowAchievedNewBadges,
+    showMintOGBadge,
+    setShowMintOGBadge,
   } = useGame();
 
   // Create a 2D grid from the flat array
@@ -37,6 +40,10 @@ export default function GameGrid() {
           achievements={gridBulkResult.rewards.newBadges}
           onClose={() => setShowAchievedNewBadges(false)}
         />
+      )}
+
+      {showMintOGBadge && (
+        <MintOgModal onCancel={() => setShowMintOGBadge(false)} />
       )}
 
       {/* Render the grid */}

@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { useGame } from "../context/GameContext";
-import { ActionType, CropType, PerkType } from "../types/game";
+import { ActionType, CropType, PerkType, SeedType } from "../types/game";
 import CropSprite from "./CropSprite";
 import FloatingNumber from "./animations/FloatingNumber";
 import { useState, useRef, useEffect, useMemo, Fragment } from "react";
@@ -22,7 +22,7 @@ interface SeedDetailPopupProps {
   cell: DbGridCell;
   onFertilize: () => void;
   hasFertilizer: boolean;
-  onBoost: (boostType: string) => void;
+  onBoost: (boostType: PerkType) => void;
   onClose: () => void;
 }
 
@@ -61,7 +61,7 @@ function SeedDetailPopup({
     for (const [boostType, data] of Object.entries(SPEED_BOOST)) {
       if (data.applyTo.includes(cropType)) {
         return {
-          type: boostType,
+          type: boostType as PerkType,
           multiplier: data.boost,
           duration: data.duration,
         };
@@ -232,7 +232,7 @@ export default function GridCell({ cell }: GridCellProps) {
     (item) => item.item.slug === "fertilizer"
   );
 
-  const handleBoost = async (boostType: string) => {
+  const handleBoost = async (boostType: SeedType | PerkType | undefined) => {
     const boostItem = state.inventory.find(
       (item) => item.item.slug === boostType
     );
@@ -299,7 +299,7 @@ export default function GridCell({ cell }: GridCellProps) {
 
         addGridOperation({
           action: ActionType.ApplyPerk,
-          itemSlug: selectedPerk.item.slug,
+          itemSlug: selectedPerk.item.slug as SeedType | PerkType,
           cells: [{ x: cell.x, y: cell.y }],
         });
 
@@ -542,7 +542,7 @@ export default function GridCell({ cell }: GridCellProps) {
 
   return (
     <>
-      {showLevelUpConfetti && <Confetti />}
+      {showLevelUpConfetti && <Confetti title="LEVEL UP!" />}
       <motion.div
         ref={cellRef}
         onClick={handleClick}

@@ -88,16 +88,10 @@ export default function StreaksModal({ onClose }: { onClose: () => void }) {
   const handleClaim = (day: number) => {
     const reward = rewards.find((r) => r.day === day);
     if (reward) {
-      const rewards = reward.rewards.map((r) => ({
-        itemId: r.itemId,
-        quantity: r.quantity,
-      }));
-
       setActiveReward({ ...reward, isLoading: true });
 
       claimRewards({
         streakId: state.streaks[0].id,
-        rewards,
       });
     }
   };

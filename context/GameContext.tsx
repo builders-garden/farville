@@ -101,11 +101,9 @@ interface GameContextType {
     xp?: number;
     level?: number;
     coins?: number;
+    mintedOG?: boolean;
   }) => void;
-  claimRewards: (variables: {
-    streakId: number;
-    rewards: { itemId: number; quantity: number }[];
-  }) => void;
+  claimRewards: (variables: { streakId: number }) => void;
   updateUserHarvestedCrops: (
     updatedUserHarvestedCrops: DbUserHarvestedCrop[]
   ) => void;
@@ -113,6 +111,8 @@ interface GameContextType {
   setShowHarvestedNewGoldCrops: Dispatch<SetStateAction<boolean>>;
   showAchievedNewBadges: boolean;
   setShowAchievedNewBadges: Dispatch<SetStateAction<boolean>>;
+  showMintOGBadge: boolean;
+  setShowMintOGBadge: Dispatch<SetStateAction<boolean>>;
 }
 
 export const GameContext = createContext<GameContextType | null>(null);
@@ -134,6 +134,7 @@ export function GameProvider({
   const [showStreaks, setShowStreaks] = useState(false);
   const [showTimeline, setShowTimeline] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
+  const [showMintOGBadge, setShowMintOGBadge] = useState(false);
   const {
     state,
     refetch,
@@ -402,6 +403,8 @@ export function GameProvider({
         setShowHarvestedNewGoldCrops,
         showAchievedNewBadges,
         setShowAchievedNewBadges,
+        showMintOGBadge,
+        setShowMintOGBadge,
       }}
     >
       {children}

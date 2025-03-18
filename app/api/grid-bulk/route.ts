@@ -1,15 +1,29 @@
 import { NextRequest, NextResponse } from "next/server";
 import { SeedType, PerkType, ActionType } from "@/types/game";
 import { fertilizeBulk, harvestBulk, perkBulk, plantBulk } from "./utils";
+import { z } from "zod";
 
 export interface GridBulkRequest {
   action: ActionType;
-  itemSlug?: string;
+  itemSlug?: SeedType | PerkType;
   cells: {
     x: number;
     y: number;
   }[];
 }
+
+const requestSchema = z.object({
+  action: z.nativeEnum(ActionType),
+  itemSlug: z
+    .union([z.nativeEnum(SeedType), z.nativeEnum(PerkType)])
+    .optional(),
+  cells: z.array(
+    z.object({
+      x: z.number(),
+      y: z.number(),
+    })
+  ),
+});
 
 export const POST = async (req: NextRequest) => {
   const fid = req.headers.get("x-user-fid");
@@ -18,7 +32,17 @@ export const POST = async (req: NextRequest) => {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { action, cells, itemSlug }: GridBulkRequest = await req.json();
+  const requestJson = await req.json();
+  const requestBody = requestSchema.safeParse(requestJson);
+
+  if (requestBody.success === false) {
+    return NextResponse.json(
+      { success: false, errors: requestBody.error.errors },
+      { status: 400 }
+    );
+  }
+
+  const { action, itemSlug, cells } = requestBody.data;
 
   try {
     switch (action) {
