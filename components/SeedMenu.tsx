@@ -103,7 +103,7 @@ export default function SeedMenu() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 20 }}
-      className="flex items-center gap-2 px-2"
+      className="flex items-center gap-2 px-2 overflow-y-hidden"
       data-tutorial={"seed-menu"}
     >
       <motion.div
@@ -128,7 +128,7 @@ export default function SeedMenu() {
         )}
         <div
           ref={scrollContainerRef}
-          className="flex gap-2 overflow-x-auto py-3 px-6 scrollbar-none"
+          className="flex gap-2 overflow-x-auto py-3 px-6 [&::-webkit-scrollbar]:h-2 [&::-webkit-scrollbar-track]:bg-[#6D4B2B] [&::-webkit-scrollbar-thumb]:bg-[#8A5E3B]"
         >
           {state.items
             .filter(

@@ -217,7 +217,7 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
           </div>
 
           {/* Scrollable leaderboard list */}
-          <div className="flex-1 overflow-y-auto min-h-0">
+          <div className="flex-1 overflow-y-auto min-h-0 no-scrollbar">
             {getCurrentData()?.targetPosition && (
               <motion.div
                 key={state.user.fid}
