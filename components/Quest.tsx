@@ -14,6 +14,7 @@ import ItemDetailsPopup from "./ItemDetailsPopup";
 import { useFrameContext } from "@/context/FrameContext";
 import { useCreateRequest } from "@/hooks/game-actions/use-create-request";
 import sdk from "@farcaster/frame-sdk";
+import RequestButton from "./ui/request-button";
 
 interface QuestProps {
   quest: DbUserHasQuestWithQuest;
@@ -57,12 +58,10 @@ const renderQuestRewards = (
     </div>
 
     {showRequestButton && (
-      <button
+      <RequestButton
+        variant="secondary"
         onClick={onRequestClick}
-        className="bg-[#FFB938] text-[#7E4E31] px-2 py-1 rounded text-xs font-bold hover:bg-[#ffc661] transition-colors"
-      >
-        Request
-      </button>
+      />
     )}
   </div>
 );
