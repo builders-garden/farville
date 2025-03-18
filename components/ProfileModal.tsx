@@ -14,29 +14,67 @@ import { UserItem } from "@/hooks/use-user-items";
 import { calculateHarvestAchievements } from "@/lib/utils";
 import { LeaderboardUserAvatar } from "./LeaderboardUserAvatar";
 import sdk from "@farcaster/frame-sdk";
+import { useOtherUserProfile } from "@/hooks/use-other-user-profile";
 
-export default function ProfileModal({ onClose }: { onClose: () => void }) {
+export default function ProfileModal({
+  onClose,
+  userFid,
+}: {
+  onClose: () => void;
+  userFid?: number;
+}) {
   const { state } = useGame();
   const [isWhatIsThisOpen, setIsWhatIsThisOpen] = useState(false);
   const [chooseGlowingCropOpen, setChooseGlowingCropOpen] = useState(false);
   const [selectedCrops, setSelectedCrops] = useState<UserItem[]>([]);
   const [cropIndex, setCropIndex] = useState<number | undefined>(undefined);
+
+  const { userData, isLoading } = useOtherUserProfile(userFid);
+
+  const isCurrentUser = !userFid || userFid === state.user.fid;
+  const user = isCurrentUser ? state.user : userData?.user;
+
   const harvestHonours = calculateHarvestAchievements(
-    state.harvestedCropsSummary
+    isCurrentUser
+      ? state.harvestedCropsSummary
+      : userData?.harvestedCropsSummary || []
   );
 
   const onChooseCrop = (crop: UserItem) => {
-    if (cropIndex !== undefined) {
+    // Only allow choosing crops for current user
+    if (isCurrentUser && cropIndex !== undefined) {
       const newCrops = [...selectedCrops];
       newCrops[cropIndex] = crop;
-      console.log("newCrops", newCrops);
       setSelectedCrops(newCrops);
     }
   };
 
   useEffect(() => {
-    setSelectedCrops(state.specialCrops || []);
-  }, [state.specialCrops]);
+    if (isCurrentUser) {
+      setSelectedCrops(state.specialCrops || []);
+    } else if (userData?.specialCrops) {
+      setSelectedCrops(userData.specialCrops);
+    }
+  }, [state.specialCrops, userData?.specialCrops, isCurrentUser]);
+
+  if (!isCurrentUser && isLoading) {
+    return (
+      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="bg-[#7E4E31] p-6 w-full min-h-screen"
+        >
+          <div className="flex items-center justify-center">
+            <div className="h-8 w-8 border-4 border-t-[#FFB938] border-[#5B4120] rounded-full animate-spin"></div>
+            <span className="ml-2 text-white/80">
+              Loading farmer profile...
+            </span>
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-start z-50">
@@ -50,7 +88,7 @@ export default function ProfileModal({ onClose }: { onClose: () => void }) {
           <div className="flex justify-between items-center mb-6">
             <div>
               <motion.h2
-                className="text-white/90 font-bold text-2xl mb-1 flex items-center gap-2"
+                className={`text-white/90 font-bold text-2xl mb-1 flex items-center gap-2`}
                 animate={{ rotate: [0, -3, 3, 0] }}
                 transition={{ duration: 0.5, repeat: Infinity, repeatDelay: 5 }}
               >
@@ -77,15 +115,14 @@ export default function ProfileModal({ onClose }: { onClose: () => void }) {
               {/* Profile Information */}
               <Card
                 className={`bg-gradient-to-br from-[#6D4C2C] to-[#5B4120] rounded-lg border-none w-full max-w-2xl ${
-                  state.user.fid === state.user.fid ? "" : "cursor-pointer"
+                  !isCurrentUser ? "cursor-pointer" : ""
                 }`}
                 onClick={async () => {
-                  if (state.user.fid === state.user.fid) {
-                    return;
+                  if (!isCurrentUser && user?.fid) {
+                    await sdk.actions.viewProfile({
+                      fid: user.fid,
+                    });
                   }
-                  await sdk.actions.viewProfile({
-                    fid: state.user?.fid,
-                  });
                 }}
               >
                 <CardContent className="flex flex-row justify-between w-full gap-4 p-4">
@@ -93,9 +130,9 @@ export default function ProfileModal({ onClose }: { onClose: () => void }) {
                     <div className="relative mt-2">
                       <div className="relative flex-none w-fit">
                         <LeaderboardUserAvatar
-                          pfpUrl={state.user?.avatarUrl || ""}
-                          username={state.user?.username}
-                          isOgUser={state.user?.mintedOG}
+                          pfpUrl={user?.avatarUrl || ""}
+                          username={user?.username}
+                          isOgUser={user?.mintedOG}
                           size={{
                             width: 20,
                             height: 20,
@@ -105,18 +142,21 @@ export default function ProfileModal({ onClose }: { onClose: () => void }) {
                       </div>
                       <div className="absolute -top-2 right-2 bg-[#5ae88e] rounded-lg flex items-center justify-center z-80 p-1">
                         <span className="text-[#7E4E31] font-bold text-[10px]">
-                          Level {state.level}
+                          Level{" "}
+                          {isCurrentUser ? state.level : userData?.level || 1}
                         </span>
                       </div>
                     </div>
                     <div className="flex flex-col gap-1">
                       <h3 className="text-white/90 font-bold text-[10px]">
-                        {state.user?.displayName.length > 10
-                          ? state.user?.displayName.slice(0, 10) + "..."
-                          : state.user?.displayName}
+                        {!user?.displayName
+                          ? "Farmer"
+                          : user?.displayName?.length > 10
+                          ? user?.displayName.slice(0, 10) + "..."
+                          : user?.displayName}
                       </h3>
                       <p className="text-white/70 text-[8px]">
-                        {state.user?.username}
+                        {user?.username}
                       </p>
                     </div>
                   </div>
@@ -124,19 +164,25 @@ export default function ProfileModal({ onClose }: { onClose: () => void }) {
                     <Statistic
                       title="Experience"
                       image="/images/icons/experience.png"
-                      value={`${state.user?.xp || 0} XP`}
+                      value={`${user?.xp || 0} XP`}
                     />
                     <Statistic
                       title="Farmer since"
                       image="/images/icons/farmer.png"
-                      value={new Date(
-                        state.user.createdAt
-                      ).toLocaleDateString()}
+                      value={
+                        user?.createdAt
+                          ? new Date(user.createdAt).toLocaleDateString()
+                          : "Unknown"
+                      }
                     />
                     <Statistic
                       title="Streak"
                       image="/images/special/fire.png"
-                      value={`${state.currentStreakDays} days`}
+                      value={`${
+                        isCurrentUser
+                          ? state.currentStreakDays
+                          : userData?.currentStreakDays || 0
+                      } days`}
                     />
                   </div>
                 </CardContent>
@@ -189,10 +235,14 @@ export default function ProfileModal({ onClose }: { onClose: () => void }) {
                       {selectedCrops?.slice(0, 3).map((crop, index) => (
                         <div
                           key={index}
-                          className="relative w-24 h-24 mx-auto rounded-lg bg-[#7E4E31] cursor-pointer"
+                          className={`relative w-24 h-24 mx-auto rounded-lg bg-[#7E4E31] ${
+                            isCurrentUser ? "cursor-pointer" : ""
+                          }`}
                           onClick={() => {
-                            setChooseGlowingCropOpen(true);
-                            setCropIndex(index);
+                            if (isCurrentUser) {
+                              setChooseGlowingCropOpen(true);
+                              setCropIndex(index);
+                            }
                           }}
                         >
                           <div className="absolute inset-0 flex items-center justify-center">
@@ -210,7 +260,8 @@ export default function ProfileModal({ onClose }: { onClose: () => void }) {
                           </div>
                         </div>
                       ))}
-                      {selectedCrops.length < 3 &&
+                      {isCurrentUser &&
+                        selectedCrops.length < 3 &&
                         Array.from({ length: 3 - selectedCrops.length }).map(
                           (_, index) => (
                             <div
@@ -224,6 +275,20 @@ export default function ProfileModal({ onClose }: { onClose: () => void }) {
                               <div className="text-white/70 text-[10px]">
                                 <Plus size={24} />
                               </div>
+                            </div>
+                          )
+                        )}
+
+                      {/* Empty slots for other users if they don't have 3 crops */}
+                      {!isCurrentUser &&
+                        selectedCrops.length < 3 &&
+                        Array.from({ length: 3 - selectedCrops.length }).map(
+                          (_, index) => (
+                            <div
+                              key={index}
+                              className="w-24 h-24 mx-auto rounded-lg bg-[#7E4E31] flex items-center justify-center opacity-50"
+                            >
+                              <div className="text-white/40 text-xs">Empty</div>
                             </div>
                           )
                         )}
@@ -252,7 +317,7 @@ export default function ProfileModal({ onClose }: { onClose: () => void }) {
             </div>
           </div>
 
-          {chooseGlowingCropOpen && (
+          {isCurrentUser && chooseGlowingCropOpen && (
             <ChooseGlowingCrop
               onChooseCrop={onChooseCrop}
               specialCrops={state.specialCrops}
