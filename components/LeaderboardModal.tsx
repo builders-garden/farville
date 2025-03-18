@@ -217,7 +217,7 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
           </div>
 
           {/* Scrollable leaderboard list */}
-          <div className="flex-1 overflow-y-auto min-h-0">
+          <div className="flex-1 overflow-y-auto min-h-0 no-scrollbar">
             {getCurrentData()?.targetPosition && (
               <motion.div
                 key={state.user.fid}
@@ -280,7 +280,10 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
               </motion.div>
             )}
             <div className="space-y-2">
-              {getCurrentData()?.users?.map((entry, index) => (
+              {[
+                ...(getCurrentData()?.users || []),
+                ...(getCurrentData()?.users || []),
+              ]?.map((entry, index) => (
                 <motion.div
                   key={entry.fid}
                   initial={{ opacity: 0, x: -20 }}

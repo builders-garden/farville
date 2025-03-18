@@ -194,7 +194,7 @@ export default function QuestsModal({
           </div>
 
           {/* Content area */}
-          <div className="flex-1 overflow-y-auto min-h-0 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-[#6D4B2B] [&::-webkit-scrollbar-thumb]:bg-[#8A5E3B]">
+          <div className="flex-1 overflow-y-auto min-h-0 no-scrollbar">
             {isLoadingUserQuests ? (
               <div className="flex items-center justify-center h-full">
                 <motion.div
