@@ -280,10 +280,7 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
               </motion.div>
             )}
             <div className="space-y-2">
-              {[
-                ...(getCurrentData()?.users || []),
-                ...(getCurrentData()?.users || []),
-              ]?.map((entry, index) => (
+              {getCurrentData()?.users?.map((entry, index) => (
                 <motion.div
                   key={entry.fid}
                   initial={{ opacity: 0, x: -20 }}
