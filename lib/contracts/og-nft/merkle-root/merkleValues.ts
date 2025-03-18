@@ -6006,4 +6006,9 @@ export const merkleValues = [
   ["0x760e7b42c920c2a0feb58ddd610c14a6bdd2ebea", "3314"],
   ["0x6ccdeefb010e4dc05bec7e2bfe2b675b7434d40f", "3314"],
   ["0x68e450724936872dee9a23092155becb02602612", "574"],
+  ["0x90df39885e14df5d74d2b2daa8c8590b748f03f1", "1258"],
+  ["0x9b80ff4c0245e9c7522b7efd06fdfd69ff5caa85", "5"],
+  ["0x69ed6f1d64575b24d1f606d8c9a26347a1303030", "5"],
+  ["0x96d9f31f5b99fb0f9a583219202da866fbb971c8", "332"],
+  ["0x0Cb2ad779382a4C5F0D1320faD54A6bA4Ef98A4f", "153"],
 ];
