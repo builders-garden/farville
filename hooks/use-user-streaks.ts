@@ -2,10 +2,10 @@ import { DbStreak } from "@/supabase/types";
 import { useApiQuery } from "./use-api-query";
 import { useApiMutation } from "./use-api-mutation";
 
-export const useUserStreaks = () => {
+export const useUserStreaks = (fid?: number) => {
   const { data, isLoading, refetch } = useApiQuery<DbStreak[]>({
-    queryKey: ["user-streaks"],
-    url: "/api/users/me/streaks",
+    queryKey: ["user-streaks", fid],
+    url: !fid ? "/api/users/me/streaks" : `/api/users/${fid}/streaks`,
     isProtected: true,
   });
 

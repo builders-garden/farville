@@ -1,12 +1,12 @@
 import { useApiQuery } from "./use-api-query";
 
-export const useUserFrosts = () => {
+export const useUserFrosts = (fid?: number) => {
   const { data, isLoading, refetch } = useApiQuery<{
     allFrostsDates: Date[];
     lastStreakDates: Date[];
   }>({
-    queryKey: ["user-frosts"],
-    url: "/api/users/me/frosts",
+    queryKey: ["user-frosts", fid],
+    url: !fid ? "/api/users/me/frosts" : `/api/users/${fid}/frosts`,
     isProtected: true,
   });
 

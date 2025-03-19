@@ -5,10 +5,10 @@ export interface UserItem extends DbUserHasItem {
   item: DbItem;
 }
 
-export const useUserItems = () => {
+export const useUserItems = (fid?: number) => {
   const { data, isLoading, refetch } = useApiQuery<UserItem[]>({
-    queryKey: ["user-items"],
-    url: "/api/users/me/items",
+    queryKey: ["user-items", fid],
+    url: !fid ? "/api/users/me/items" : `/api/users/${fid}/items`,
     isProtected: true,
   });
 
