@@ -58,6 +58,10 @@ export default function ProfileModal({
     }
   }, [state.specialCrops, userData?.specialCrops, isCurrentUser]);
 
+  console.log({
+    state,
+  });
+
   if (!isCurrentUser && isLoading) {
     return (
       <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
@@ -114,21 +118,21 @@ export default function ProfileModal({
           <div className="space-y-4 overflow-y-auto h-[calc(100vh-100px)] pb-4 pr-2 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-[#6D4B2B] [&::-webkit-scrollbar-thumb]:bg-[#8A5E3B]">
             <div className="flex flex-col items-center gap-8">
               {/* Profile Information */}
-              <Card
-                className={`bg-gradient-to-br from-[#6D4C2C] to-[#5B4120] rounded-lg border-none w-full max-w-2xl ${
-                  !isCurrentUser ? "cursor-pointer" : ""
-                }`}
-                onClick={async () => {
-                  if (!isCurrentUser && user?.fid) {
-                    await sdk.actions.viewProfile({
-                      fid: user.fid,
-                    });
-                  }
-                }}
-              >
+              <Card className="bg-gradient-to-br from-[#6D4C2C] to-[#5B4120] rounded-lg border-none w-full max-w-2xl">
                 <CardContent className="flex flex-col w-full gap-4 p-4">
                   <div className="flex flex-row items-center gap-4">
-                    <div className="relative flex-none w-fit">
+                    <div
+                      className={`relative flex-none w-fit ${
+                        !isCurrentUser ? "cursor-pointer" : ""
+                      }`}
+                      onClick={async () => {
+                        if (!isCurrentUser && user?.fid) {
+                          await sdk.actions.viewProfile({
+                            fid: user.fid,
+                          });
+                        }
+                      }}
+                    >
                       <LeaderboardUserAvatar
                         pfpUrl={user?.avatarUrl || ""}
                         username={user?.username}
@@ -140,7 +144,7 @@ export default function ProfileModal({
                         borderSize={4}
                       />
                     </div>
-                    <div className="flex flex-col items-center gap-2">
+                    <div className="flex flex-col w-full gap-2">
                       <h3 className="text-white/90 font-bold text-sm">
                         {!user?.displayName
                           ? "Farmer"
@@ -163,6 +167,7 @@ export default function ProfileModal({
 
                   <hr className="w-full border-white/20" />
 
+                  {/* Statistics */}
                   <div className="flex flex-col gap-2 text-white/80">
                     <Statistic
                       title="Farmer since"
@@ -184,173 +189,293 @@ export default function ProfileModal({
                     />
                   </div>
 
-                  <div className="flex flex-row justify-between mt-2">
-                    <div
-                      className="relative w-[70px] h-[70px] border-2 border-[#179ef9] rounded-lg cursor-pointer"
-                      onClick={() => setShowMintOGBadge(true)}
-                    >
-                      <Image
-                        src="/images/badge/og.png"
-                        alt="Farville OG Badge"
-                        layout="fill"
-                        className={`${
-                          user?.mintedOG ? "" : "opacity-30"
-                        } rounded-lg`}
-                      />
+                  {/* Special Badges - profile only */}
+                  {isCurrentUser && (
+                    <div className="flex flex-row justify-between mt-2">
+                      <div
+                        className="relative w-[70px] h-[70px] border-2 border-[#179ef9] rounded-lg cursor-pointer"
+                        onClick={() => {
+                          if (isCurrentUser) {
+                            setShowMintOGBadge(true);
+                          }
+                        }}
+                      >
+                        <Image
+                          src="/images/badge/og.png"
+                          alt="Farville OG Badge"
+                          layout="fill"
+                          className={`${
+                            user?.mintedOG ? "" : "opacity-30"
+                          } rounded-lg`}
+                        />
+                      </div>
+                      <div className="relative w-[70px] h-[70px]">
+                        <div className="w-full h-full rounded-lg bg-[#7E4E31] flex items-center justify-center"></div>
+                      </div>
+                      <div className="relative w-[70px] h-[70px]">
+                        <div className="w-full h-full rounded-lg bg-[#7E4E31] flex items-center justify-center"></div>
+                      </div>
+                      <div className="relative w-[70px] h-[70px]">
+                        <div className="w-full h-full rounded-lg bg-[#7E4E31] flex items-center justify-center"></div>
+                      </div>
                     </div>
-                    <div className="relative w-[70px] h-[70px]">
-                      <div className="w-full h-full rounded-lg bg-[#7E4E31] flex items-center justify-center"></div>
-                    </div>
-                    <div className="relative w-[70px] h-[70px]">
-                      <div className="w-full h-full rounded-lg bg-[#7E4E31] flex items-center justify-center"></div>
-                    </div>
-                    <div className="relative w-[70px] h-[70px]">
-                      <div className="w-full h-full rounded-lg bg-[#7E4E31] flex items-center justify-center"></div>
-                    </div>
-                  </div>
+                  )}
                 </CardContent>
               </Card>
 
-              {/* Glowing crops section */}
-              <div className="w-full flex flex-col gap-2">
-                <div className="flex flex-row items-center justify-between">
-                  <div className="flex flex-row items-center gap-2">
-                    <h3 className="text-white/90 text-sm font-bold">
-                      Gold crops
-                    </h3>
-                    <p className="text-white/70 text-xs">
-                      ({selectedCrops.length}/11)
-                    </p>
-                    <button
-                      className="text-white/70 hover:text-white/90 transition-colors cursor-pointer -mt-1"
-                      onClick={() => setIsWhatIsThisOpen(true)}
-                    >
-                      <Info />
-                    </button>
-                  </div>
-                  {selectedCrops.length > 4 &&
-                    (showMoreGoldCropsBadges ? (
-                      <button
-                        className="text-white/70 hover:text-white/90 transition-colors cursor-pointer -mt-1"
-                        onClick={() => setShowMoreGoldCropsBadges(false)}
-                      >
-                        <ChevronUp />
-                      </button>
-                    ) : (
-                      <button
-                        className="text-white/70 hover:text-white/90 transition-colors cursor-pointer -mt-1"
-                        onClick={() => setShowMoreGoldCropsBadges(true)}
-                      >
-                        <ChevronDown />
-                      </button>
-                    ))}
-                  {isWhatIsThisOpen && (
-                    <InfoModal
-                      title="Glowing crops"
-                      onCancel={() => setIsWhatIsThisOpen(false)}
-                      options={{
-                        titleColor: "text-[#feb938]",
-                      }}
-                    >
-                      <div className="flex flex-col gap-4 my-4 text-white/90 text-[10px]">
-                        <p>
-                          Here you can showcase up to 3 of your most prized
-                          crops.
+              {isCurrentUser ? (
+                <>
+                  {/* Glowing crops section */}
+                  <div className="w-full flex flex-col gap-2">
+                    <div className="flex flex-row items-center justify-between">
+                      <div className="flex flex-row items-center gap-2">
+                        <h3 className="text-white/90 text-sm font-bold">
+                          Gold crops
+                        </h3>
+                        <p className="text-white/70 text-xs">
+                          ({selectedCrops.length}/11)
                         </p>
-                        <p>
-                          These are special crops (gold or legendary) that other
-                          farmers can see when they visit your profile.
-                        </p>
-                        <p>
-                          <strong>Tip:</strong> Select your rarest and most
-                          valuable crops to display your farming achievements to
-                          the community!
-                        </p>
+                        <button
+                          className="text-white/70 hover:text-white/90 transition-colors cursor-pointer -mt-1"
+                          onClick={() => setIsWhatIsThisOpen(true)}
+                        >
+                          <Info />
+                        </button>
                       </div>
-                    </InfoModal>
-                  )}
-                </div>
-
-                <div className="grid grid-cols-4 gap-4">
-                  {(showMoreGoldCropsBadges
-                    ? selectedCrops
-                    : selectedCrops?.slice(0, 4)
-                  )?.map((crop, index) => (
-                    <div
-                      key={index}
-                      className={`relative w-20 h-20 mx-auto rounded-lg bg-gradient-to-br from-[#6D4C2C] to-[#5B4120] ${
-                        isCurrentUser ? "cursor-pointer" : ""
-                      }`}
-                      onClick={() => {
-                        if (isCurrentUser) {
-                          setChooseGlowingCropOpen(true);
-                          setCropIndex(index);
-                        }
-                      }}
-                    >
-                      <Image
-                        src={`/images/badge/gold-crops/${crop.item.slug}.png`}
-                        alt={crop.item.name}
-                        layout="fill"
-                        className="animate-[pulse_2s_ease-in-out_infinite] rounded-lg"
-                        style={{
-                          animation: "pulse 3s ease-in-out infinite",
-                        }}
-                      />
-                    </div>
-                  ))}
-                  {isCurrentUser &&
-                    selectedCrops.length < 3 &&
-                    Array.from({ length: 3 - selectedCrops.length }).map(
-                      (_, index) => (
-                        <div
-                          key={index}
-                          className="w-24 h-24 mx-auto rounded-lg bg-[#7E4E31] flex items-center justify-center cursor-pointer"
-                          onClick={() => {
-                            setChooseGlowingCropOpen(true);
-                            setCropIndex(selectedCrops.length + index);
+                      {selectedCrops.length > 4 &&
+                        (showMoreGoldCropsBadges ? (
+                          <button
+                            className="text-white/70 hover:text-white/90 transition-colors cursor-pointer -mt-1"
+                            onClick={() => setShowMoreGoldCropsBadges(false)}
+                          >
+                            <ChevronUp />
+                          </button>
+                        ) : (
+                          <button
+                            className="text-white/70 hover:text-white/90 transition-colors cursor-pointer -mt-1"
+                            onClick={() => setShowMoreGoldCropsBadges(true)}
+                          >
+                            <ChevronDown />
+                          </button>
+                        ))}
+                      {isWhatIsThisOpen && (
+                        <InfoModal
+                          title="Glowing crops"
+                          onCancel={() => setIsWhatIsThisOpen(false)}
+                          options={{
+                            titleColor: "text-[#feb938]",
                           }}
                         >
-                          <div className="text-white/70 text-[10px]">
-                            <Plus size={24} />
+                          <div className="flex flex-col gap-4 my-4 text-white/90 text-[10px]">
+                            <p>
+                              Here you can showcase up to 3 of your most prized
+                              crops.
+                            </p>
+                            <p>
+                              These are special crops (gold or legendary) that
+                              other farmers can see when they visit your
+                              profile.
+                            </p>
+                            <p>
+                              <strong>Tip:</strong> Select your rarest and most
+                              valuable crops to display your farming
+                              achievements to the community!
+                            </p>
                           </div>
-                        </div>
-                      )
-                    )}
+                        </InfoModal>
+                      )}
+                    </div>
 
-                  {/* Empty slots for other users if they don't have 3 crops */}
-                  {!isCurrentUser &&
-                    selectedCrops.length < 3 &&
-                    Array.from({ length: 3 - selectedCrops.length }).map(
-                      (_, index) => (
+                    <div className="grid grid-cols-4 gap-4">
+                      {(showMoreGoldCropsBadges
+                        ? selectedCrops
+                        : selectedCrops?.slice(0, 4)
+                      )?.map((crop, index) => (
                         <div
                           key={index}
-                          className="w-24 h-24 mx-auto rounded-lg bg-[#7E4E31] flex items-center justify-center opacity-50"
+                          className={`relative w-20 h-20 mx-auto rounded-lg bg-gradient-to-br from-[#6D4C2C] to-[#5B4120] ${
+                            isCurrentUser ? "cursor-pointer" : ""
+                          }`}
+                          onClick={() => {
+                            if (isCurrentUser) {
+                              setChooseGlowingCropOpen(true);
+                              setCropIndex(index);
+                            }
+                          }}
                         >
-                          <div className="text-white/40 text-xs">Empty</div>
+                          <Image
+                            src={`/images/badge/gold-crops/${crop.item.slug}.png`}
+                            alt={crop.item.name}
+                            layout="fill"
+                            className="animate-[pulse_2s_ease-in-out_infinite] rounded-lg"
+                            style={{
+                              animation: "pulse 3s ease-in-out infinite",
+                            }}
+                          />
                         </div>
-                      )
-                    )}
-                </div>
-              </div>
+                      ))}
+                      {isCurrentUser &&
+                        selectedCrops.length < 3 &&
+                        Array.from({ length: 3 - selectedCrops.length }).map(
+                          (_, index) => (
+                            <div
+                              key={index}
+                              className="w-24 h-24 mx-auto rounded-lg bg-[#7E4E31] flex items-center justify-center cursor-pointer"
+                              onClick={() => {
+                                setChooseGlowingCropOpen(true);
+                                setCropIndex(selectedCrops.length + index);
+                              }}
+                            >
+                              <div className="text-white/70 text-[10px]">
+                                <Plus size={24} />
+                              </div>
+                            </div>
+                          )
+                        )}
 
-              {/* Harvest Honours section */}
-              <div className="w-full flex flex-col gap-2">
-                <h3 className="text-white/90 text-sm font-bold">
-                  Harvest Honours
-                </h3>
-                {harvestHonours.map((honour, index) => (
-                  <HarvestHonour
-                    key={index}
-                    crop={honour.crop}
-                    title={honour.title}
-                    totalCount={honour.totalCount}
-                    currentCount={honour.currentCount}
-                    currentGoal={honour.currentGoal}
-                    step={honour.step}
-                  />
-                ))}
-              </div>
+                      {/* Empty slots for other users if they don't have 3 crops */}
+                      {!isCurrentUser &&
+                        selectedCrops.length < 3 &&
+                        Array.from({ length: 3 - selectedCrops.length }).map(
+                          (_, index) => (
+                            <div
+                              key={index}
+                              className="w-24 h-24 mx-auto rounded-lg bg-[#7E4E31] flex items-center justify-center opacity-50"
+                            >
+                              <div className="text-white/40 text-xs">Empty</div>
+                            </div>
+                          )
+                        )}
+                    </div>
+                  </div>
+
+                  {/* Harvest Honours section */}
+                  <div className="w-full flex flex-col gap-2">
+                    <h3 className="text-white/90 text-sm font-bold">
+                      Harvest Honours
+                    </h3>
+                    {harvestHonours.map((honour, index) => (
+                      <HarvestHonour
+                        key={index}
+                        crop={honour.crop}
+                        title={honour.title}
+                        totalCount={honour.totalCount}
+                        currentCount={honour.currentCount}
+                        currentGoal={honour.currentGoal}
+                        step={honour.step}
+                      />
+                    ))}
+                  </div>
+                </>
+              ) : (
+                <>
+                  {/* Collectibles section */}
+                  <div className="w-full flex flex-col gap-2">
+                    <h3 className="text-white/90 text-sm font-bold">
+                      Collectibles (1/56)
+                    </h3>
+                    <Card className="bg-gradient-to-br from-[#6D4C2C] to-[#5B4120] rounded-lg border-none">
+                      <CardContent className="p-4 space-y-6">
+                        {/* Special Badges */}
+                        <div className="flex flex-col gap-2">
+                          <div className="flex flex-row justify-between items-center">
+                            <h4 className="text-white/90 text-xs font-bold">
+                              Special Badges
+                            </h4>
+                            <p className="text-white/70 text-xs">1/1</p>
+                          </div>
+                          <div className="grid grid-cols-8 gap-2">
+                            <div className="relative w-10 h-10 rounded-lg bg-[#7E4E31] flex items-center justify-center border border-[#179ef9]">
+                              {userData?.user?.mintedOG && (
+                                <Image
+                                  src="/images/badge/og.png"
+                                  alt="OG Badge"
+                                  layout="fill"
+                                  className="rounded-lg"
+                                />
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Glowing Crops */}
+                        <div className="flex flex-col gap-2">
+                          <div className="flex flex-row justify-between items-center">
+                            <h4 className="text-white/90 text-xs font-bold">
+                              Gold Crops
+                            </h4>
+                            <p className="text-white/70 text-xs">
+                              ({selectedCrops.length}/11)
+                            </p>
+                          </div>
+                          <div className="grid grid-cols-8 gap-2">
+                            {state.items
+                              .filter(
+                                (item) => item.category === "special-crop"
+                              )
+                              .map((crop, index) => (
+                                <div
+                                  key={index}
+                                  className="relative w-10 h-10 rounded-lg bg-[#7E4E31]"
+                                >
+                                  <Image
+                                    src={`/images/badge/gold-crops/${crop.slug}.png`}
+                                    alt={crop.name}
+                                    layout="fill"
+                                    className="rounded-lg animate-pulse"
+                                  />
+                                </div>
+                              ))}
+                          </div>
+                        </div>
+
+                        {/* Harvest Honours */}
+                        <div className="flex flex-col gap-2">
+                          <div className="flex flex-row justify-between items-center">
+                            <h4 className="text-white/90 text-xs font-bold">
+                              Harvest Honours
+                            </h4>
+                            <p className="text-white/70 text-xs">1/44</p>
+                          </div>
+                          <div className="grid grid-cols-8 gap-2">
+                            {harvestHonours.map((honour) =>
+                              Array.from({ length: 4 }).map((_, index) =>
+                                honour.step > index + 1 ? (
+                                  <div
+                                    key={index}
+                                    className={`relative w-10 h-10 rounded-lg bg-[#7E4E31] border border-[#FFB938]`}
+                                  >
+                                    <Image
+                                      src={`/images/badge/honours/${
+                                        honour.crop
+                                      }-${index + 1}.png`}
+                                      alt={`Badge ${honour.crop} ${index + 1}`}
+                                      layout="fill"
+                                      className="rounded-lg"
+                                    />
+                                  </div>
+                                ) : (
+                                  <div
+                                    key={index}
+                                    className={`flex w-10 h-10 rounded-lg bg-[#7E4E31] justify-center items-center opacity-50`}
+                                  >
+                                    <Image
+                                      src={`/images/profile/question-mark-yellow.png`}
+                                      alt="Yellow question mark"
+                                      width={18}
+                                      height={18}
+                                    />
+                                  </div>
+                                )
+                              )
+                            )}
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </>
+              )}
             </div>
           </div>
 
