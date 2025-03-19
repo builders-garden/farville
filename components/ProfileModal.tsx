@@ -9,7 +9,7 @@ import { useEffect, useState } from "react";
 import InfoModal from "./modals/InfoModal";
 import { HarvestHonour } from "./profile/HarvestHonour";
 import ChooseGlowingCrop from "@/components/modals/ChooseGlowingCrop";
-import { Plus } from "lucide-react";
+import { ChevronDown, ChevronUp, Info, Plus } from "lucide-react";
 import { UserItem } from "@/hooks/use-user-items";
 import { calculateHarvestAchievements } from "@/lib/utils";
 import { LeaderboardUserAvatar } from "./LeaderboardUserAvatar";
@@ -23,9 +23,10 @@ export default function ProfileModal({
   onClose: () => void;
   userFid?: number;
 }) {
-  const { state } = useGame();
+  const { state, setShowMintOGBadge } = useGame();
   const [isWhatIsThisOpen, setIsWhatIsThisOpen] = useState(false);
   const [chooseGlowingCropOpen, setChooseGlowingCropOpen] = useState(false);
+  const [showMoreGoldCropsBadges, setShowMoreGoldCropsBadges] = useState(false);
   const [selectedCrops, setSelectedCrops] = useState<UserItem[]>([]);
   const [cropIndex, setCropIndex] = useState<number | undefined>(undefined);
 
@@ -125,47 +126,44 @@ export default function ProfileModal({
                   }
                 }}
               >
-                <CardContent className="flex flex-row justify-between w-full gap-4 p-4">
-                  <div className="flex flex-col gap-4 w-[45%]">
-                    <div className="relative mt-2">
-                      <div className="relative flex-none w-fit">
-                        <LeaderboardUserAvatar
-                          pfpUrl={user?.avatarUrl || ""}
-                          username={user?.username}
-                          isOgUser={user?.mintedOG}
-                          size={{
-                            width: 20,
-                            height: 20,
-                          }}
-                          borderSize={4}
-                        />
-                      </div>
-                      <div className="absolute -top-2 right-8 bg-[#5ae88e] rounded-lg flex items-center justify-center z-80 p-1">
-                        <span className="text-[#7E4E31] font-bold text-[10px]">
-                          Lvl{" "}
-                          {isCurrentUser ? state.level : userData?.level || 1}
-                        </span>
-                      </div>
+                <CardContent className="flex flex-col w-full gap-4 p-4">
+                  <div className="flex flex-row items-center gap-4">
+                    <div className="relative flex-none w-fit">
+                      <LeaderboardUserAvatar
+                        pfpUrl={user?.avatarUrl || ""}
+                        username={user?.username}
+                        isOgUser={user?.mintedOG}
+                        size={{
+                          width: 20,
+                          height: 20,
+                        }}
+                        borderSize={4}
+                      />
                     </div>
-                    <div className="flex flex-col gap-1">
-                      <h3 className="text-white/90 font-bold text-[10px]">
+                    <div className="flex flex-col items-center gap-2">
+                      <h3 className="text-white/90 font-bold text-sm">
                         {!user?.displayName
                           ? "Farmer"
-                          : user?.displayName?.length > 10
-                          ? user?.displayName.slice(0, 10) + "..."
+                          : user?.displayName?.length > 17
+                          ? user?.displayName.slice(0, 13) + "..."
                           : user?.displayName}
                       </h3>
-                      <p className="text-white/70 text-[8px]">
-                        {user?.username}
-                      </p>
+                      <div className="flex flex-row justify-between w-full">
+                        <div className="text-[#f2a311] text-xs">
+                          Lvl{" "}
+                          {isCurrentUser ? state.level : userData?.level || 1}
+                        </div>
+                        <div className="flex flex-row text-white/70 text-xs gap-1">
+                          <span>XP:</span>
+                          <span>{user?.xp.toLocaleString() || 0}</span>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                  <div className="flex flex-col gap-2 text-white/80 w-[55%]">
-                    <Statistic
-                      title="Experience"
-                      image="/images/icons/experience.png"
-                      value={`${user?.xp || 0} XP`}
-                    />
+
+                  <hr className="w-full border-white/20" />
+
+                  <div className="flex flex-col gap-2 text-white/80">
                     <Statistic
                       title="Farmer since"
                       image="/images/icons/farmer.png"
@@ -185,22 +183,67 @@ export default function ProfileModal({
                       } days`}
                     />
                   </div>
+
+                  <div className="flex flex-row justify-between mt-2">
+                    <div
+                      className="relative w-[70px] h-[70px] border-2 border-[#179ef9] rounded-lg cursor-pointer"
+                      onClick={() => setShowMintOGBadge(true)}
+                    >
+                      <Image
+                        src="/images/badge/og.png"
+                        alt="Farville OG Badge"
+                        layout="fill"
+                        className={`${
+                          user?.mintedOG ? "" : "opacity-30"
+                        } rounded-lg`}
+                      />
+                    </div>
+                    <div className="relative w-[70px] h-[70px]">
+                      <div className="w-full h-full rounded-lg bg-[#7E4E31] flex items-center justify-center"></div>
+                    </div>
+                    <div className="relative w-[70px] h-[70px]">
+                      <div className="w-full h-full rounded-lg bg-[#7E4E31] flex items-center justify-center"></div>
+                    </div>
+                    <div className="relative w-[70px] h-[70px]">
+                      <div className="w-full h-full rounded-lg bg-[#7E4E31] flex items-center justify-center"></div>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
 
               {/* Glowing crops section */}
               <div className="w-full flex flex-col gap-2">
                 <div className="flex flex-row items-center justify-between">
-                  <h3 className="text-white/90 text-sm font-bold">
-                    Glowing crops
-                  </h3>
-                  <button
-                    className="text-[8px] text-white/70 hover:text-white/90 transition-colors px-2 py-1 rounded-md 
-                    border-2 border-[#8A5E3B] hover:border-[#feb938]"
-                    onClick={() => setIsWhatIsThisOpen(true)}
-                  >
-                    What&apos;s this?
-                  </button>
+                  <div className="flex flex-row items-center gap-2">
+                    <h3 className="text-white/90 text-sm font-bold">
+                      Gold crops
+                    </h3>
+                    <p className="text-white/70 text-xs">
+                      ({selectedCrops.length}/11)
+                    </p>
+                    <button
+                      className="text-white/70 hover:text-white/90 transition-colors cursor-pointer -mt-1"
+                      onClick={() => setIsWhatIsThisOpen(true)}
+                    >
+                      <Info />
+                    </button>
+                  </div>
+                  {selectedCrops.length > 4 &&
+                    (showMoreGoldCropsBadges ? (
+                      <button
+                        className="text-white/70 hover:text-white/90 transition-colors cursor-pointer -mt-1"
+                        onClick={() => setShowMoreGoldCropsBadges(false)}
+                      >
+                        <ChevronUp />
+                      </button>
+                    ) : (
+                      <button
+                        className="text-white/70 hover:text-white/90 transition-colors cursor-pointer -mt-1"
+                        onClick={() => setShowMoreGoldCropsBadges(true)}
+                      >
+                        <ChevronDown />
+                      </button>
+                    ))}
                   {isWhatIsThisOpen && (
                     <InfoModal
                       title="Glowing crops"
@@ -227,74 +270,68 @@ export default function ProfileModal({
                     </InfoModal>
                   )}
                 </div>
-                <Card
-                  className={`bg-gradient-to-br from-[#6D4C2C] to-[#5B4120] rounded-lg border-none w-full max-w-2xl`}
-                >
-                  <CardContent className="p-4">
-                    <div className="grid grid-cols-3 gap-4">
-                      {selectedCrops?.slice(0, 3).map((crop, index) => (
+
+                <div className="grid grid-cols-4 gap-4">
+                  {(showMoreGoldCropsBadges
+                    ? selectedCrops
+                    : selectedCrops?.slice(0, 4)
+                  )?.map((crop, index) => (
+                    <div
+                      key={index}
+                      className={`relative w-20 h-20 mx-auto rounded-lg bg-gradient-to-br from-[#6D4C2C] to-[#5B4120] ${
+                        isCurrentUser ? "cursor-pointer" : ""
+                      }`}
+                      onClick={() => {
+                        if (isCurrentUser) {
+                          setChooseGlowingCropOpen(true);
+                          setCropIndex(index);
+                        }
+                      }}
+                    >
+                      <Image
+                        src={`/images/badge/gold-crops/${crop.item.slug}.png`}
+                        alt={crop.item.name}
+                        layout="fill"
+                        className="animate-[pulse_2s_ease-in-out_infinite] rounded-lg"
+                        style={{
+                          animation: "pulse 3s ease-in-out infinite",
+                        }}
+                      />
+                    </div>
+                  ))}
+                  {isCurrentUser &&
+                    selectedCrops.length < 3 &&
+                    Array.from({ length: 3 - selectedCrops.length }).map(
+                      (_, index) => (
                         <div
                           key={index}
-                          className={`relative w-24 h-24 mx-auto rounded-lg bg-[#7E4E31] ${
-                            isCurrentUser ? "cursor-pointer" : ""
-                          }`}
+                          className="w-24 h-24 mx-auto rounded-lg bg-[#7E4E31] flex items-center justify-center cursor-pointer"
                           onClick={() => {
-                            if (isCurrentUser) {
-                              setChooseGlowingCropOpen(true);
-                              setCropIndex(index);
-                            }
+                            setChooseGlowingCropOpen(true);
+                            setCropIndex(selectedCrops.length + index);
                           }}
                         >
-                          <div className="absolute inset-0 flex items-center justify-center">
-                            <div className="relative w-16 h-16">
-                              <Image
-                                src={`/images/crop/${crop.item.slug}-glowing.png`}
-                                alt={crop.item.name}
-                                layout="fill"
-                                className="animate-[pulse_2s_ease-in-out_infinite]"
-                                style={{
-                                  animation: "pulse 3s ease-in-out infinite",
-                                }}
-                              />
-                            </div>
+                          <div className="text-white/70 text-[10px]">
+                            <Plus size={24} />
                           </div>
                         </div>
-                      ))}
-                      {isCurrentUser &&
-                        selectedCrops.length < 3 &&
-                        Array.from({ length: 3 - selectedCrops.length }).map(
-                          (_, index) => (
-                            <div
-                              key={index}
-                              className="w-24 h-24 mx-auto rounded-lg bg-[#7E4E31] flex items-center justify-center cursor-pointer"
-                              onClick={() => {
-                                setChooseGlowingCropOpen(true);
-                                setCropIndex(selectedCrops.length + index);
-                              }}
-                            >
-                              <div className="text-white/70 text-[10px]">
-                                <Plus size={24} />
-                              </div>
-                            </div>
-                          )
-                        )}
+                      )
+                    )}
 
-                      {/* Empty slots for other users if they don't have 3 crops */}
-                      {!isCurrentUser &&
-                        selectedCrops.length < 3 &&
-                        Array.from({ length: 3 - selectedCrops.length }).map(
-                          (_, index) => (
-                            <div
-                              key={index}
-                              className="w-24 h-24 mx-auto rounded-lg bg-[#7E4E31] flex items-center justify-center opacity-50"
-                            >
-                              <div className="text-white/40 text-xs">Empty</div>
-                            </div>
-                          )
-                        )}
-                    </div>
-                  </CardContent>
-                </Card>
+                  {/* Empty slots for other users if they don't have 3 crops */}
+                  {!isCurrentUser &&
+                    selectedCrops.length < 3 &&
+                    Array.from({ length: 3 - selectedCrops.length }).map(
+                      (_, index) => (
+                        <div
+                          key={index}
+                          className="w-24 h-24 mx-auto rounded-lg bg-[#7E4E31] flex items-center justify-center opacity-50"
+                        >
+                          <div className="text-white/40 text-xs">Empty</div>
+                        </div>
+                      )
+                    )}
+                </div>
               </div>
 
               {/* Harvest Honours section */}
