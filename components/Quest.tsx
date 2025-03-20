@@ -138,7 +138,9 @@ export default function Quest({
   const [selectedItem, setSelectedItem] = useState<
     DbQuestWithItem["items"] | null
   >(null);
-  const [requestQuantity, setRequestQuantity] = useState(1);
+  const [requestQuantity, setRequestQuantity] = useState(
+    quest.quest.amount || 1
+  );
 
   // Handle showing item details
   const handleShowItemDetails = () => {
@@ -314,7 +316,7 @@ export default function Quest({
           userItem={findUserItem(selectedItem.slug)}
           onClose={() => {
             setSelectedItem(null);
-            setRequestQuantity(1);
+            setRequestQuantity(quest.quest.amount || 1);
           }}
           requestQuantity={requestQuantity}
           onRequestQuantityChange={setRequestQuantity}
