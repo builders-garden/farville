@@ -81,6 +81,7 @@ export const HarvestHonour = ({
                       badgeUrl: `/images/badge/honours/${crop}-${trophy}.png`,
                       step: trophy,
                       type: "honour",
+                      shareable: step > trophy,
                     });
                   }}
                 >

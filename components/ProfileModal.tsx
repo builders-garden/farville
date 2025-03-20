@@ -24,6 +24,8 @@ export interface BadgeModalData {
   badgeUrl: string;
   step?: number;
   type: "special" | "gold-crop" | "honour";
+  shareable?: boolean;
+  mintable?: boolean;
 }
 
 export default function ProfileModal({
@@ -41,8 +43,6 @@ export default function ProfileModal({
   const [badgeModalData, setBadgeModalData] = useState<BadgeModalData | null>(
     null
   );
-
-  console.log(badgeModalData);
 
   const { userData, isLoading } = useOtherUserProfile(userFid);
 
@@ -311,20 +311,10 @@ export default function ProfileModal({
                                 setBadgeModalData({
                                   name: crop.name,
                                   title: crop.name,
-                                  description: `A badge issued to those who demonstrated mastery of the ${
-                                    crop.name
-                                  } by harvesting ${
-                                    crop.name.endsWith("y")
-                                      ? crop.name.slice(
-                                          0,
-                                          crop.name.length - 1
-                                        ) + "ies"
-                                      : crop.name.endsWith("o")
-                                      ? crop.name + "es"
-                                      : crop.name + "s"
-                                  }!`,
+                                  description: `A rare ${crop.name} badge earned through luck and constancy in cultivating this crop in Farville.`,
                                   badgeUrl: `/images/badge/gold-crops/${crop.slug}.png`,
                                   type: "gold-crop",
+                                  shareable: true,
                                 });
                               }}
                             >
@@ -442,20 +432,39 @@ export default function ProfileModal({
                           </div>
                           <div className="grid grid-cols-8 gap-2">
                             <div
-                              className="relative w-9 h-9 rounded-lg bg-[#7E4E31] flex items-center justify-center border border-[#179ef9] cursor-pointer"
-                              onClick={() => {
-                                if (!isCurrentUser) {
-                                  setShowMintOGBadge(true);
-                                }
-                              }}
+                              className={`relative w-9 h-9 rounded-lg bg-[#7E4E31] flex items-center justify-center ${
+                                userData?.user?.mintedOG
+                                  ? "border border-[#179ef9] cursor-pointer"
+                                  : "opacity-50"
+                              }`}
+                              onClick={
+                                userData?.user?.mintedOG
+                                  ? () => {
+                                      setBadgeModalData({
+                                        name: "Special Badge",
+                                        title: "Farville OG Badge",
+                                        description: `A symbol of honor, proving the participation in Farville Alpha.`,
+                                        badgeUrl: `/images/badge/og.png`,
+                                        type: "special",
+                                      });
+                                    }
+                                  : () => {}
+                              }
                             >
-                              {userData?.user?.mintedOG && (
+                              {userData?.user?.mintedOG ? (
                                 <Image
                                   src="/images/badge/og.png"
                                   alt="OG Badge"
                                   fill
                                   className="rounded-lg"
                                   sizes="38px"
+                                />
+                              ) : (
+                                <Image
+                                  src="/images/profile/question-mark-yellow.png"
+                                  alt="Yellow question mark"
+                                  width={18}
+                                  height={18}
                                 />
                               )}
                             </div>
@@ -479,7 +488,27 @@ export default function ProfileModal({
                               ) ? (
                                 <div
                                   key={index}
-                                  className="relative w-9 h-9 rounded-lg bg-[#7E4E31] border border-[#FFB938]"
+                                  className="relative w-9 h-9 rounded-lg bg-[#7E4E31] border border-[#FFB938] cursor-pointer"
+                                  onClick={() => {
+                                    setBadgeModalData({
+                                      name: crop.name,
+                                      title: crop.name,
+                                      description: `A badge issued to those who demonstrated mastery of the ${
+                                        crop.name
+                                      } by harvesting ${
+                                        crop.name.endsWith("y")
+                                          ? crop.name.slice(
+                                              0,
+                                              crop.name.length - 1
+                                            ) + "ies"
+                                          : crop.name.endsWith("o")
+                                          ? crop.name + "es"
+                                          : crop.name + "s"
+                                      }!`,
+                                      badgeUrl: `/images/badge/gold-crops/${crop.slug}.png`,
+                                      type: "gold-crop",
+                                    });
+                                  }}
                                 >
                                   <Image
                                     src={`/images/badge/gold-crops/${crop.slug}.png`}
@@ -591,14 +620,16 @@ export default function ProfileModal({
 
           {badgeModalData && (
             <AchievementBadgeModal
-              title={`${
-                badgeModalData.name[0].toUpperCase() +
-                badgeModalData.name.slice(1)
-              }${
+              title={
                 badgeModalData.type === "honour"
-                  ? ` #${badgeModalData.step}`
-                  : ""
-              }`}
+                  ? `${
+                      badgeModalData.name[0].toUpperCase() +
+                      badgeModalData.name.slice(1)
+                    } #${badgeModalData.step}`
+                  : badgeModalData.type === "special"
+                  ? "Special Badge"
+                  : "Gold Crop Badge"
+              }
               icon={
                 badgeModalData.type !== "special"
                   ? `/images/crop/${
@@ -606,9 +637,11 @@ export default function ProfileModal({
                         ? badgeModalData.name.replace(" ", "-")
                         : badgeModalData.name
                     }.png`
-                  : ""
+                  : "/images/icons/experience.png"
               }
               onCancel={() => setBadgeModalData(null)}
+              shareable={badgeModalData.shareable}
+              mintable={badgeModalData.mintable}
             >
               <div className="flex flex-col items-center gap-2">
                 <div className="relative w-52 h-52 rounded-lg my-4 border-4 border-[#f2a311]">
@@ -622,7 +655,7 @@ export default function ProfileModal({
                 <p className="text-lg font-bold text-[#f2a311]">
                   {badgeModalData.title}
                 </p>
-                <p className="text-white/90 text-xs mt-4 mb-12">
+                <p className="text-white/90 text-xs mt-4 mb-12 text-center">
                   {badgeModalData.description}
                 </p>
               </div>

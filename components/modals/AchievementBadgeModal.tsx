@@ -31,7 +31,7 @@ export default function AchievementBadgeModal({
         exit={{ opacity: 0, scale: 0.95 }}
         className="bg-[#7E4E31] p-6 rounded-lg max-w-sm w-full mx-4 border border-[#8B5E3C]/50"
       >
-        <div className="flex flex-row items-center gap-2 mb-4">
+        <div className="flex flex-row justify-center items-center gap-2 mb-4">
           {
             // if icon is a string, render an image
             typeof icon === "string" ? (
@@ -66,7 +66,7 @@ export default function AchievementBadgeModal({
           {shareable && (
             <button
               onClick={onCancel}
-              className="flex-1 py-2 px-4 rounded bg-blue-500/50 text-white/90 transition-colors text-sm font-medium hover:bg-blue-500/70"
+              className="flex-1 py-2 px-4 rounded bg-[#f2a311]/50 text-white/90 transition-colors text-sm font-medium hover:bg-[#f2a311]/70"
             >
               Share
             </button>
