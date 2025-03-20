@@ -7,8 +7,7 @@ import { useGame } from "@/context/GameContext";
 import { Statistic } from "./profile/Statistic";
 import { useEffect, useState } from "react";
 import InfoModal from "./modals/InfoModal";
-import { BadgeModalData, HarvestHonour } from "./profile/HarvestHonour";
-import ChooseGlowingCrop from "@/components/modals/ChooseGlowingCrop";
+import { HarvestHonour } from "./profile/HarvestHonour";
 import { ChevronDown, ChevronUp, Info, Plus } from "lucide-react";
 import { UserItem } from "@/hooks/use-user-items";
 import { calculateHarvestAchievements } from "@/lib/utils";
@@ -17,6 +16,15 @@ import sdk from "@farcaster/frame-sdk";
 import { useOtherUserProfile } from "@/hooks/use-other-user-profile";
 import AchievementBadgeModal from "./modals/AchievementBadgeModal";
 import { ACHIEVEMENTS_THRESHOLDS } from "@/lib/game-constants";
+
+export interface BadgeModalData {
+  name: string;
+  title: string;
+  description: string;
+  badgeUrl: string;
+  step?: number;
+  type: "special" | "gold-crop" | "honour";
+}
 
 export default function ProfileModal({
   onClose,
@@ -27,13 +35,14 @@ export default function ProfileModal({
 }) {
   const { state, setShowMintOGBadge } = useGame();
   const [isWhatIsThisOpen, setIsWhatIsThisOpen] = useState(false);
-  const [chooseGlowingCropOpen, setChooseGlowingCropOpen] = useState(false);
   const [showMoreGoldCropsBadges, setShowMoreGoldCropsBadges] = useState(false);
   const [selectedCrops, setSelectedCrops] = useState<UserItem[]>([]);
-  const [cropIndex, setCropIndex] = useState<number | undefined>(undefined);
-  const [badgeModalData, setBadgeModalData] = useState<
-    (BadgeModalData & { crop: string }) | null
-  >(null);
+  const [, setCropIndex] = useState<number | undefined>(undefined);
+  const [badgeModalData, setBadgeModalData] = useState<BadgeModalData | null>(
+    null
+  );
+
+  console.log(badgeModalData);
 
   const { userData, isLoading } = useOtherUserProfile(userFid);
 
@@ -49,15 +58,6 @@ export default function ProfileModal({
   const goldCropsData = state.items.filter(
     (item) => item.category === "special-crop"
   );
-
-  const onChooseCrop = (crop: UserItem) => {
-    // Only allow choosing crops for current user
-    if (isCurrentUser && cropIndex !== undefined) {
-      const newCrops = [...selectedCrops];
-      newCrops[cropIndex] = crop;
-      setSelectedCrops(newCrops);
-    }
-  };
 
   useEffect(() => {
     if (isCurrentUser) {
@@ -308,10 +308,24 @@ export default function ProfileModal({
                                 isCurrentUser ? "cursor-pointer" : ""
                               }`}
                               onClick={() => {
-                                if (isCurrentUser) {
-                                  setChooseGlowingCropOpen(true);
-                                  setCropIndex(index);
-                                }
+                                setBadgeModalData({
+                                  name: crop.name,
+                                  title: crop.name,
+                                  description: `A badge issued to those who demonstrated mastery of the ${
+                                    crop.name
+                                  } by harvesting ${
+                                    crop.name.endsWith("y")
+                                      ? crop.name.slice(
+                                          0,
+                                          crop.name.length - 1
+                                        ) + "ies"
+                                      : crop.name.endsWith("o")
+                                      ? crop.name + "es"
+                                      : crop.name + "s"
+                                  }!`,
+                                  badgeUrl: `/images/badge/gold-crops/${crop.slug}.png`,
+                                  type: "gold-crop",
+                                });
                               }}
                             >
                               <Image
@@ -348,7 +362,6 @@ export default function ProfileModal({
                               key={index}
                               className="w-24 h-24 mx-auto rounded-lg bg-[#7E4E31] flex items-center justify-center cursor-pointer"
                               onClick={() => {
-                                setChooseGlowingCropOpen(true);
                                 setCropIndex(selectedCrops.length + index);
                               }}
                             >
@@ -395,6 +408,7 @@ export default function ProfileModal({
                         currentCount={honour.currentCount}
                         currentGoal={honour.currentGoal}
                         step={honour.step}
+                        setBadgeModalData={setBadgeModalData}
                       />
                     ))}
                   </div>
@@ -518,7 +532,7 @@ export default function ProfileModal({
                                             achievement.crop === crop
                                         );
                                       setBadgeModalData({
-                                        crop: honour.crop,
+                                        name: crop,
                                         title:
                                           cropAchievements?.titles[index] ||
                                           `Badge for ${crop} achievement`,
@@ -536,6 +550,7 @@ export default function ProfileModal({
                                           index + 1
                                         }.png`,
                                         step: index + 1,
+                                        type: "honour",
                                       });
                                     }}
                                   >
@@ -574,21 +589,25 @@ export default function ProfileModal({
             </div>
           </div>
 
-          {isCurrentUser && chooseGlowingCropOpen && (
-            <ChooseGlowingCrop
-              onChooseCrop={onChooseCrop}
-              specialCrops={state.specialCrops}
-              onCancel={() => setChooseGlowingCropOpen(false)}
-            />
-          )}
-
           {badgeModalData && (
             <AchievementBadgeModal
               title={`${
-                badgeModalData.crop[0].toUpperCase() +
-                badgeModalData.crop.slice(1)
-              } #${badgeModalData.step}`}
-              icon={`/images/crop/${badgeModalData.crop}.png`}
+                badgeModalData.name[0].toUpperCase() +
+                badgeModalData.name.slice(1)
+              }${
+                badgeModalData.type === "honour"
+                  ? ` #${badgeModalData.step}`
+                  : ""
+              }`}
+              icon={
+                badgeModalData.type !== "special"
+                  ? `/images/crop/${
+                      badgeModalData.type === "gold-crop"
+                        ? badgeModalData.name.replace(" ", "-")
+                        : badgeModalData.name
+                    }.png`
+                  : ""
+              }
               onCancel={() => setBadgeModalData(null)}
             >
               <div className="flex flex-col items-center gap-2">

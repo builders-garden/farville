@@ -7,8 +7,8 @@ import {
 } from "@/lib/game-constants";
 import Image from "next/image";
 import InfoModal from "../modals/InfoModal";
-import { useState } from "react";
-import AchievementBadgeModal from "../modals/AchievementBadgeModal";
+import { Dispatch, SetStateAction, useState } from "react";
+import { BadgeModalData } from "../ProfileModal";
 
 interface HarvestHonourProps {
   crop: string;
@@ -17,13 +17,7 @@ interface HarvestHonourProps {
   currentCount: number;
   currentGoal: number;
   step: number;
-}
-
-export interface BadgeModalData {
-  title: string;
-  description: string;
-  badgeUrl: string;
-  step: number;
+  setBadgeModalData: Dispatch<SetStateAction<BadgeModalData | null>>;
 }
 
 export const HarvestHonour = ({
@@ -33,10 +27,8 @@ export const HarvestHonour = ({
   currentCount,
   currentGoal,
   step,
+  setBadgeModalData,
 }: HarvestHonourProps) => {
-  const [badgeModalData, setBadgeModalData] = useState<BadgeModalData | null>(
-    null
-  );
   const [showGoldCropModal, setShowGoldCropModal] = useState(false);
   const goldCropChancePercentage =
     step > 1
@@ -73,6 +65,7 @@ export const HarvestHonour = ({
                       (achievement) => achievement.crop === crop
                     );
                     setBadgeModalData({
+                      name: crop,
                       title:
                         cropAchievements?.titles[trophy - 1] ||
                         `Badge for ${crop} achievement`,
@@ -87,6 +80,7 @@ export const HarvestHonour = ({
                       }!`,
                       badgeUrl: `/images/badge/honours/${crop}-${trophy}.png`,
                       step: trophy,
+                      type: "honour",
                     });
                   }}
                 >
@@ -191,34 +185,6 @@ export const HarvestHonour = ({
             </InfoModal>
           )}
         </div>
-
-        {badgeModalData && (
-          <AchievementBadgeModal
-            title={`${crop[0].toUpperCase() + crop.slice(1)} #${
-              badgeModalData.step
-            }`}
-            icon={`/images/crop/${crop}.png`}
-            onCancel={() => setBadgeModalData(null)}
-            mintable={badgeModalData.step < step}
-          >
-            <div className="flex flex-col items-center gap-2">
-              <div className="relative w-52 h-52 rounded-lg my-4 border-4 border-[#f2a311]">
-                <Image
-                  src={badgeModalData.badgeUrl}
-                  alt={badgeModalData.title}
-                  fill
-                  className="rounded-sm"
-                />
-              </div>
-              <p className="text-lg font-bold text-[#f2a311]">
-                {badgeModalData.title}
-              </p>
-              <p className="text-white/90 text-xs mt-4 mb-12">
-                {badgeModalData.description}
-              </p>
-            </div>
-          </AchievementBadgeModal>
-        )}
       </CardContent>
     </Card>
   );
