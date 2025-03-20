@@ -19,7 +19,7 @@ interface HarvestHonourProps {
   step: number;
 }
 
-interface BadgeModalData {
+export interface BadgeModalData {
   title: string;
   description: string;
   badgeUrl: string;
@@ -53,7 +53,7 @@ export const HarvestHonour = ({
               step < trophy ? (
                 <div
                   key={trophy}
-                  className="h-12 w-12 bg-[#7E4E31] rounded-lg flex items-center justify-center opacity-50"
+                  className="h-12 w-12 bg-[#7B5B30] rounded-lg flex items-center justify-center opacity-50"
                 >
                   <Image
                     src={`/images/profile/question-mark-yellow.png`}

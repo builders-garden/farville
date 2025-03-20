@@ -11,6 +11,7 @@ interface AchievementBadgeModalProps {
   };
   children: React.ReactNode;
   mintable?: boolean;
+  shareable?: boolean;
 }
 
 export default function AchievementBadgeModal({
@@ -20,6 +21,7 @@ export default function AchievementBadgeModal({
   onCancel,
   options,
   mintable,
+  shareable,
 }: AchievementBadgeModalProps) {
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60]">
@@ -33,7 +35,12 @@ export default function AchievementBadgeModal({
           {
             // if icon is a string, render an image
             typeof icon === "string" ? (
-              <Image src={icon} alt={title} width={24} height={24} />
+              <Image
+                src={icon}
+                alt={title}
+                width={24}
+                height={24}
+              />
             ) : (
               // if icon is a React component, render it
               icon
@@ -54,6 +61,14 @@ export default function AchievementBadgeModal({
               className="flex-1 py-2 px-4 rounded bg-yellow-500/50 text-white/90 transition-colors text-sm font-medium hover:bg-yellow-500/70"
             >
               Mint
+            </button>
+          )}
+          {shareable && (
+            <button
+              onClick={onCancel}
+              className="flex-1 py-2 px-4 rounded bg-blue-500/50 text-white/90 transition-colors text-sm font-medium hover:bg-blue-500/70"
+            >
+              Share
             </button>
           )}
           <button

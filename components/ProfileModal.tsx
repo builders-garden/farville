@@ -7,7 +7,7 @@ import { useGame } from "@/context/GameContext";
 import { Statistic } from "./profile/Statistic";
 import { useEffect, useState } from "react";
 import InfoModal from "./modals/InfoModal";
-import { HarvestHonour } from "./profile/HarvestHonour";
+import { BadgeModalData, HarvestHonour } from "./profile/HarvestHonour";
 import ChooseGlowingCrop from "@/components/modals/ChooseGlowingCrop";
 import { ChevronDown, ChevronUp, Info, Plus } from "lucide-react";
 import { UserItem } from "@/hooks/use-user-items";
@@ -15,6 +15,8 @@ import { calculateHarvestAchievements } from "@/lib/utils";
 import { LeaderboardUserAvatar } from "./LeaderboardUserAvatar";
 import sdk from "@farcaster/frame-sdk";
 import { useOtherUserProfile } from "@/hooks/use-other-user-profile";
+import AchievementBadgeModal from "./modals/AchievementBadgeModal";
+import { ACHIEVEMENTS_THRESHOLDS } from "@/lib/game-constants";
 
 export default function ProfileModal({
   onClose,
@@ -29,6 +31,9 @@ export default function ProfileModal({
   const [showMoreGoldCropsBadges, setShowMoreGoldCropsBadges] = useState(false);
   const [selectedCrops, setSelectedCrops] = useState<UserItem[]>([]);
   const [cropIndex, setCropIndex] = useState<number | undefined>(undefined);
+  const [badgeModalData, setBadgeModalData] = useState<
+    (BadgeModalData & { crop: string }) | null
+  >(null);
 
   const { userData, isLoading } = useOtherUserProfile(userFid);
 
@@ -211,13 +216,13 @@ export default function ProfileModal({
                         />
                       </div>
                       <div className="relative w-[70px] h-[70px]">
-                        <div className="w-full h-full rounded-lg bg-[#7E4E31] flex items-center justify-center"></div>
+                        <div className="w-full h-full rounded-lg bg-[#7B5B30] flex items-center justify-center"></div>
                       </div>
                       <div className="relative w-[70px] h-[70px]">
-                        <div className="w-full h-full rounded-lg bg-[#7E4E31] flex items-center justify-center"></div>
+                        <div className="w-full h-full rounded-lg bg-[#7B5B30] flex items-center justify-center"></div>
                       </div>
                       <div className="relative w-[70px] h-[70px]">
-                        <div className="w-full h-full rounded-lg bg-[#7E4E31] flex items-center justify-center"></div>
+                        <div className="w-full h-full rounded-lg bg-[#7B5B30] flex items-center justify-center"></div>
                       </div>
                     </div>
                   )}
@@ -403,7 +408,14 @@ export default function ProfileModal({
                             </p>
                           </div>
                           <div className="grid grid-cols-8 gap-2">
-                            <div className="relative w-10 h-10 rounded-lg bg-[#7E4E31] flex items-center justify-center border border-[#179ef9]">
+                            <div
+                              className="relative w-9 h-9 rounded-lg bg-[#7E4E31] flex items-center justify-center border border-[#179ef9] cursor-pointer"
+                              onClick={() => {
+                                if (!isCurrentUser) {
+                                  setShowMintOGBadge(true);
+                                }
+                              }}
+                            >
                               {userData?.user?.mintedOG && (
                                 <Image
                                   src="/images/badge/og.png"
@@ -434,7 +446,7 @@ export default function ProfileModal({
                               ) ? (
                                 <div
                                   key={index}
-                                  className="relative w-10 h-10 rounded-lg bg-[#7E4E31] border border-[#FFB938]"
+                                  className="relative w-9 h-9 rounded-lg bg-[#7E4E31] border border-[#FFB938]"
                                 >
                                   <Image
                                     src={`/images/badge/gold-crops/${crop.slug}.png`}
@@ -478,7 +490,35 @@ export default function ProfileModal({
                                 honour.step > index + 1 ? (
                                   <div
                                     key={index}
-                                    className={`relative w-10 h-10 rounded-lg bg-[#7E4E31] border border-[#FFB938]`}
+                                    className={`relative w-9 h-9 rounded-lg bg-[#7E4E31] border border-[#FFB938] cursor-pointer`}
+                                    onClick={() => {
+                                      const crop = honour.crop;
+                                      const cropAchievements =
+                                        ACHIEVEMENTS_THRESHOLDS.find(
+                                          (achievement) =>
+                                            achievement.crop === crop
+                                        );
+                                      setBadgeModalData({
+                                        crop: honour.crop,
+                                        title:
+                                          cropAchievements?.titles[index] ||
+                                          `Badge for ${crop} achievement`,
+                                        description: `A badge issued to those who demonstrated mastery of the ${crop} by harvesting ${
+                                          cropAchievements?.thresholds[index]
+                                        } ${
+                                          crop.endsWith("y")
+                                            ? crop.slice(0, crop.length - 1) +
+                                              "ies"
+                                            : crop.endsWith("o")
+                                            ? crop + "es"
+                                            : crop + "s"
+                                        }!`,
+                                        badgeUrl: `/images/badge/honours/${crop}-${
+                                          index + 1
+                                        }.png`,
+                                        step: index + 1,
+                                      });
+                                    }}
                                   >
                                     <Image
                                       src={`/images/badge/honours/${
@@ -493,7 +533,7 @@ export default function ProfileModal({
                                 ) : (
                                   <div
                                     key={index}
-                                    className={`flex w-10 h-10 rounded-lg bg-[#7E4E31] justify-center items-center opacity-50`}
+                                    className={`flex w-9 h-9 rounded-lg bg-[#7E4E31] justify-center items-center opacity-50`}
                                   >
                                     <Image
                                       src={`/images/profile/question-mark-yellow.png`}
@@ -521,6 +561,34 @@ export default function ProfileModal({
               specialCrops={state.specialCrops}
               onCancel={() => setChooseGlowingCropOpen(false)}
             />
+          )}
+
+          {badgeModalData && (
+            <AchievementBadgeModal
+              title={`${
+                badgeModalData.crop[0].toUpperCase() +
+                badgeModalData.crop.slice(1)
+              } #${badgeModalData.step}`}
+              icon={`/images/crop/${badgeModalData.crop}.png`}
+              onCancel={() => setBadgeModalData(null)}
+            >
+              <div className="flex flex-col items-center gap-2">
+                <div className="relative w-52 h-52 rounded-lg my-4 border-4 border-[#f2a311]">
+                  <Image
+                    src={badgeModalData.badgeUrl}
+                    alt={badgeModalData.title}
+                    layout="fill"
+                    className="rounded-sm"
+                  />
+                </div>
+                <p className="text-lg font-bold text-[#f2a311]">
+                  {badgeModalData.title}
+                </p>
+                <p className="text-white/90 text-xs mt-4 mb-12">
+                  {badgeModalData.description}
+                </p>
+              </div>
+            </AchievementBadgeModal>
           )}
         </div>
       </motion.div>
