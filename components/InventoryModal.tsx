@@ -75,7 +75,7 @@ export default function InventoryModal({ onClose }: { onClose: () => void }) {
   // Render categories section
   const renderCategorySection = (
     category: string,
-    emoji: string,
+    icon: string,
     title: string
   ) => {
     const filteredItems = state.items.filter(
@@ -88,7 +88,11 @@ export default function InventoryModal({ onClose }: { onClose: () => void }) {
         ? state.seeds
         : category === "crop"
         ? state.crops
+        : category === "special-crop"
+        ? state.specialCrops
         : state.perks;
+
+    const isImageUrl = icon.startsWith("http") || icon.startsWith("/");
 
     return (
       <div>
@@ -97,7 +101,12 @@ export default function InventoryModal({ onClose }: { onClose: () => void }) {
           initial={{ x: -20, opacity: 0 }}
           animate={{ x: 0, opacity: 1 }}
         >
-          <span className="text-2xl">{emoji}</span> {title}
+          {isImageUrl ? (
+            <Image src={icon} alt={title} width={28} height={28} />
+          ) : (
+            <span className="text-2xl">{icon}</span>
+          )}
+          {title}
         </motion.h3>
         <div className="grid grid-cols-6 gap-4 md:grid-cols-8">
           {filteredItems.map((item) => {
@@ -109,7 +118,11 @@ export default function InventoryModal({ onClose }: { onClose: () => void }) {
                 key={item.id}
                 item={item}
                 quantity={quantity}
-                onClick={() => handleItemClick(item)}
+                onClick={() => {
+                  if (category !== "special-crop") {
+                    handleItemClick(item);
+                  }
+                }}
               />
             );
           })}
@@ -175,6 +188,11 @@ export default function InventoryModal({ onClose }: { onClose: () => void }) {
               {renderCategorySection("seed", "🌱", "Seeds")}
               {renderCategorySection("crop", "🌾", "Harvested Crops")}
               {renderCategorySection("perk", "✨", "Perks")}
+              {renderCategorySection(
+                "special-crop",
+                "/images/special/gold.png",
+                "Gold Crops"
+              )}
             </div>
           </div>
         </div>

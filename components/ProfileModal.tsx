@@ -239,7 +239,7 @@ export default function ProfileModal({
                           Gold crops
                         </h3>
                         <p className="text-white/70 text-xs">
-                          ({selectedCrops.length}/11)
+                          ({selectedCrops.length}/{goldCropsData.length})
                         </p>
                         <button
                           className="text-white/70 hover:text-white/90 transition-colors cursor-pointer -mt-1"
@@ -292,39 +292,58 @@ export default function ProfileModal({
                       )}
                     </div>
 
-                    <div className="grid grid-cols-4 gap-4">
-                      {(showMoreGoldCropsBadges
-                        ? selectedCrops
-                        : selectedCrops?.slice(0, 4)
-                      )?.map((crop, index) => (
-                        <div
-                          key={index}
-                          className={`relative w-20 h-20 mx-auto rounded-lg bg-gradient-to-br from-[#6D4C2C] to-[#5B4120] ${
-                            isCurrentUser ? "cursor-pointer" : ""
-                          }`}
-                          onClick={() => {
-                            if (isCurrentUser) {
-                              setChooseGlowingCropOpen(true);
-                              setCropIndex(index);
-                            }
-                          }}
-                        >
-                          <Image
-                            src={`/images/badge/gold-crops/${crop.item.slug}.png`}
-                            alt={crop.item.name}
-                            fill
-                            className="animate-[pulse_2s_ease-in-out_infinite] rounded-lg"
-                            style={{
-                              animation: "pulse 3s ease-in-out infinite",
-                            }}
-                            sizes="38px"
-                          />
-                        </div>
-                      ))}
-                      {isCurrentUser &&
-                        selectedCrops.length < 3 &&
-                        Array.from({ length: 3 - selectedCrops.length }).map(
-                          (_, index) => (
+                    <Card className="bg-gradient-to-br from-[#6D4C2C] to-[#5B4120] rounded-lg border-none w-full">
+                      <CardContent className="grid grid-cols-4 gap-4 p-4">
+                        {(showMoreGoldCropsBadges
+                          ? goldCropsData
+                          : goldCropsData?.slice(0, 4)
+                        )?.map((crop, index) =>
+                          selectedCrops.find(
+                            (userGoldCrop) =>
+                              userGoldCrop.item.slug === crop.slug
+                          ) ? (
+                            <div
+                              key={index}
+                              className={`relative w-[70px] h-[70px] mx-auto rounded-lg bg-gradient-to-br from-[#6D4C2C] to-[#5B4120] ${
+                                isCurrentUser ? "cursor-pointer" : ""
+                              }`}
+                              onClick={() => {
+                                if (isCurrentUser) {
+                                  setChooseGlowingCropOpen(true);
+                                  setCropIndex(index);
+                                }
+                              }}
+                            >
+                              <Image
+                                src={`/images/badge/gold-crops/${crop.slug}.png`}
+                                alt={crop.name}
+                                fill
+                                className="animate-[pulse_2s_ease-in-out_infinite] rounded-lg"
+                                style={{
+                                  animation: "pulse 3s ease-in-out infinite",
+                                }}
+                                sizes="38px"
+                              />
+                            </div>
+                          ) : (
+                            <div
+                              key={index}
+                              className="w-[70px] h-[70px] bg-[#7B5B30] rounded-lg flex items-center justify-center opacity-50"
+                            >
+                              <Image
+                                src={`/images/profile/question-mark-yellow.png`}
+                                alt="Yellow question mark"
+                                width={44}
+                                height={44}
+                              />
+                            </div>
+                          )
+                        )}
+                        {isCurrentUser &&
+                          selectedCrops.length < 3 &&
+                          Array.from({
+                            length: 3 - selectedCrops.length,
+                          }).map((_, index) => (
                             <div
                               key={index}
                               className="w-24 h-24 mx-auto rounded-lg bg-[#7E4E31] flex items-center justify-center cursor-pointer"
@@ -337,23 +356,23 @@ export default function ProfileModal({
                                 <Plus size={24} />
                               </div>
                             </div>
-                          )
-                        )}
+                          ))}
 
-                      {/* Empty slots for other users if they don't have 3 crops */}
-                      {!isCurrentUser &&
-                        selectedCrops.length < 3 &&
-                        Array.from({ length: 3 - selectedCrops.length }).map(
-                          (_, index) => (
+                        {/* Empty slots for other users if they don't have 3 crops */}
+                        {!isCurrentUser &&
+                          selectedCrops.length < 3 &&
+                          Array.from({
+                            length: 3 - selectedCrops.length,
+                          }).map((_, index) => (
                             <div
                               key={index}
                               className="w-24 h-24 mx-auto rounded-lg bg-[#7E4E31] flex items-center justify-center opacity-50"
                             >
                               <div className="text-white/40 text-xs">Empty</div>
                             </div>
-                          )
-                        )}
-                    </div>
+                          ))}
+                      </CardContent>
+                    </Card>
                   </div>
 
                   {/* Harvest Honours section */}

@@ -16,7 +16,7 @@ export default function InventoryItem({
     <motion.div
       className="bg-[#6d4c2c] aspect-square rounded-lg relative flex items-center justify-center
                  shadow-lg hover:shadow-xl transition-shadow duration-200
-                 border-2 border-[#8B5E3C]"
+                 border-2 border-[#8B5E3C] cursor-pointer"
       whileHover={{ scale: 1.05 }}
       onClick={onClick}
     >
