@@ -459,7 +459,7 @@ export default function ProfileModal({
                               ) : (
                                 <div
                                   key={index}
-                                  className="relative w-10 h-10 bg-[#7E4E31] rounded-lg flex items-center justify-center opacity-50"
+                                  className="relative w-9 h-9 bg-[#7E4E31] rounded-lg flex items-center justify-center opacity-50"
                                 >
                                   <Image
                                     src={`/images/profile/question-mark-yellow.png`}
