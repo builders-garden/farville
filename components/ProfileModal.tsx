@@ -35,7 +35,8 @@ export default function ProfileModal({
   onClose: () => void;
   userFid?: number;
 }) {
-  const { state, setShowMintOGBadge } = useGame();
+  const { state, setShowMintOGBadge, newGoldCropsFound, setNewGoldCropsFound } =
+    useGame();
   const [isWhatIsThisOpen, setIsWhatIsThisOpen] = useState(false);
   const [showMoreGoldCropsBadges, setShowMoreGoldCropsBadges] = useState(false);
   const [selectedCrops, setSelectedCrops] = useState<UserItem[]>([]);
@@ -235,8 +236,23 @@ export default function ProfileModal({
                   <div className="w-full flex flex-col gap-2">
                     <div className="flex flex-row items-center justify-between">
                       <div className="flex flex-row items-center gap-2">
-                        <h3 className="text-white/90 text-sm font-bold">
-                          Gold crops
+                        <h3
+                          className={`text-white/90 text-sm font-bold ${
+                            newGoldCropsFound.length > 0 ? "animate-pulse" : ""
+                          }`}
+                          style={{
+                            textShadow:
+                              newGoldCropsFound.length > 0
+                                ? "0 0 8px rgba(255, 185, 56, 0.8)"
+                                : "none",
+                            color:
+                              newGoldCropsFound.length > 0 ? "#FFB938" : "",
+                          }}
+                        >
+                          Gold Crops{" "}
+                          {newGoldCropsFound.length > 0 && (
+                            <span className="text-[#FFB938]">✨</span>
+                          )}
                         </h3>
                         <p className="text-white/70 text-xs">
                           ({selectedCrops.length}/{goldCropsData.length})
@@ -304,9 +320,11 @@ export default function ProfileModal({
                           ) ? (
                             <div
                               key={index}
-                              className={`relative w-[70px] h-[70px] mx-auto rounded-lg bg-gradient-to-br from-[#6D4C2C] to-[#5B4120] ${
-                                isCurrentUser ? "cursor-pointer" : ""
-                              }`}
+                              className={`relative w-[70px] h-[70px] mx-auto rounded-lg bg-gradient-to-br from-[#6D4C2C] to-[#5B4120] border-2 ${
+                                newGoldCropsFound.includes(crop.slug)
+                                  ? "border-[#FFB938] animate-pulse shadow-lg shadow-[#FFB938]/40"
+                                  : "border-[#f2a311]"
+                              } ${isCurrentUser ? "cursor-pointer" : ""}`}
                               onClick={() => {
                                 setBadgeModalData({
                                   name: crop.name,
@@ -316,16 +334,22 @@ export default function ProfileModal({
                                   type: "gold-crop",
                                   shareable: true,
                                 });
+                                if (isCurrentUser) {
+                                  setNewGoldCropsFound((prev) =>
+                                    prev.filter((slug) => slug !== crop.slug)
+                                  );
+                                }
                               }}
                             >
                               <Image
                                 src={`/images/badge/gold-crops/${crop.slug}.png`}
                                 alt={crop.name}
                                 fill
-                                className="animate-[pulse_2s_ease-in-out_infinite] rounded-lg"
-                                style={{
-                                  animation: "pulse 3s ease-in-out infinite",
-                                }}
+                                className={`rounded-lg ${
+                                  newGoldCropsFound.includes(crop.slug)
+                                    ? "animate-in"
+                                    : ""
+                                }`}
                                 sizes="38px"
                               />
                             </div>

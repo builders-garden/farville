@@ -16,8 +16,8 @@ export default function Toolbar({
     setShowProfile,
     setShowLeaderboard,
     setShowQuests,
-    // setShowStreaks,
     state,
+    newGoldCropsFound,
   } = useGame();
 
   return (
@@ -125,41 +125,6 @@ export default function Toolbar({
           <span className="text-[6px] text-white mt-1">Inventory</span>
         </div>
 
-        {/* <div className="flex flex-col items-center w-[48px]">
-          <motion.button
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => {
-              setShowStreaks(true);
-            }}
-            className={`w-12 h-12 rounded-lg flex items-center justify-center transition-colors relative
-              ${
-                state.claimableStreakReward
-                  ? "bg-[#A17449] shadow-lg shadow-[#A17449]/50 animate-pulse"
-                  : "bg-[#8B5E3C] hover:bg-[#6d4c2c]"
-              }`}
-          >
-            {state.claimableStreakReward && (
-              <div className="absolute -top-1 -right-1 w-3 h-3 bg-[#FFD700] rounded-full" />
-            )}
-            <Image
-              src="/images/special/fire.png"
-              alt="Streaks"
-              width={30}
-              height={30}
-            />
-          </motion.button>
-          <span
-            className={`text-[6px] mt-1 ${
-              state.claimableStreakReward
-                ? "text-white drop-shadow-[0_0_3px_rgba(255,255,255,0.7)]"
-                : "text-white"
-            }`}
-          >
-            Streaks
-          </span>
-        </div> */}
-
         <div className="flex flex-col items-center w-[48px]">
           <motion.button
             whileHover={{ scale: 1.1 }}
@@ -186,8 +151,16 @@ export default function Toolbar({
             onClick={() => {
               setShowProfile(true);
             }}
-            className="w-12 h-12 rounded-lg flex items-center justify-center bg-[#8B5E3C] hover:bg-[#6d4c2c] transition-colors"
+            className={`w-12 h-12 rounded-lg flex items-center justify-center transition-colors relative
+              ${
+                newGoldCropsFound.length > 0
+                  ? "bg-[#A17449] shadow-lg shadow-[#A17449]/50 animate-pulse"
+                  : "bg-[#8B5E3C] hover:bg-[#6d4c2c]"
+              }`}
           >
+            {newGoldCropsFound.length > 0 && (
+              <div className="absolute -top-1 -right-1 w-3 h-3 bg-[#FFD700] rounded-full" />
+            )}
             <Image
               src={state.user?.avatarUrl || "/images/icons/farmer.png"}
               alt="Profile"
@@ -196,7 +169,15 @@ export default function Toolbar({
               className={state.user?.avatarUrl ? "rounded-full" : "rounded-md"}
             />
           </motion.button>
-          <span className="text-[6px] text-white mt-1">Profile</span>
+          <span
+            className={`text-[6px] mt-1 ${
+              newGoldCropsFound.length > 0
+                ? "text-white drop-shadow-[0_0_3px_rgba(255,255,255,0.7)]"
+                : "text-white"
+            }`}
+          >
+            Profile
+          </span>
         </div>
       </div>
     </div>
