@@ -22,7 +22,7 @@ export function LeaderboardUserAvatar({
   return (
     <div className="relative flex-none">
       <Image
-        src={pfpUrl}
+        src={pfpUrl ?? "/images/profile/default-avatar.png"}
         alt={`${username ?? "user"}'s avatar`}
         className={`w-${size.width} h-${
           size.height

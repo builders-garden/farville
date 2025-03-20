@@ -55,7 +55,7 @@ export default function ChooseGlowingCrop({
                     <Image
                       src={`/images/crop/${crop.item.slug}.png`}
                       alt={crop.item.name}
-                      layout="fill"
+                      fill
                     />
                   </div>
                   <p>{crop.item.name}</p>

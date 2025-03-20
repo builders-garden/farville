@@ -38,7 +38,7 @@ export const HarvestedGoldCrop = ({
                   <Image
                     src={`/images/crop/${goldCrop.crop}.png`}
                     alt={goldCrop.crop}
-                    layout="fill"
+                    fill
                     className="inline-block [animation:float_2s_ease-in-out_infinite]"
                   />
                 </div>

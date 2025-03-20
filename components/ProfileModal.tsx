@@ -41,6 +41,10 @@ export default function ProfileModal({
       : userData?.harvestedCropsSummary || []
   );
 
+  const goldCropsData = state.items.filter(
+    (item) => item.category === "special-crop"
+  );
+
   const onChooseCrop = (crop: UserItem) => {
     // Only allow choosing crops for current user
     if (isCurrentUser && cropIndex !== undefined) {
@@ -57,10 +61,6 @@ export default function ProfileModal({
       setSelectedCrops(userData.specialCrops);
     }
   }, [state.specialCrops, userData?.specialCrops, isCurrentUser]);
-
-  console.log({
-    state,
-  });
 
   if (!isCurrentUser && isLoading) {
     return (
@@ -203,7 +203,8 @@ export default function ProfileModal({
                         <Image
                           src="/images/badge/og.png"
                           alt="Farville OG Badge"
-                          layout="fill"
+                          fill
+                          sizes="38px"
                           className={`${
                             user?.mintedOG ? "" : "opacity-30"
                           } rounded-lg`}
@@ -306,11 +307,12 @@ export default function ProfileModal({
                           <Image
                             src={`/images/badge/gold-crops/${crop.item.slug}.png`}
                             alt={crop.item.name}
-                            layout="fill"
+                            fill
                             className="animate-[pulse_2s_ease-in-out_infinite] rounded-lg"
                             style={{
                               animation: "pulse 3s ease-in-out infinite",
                             }}
+                            sizes="38px"
                           />
                         </div>
                       ))}
@@ -351,10 +353,16 @@ export default function ProfileModal({
 
                   {/* Harvest Honours section */}
                   <div className="w-full flex flex-col gap-2">
-                    <h3 className="text-white/90 text-sm font-bold">
-                      Harvest Honours
-                    </h3>
-                    {harvestHonours.map((honour, index) => (
+                    <div className="flex flex-row items-center gap-2">
+                      <h3 className="text-white/90 text-sm font-bold">
+                        Harvest Honours
+                      </h3>
+                      <p className="text-white/70 text-xs">
+                        ({harvestHonours.totalAchievementsCompleted}/
+                        {harvestHonours.totalAchievements})
+                      </p>
+                    </div>
+                    {harvestHonours.harvestAchievements.map((honour, index) => (
                       <HarvestHonour
                         key={index}
                         crop={honour.crop}
@@ -372,7 +380,15 @@ export default function ProfileModal({
                   {/* Collectibles section */}
                   <div className="w-full flex flex-col gap-2">
                     <h3 className="text-white/90 text-sm font-bold">
-                      Collectibles (1/56)
+                      Collectibles (
+                      {harvestHonours.totalAchievementsCompleted +
+                        (userData.specialCrops?.length || 0) +
+                        (userData.user?.mintedOG ? 1 : 0)}
+                      /
+                      {harvestHonours.totalAchievements +
+                        goldCropsData.length +
+                        1}
+                      )
                     </h3>
                     <Card className="bg-gradient-to-br from-[#6D4C2C] to-[#5B4120] rounded-lg border-none">
                       <CardContent className="p-4 space-y-6">
@@ -382,7 +398,9 @@ export default function ProfileModal({
                             <h4 className="text-white/90 text-xs font-bold">
                               Special Badges
                             </h4>
-                            <p className="text-white/70 text-xs">1/1</p>
+                            <p className="text-white/70 text-xs">
+                              {userData.user?.mintedOG ? "1" : "0"}/1
+                            </p>
                           </div>
                           <div className="grid grid-cols-8 gap-2">
                             <div className="relative w-10 h-10 rounded-lg bg-[#7E4E31] flex items-center justify-center border border-[#179ef9]">
@@ -390,8 +408,9 @@ export default function ProfileModal({
                                 <Image
                                   src="/images/badge/og.png"
                                   alt="OG Badge"
-                                  layout="fill"
+                                  fill
                                   className="rounded-lg"
+                                  sizes="38px"
                                 />
                               )}
                             </div>
@@ -405,27 +424,40 @@ export default function ProfileModal({
                               Gold Crops
                             </h4>
                             <p className="text-white/70 text-xs">
-                              ({selectedCrops.length}/11)
+                              ({selectedCrops.length}/{goldCropsData.length})
                             </p>
                           </div>
                           <div className="grid grid-cols-8 gap-2">
-                            {state.items
-                              .filter(
-                                (item) => item.category === "special-crop"
-                              )
-                              .map((crop, index) => (
+                            {goldCropsData.map((crop, index) =>
+                              userData.specialCrops?.find(
+                                (c) => c.item.slug === crop.slug
+                              ) ? (
                                 <div
                                   key={index}
-                                  className="relative w-10 h-10 rounded-lg bg-[#7E4E31]"
+                                  className="relative w-10 h-10 rounded-lg bg-[#7E4E31] border border-[#FFB938]"
                                 >
                                   <Image
                                     src={`/images/badge/gold-crops/${crop.slug}.png`}
                                     alt={crop.name}
-                                    layout="fill"
-                                    className="rounded-lg animate-pulse"
+                                    fill
+                                    sizes="38px"
+                                    className="rounded-lg"
                                   />
                                 </div>
-                              ))}
+                              ) : (
+                                <div
+                                  key={index}
+                                  className="relative w-10 h-10 bg-[#7E4E31] rounded-lg flex items-center justify-center opacity-50"
+                                >
+                                  <Image
+                                    src={`/images/profile/question-mark-yellow.png`}
+                                    alt="Yellow question mark"
+                                    width={18}
+                                    height={18}
+                                  />
+                                </div>
+                              )
+                            )}
                           </div>
                         </div>
 
@@ -435,10 +467,13 @@ export default function ProfileModal({
                             <h4 className="text-white/90 text-xs font-bold">
                               Harvest Honours
                             </h4>
-                            <p className="text-white/70 text-xs">1/44</p>
+                            <p className="text-white/70 text-xs">
+                              {harvestHonours.totalAchievementsCompleted}/
+                              {harvestHonours.totalAchievements}
+                            </p>
                           </div>
                           <div className="grid grid-cols-8 gap-2">
-                            {harvestHonours.map((honour) =>
+                            {harvestHonours.harvestAchievements.map((honour) =>
                               Array.from({ length: 4 }).map((_, index) =>
                                 honour.step > index + 1 ? (
                                   <div
@@ -450,7 +485,8 @@ export default function ProfileModal({
                                         honour.crop
                                       }-${index + 1}.png`}
                                       alt={`Badge ${honour.crop} ${index + 1}`}
-                                      layout="fill"
+                                      fill
+                                      sizes="38px"
                                       className="rounded-lg"
                                     />
                                   </div>

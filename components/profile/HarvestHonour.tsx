@@ -105,7 +105,12 @@ export const HarvestHonour = ({
         <hr className="w-full opacity-30 my-2" />
         <div className="flex flex-row w-full gap-4">
           <div className="relative w-12 h-12 mx-auto rounded-md [image-rendering:pixelated] bg-[#7E4E31]">
-            <Image src={`/images/crop/${crop}.png`} alt={crop} layout="fill" />
+            <Image
+              src={`/images/crop/${crop}.png`}
+              alt={crop}
+              fill
+              sizes="48px"
+            />
           </div>
 
           <div className="flex-1 text-white/90">
@@ -131,6 +136,10 @@ export const HarvestHonour = ({
               alt="Gold ingot"
               width={32}
               height={32}
+              priority
+              style={{
+                width: "auto",
+              }}
             />
             <p className="text-[8px] font-bold text-[#FFD700]">
               {goldCropChancePercentage * 100}%
@@ -167,7 +176,7 @@ export const HarvestHonour = ({
                       <Image
                         src={`/images/crop/gold-${crop}.png`}
                         alt={`Gold ${crop}`}
-                        layout="fill"
+                        fill
                       />
                     </div>
                     <p className="w-4/5 text-xs">
@@ -197,7 +206,7 @@ export const HarvestHonour = ({
                 <Image
                   src={badgeModalData.badgeUrl}
                   alt={badgeModalData.title}
-                  layout="fill"
+                  fill
                   className="rounded-sm"
                 />
               </div>

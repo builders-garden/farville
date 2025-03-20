@@ -230,7 +230,7 @@ export default function MintOgModal({ onCancel }: MintOgModalProps) {
                 <Image
                   src={`/images/badge/og.png`}
                   alt={`OG Badge Minting`}
-                  layout="fill"
+                  fill
                   className="rounded-lg [animation:rotate_20s_linear_infinite] 
            [filter:drop-shadow(0_0_10px_rgba(234,179,8,0.5))]"
                 />

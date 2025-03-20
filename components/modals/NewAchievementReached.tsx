@@ -52,7 +52,7 @@ export const NewAchievementReached = ({
                 <Image
                   src={`/images/badge/${achievement.crop}-${achievement.step}.png`}
                   alt={`Badge displaying that the user has reached the step ${achievement.step} with crop ${achievement.crop}`}
-                  layout="fill"
+                  fill
                   className="rounded-lg [animation:golden-pulse_2s_ease-in-out_infinite] border-4 border-yellow-400"
                 />
               </div>

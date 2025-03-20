@@ -238,12 +238,16 @@ export const getCurrentDayStreak = (streak?: DbStreak, frostsDays?: Date[]) => {
 export const calculateHarvestAchievements = (
   userHarvestedCrops: DbUserHarvestedCrop[]
 ) => {
+  let totalAchievements = 0;
+  let totalAchievementsCompleted = 0;
   // calculate the achievements status based on the user's harvested crops and the thresholds
-  return ACHIEVEMENTS_THRESHOLDS.map((threshold) => {
+  const harvestAchievements = ACHIEVEMENTS_THRESHOLDS.map((threshold) => {
     const progress = getAchievementProgressByCrop(
       userHarvestedCrops,
       threshold.crop
     );
+    totalAchievements += threshold.thresholds.length;
+    totalAchievementsCompleted += progress.step - 1;
 
     // Calculate current count by subtracting previous threshold
     const previousThreshold =
@@ -259,6 +263,12 @@ export const calculateHarvestAchievements = (
       currentGoal: progress.currentGoal,
     };
   });
+
+  return {
+    totalAchievements,
+    totalAchievementsCompleted,
+    harvestAchievements,
+  };
 };
 
 export const getAchievementProgressByCrop = (
