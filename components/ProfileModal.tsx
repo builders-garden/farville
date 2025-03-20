@@ -199,13 +199,14 @@ export default function ProfileModal({
                   {isCurrentUser && (
                     <div className="flex flex-row justify-between mt-2">
                       <div
-                        className="relative w-[70px] h-[70px] border-2 border-[#179ef9] rounded-lg cursor-pointer"
+                        className="relative w-[70px] h-[70px] border-2 border-[#179ef9] rounded-lg cursor-pointer overflow-hidden group"
                         onClick={() => {
                           if (isCurrentUser) {
                             setShowMintOGBadge(true);
                           }
                         }}
                       >
+                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent shimmer-effect"></div>
                         <Image
                           src="/images/badge/og.png"
                           alt="Farville OG Badge"
@@ -213,7 +214,7 @@ export default function ProfileModal({
                           sizes="38px"
                           className={`${
                             user?.mintedOG ? "" : "opacity-30"
-                          } rounded-lg`}
+                          } rounded-lg transition-transform duration-300 group-hover:scale-110`}
                         />
                       </div>
                       <div className="relative w-[70px] h-[70px]">
@@ -320,11 +321,13 @@ export default function ProfileModal({
                           ) ? (
                             <div
                               key={index}
-                              className={`relative w-[70px] h-[70px] mx-auto rounded-lg bg-gradient-to-br from-[#6D4C2C] to-[#5B4120] border-2 ${
-                                newGoldCropsFound.includes(crop.slug)
-                                  ? "border-[#FFB938] animate-pulse shadow-lg shadow-[#FFB938]/40"
-                                  : "border-[#f2a311]"
-                              } ${isCurrentUser ? "cursor-pointer" : ""}`}
+                              className={`relative w-[70px] h-[70px] mx-auto rounded-lg bg-gradient-to-br from-[#6D4C2C] to-[#5B4120] border-2 overflow-hidden
+                                ${
+                                  newGoldCropsFound.includes(crop.slug)
+                                    ? "border-[#FFB938] animate-pulse shadow-lg shadow-[#FFB938]/40"
+                                    : "border-[#f2a311]"
+                                } 
+                                ${isCurrentUser ? "cursor-pointer group" : ""}`}
                               onClick={() => {
                                 setBadgeModalData({
                                   name: crop.name,
@@ -341,11 +344,12 @@ export default function ProfileModal({
                                 }
                               }}
                             >
+                              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent shimmer-effect"></div>
                               <Image
                                 src={`/images/badge/gold-crops/${crop.slug}.png`}
                                 alt={crop.name}
                                 fill
-                                className={`rounded-lg ${
+                                className={`rounded-lg transition-transform duration-300 group-hover:scale-110 ${
                                   newGoldCropsFound.includes(crop.slug)
                                     ? "animate-in"
                                     : ""
@@ -356,13 +360,15 @@ export default function ProfileModal({
                           ) : (
                             <div
                               key={index}
-                              className="w-[70px] h-[70px] bg-[#7B5B30] rounded-lg flex items-center justify-center opacity-50"
+                              className="w-[70px] h-[70px] bg-[#7B5B30] rounded-lg flex items-center justify-center opacity-50 overflow-hidden relative"
                             >
+                              <div className="absolute inset-0 bg-gradient-to-r from-[#7B5B30] via-[#8a6b38] to-[#7B5B30] opacity-30 animate-pulse"></div>
                               <Image
                                 src={`/images/profile/question-mark-yellow.png`}
                                 alt="Yellow question mark"
                                 width={44}
                                 height={44}
+                                className="animate-bounce-slow"
                               />
                             </div>
                           )
@@ -374,13 +380,16 @@ export default function ProfileModal({
                           }).map((_, index) => (
                             <div
                               key={index}
-                              className="w-24 h-24 mx-auto rounded-lg bg-[#7E4E31] flex items-center justify-center cursor-pointer"
+                              className="w-24 h-24 mx-auto rounded-lg bg-gradient-to-br from-[#7E4E31] to-[#6a4229] flex items-center justify-center cursor-pointer hover:shadow-inner hover:shadow-black/30 transition-all duration-300 group"
                               onClick={() => {
                                 setCropIndex(selectedCrops.length + index);
                               }}
                             >
-                              <div className="text-white/70 text-[10px]">
-                                <Plus size={24} />
+                              <div className="text-white/70 text-[10px] group-hover:text-white/90 transition-colors duration-300">
+                                <Plus
+                                  size={24}
+                                  className="group-hover:scale-125 transition-transform duration-300"
+                                />
                               </div>
                             </div>
                           ))}
@@ -668,20 +677,38 @@ export default function ProfileModal({
               mintable={badgeModalData.mintable}
             >
               <div className="flex flex-col items-center gap-2">
-                <div className="relative w-52 h-52 rounded-lg my-4 border-4 border-[#f2a311]">
-                  <Image
-                    src={badgeModalData.badgeUrl}
-                    alt={badgeModalData.title}
-                    layout="fill"
-                    className="rounded-sm"
-                  />
+                <div className="relative w-52 h-52 rounded-lg my-4 border-4 border-[#f2a311] overflow-hidden group">
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent shimmer-effect z-10"></div>
+                  <motion.div
+                    initial={{ scale: 0.9, opacity: 0.5 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ duration: 0.5 }}
+                    className="absolute inset-0"
+                  >
+                    <Image
+                      src={badgeModalData.badgeUrl}
+                      alt={badgeModalData.title}
+                      layout="fill"
+                      className="rounded-sm"
+                    />
+                  </motion.div>
                 </div>
-                <p className="text-lg font-bold text-[#f2a311]">
+                <motion.p
+                  initial={{ y: 10, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ delay: 0.2, duration: 0.5 }}
+                  className="text-lg font-bold text-[#f2a311]"
+                >
                   {badgeModalData.title}
-                </p>
-                <p className="text-white/90 text-xs mt-4 mb-12 text-center">
+                </motion.p>
+                <motion.p
+                  initial={{ y: 10, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ delay: 0.3, duration: 0.5 }}
+                  className="text-white/90 text-xs mt-4 mb-12 text-center"
+                >
                   {badgeModalData.description}
-                </p>
+                </motion.p>
               </div>
             </AchievementBadgeModal>
           )}

@@ -45,21 +45,27 @@ export const HarvestHonour = ({
               step < trophy ? (
                 <div
                   key={trophy}
-                  className="h-12 w-12 bg-[#7B5B30] rounded-lg flex items-center justify-center opacity-50"
+                  className="h-12 w-12 bg-[#7B5B30] rounded-lg flex items-center justify-center opacity-50 relative overflow-hidden"
                 >
+                  <div className="absolute inset-0 bg-gradient-to-r from-[#7B5B30] via-[#8a6b38] to-[#7B5B30] opacity-30 animate-pulse"></div>
                   <Image
                     src={`/images/profile/question-mark-yellow.png`}
                     alt="Yellow question mark"
                     width={24}
                     height={24}
+                    className="animate-bounce-slow"
                   />
                 </div>
               ) : (
                 <div
                   key={trophy}
-                  className={`h-12 w-12 bg-[#7E4E31] rounded-lg flex items-center justify-center border-2 border-[#f2a311] cursor-pointer ${
-                    step === trophy ? "opacity-50 border-opacity-50" : ""
-                  }`}
+                  className={`h-12 w-12 bg-[#7E4E31] rounded-lg flex items-center justify-center border-2 
+                    ${
+                      step === trophy
+                        ? "opacity-50 border-opacity-50 border-[#f2a311]/50"
+                        : "border-[#f2a311] hover:shadow-lg hover:shadow-[#f2a311]/20 transition-all duration-300"
+                    }
+                    cursor-pointer overflow-hidden group`}
                   onClick={() => {
                     const cropAchievements = ACHIEVEMENTS_THRESHOLDS.find(
                       (achievement) => achievement.crop === crop
@@ -90,7 +96,9 @@ export const HarvestHonour = ({
                     alt={`Badge ${trophy}`}
                     width={50}
                     height={50}
-                    className="rounded-lg"
+                    className={`rounded-lg transition-transform duration-300 ${
+                      step > trophy ? "group-hover:scale-110" : ""
+                    }`}
                   />
                 </div>
               )
