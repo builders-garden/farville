@@ -411,3 +411,28 @@ body {
 .animate-bounce-slow {
   animation: bounce-slow 2s ease-in-out infinite;
 }
+
+.bg-animate-gradient {
+  background: linear-gradient(
+    270deg,
+    #6d4c2c,
+    #7a5a32,
+    #8a6b38,
+    #7a5a32,
+    #6d4c2c
+  );
+  background-size: 300% 300%;
+  animation: gradientAnimation 5s ease infinite;
+}
+
+@keyframes gradientAnimation {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}

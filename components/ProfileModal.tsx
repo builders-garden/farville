@@ -130,8 +130,8 @@ export default function ProfileModal({
         exit={{ opacity: 0, y: 50 }}
         className="bg-[#7E4E31] w-full min-h-screen"
       >
-        <div className="max-w-4xl mx-auto p-6">
-          <div className="flex justify-between items-center mb-6">
+        <div className="max-w-4xl mx-auto px-2 py-6">
+          <div className="flex justify-between items-center mb-6 px-4">
             <div>
               <motion.h2
                 className={`text-white/90 font-bold text-2xl mb-1 flex items-center gap-2`}
@@ -156,7 +156,7 @@ export default function ProfileModal({
             </button>
           </div>
 
-          <div className="space-y-4 overflow-y-auto h-[calc(100vh-100px)] pb-4 pr-2 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-[#6D4B2B] [&::-webkit-scrollbar-thumb]:bg-[#8A5E3B]">
+          <div className="space-y-4 overflow-y-auto h-[calc(100vh-100px)] px-4 py-0 pb-4 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-[#6D4B2B] [&::-webkit-scrollbar-thumb]:bg-[#8A5E3B]">
             <div className="flex flex-col items-center gap-8">
               {/* Profile Information */}
               <Card className="bg-gradient-to-br from-[#6D4C2C] to-[#5B4120] rounded-lg border-none w-full max-w-2xl">
@@ -337,7 +337,13 @@ export default function ProfileModal({
                       )}
                     </div>
 
-                    <Card className="bg-gradient-to-br from-[#6D4C2C] to-[#5B4120] rounded-lg border-none w-full">
+                    <Card
+                      className={`bg-gradient-to-br from-[#6D4C2C] to-[#5B4120] rounded-lg border-none w-full ${
+                        newGoldCropsFound.length > 0
+                          ? "shadow-[0_0_20px_rgba(255,185,56,0.5)] transition-shadow duration-700"
+                          : ""
+                      }`}
+                    >
                       <CardContent className="grid grid-cols-4 gap-4 p-4">
                         {(showMoreGoldCropsBadges
                           ? goldCropsData
@@ -350,12 +356,12 @@ export default function ProfileModal({
                             <div
                               key={index}
                               className={`relative w-[70px] h-[70px] mx-auto rounded-lg bg-gradient-to-br from-[#6D4C2C] to-[#5B4120] border-2 overflow-hidden
-                                ${
-                                  newGoldCropsFound.includes(crop.slug)
-                                    ? "border-[#FFB938] animate-pulse shadow-lg shadow-[#FFB938]/40"
-                                    : "border-[#f2a311]"
-                                } 
-                                ${isCurrentUser ? "cursor-pointer group" : ""}`}
+                          ${
+                            newGoldCropsFound.includes(crop.slug)
+                              ? "border-[#FFB938] shadow-lg shadow-[#FFB938]/40"
+                              : "border-[#f2a311]"
+                          } 
+                          ${isCurrentUser ? "cursor-pointer group" : ""}`}
                               onClick={() => {
                                 setBadgeModalData({
                                   name: crop.name,
@@ -373,15 +379,17 @@ export default function ProfileModal({
                                 }
                               }}
                             >
-                              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent shimmer-effect"></div>
+                              {newGoldCropsFound.includes(crop.slug) && (
+                                <div className="absolute inset-0 bg-gradient-to-b from-yellow/30 to-transparent z-10 animate-pulse pointer-events-none"></div>
+                              )}
                               <Image
                                 src={`/images/badge/gold-crops/${crop.slug}.png`}
                                 alt={crop.name}
                                 fill
                                 className={`rounded-lg transition-transform duration-300 group-hover:scale-110 ${
-                                  newGoldCropsFound.includes(crop.slug)
-                                    ? "animate-in"
-                                    : ""
+                                  !newGoldCropsFound.includes(crop.slug)
+                                    ? ""
+                                    : "filter blur-[3px] brightness-[50%] animate-pulse-slow"
                                 }`}
                                 sizes="38px"
                               />

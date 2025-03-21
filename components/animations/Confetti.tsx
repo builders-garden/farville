@@ -40,7 +40,7 @@ export default function Confetti({ title }: ConfettiProps) {
         colors: ["#FFD700", "#FFA500", "#FF6347", "#98FB98", "#87CEEB"],
         disableForReducedMotion: true,
       });
-    }, 750); // Increased interval speed
+    }, 250); // Increased interval speed
 
     return () => clearInterval(interval);
   }, []);
