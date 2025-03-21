@@ -14,6 +14,9 @@ export const HarvestedGoldCrop = ({
 }: HarvestedGoldCropProps) => {
   const [animated, setAnimated] = useState(false);
   const { playSound } = useAudio();
+  const [goldCropsFound, setGoldCropsFound] = useState<
+    { crop: string; amount: number }[]
+  >([]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -23,6 +26,12 @@ export const HarvestedGoldCrop = ({
 
     return () => clearTimeout(timer);
   }, [playSound]);
+
+  useEffect(() => {
+    if (goldCropsFound.length === 0) {
+      setGoldCropsFound(goldCrops);
+    }
+  }, [goldCrops]);
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black/60 z-[9999]">
@@ -38,14 +47,14 @@ export const HarvestedGoldCrop = ({
         </h3>
         <div
           className={`flex flex-row overflow-x-auto my-2 mx-auto no-scrollbar ${
-            goldCrops.length >= 3
+            goldCropsFound.length >= 3
               ? "justify-start"
-              : goldCrops.length === 2
+              : goldCropsFound.length === 2
               ? "justify-between"
               : "justify-center"
           }`}
         >
-          {goldCrops.map((goldCrop, index) => (
+          {goldCropsFound.map((goldCrop, index) => (
             <div
               key={goldCrop.crop}
               className={`flex flex-col items-center gap-2 my-8 mx-4 transition-all duration-500 transform 
@@ -58,7 +67,7 @@ export const HarvestedGoldCrop = ({
             >
               <div
                 className={`flex items-center justify-center bg-gradient-to-br from-[#8B6E4E] to-[#6D4C2C] rounded-lg [animation:golden-pulse_2s_ease-in-out_infinite] border-2 border-yellow-600 ${
-                  goldCrops.length === 1 ? "w-40 h-40" : "w-32 h-32"
+                  goldCropsFound.length === 1 ? "w-40 h-40" : "w-32 h-32"
                 }`}
               >
                 <div className="w-16 h-16 relative mx-auto">
@@ -91,7 +100,9 @@ export const HarvestedGoldCrop = ({
                     flex items-center justify-center gap-2 ${
                       animated ? "opacity-100" : "opacity-0"
                     }`}
-            style={{ transitionDelay: `${goldCrops.length * 200 + 100}ms` }}
+            style={{
+              transitionDelay: `${goldCropsFound.length * 200 + 100}ms`,
+            }}
           >
             Share
           </button>
@@ -101,7 +112,9 @@ export const HarvestedGoldCrop = ({
                     transition-all duration-500 text-sm font-medium ${
                       animated ? "opacity-100" : "opacity-0"
                     }`}
-            style={{ transitionDelay: `${goldCrops.length * 200 + 200}ms` }}
+            style={{
+              transitionDelay: `${goldCropsFound.length * 200 + 200}ms`,
+            }}
           >
             Close
           </button>
