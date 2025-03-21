@@ -157,7 +157,7 @@ export default function Toolbar({
                   ? "bg-[#A17449] shadow-lg shadow-[#A17449]/50 animate-pulse"
                   : "bg-[#8B5E3C] hover:bg-[#6d4c2c]"
               }`}
-            disabled={!state.user}
+            disabled={!state.user?.avatarUrl}
           >
             {newGoldCropsFound.length > 0 && (
               <div className="absolute -top-1 -right-1 w-3 h-3 bg-[#FFD700] rounded-full" />
