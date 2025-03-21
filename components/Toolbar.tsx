@@ -167,7 +167,11 @@ export default function Toolbar({
               alt="Profile"
               width={36}
               height={36}
-              className={state.user?.avatarUrl ? "rounded-full" : "rounded-md"}
+              className={
+                state.user?.avatarUrl
+                  ? "rounded-full w-[36px] h-[36px] object-cover"
+                  : "rounded-md"
+              }
             />
           </motion.button>
           <span
