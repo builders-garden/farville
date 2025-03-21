@@ -96,11 +96,12 @@ export const goldCropFlexCardComposeCastUrl = (fid: number, crop: string) => {
 export const achievementBadgeFlexCardComposeCastUrl = (
   fid: number,
   crop: string,
-  step: number
+  step: number,
+  badgeTitle: string
 ) => {
   const timestamp = Date.now();
   const frameUrl = `${process.env.NEXT_PUBLIC_URL}/flex-card/achievement/${fid}/${timestamp}?crop=${crop}&step=${step}`;
-  const text = `I just harvested a new gold crop!\n\nbrum brum 🚜💨`;
+  const text = `I've reached the ${badgeTitle} level for the ${crop} crop!\n\nbrum brum 🚜💨`;
   const urlFriendlyText = encodeURIComponent(text);
   return {
     frameUrl,

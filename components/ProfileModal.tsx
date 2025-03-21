@@ -93,7 +93,8 @@ export default function ProfileModal({
           const { castUrl } = achievementBadgeFlexCardComposeCastUrl(
             state.user.fid,
             badgeModalData.crop,
-            badgeModalData.step
+            badgeModalData.step,
+            badgeModalData.title
           );
           await sdk.actions.openUrl(castUrl);
         }

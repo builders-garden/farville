@@ -77,14 +77,6 @@ export async function GET(
     );
     const fireIcon = await fireIconRes.arrayBuffer();
 
-    // let profilePic = null;
-    // if (user?.avatarUrl) {
-    //   const profilePicRes = await fetch(user.avatarUrl);
-    //   if (profilePicRes.ok) {
-    //     profilePic = await profilePicRes.arrayBuffer();
-    //   }
-    // }
-
     const calendarRes = await fetch(
       new URL(`${appUrl}/images/flex-cards/calendar.svg`, import.meta.url)
     );

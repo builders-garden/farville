@@ -1,5 +1,9 @@
-import { getPlayerCount, getUserItemBySlug } from "@/lib/prisma/queries";
-import { getGlobalLeaderboard } from "@/lib/utils";
+import {
+  getActiveStreaksCount,
+  getTopStreaks,
+  getUserItemBySlug,
+  TopStreaksResult,
+} from "@/lib/prisma/queries";
 import { getUser } from "@/supabase/queries";
 import { DbUser } from "@/supabase/types";
 import { ImageResponse } from "next/og";
@@ -9,18 +13,6 @@ const size = {
   width: 600,
   height: 400,
 };
-
-interface LeaderboardData {
-  users: {
-    questCount: number;
-    fid: number;
-    username: string;
-    displayName: string;
-    avatarUrl: string | null;
-  }[];
-  targetPosition: number;
-  questCount: number | undefined;
-}
 
 async function loadGoogleFont(font: string, text: string) {
   const url = `https://fonts.googleapis.com/css2?family=${font}&text=${encodeURIComponent(
@@ -79,19 +71,14 @@ export async function GET(
       });
     }
 
-    const playerCount = await getPlayerCount();
+    const topStreaks: TopStreaksResult[] = await getTopStreaks();
+    const totActiveStreaks = await getActiveStreaksCount();
 
-    const leaderboardData = (await getGlobalLeaderboard(
-      fid,
-      "xp",
-      5
-    )) as LeaderboardData;
-
-    const topLeaderboardUsers: DbUser[] = [];
-    for (const leaderboardUser of leaderboardData.users) {
-      const user = await getUser(leaderboardUser.fid);
+    const topStreaksUsers: DbUser[] = [];
+    for (const streak of topStreaks) {
+      const user = await getUser(streak.fid);
       if (user) {
-        topLeaderboardUsers.push(user);
+        topStreaksUsers.push(user);
       }
     }
 
@@ -309,7 +296,7 @@ export async function GET(
                       gap: "7px",
                     }}
                   >
-                    {topLeaderboardUsers.slice(0, 5).map(
+                    {topStreaksUsers.slice(0, 5).map(
                       (streakUser, index) =>
                         streakUser.avatarUrl && (
                           <img
@@ -335,7 +322,7 @@ export async function GET(
                       color: "#ffffff",
                     }}
                   >
-                    +{playerCount}{" "}
+                    +{totActiveStreaks}{" "}
                     <span style={{ marginLeft: "5px" }}> active farmers</span>
                   </span>
                 </div>
