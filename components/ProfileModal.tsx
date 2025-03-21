@@ -8,7 +8,7 @@ import { Statistic } from "./profile/Statistic";
 import { useEffect, useState } from "react";
 import InfoModal from "./modals/InfoModal";
 import { HarvestHonour } from "./profile/HarvestHonour";
-import { ChevronDown, ChevronUp, Info, Plus } from "lucide-react";
+import { ChevronDown, ChevronUp, Info } from "lucide-react";
 import { UserItem } from "@/hooks/use-user-items";
 import {
   achievementBadgeFlexCardComposeCastUrl,
@@ -45,7 +45,6 @@ export default function ProfileModal({
   const [isWhatIsThisOpen, setIsWhatIsThisOpen] = useState(false);
   const [showMoreGoldCropsBadges, setShowMoreGoldCropsBadges] = useState(false);
   const [selectedCrops, setSelectedCrops] = useState<UserItem[]>([]);
-  const [, setCropIndex] = useState<number | undefined>(undefined);
   const [badgeModalData, setBadgeModalData] = useState<BadgeModalData | null>(
     null
   );
@@ -410,26 +409,6 @@ export default function ProfileModal({
                             </div>
                           )
                         )}
-                        {isCurrentUser &&
-                          selectedCrops.length < 3 &&
-                          Array.from({
-                            length: 3 - selectedCrops.length,
-                          }).map((_, index) => (
-                            <div
-                              key={index}
-                              className="w-24 h-24 mx-auto rounded-lg bg-gradient-to-br from-[#7E4E31] to-[#6a4229] flex items-center justify-center cursor-pointer hover:shadow-inner hover:shadow-black/30 transition-all duration-300 group"
-                              onClick={() => {
-                                setCropIndex(selectedCrops.length + index);
-                              }}
-                            >
-                              <div className="text-white/70 text-[10px] group-hover:text-white/90 transition-colors duration-300">
-                                <Plus
-                                  size={24}
-                                  className="group-hover:scale-125 transition-transform duration-300"
-                                />
-                              </div>
-                            </div>
-                          ))}
 
                         {/* Empty slots for other users if they don't have 3 crops */}
                         {!isCurrentUser &&
