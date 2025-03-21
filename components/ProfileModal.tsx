@@ -10,7 +10,11 @@ import InfoModal from "./modals/InfoModal";
 import { HarvestHonour } from "./profile/HarvestHonour";
 import { ChevronDown, ChevronUp, Info, Plus } from "lucide-react";
 import { UserItem } from "@/hooks/use-user-items";
-import { calculateHarvestAchievements } from "@/lib/utils";
+import {
+  achievementBadgeFlexCardComposeCastUrl,
+  calculateHarvestAchievements,
+  goldCropFlexCardComposeCastUrl,
+} from "@/lib/utils";
 import { LeaderboardUserAvatar } from "./LeaderboardUserAvatar";
 import sdk from "@farcaster/frame-sdk";
 import { useOtherUserProfile } from "@/hooks/use-other-user-profile";
@@ -19,6 +23,7 @@ import { ACHIEVEMENTS_THRESHOLDS } from "@/lib/game-constants";
 
 export interface BadgeModalData {
   name: string;
+  crop?: string;
   title: string;
   description: string;
   badgeUrl: string;
@@ -71,6 +76,32 @@ export default function ProfileModal({
       );
     }
   }, [state.specialCrops, userData?.specialCrops, isCurrentUser]);
+
+  const handleShareAchievement = async (badgeModalData: BadgeModalData) => {
+    switch (badgeModalData.type) {
+      case "gold-crop":
+        if (badgeModalData.crop) {
+          const { castUrl } = goldCropFlexCardComposeCastUrl(
+            state.user.fid,
+            badgeModalData.crop
+          );
+          await sdk.actions.openUrl(castUrl);
+        }
+        break;
+      case "honour":
+        if (badgeModalData.crop && badgeModalData.step) {
+          const { castUrl } = achievementBadgeFlexCardComposeCastUrl(
+            state.user.fid,
+            badgeModalData.crop,
+            badgeModalData.step
+          );
+          await sdk.actions.openUrl(castUrl);
+        }
+        break;
+      default:
+        break;
+    }
+  };
 
   if (!isCurrentUser && isLoading) {
     return (
@@ -286,7 +317,7 @@ export default function ProfileModal({
                       )}
                       {isWhatIsThisOpen && (
                         <InfoModal
-                          title="Glowing crops"
+                          title="Gold crops badges"
                           onCancel={() => setIsWhatIsThisOpen(false)}
                           options={{
                             titleColor: "text-[#feb938]",
@@ -294,18 +325,12 @@ export default function ProfileModal({
                         >
                           <div className="flex flex-col gap-4 my-4 text-white/90 text-[10px]">
                             <p>
-                              Here you can showcase up to 3 of your most prized
-                              crops.
+                              The badges below prove that you have harvested at
+                              least one gold version of the specific crop.
                             </p>
                             <p>
-                              These are special crops (gold or legendary) that
-                              other farmers can see when they visit your
-                              profile.
-                            </p>
-                            <p>
-                              <strong>Tip:</strong> Select your rarest and most
-                              valuable crops to display your farming
-                              achievements to the community!
+                              You will receive a new gold crop badge every time
+                              you harvest a new gold crop type.
                             </p>
                           </div>
                         </InfoModal>
@@ -339,6 +364,7 @@ export default function ProfileModal({
                                   badgeUrl: `/images/badge/gold-crops/${crop.slug}.png`,
                                   type: "gold-crop",
                                   shareable: true,
+                                  crop: crop.slug,
                                 });
                                 if (isCurrentUser) {
                                   setNewGoldCropsFound((prev) =>
@@ -543,6 +569,7 @@ export default function ProfileModal({
                                       }!`,
                                       badgeUrl: `/images/badge/gold-crops/${crop.slug}.png`,
                                       type: "gold-crop",
+                                      crop: crop.slug,
                                     });
                                   }}
                                 >
@@ -676,6 +703,9 @@ export default function ProfileModal({
                   : "/images/icons/experience.png"
               }
               onCancel={() => setBadgeModalData(null)}
+              onShare={() => {
+                handleShareAchievement(badgeModalData);
+              }}
               shareable={badgeModalData.shareable}
               mintable={badgeModalData.mintable}
             >

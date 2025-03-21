@@ -2,6 +2,9 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import Confetti from "../animations/Confetti";
 import { useAudio } from "@/context/AudioContext";
+import { useGame } from "@/context/GameContext";
+import sdk from "@farcaster/frame-sdk";
+import { goldCropFlexCardComposeCastUrl } from "@/lib/utils";
 
 interface HarvestedGoldCropProps {
   goldCrops: { crop: string; amount: number }[];
@@ -17,6 +20,15 @@ export const HarvestedGoldCrop = ({
   const [goldCropsFound, setGoldCropsFound] = useState<
     { crop: string; amount: number }[]
   >([]);
+  const { state } = useGame();
+
+  const handleShareGoldCrop = async () => {
+    const { castUrl } = goldCropFlexCardComposeCastUrl(
+      state.user.fid,
+      goldCropsFound[0].crop
+    );
+    await sdk.actions.openUrl(castUrl);
+  };
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -93,7 +105,7 @@ export const HarvestedGoldCrop = ({
         <div className="flex flex-col gap-3">
           <button
             onClick={() => {
-              console.log("missing implementation");
+              handleShareGoldCrop();
             }}
             className={`flex-1 py-2 px-4 rounded bg-yellow-500/20 text-yellow-400 hover:bg-yellow-500/30
                     transition-all duration-500 text-sm font-medium border border-yellow-500/30 

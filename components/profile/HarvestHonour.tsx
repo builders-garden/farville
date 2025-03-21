@@ -88,6 +88,7 @@ export const HarvestHonour = ({
                       step: trophy,
                       type: "honour",
                       shareable: step > trophy,
+                      crop: crop,
                     });
                   }}
                 >

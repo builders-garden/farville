@@ -5,6 +5,7 @@ interface AchievementBadgeModalProps {
   title: string;
   icon?: React.ReactNode;
   onCancel: () => void;
+  onShare?: () => void;
   options?: {
     titleColor?: string;
     messageColor?: string;
@@ -19,6 +20,7 @@ export default function AchievementBadgeModal({
   icon,
   children,
   onCancel,
+  onShare,
   options,
   mintable,
   shareable,
@@ -83,7 +85,7 @@ export default function AchievementBadgeModal({
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              onClick={onCancel}
+              onClick={onShare}
               className="flex-1 py-2 px-4 rounded bg-gradient-to-r from-[#f2a311]/70 to-[#e09006]/70 text-white/90 transition-all text-sm font-medium hover:shadow-md hover:shadow-[#e09006]/30 hover:from-[#f2a311]/80 hover:to-[#e09006]/80"
             >
               Share

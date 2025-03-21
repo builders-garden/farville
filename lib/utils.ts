@@ -80,6 +80,36 @@ export const mintedOgFlexCardComposeCastUrl = (fid: number) => {
   };
 };
 
+export const goldCropFlexCardComposeCastUrl = (fid: number, crop: string) => {
+  const timestamp = Date.now();
+  const frameUrl = `${process.env.NEXT_PUBLIC_URL}/flex-card/gold-crop/${fid}/${timestamp}?crop=${crop}`;
+  const text = `I just harvested a new gold crop!\n\nbrum brum 🚜💨`;
+  const urlFriendlyText = encodeURIComponent(text);
+  return {
+    frameUrl,
+    castUrl: `https://warpcast.com/~/compose?text=${urlFriendlyText}&embeds[]=${encodeURIComponent(
+      frameUrl
+    )}&channelKey=farville`,
+  };
+};
+
+export const achievementBadgeFlexCardComposeCastUrl = (
+  fid: number,
+  crop: string,
+  step: number
+) => {
+  const timestamp = Date.now();
+  const frameUrl = `${process.env.NEXT_PUBLIC_URL}/flex-card/achievement/${fid}/${timestamp}?crop=${crop}&step=${step}`;
+  const text = `I just harvested a new gold crop!\n\nbrum brum 🚜💨`;
+  const urlFriendlyText = encodeURIComponent(text);
+  return {
+    frameUrl,
+    castUrl: `https://warpcast.com/~/compose?text=${urlFriendlyText}&embeds[]=${encodeURIComponent(
+      frameUrl
+    )}&channelKey=farville`,
+  };
+};
+
 export const leaderboardFlexCardComposeCastUrl = (
   fid: number,
   type: "quests" | "xp",
