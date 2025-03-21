@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import confetti from "canvas-confetti";
 
 interface ConfettiProps {
-  title: string;
+  title?: string;
 }
 
 export default function Confetti({ title }: ConfettiProps) {
@@ -47,7 +47,7 @@ export default function Confetti({ title }: ConfettiProps) {
 
   if (!visible) return null;
 
-  return (
+  return title ? (
     <div className="fixed inset-0 flex items-center justify-center pointer-events-none z-[80]">
       <div
         className={`text-${
@@ -70,5 +70,5 @@ export default function Confetti({ title }: ConfettiProps) {
         {title}
       </div>
     </div>
-  );
+  ) : null;
 }
