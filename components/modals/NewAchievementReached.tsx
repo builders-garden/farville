@@ -3,6 +3,9 @@ import { ACHIEVEMENTS_THRESHOLDS } from "@/lib/game-constants";
 import { achievementBadgeFlexCardComposeCastUrl } from "@/lib/utils";
 import sdk from "@farcaster/frame-sdk";
 import Image from "next/image";
+import { useEffect, useState } from "react";
+import Confetti from "../animations/Confetti";
+import { useAudio } from "@/context/AudioContext";
 
 interface NewAchievementReachedProps {
   achievements: { crop: string; step: number }[];
@@ -14,6 +17,8 @@ export const NewAchievementReached = ({
   onClose,
 }: NewAchievementReachedProps) => {
   const { state } = useGame();
+  const [animated, setAnimated] = useState(false);
+  const { playSound } = useAudio();
 
   // create a new constant that contains the achievements and the threshold for that crop
   const fullAchievementsData = achievements.map((achievement) => {
@@ -29,10 +34,25 @@ export const NewAchievementReached = ({
     };
   });
 
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setAnimated(true);
+      playSound("levelUp");
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, [playSound]);
+
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black/60 z-[999]">
-      <div className="bg-gradient-to-br from-[#6D4C2C] to-[#5B4120] w-[94%] p-6 rounded-xl shadow-lg shadow-yellow-500/50">
-        <h3 className="text-xl font-bold text-center mb-2 text-yellow-500">
+      <div
+        className={`bg-gradient-to-br from-[#6D4C2C] to-[#5B4120] w-[94%] p-6 rounded-xl shadow-lg shadow-yellow-500/50
+        transition-all duration-500 transform ${
+          animated ? "scale-100 opacity-100" : "scale-50 opacity-0"
+        }`}
+      >
+        <Confetti />
+        <h3 className="text-xl font-bold text-center mb-2 text-yellow-500 animate-pulse">
           New Achievement{fullAchievementsData.length > 1 ? "s" : ""}!
         </h3>
         <div
@@ -44,10 +64,16 @@ export const NewAchievementReached = ({
               : "justify-center"
           }`}
         >
-          {fullAchievementsData.map((achievement) => (
+          {fullAchievementsData.map((achievement, index) => (
             <div
               key={achievement.crop}
-              className="flex flex-col items-center gap-2 my-8 min-w-[250px]"
+              className={`flex flex-col items-center gap-2 my-8 min-w-[250px] transition-all duration-500 transform 
+              ${
+                animated
+                  ? "translate-y-0 opacity-100"
+                  : "translate-y-8 opacity-0"
+              }`}
+              style={{ transitionDelay: `${index * 200}ms` }}
             >
               <div
                 className={`relative mx-auto [animation:float_2s_ease-in-out_infinite] ${
