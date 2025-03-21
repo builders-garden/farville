@@ -390,13 +390,22 @@ export function GameProvider({
           gridBulkResult.rewards?.goldCrops.length > 0
         ) {
           const newGoldCrops = gridBulkResult.rewards.goldCrops
-            .filter((goldCrop) =>
-              state.specialCrops.some(
-                (specialCrop) =>
-                  specialCrop.item.slug === goldCrop.crop &&
-                  specialCrop.quantity === 0
-              )
-            )
+            .filter((goldCrop) => {
+              // Check if this crop exists in the specialCrops list
+              const cropExists = state.specialCrops.some(
+                (specialCrop) => specialCrop.item.slug === goldCrop.crop
+              );
+              // If it exists, check if quantity is 0 (new)
+              // If it doesn't exist at all in specialCrops, it's also new
+              return (
+                !cropExists ||
+                state.specialCrops.some(
+                  (specialCrop) =>
+                    specialCrop.item.slug === goldCrop.crop &&
+                    specialCrop.quantity === 0
+                )
+              );
+            })
             .map((goldCrop) => goldCrop.crop);
 
           if (newGoldCrops.length > 0) {
