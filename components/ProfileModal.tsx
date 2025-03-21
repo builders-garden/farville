@@ -62,9 +62,13 @@ export default function ProfileModal({
 
   useEffect(() => {
     if (isCurrentUser) {
-      setSelectedCrops(state.specialCrops || []);
+      setSelectedCrops(
+        (state.specialCrops || []).filter((crop) => crop.quantity > 0)
+      );
     } else if (userData?.specialCrops) {
-      setSelectedCrops(userData.specialCrops);
+      setSelectedCrops(
+        (userData.specialCrops || []).filter((crop) => crop.quantity > 0)
+      );
     }
   }, [state.specialCrops, userData?.specialCrops, isCurrentUser]);
 
@@ -265,22 +269,21 @@ export default function ProfileModal({
                           <Info />
                         </button>
                       </div>
-                      {selectedCrops.length > 4 &&
-                        (showMoreGoldCropsBadges ? (
-                          <button
-                            className="text-white/70 hover:text-white/90 transition-colors cursor-pointer -mt-1"
-                            onClick={() => setShowMoreGoldCropsBadges(false)}
-                          >
-                            <ChevronUp />
-                          </button>
-                        ) : (
-                          <button
-                            className="text-white/70 hover:text-white/90 transition-colors cursor-pointer -mt-1"
-                            onClick={() => setShowMoreGoldCropsBadges(true)}
-                          >
-                            <ChevronDown />
-                          </button>
-                        ))}
+                      {showMoreGoldCropsBadges ? (
+                        <button
+                          className="text-white/70 hover:text-white/90 transition-colors cursor-pointer -mt-1"
+                          onClick={() => setShowMoreGoldCropsBadges(false)}
+                        >
+                          <ChevronUp />
+                        </button>
+                      ) : (
+                        <button
+                          className="text-white/70 hover:text-white/90 transition-colors cursor-pointer -mt-1"
+                          onClick={() => setShowMoreGoldCropsBadges(true)}
+                        >
+                          <ChevronDown />
+                        </button>
+                      )}
                       {isWhatIsThisOpen && (
                         <InfoModal
                           title="Glowing crops"
