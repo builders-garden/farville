@@ -418,6 +418,14 @@ export function GameProvider({
           );
           setShowHarvestedNewGoldCrops(true);
         }
+
+        if (
+          gridBulkResult.rewards?.newBadges &&
+          gridBulkResult.rewards.newBadges.length > 0
+        ) {
+          setShowAchievedNewBadges(true);
+        }
+
         updateUserItemsStateFromReward(rewards, state);
         updateUserHarvestedCropsFromReward(rewards, state);
       }
