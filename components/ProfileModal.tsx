@@ -391,13 +391,12 @@ export default function ProfileModal({
                               key={index}
                               className="w-[70px] h-[70px] bg-[#7B5B30] rounded-lg flex items-center justify-center opacity-50 overflow-hidden relative"
                             >
-                              <div className="absolute inset-0 bg-gradient-to-r from-[#7B5B30] via-[#8a6b38] to-[#7B5B30] opacity-30 animate-pulse"></div>
+                              <div className="absolute inset-0 bg-gradient-to-r from-[#7B5B30] via-[#8a6b38] to-[#7B5B30] opacity-30"></div>
                               <Image
                                 src={`/images/profile/question-mark-yellow.png`}
                                 alt="Yellow question mark"
                                 width={44}
                                 height={44}
-                                className="animate-bounce-slow"
                               />
                             </div>
                           )
