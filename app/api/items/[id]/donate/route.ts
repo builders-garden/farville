@@ -1,12 +1,14 @@
 import { sendQuestsCalculation } from "@/app/api/grid-cells/utils";
 import {
   MAX_DAILY_ALLOWED_DONATION_BETWEEN_USERS,
+  MAX_DAILY_ALLOWED_DONATION_TO_USERS,
   XP_PER_DONATED_ITEM,
 } from "@/lib/game-constants";
 import { sendDelayedNotification } from "@/lib/game-notifications";
 import { trackEvent } from "@/lib/posthog/server";
 import {
   getUserDonationByReceiver,
+  getUserDonationsLast24h,
   updateUserDonationHistory,
   updateUserXP,
 } from "@/lib/prisma/queries";
@@ -92,16 +94,19 @@ export const POST = async (
     Number(toFid)
   );
 
+  const donationsLast24h = await getUserDonationsLast24h(Number(fid));
+
   if (
     userLastDonation &&
     userLastDonation?.times &&
     userLastDonation.times >= MAX_DAILY_ALLOWED_DONATION_BETWEEN_USERS &&
     new Date(userLastDonation.lastDonation).toDateString() ===
-      new Date().toDateString()
+      new Date().toDateString() &&
+    donationsLast24h >= MAX_DAILY_ALLOWED_DONATION_TO_USERS
   ) {
     return NextResponse.json(
       {
-        message: `You have reached the maximum daily donation limit of ${MAX_DAILY_ALLOWED_DONATION_BETWEEN_USERS} donations to ${toFid} user today`,
+        message: `You have reached the maximum daily donation limits.`,
       },
       { status: 400 }
     );

@@ -11,6 +11,7 @@ import { useRequest } from "@/hooks/use-request";
 import { useDonationHistory } from "@/hooks/use-donation-history";
 import {
   MAX_DAILY_ALLOWED_DONATION_BETWEEN_USERS,
+  MAX_DAILY_ALLOWED_DONATION_TO_USERS,
   XP_PER_DONATED_ITEM,
 } from "@/lib/game-constants";
 import FloatingNumber from "./animations/FloatingNumber";
@@ -27,7 +28,11 @@ export default function RequestModal({
   const { request, isLoading } = useRequest(id);
   const { donate } = useDonate();
   const { state, updateUserItems } = useGame();
-  const { lastDonation } = useDonationHistory(state.user?.fid, request?.fid);
+  const {
+    donationsLast24h,
+    lastDonation,
+    isLoading: isDonationHistoryLoading,
+  } = useDonationHistory(state.user?.fid, request?.fid);
   const [showFloatingNumber, setShowFloatingNumber] = useState(false);
   const [rewardedXp, setRewardedXp] = useState(0);
   const { addUserXpsAndCheckLevelUp } = useUserXp();
@@ -197,6 +202,14 @@ export default function RequestModal({
                         {MAX_DAILY_ALLOWED_DONATION_BETWEEN_USERS} times a day
                       </p>
                     </div>
+                  ) : donationsLast24h &&
+                    donationsLast24h >= MAX_DAILY_ALLOWED_DONATION_TO_USERS ? (
+                    <div className="flex flex-col items-center gap-2 mt-2">
+                      <p className="text-amber-500/90 text-sm text-center">
+                        You can only donate to{" "}
+                        {MAX_DAILY_ALLOWED_DONATION_TO_USERS} farmers a day
+                      </p>
+                    </div>
                   ) : (
                     <div className="flex flex-col items-center gap-2 mt-2">
                       {isOwnRequest ? (
@@ -279,7 +292,8 @@ export default function RequestModal({
                     selectedQuantity > currentQuantity ||
                     selectedQuantity > remainingQuantity ||
                     remainingQuantity === 0 ||
-                    showFloatingNumber
+                    showFloatingNumber ||
+                    isDonationHistoryLoading
                   }
                   onClick={() => {
                     // Add safety check here as well

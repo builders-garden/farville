@@ -302,6 +302,23 @@ export const getUserDonationByReceiver = async (
   });
 };
 
+export const getUserDonationsLast24h = async (donatorFid: number) => {
+  const last24h = new Date(Date.now() - 24 * 60 * 60 * 1000);
+  return (
+    await prisma.userDonationHistory.findMany({
+      where: {
+        donatorFid,
+        lastDonation: {
+          gte: last24h,
+        },
+      },
+      orderBy: {
+        lastDonation: "desc",
+      },
+    })
+  ).length;
+};
+
 export const updateUserDonationHistory = async (
   userDonation: DbUserDonation
 ) => {
