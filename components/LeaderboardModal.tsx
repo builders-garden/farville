@@ -14,6 +14,8 @@ import { useState } from "react";
 import { useFrameContext } from "../context/FrameContext";
 import { LeaderboardUserAvatar } from "./LeaderboardUserAvatar";
 import ProfileModal from "./ProfileModal";
+import { Card, CardContent } from "./ui/card";
+import { useWeeklyLeaderboard } from "@/hooks/use-weekly-leadeboard";
 
 const shimmerAnimation = `
   @keyframes shine {
@@ -41,6 +43,8 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
     state?.user.fid,
     true
   );
+  const { data: weeklyLeaderboardData } = useWeeklyLeaderboard(state?.user.fid);
+
   const [activeTab, setActiveTab] = useState<"global" | "friends">("global");
   const [leaderboardType, setLeaderboardType] = useState<"xp" | "quests">("xp");
   const { safeAreaInsets } = useFrameContext();
@@ -85,13 +89,12 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
     return activeTab === "global" ? questsData : questsFriendsData;
   };
 
+  console.log("weeklyLeaderboardData", weeklyLeaderboardData);
+
   return (
     <div className="fixed inset-0 bg-black/50 flex items-start z-50">
       {selectedUserFid ? (
-        <ProfileModal
-          onClose={handleCloseProfile}
-          userFid={selectedUserFid}
-        />
+        <ProfileModal onClose={handleCloseProfile} userFid={selectedUserFid} />
       ) : (
         <motion.div
           initial={{ opacity: 0, y: 50 }}
@@ -135,6 +138,15 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
                   ✕
                 </button>
               </div>
+
+              {/* Weekly position */}
+              <Card className="bg-[#5c4121] text-white/90 mb-4">
+                <CardContent className="flex items-center gap-3 p-4">
+                  <span className="text-xs font-medium">
+                    Your Weekly Position
+                  </span>
+                </CardContent>
+              </Card>
 
               {/* Tabs */}
               <div className="grid grid-cols-2 gap-2 mb-4">

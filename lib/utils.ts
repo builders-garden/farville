@@ -190,6 +190,19 @@ export const getCurrentLevelAndProgress = (experience: number) => {
   return { currentLevel, progress };
 };
 
+export const getUserLeague = (experience: number) => {
+  const { currentLevel } = getCurrentLevelAndProgress(experience);
+
+  if (currentLevel < 5) {
+    return 0;
+  } else if (currentLevel < 10) {
+    return 1;
+  } else if (currentLevel < 15) {
+    return 2;
+  }
+  return 3;
+};
+
 export const getUserNowDate = () => {
   // This implementation is incorrect because:
   // 1. toLocaleString() output format is locale-dependent and unreliable

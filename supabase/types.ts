@@ -158,3 +158,13 @@ export interface DbUserHarvestedCrop {
 }
 
 export type InsertDbUserHarvestedCrop = Omit<DbUserHarvestedCrop, "createdAt">;
+
+export interface DbUserLeaderboard {
+  fid: number;
+  currentScore: number;
+  lastScore: number;
+  league: number;
+  createdAt: string;
+}
+
+export type InsertDbUserLeaderboard = Omit<DbUserLeaderboard, "created_at">;

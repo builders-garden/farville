@@ -6,6 +6,7 @@ import {
   DbUser,
   DbUserDonation,
   DbUserFrost,
+  DbUserLeaderboard,
 } from "@/supabase/types";
 import { UserHasItem } from "@prisma/client";
 import { getCurrentDayStreak } from "../utils";
@@ -745,4 +746,53 @@ export const getUsersByXp = async (
     })),
     targetPosition,
   };
+};
+
+export const createUserLeaderboardEntry = async (
+  fid: number,
+  data: Partial<DbUserLeaderboard>
+) => {
+  return await prisma.userLeaderboards.create({
+    data: {
+      fid,
+      ...data,
+    },
+  });
+};
+
+export const updateUserLeaderboardEntry = async (
+  fid: number,
+  data: Partial<DbUserLeaderboard>
+) => {
+  return await prisma.userLeaderboards.update({
+    where: { fid },
+    data,
+  });
+};
+
+export const getUserLeaderboardEntry = async (fid: number) => {
+  return await prisma.userLeaderboards.findUnique({
+    where: { fid },
+  });
+};
+
+export const getWeeklyUserLeaderboardByLeague = async (
+  league: number,
+  currentWeek: boolean,
+  limit: number = 10
+) => {
+  const filter = {
+    where: {
+      league,
+    },
+    orderBy: currentWeek
+      ? { currentScore: "desc" as const }
+      : { lastScore: "desc" as const },
+    take: limit,
+    include: {
+      user: true,
+    },
+  };
+
+  return await prisma.userLeaderboards.findMany(filter);
 };

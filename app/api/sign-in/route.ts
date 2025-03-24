@@ -15,6 +15,11 @@ import {
   // initMonthlyUserQuests,
 } from "@/supabase/queries";
 import { trackEvent } from "@/lib/posthog/server";
+import {
+  createUserLeaderboardEntry,
+  getUserLeaderboardEntry,
+} from "@/lib/prisma/queries";
+import { getUserLeague } from "@/lib/utils";
 
 export const POST = async (req: NextRequest) => {
   const { fid, referrerFid, signature, message, userNow } = await req.json();
@@ -45,6 +50,17 @@ export const POST = async (req: NextRequest) => {
     });
   }
 
+  // Verify signature matches custody address
+  const isValidSignature = await verifyMessage({
+    address: user.walletAddress as `0x${string}`,
+    message,
+    signature,
+  });
+
+  if (!isValidSignature) {
+    return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
+  }
+
   // check if the user has already the grid cells
   // if not, initialize the grid
   const gridCells = await getGridCells(fid);
@@ -65,29 +81,23 @@ export const POST = async (req: NextRequest) => {
   const weeklyQuests = await getUserQuests(Number(fid), {
     type: ["weekly"],
   });
-  // const monthlyQuests = await getUserQuests(Number(fid), {
-  //   type: ["monthly"],
-  // });
   if (!dailyQuests || dailyQuests?.length === 0) {
     await initDailyUserQuests(Number(fid));
   }
   if (!weeklyQuests || weeklyQuests?.length === 0) {
     await initWeeklyUserQuests(Number(fid));
   }
-  // if (!monthlyQuests || monthlyQuests?.length === 0) {
-  //   await initMonthlyUserQuests(Number(fid));
-  // }
 
-  // Verify signature matches custody address
-  const isValidSignature = await verifyMessage({
-    address: user.walletAddress as `0x${string}`,
-    message,
-    signature,
-  });
+  // generate new entry inside the user leaderboard if it doesn't exist
+  let weeklyUserLeaderboard = await getUserLeaderboardEntry(fid);
 
-  if (!isValidSignature) {
-    return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
+  if (!weeklyUserLeaderboard) {
+    const userLeague = getUserLeague(user.xp);
+    weeklyUserLeaderboard = await createUserLeaderboardEntry(fid, {
+      league: userLeague,
+    });
   }
+
   // Generate a session token using fid and current timestamp
   const jwtToken = await new jose.SignJWT({
     fid,
@@ -98,16 +108,6 @@ export const POST = async (req: NextRequest) => {
     .sign(new TextEncoder().encode(process.env.JWT_SECRET));
 
   const response = NextResponse.json({ success: true, token: jwtToken });
-
-  // response.cookies.set({
-  //   name: "token",
-  //   value: jwtToken,
-  //   httpOnly: true,
-  //   secure: process.env.NODE_ENV === "production",
-  //   sameSite: "strict",
-  //   path: "/",
-  //   maxAge: COOKIE_AGE,
-  // });
 
   trackEvent(fid, "sign_in", {
     fid,
