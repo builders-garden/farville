@@ -115,7 +115,10 @@ export default function StreaksModal({ onClose }: { onClose: () => void }) {
 
     // take from MONTHLY_REWARDS only the rewards starting from currentStreak day
     let currentRewards = MONTHLY_REWARDS;
-    if (effectiveLastClaimedDay > 3) {
+    if (
+      effectiveLastClaimedDay > 3 &&
+      effectiveDay >= effectiveLastClaimedDay
+    ) {
       currentRewards = MONTHLY_REWARDS.slice(
         effectiveLastClaimedDay - 3,
         MONTHLY_REWARDS.length
@@ -223,7 +226,10 @@ export default function StreaksModal({ onClose }: { onClose: () => void }) {
           <div className="bg-gradient-to-br from-[#8B5c3C] to-[#6d4c2c] rounded-xl p-3 border border-[#ffa07a]/20">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-white/80">
-                <Clock size={18} className="text-[#FFB938]" />
+                <Clock
+                  size={18}
+                  className="text-[#FFB938]"
+                />
                 <span className="text-[9px]">Next day in:</span>
               </div>
               <div className="flex gap-1 text-white font-bold">
