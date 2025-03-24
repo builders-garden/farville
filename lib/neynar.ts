@@ -5,6 +5,14 @@ export interface NeynarUser {
   pfp_url: string;
   custody_address: string;
   verifications: string[];
+  verified_addresses: {
+    eth_addresses: string[];
+    sol_addresses: string[];
+    primary: {
+      eth_address: string | null;
+      sol_address: string | null;
+    };
+  };
 }
 
 export const fetchUser = async (fid: string): Promise<NeynarUser> => {

@@ -1,7 +1,5 @@
 import { fetchUser } from "@/lib/neynar";
-import { NextRequest, NextResponse } from "next/server";
-import { verifyMessage } from "viem";
-import * as jose from "jose";
+import { trackEvent } from "@/lib/posthog/server";
 import {
   addReferral,
   createUser,
@@ -9,12 +7,13 @@ import {
   getUser,
   getUserQuests,
   giftStarterPack,
-  initializeGrid,
   initDailyUserQuests,
+  initializeGrid,
   initWeeklyUserQuests,
-  // initMonthlyUserQuests,
 } from "@/supabase/queries";
-import { trackEvent } from "@/lib/posthog/server";
+import * as jose from "jose";
+import { NextRequest, NextResponse } from "next/server";
+import { verifyMessage } from "viem";
 
 export const POST = async (req: NextRequest) => {
   const { fid, referrerFid, signature, message, userNow } = await req.json();
@@ -28,7 +27,9 @@ export const POST = async (req: NextRequest) => {
       username: newUser.username,
       displayName: newUser.display_name,
       avatarUrl: newUser.pfp_url,
-      walletAddress: newUser.custody_address,
+      walletAddress:
+        newUser.verified_addresses?.primary?.eth_address ||
+        newUser.custody_address,
       xp: 0,
       coins: 0,
       expansions: 1,
