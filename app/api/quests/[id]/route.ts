@@ -7,7 +7,6 @@ import {
   updateUserQuest,
   updateUserXP,
 } from "@/supabase/queries";
-import { trackEvent } from "@/lib/posthog/server";
 import { z } from "zod";
 import { QuestStatus } from "@/types/game";
 
@@ -114,11 +113,6 @@ export async function POST(
       const xp = await updateUserXP(Number(fid), userQuest.quest.xp);
       didLevelUp = xp.didLevelUp;
     }
-    trackEvent(Number(fid), "claimed-quest", {
-      questId: Number(id),
-      status: status,
-      didLevelUp,
-    });
   }
 
   return NextResponse.json({ success: true, status, didLevelUp });

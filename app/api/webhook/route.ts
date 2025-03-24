@@ -82,15 +82,9 @@ export async function POST(request: NextRequest) {
       } else {
         await deleteUserNotificationDetails(fid);
       }
-      trackEvent(fid, "frame_added", {
-        fid,
-      });
       break;
     case "frame_removed":
       await deleteUserNotificationDetails(fid);
-      trackEvent(fid, "frame_removed", {
-        fid,
-      });
       break;
     case "notifications_enabled":
       await setUserNotificationDetails(fid, event.notificationDetails);
@@ -99,15 +93,9 @@ export async function POST(request: NextRequest) {
         title: "Ding ding ding",
         body: "Notifications for FarVille are now enabled",
       });
-      trackEvent(fid, "notifications_enabled", {
-        fid,
-      });
       break;
     case "notifications_disabled":
       await deleteUserNotificationDetails(fid);
-      trackEvent(fid, "notifications_disabled", {
-        fid,
-      });
       break;
   }
 
