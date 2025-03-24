@@ -16,6 +16,7 @@ import { useUserXp } from "@/hooks/use-user-xp";
 
 interface GridCellProps {
   cell: DbGridCell;
+  readOnly?: boolean;
 }
 
 interface SeedDetailPopupProps {
@@ -178,7 +179,7 @@ function SeedDetailPopup({
   );
 }
 
-export default function GridCell({ cell }: GridCellProps) {
+export default function GridCell({ cell, readOnly }: GridCellProps) {
   const {
     addGridOperation,
     // fertilize,
@@ -509,6 +510,7 @@ export default function GridCell({ cell }: GridCellProps) {
   const cellClassName = `
     grid-cell
     aspect-square rounded-xl relative
+    ${readOnly ? "!cursor-default" : ""}
     ${
       isPerkIncompatible ||
       ((selectedSeed || selectedPerk) && remainingUses <= 0)
@@ -545,7 +547,7 @@ export default function GridCell({ cell }: GridCellProps) {
       {showLevelUpConfetti && <Confetti title="LEVEL UP!" />}
       <motion.div
         ref={cellRef}
-        onClick={handleClick}
+        onClick={readOnly ? () => {} : handleClick}
         data-x={cell.x}
         data-y={cell.y}
         className={cellClassName}

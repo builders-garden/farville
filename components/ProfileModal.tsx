@@ -40,8 +40,14 @@ export default function ProfileModal({
   onClose: () => void;
   userFid?: number;
 }) {
-  const { state, setShowMintOGBadge, newGoldCropsFound, setNewGoldCropsFound } =
-    useGame();
+  const {
+    state,
+    setShowMintOGBadge,
+    newGoldCropsFound,
+    setNewGoldCropsFound,
+    setActiveOverlay,
+    loadVisitedUserGrid,
+  } = useGame();
   const [isWhatIsThisOpen, setIsWhatIsThisOpen] = useState(false);
   const [showMoreGoldCropsBadges, setShowMoreGoldCropsBadges] = useState(false);
   const [selectedCrops, setSelectedCrops] = useState<UserItem[]>([]);
@@ -100,6 +106,16 @@ export default function ProfileModal({
         break;
       default:
         break;
+    }
+  };
+
+  const handleVisitFarm = async () => {
+    if (!userFid) return;
+    try {
+      loadVisitedUserGrid(userFid);
+      setActiveOverlay({ type: "visitFarm", fid: userFid });
+    } catch (error) {
+      console.error("Error visiting farm:", error);
     }
   };
 
@@ -261,6 +277,25 @@ export default function ProfileModal({
                       <div className="relative w-[70px] h-[70px]">
                         <div className="w-full h-full rounded-lg bg-[#7B5B30] flex items-center justify-center"></div>
                       </div>
+                    </div>
+                  )}
+
+                  {/* Add Visit Farm button for other users */}
+                  {!isCurrentUser && (
+                    <div className="mt-4">
+                      <button
+                        onClick={handleVisitFarm}
+                        className="w-full py-2 px-4 bg-[#179ef9] hover:bg-[#1486d1] text-white font-semibold rounded-md transition-colors
+                                   flex items-center justify-center gap-2"
+                      >
+                        <Image
+                          src="/images/icons/farmer.png"
+                          alt="Visit"
+                          width={20}
+                          height={20}
+                        />
+                        Visit Farm
+                      </button>
                     </div>
                   )}
                 </CardContent>

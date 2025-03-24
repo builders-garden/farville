@@ -22,10 +22,7 @@ import { useEffect } from "react";
 import TimelineModal from "./TimelineModal";
 import ProfileModal from "./ProfileModal";
 import { useUserQuests } from "@/hooks/use-quests";
-
-// const WelcomeOverlay = dynamic(() => import("./../components/WelcomeOverlay"), {
-//   ssr: false,
-// });
+import VisitFarmView from "./VisitFarmView";
 
 // Load GameGrid component dynamically (client-side only)
 const GameGrid = dynamic(() => import("./GameGrid"), {
@@ -114,7 +111,7 @@ function SeedMenuContainer() {
 }
 
 // Add this constant at the top of the file after imports
-const BACKGROUND_PATTERN = `
+export const BACKGROUND_PATTERN = `
   linear-gradient(45deg, #386A48 25%, transparent 25%),
   linear-gradient(-45deg, #386A48 25%, transparent 25%),
   linear-gradient(45deg, transparent 75%, #386A48 75%),
@@ -214,7 +211,17 @@ export default function GameWrapper() {
 
       {activeOverlay?.type === "requests" && (
         <AnimatePresence>
-          <RequestModal onClose={handleOverlayComplete} id={activeOverlay.id} />
+          <RequestModal
+            onClose={handleOverlayComplete}
+            id={activeOverlay.id}
+          />
+        </AnimatePresence>
+      )}
+
+      {/* Add the VisitFarmView overlay */}
+      {activeOverlay?.type === "visitFarm" && (
+        <AnimatePresence>
+          <VisitFarmView />
         </AnimatePresence>
       )}
 

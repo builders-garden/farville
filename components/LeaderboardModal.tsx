@@ -32,7 +32,7 @@ const shimmerAnimation = `
 `;
 
 export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
-  const { state } = useGame();
+  const { state, visitedUserFid, setVisitedUserFid } = useGame();
   const { data: globalData } = useLeaderboard(false, state?.user.fid);
   const { data: friendsData } = useLeaderboard(true, state?.user.fid);
   const { data: questsData } = useLeaderboard(false, state?.user.fid, true);
@@ -55,6 +55,7 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
 
   const handleCloseProfile = () => {
     setSelectedUserFid(undefined);
+    setVisitedUserFid(undefined);
   };
 
   const handleShareLeaderboard = async () => {
@@ -87,10 +88,10 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-start z-50">
-      {selectedUserFid ? (
+      {visitedUserFid || selectedUserFid ? (
         <ProfileModal
           onClose={handleCloseProfile}
-          userFid={selectedUserFid}
+          userFid={selectedUserFid || visitedUserFid}
         />
       ) : (
         <motion.div

@@ -10,3 +10,13 @@ export const useGridCells = () => {
 
   return { gridCells: data, isLoading, refetch };
 };
+
+export const useUserGridCells = (fid: number) => {
+  const { data, isLoading, refetch } = useApiQuery<DbGridCell[]>({
+    queryKey: ["userGridCells", fid],
+    url: `/api/user/${fid}/grid`,
+    isProtected: true,
+  });
+
+  return { gridCells: data, isLoading, refetch };
+};

@@ -28,6 +28,7 @@ export type OverlayConfig =
   | { type: "welcome" }
   | { type: "requests"; id: number }
   | { type: "tutorial"; step?: number }
+  | { type: "visitFarm"; fid: number }
   | null;
 
 // Update the floatingNumbers type to be an array
@@ -115,6 +116,9 @@ interface GameContextType {
   setShowMintOGBadge: Dispatch<SetStateAction<boolean>>;
   newGoldCropsFound: string[];
   setNewGoldCropsFound: Dispatch<SetStateAction<string[]>>;
+  visitedUserFid: number | undefined;
+  setVisitedUserFid: Dispatch<SetStateAction<number | undefined>>;
+  loadVisitedUserGrid: (fid: number) => void;
 }
 
 export const GameContext = createContext<GameContextType | null>(null);
@@ -170,6 +174,15 @@ export function GameProvider({
   >();
   const [toastIds, setToastIds] = useState<Map<string, string>>(new Map());
   const [newGoldCropsFound, setNewGoldCropsFound] = useState<string[]>([]);
+
+  const [visitedUserFid, setVisitedUserFid] = useState<number | undefined>(
+    undefined
+  );
+
+  const loadVisitedUserGrid = (fid: number) => {
+    if (fid === state.user.fid) return; // Don't load own grid as visited
+    setVisitedUserFid(fid);
+  };
 
   const { mutate: updateUserStreaks } = useUpdateUserStreaks({
     refetchStreaks: refetch.streaks,
@@ -548,6 +561,9 @@ export function GameProvider({
         setShowMintOGBadge,
         newGoldCropsFound,
         setNewGoldCropsFound,
+        visitedUserFid,
+        setVisitedUserFid,
+        loadVisitedUserGrid,
       }}
     >
       {children}

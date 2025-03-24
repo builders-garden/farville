@@ -57,7 +57,10 @@ export default function GameGrid() {
       >
         {grid.map((row) =>
           row.map((cell) => (
-            <GridCell key={`${cell.fid}-${cell.x}-${cell.y}`} cell={cell} />
+            <GridCell
+              key={`${cell.fid}-${cell.x}-${cell.y}`}
+              cell={cell}
+            />
           ))
         )}
       </div>
