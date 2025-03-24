@@ -330,8 +330,10 @@ export default function MintOgModal({ onCancel }: MintOgModalProps) {
             )}
             {!state.user.mintedOG && userIsEligibleButWrongAddress && (
               <span className="text-center text-[9px] text-white/70 border border-white/70 rounded w-fit px-4 py-2 m-auto mt-2">
-                You are eligible to mint the badge, but you need to connect a
-                wallet that you verified in Warpcast.
+                You are eligible to mint the badge, but your current connected
+                wallet was not verified on Farcaster at the time of the
+                snapshot. Please change wallet to mint the badge or contact
+                Farville team.
               </span>
             )}
             {isReceiptSuccess && txHash && (

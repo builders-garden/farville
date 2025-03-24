@@ -20,6 +20,7 @@ import sdk from "@farcaster/frame-sdk";
 import { useOtherUserProfile } from "@/hooks/use-other-user-profile";
 import AchievementBadgeModal from "./modals/AchievementBadgeModal";
 import { ACHIEVEMENTS_THRESHOLDS } from "@/lib/game-constants";
+import { OG_FIDS_LIST } from "@/lib/contracts/constants";
 
 export interface BadgeModalData {
   name: string;
@@ -53,6 +54,7 @@ export default function ProfileModal({
 
   const isCurrentUser = !userFid || userFid === state.user.fid;
   const user = isCurrentUser ? state.user : userData?.user;
+  const isOgFarmer = user?.fid ? OG_FIDS_LIST.includes(user.fid) : false;
 
   const harvestHonours = calculateHarvestAchievements(
     isCurrentUser
@@ -233,25 +235,31 @@ export default function ProfileModal({
                   {/* Special Badges - profile only */}
                   {isCurrentUser && (
                     <div className="flex flex-row justify-between mt-2">
-                      <div
-                        className="relative w-[70px] h-[70px] border-2 border-[#179ef9] rounded-lg cursor-pointer overflow-hidden group"
-                        onClick={() => {
-                          if (isCurrentUser) {
-                            setShowMintOGBadge(true);
-                          }
-                        }}
-                      >
-                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent shimmer-effect"></div>
-                        <Image
-                          src="/images/badge/og.png"
-                          alt="Farville OG Badge"
-                          fill
-                          sizes="38px"
-                          className={`${
-                            user?.mintedOG ? "" : "opacity-30"
-                          } rounded-lg transition-transform duration-300 group-hover:scale-110`}
-                        />
-                      </div>
+                      {isOgFarmer ? (
+                        <div
+                          className="relative w-[70px] h-[70px] border-2 border-[#179ef9] rounded-lg cursor-pointer overflow-hidden group"
+                          onClick={() => {
+                            if (isCurrentUser) {
+                              setShowMintOGBadge(true);
+                            }
+                          }}
+                        >
+                          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent shimmer-effect"></div>
+                          <Image
+                            src="/images/badge/og.png"
+                            alt="Farville OG Badge"
+                            fill
+                            sizes="38px"
+                            className={`${
+                              user?.mintedOG ? "" : "opacity-30"
+                            } rounded-lg transition-transform duration-300 group-hover:scale-110`}
+                          />
+                        </div>
+                      ) : (
+                        <div className="relative w-[70px] h-[70px]">
+                          <div className="w-full h-full rounded-lg bg-[#7B5B30] flex items-center justify-center"></div>
+                        </div>
+                      )}
                       <div className="relative w-[70px] h-[70px]">
                         <div className="w-full h-full rounded-lg bg-[#7B5B30] flex items-center justify-center"></div>
                       </div>
