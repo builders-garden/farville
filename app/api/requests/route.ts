@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createRequest, getItemById } from "@/supabase/queries";
 import { trackEvent } from "@/lib/posthog/server";
 import { z } from "zod";
+import { GAME_ITEMS } from "@/lib/game-constants";
 
 const requestSchema = z.object({
   itemId: z.number().min(1),
@@ -25,6 +26,19 @@ export const POST = async (request: NextRequest) => {
   if (!fid) {
     return NextResponse.json(
       { error: "Farcaster ID is required" },
+      { status: 400 }
+    );
+  }
+
+  const validItem = GAME_ITEMS.find(
+    (item) =>
+      item.id === itemId &&
+      (item.category === "seed" || item.category === "crop")
+  );
+
+  if (!validItem) {
+    return NextResponse.json(
+      { error: "Invalid item: Only seeds and crops can be requested" },
       { status: 400 }
     );
   }
