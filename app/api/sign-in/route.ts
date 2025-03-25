@@ -28,8 +28,7 @@ export const POST = async (req: NextRequest) => {
       displayName: newUser.display_name,
       avatarUrl: newUser.pfp_url,
       walletAddress:
-        newUser.verified_addresses?.primary?.eth_address ||
-        newUser.custody_address,
+      newUser.custody_address,
       xp: 0,
       coins: 0,
       expansions: 1,
