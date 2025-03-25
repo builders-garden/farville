@@ -9,6 +9,7 @@ import {
   getUserItemBySlug,
   removeUserItem,
   updateGridCellsBulk,
+  updateUserWeeklyScore,
   updateUserXP,
 } from "@/lib/prisma/queries";
 import {
@@ -283,6 +284,7 @@ const rewardUserBulk = async (
   });
   const totalXp = cropsWithRewards.reduce((acc, crop) => acc + crop.xp, 0);
   const { didLevelUp, newXP } = await updateUserXP(fid, totalXp);
+  await updateUserWeeklyScore(fid, totalXp);
 
   return {
     cropsWithRewards,

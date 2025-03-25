@@ -779,7 +779,8 @@ export const getUserLeaderboardEntry = async (fid: number) => {
 export const getWeeklyUserLeaderboardByLeague = async (
   league: number,
   currentWeek: boolean,
-  limit: number = 10
+  limit: number = 10,
+  targetFid?: number
 ) => {
   const filter = {
     where: {
@@ -794,5 +795,69 @@ export const getWeeklyUserLeaderboardByLeague = async (
     },
   };
 
-  return await prisma.userLeaderboards.findMany(filter);
+  const leaderboard = await prisma.userLeaderboards.findMany(filter);
+
+  let targetPosition: number | undefined;
+  if (targetFid) {
+    const targetEntry = await prisma.userLeaderboards.findUnique({
+      where: { fid: targetFid },
+    });
+
+    if (!targetEntry) {
+      throw new Error("Target user not found in leaderboard");
+    }
+
+    targetPosition = await prisma.userLeaderboards.count({
+      where: {
+        league,
+        [currentWeek ? "currentScore" : "lastScore"]: {
+          gte: targetEntry[currentWeek ? "currentScore" : "lastScore"],
+        },
+      },
+    });
+  }
+
+  return {
+    users: leaderboard,
+    targetPosition,
+  };
+};
+
+export const updateUserWeeklyScore = async (
+  fid: number,
+  score: number
+): Promise<{
+  currentScore: number;
+}> => {
+  return await prisma.$transaction(
+    async (tx) => {
+      // Get current user data with a lock
+      const currentLeaderboardEntry = await tx.userLeaderboards.findUnique({
+        where: { fid },
+        select: { currentScore: true },
+      });
+
+      if (!currentLeaderboardEntry)
+        throw new Error("User leaderboard entry not found");
+
+      const newScore = currentLeaderboardEntry.currentScore + score;
+
+      // Update user's current score
+      const updatedEntry = await tx.userLeaderboards.update({
+        where: { fid },
+        data: {
+          currentScore: { increment: score },
+        },
+      });
+
+      return {
+        user: updatedEntry,
+        currentScore: newScore,
+      };
+    },
+    {
+      maxWait: 14000,
+      timeout: 14000,
+    }
+  );
 };

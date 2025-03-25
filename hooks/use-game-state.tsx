@@ -16,6 +16,7 @@ import { useUserQuests } from "./use-quests";
 import { useUpdateUserFrosts, useUserStreaks } from "./use-user-streaks";
 import { useUserFrosts } from "./use-user-frosts";
 import { useUserHarvestedCrops } from "./use-user-harvested-crops";
+import { useWeeklyStats } from "./use-weekly-stats";
 
 export interface RefetchType {
   all: () => Promise<void>;
@@ -64,6 +65,11 @@ export interface GameState {
   };
   claimableStreakReward: boolean;
   harvestedCropsSummary: DbUserHarvestedCrop[];
+  weeklyStats: {
+    currentScore: number;
+    lastScore: number;
+    league: number;
+  };
 }
 
 export const useGameState = () => {
@@ -101,6 +107,11 @@ export const useGameState = () => {
     },
     claimableStreakReward: false,
     harvestedCropsSummary: [],
+    weeklyStats: {
+      currentScore: 0,
+      lastScore: 0,
+      league: 0,
+    },
   });
   const {
     userItems,
@@ -141,6 +152,12 @@ export const useGameState = () => {
     isLoading: isUserHarvestedCropsLoading,
     refetch: refetchUserHarvestedCrops,
   } = useUserHarvestedCrops(state?.user?.fid);
+
+  const {
+    userWeeklyStats,
+    isLoading: weeklyStatsLoading,
+    refetch: refetchWeeklyStats,
+  } = useWeeklyStats(state?.user?.fid);
 
   const updateUserState = useCallback(() => {
     if (user) {
@@ -242,6 +259,19 @@ export const useGameState = () => {
     }
   }, [userHarvestedCrops]);
 
+  const updateUserWeeklyStatsState = useCallback(() => {
+    if (userWeeklyStats) {
+      setState((prevState) => ({
+        ...prevState!,
+        weeklyStats: {
+          currentScore: userWeeklyStats.currentScore,
+          lastScore: userWeeklyStats.lastScore,
+          league: userWeeklyStats.league,
+        },
+      }));
+    }
+  }, [userWeeklyStats]);
+
   useEffect(() => {
     updateUserState();
   }, [user, updateUserState]);
@@ -323,8 +353,14 @@ export const useGameState = () => {
   useEffect(() => {
     if (state.user?.fid) {
       updateUserHarvestedCropsState();
+      updateUserWeeklyStatsState();
     }
-  }, [userHarvestedCrops, updateUserHarvestedCropsState, state.user?.fid]);
+  }, [
+    userHarvestedCrops,
+    updateUserHarvestedCropsState,
+    state.user?.fid,
+    updateUserWeeklyStatsState,
+  ]);
 
   const refetchAll = useCallback(async () => {
     await Promise.all([
@@ -335,6 +371,7 @@ export const useGameState = () => {
       refetchClaimableQuests(),
       refetchStreaks(),
       refetchUserHarvestedCrops(),
+      refetchWeeklyStats(),
     ]);
   }, [
     refetchUserItems,
@@ -344,6 +381,7 @@ export const useGameState = () => {
     refetchClaimableQuests,
     refetchStreaks,
     refetchUserHarvestedCrops,
+    refetchWeeklyStats,
   ]);
 
   // Add new method to update grid cells directly
@@ -513,7 +551,8 @@ export const useGameState = () => {
       completedQuestsLoading ||
       streaksLoading ||
       frostsLoading ||
-      isUserHarvestedCropsLoading,
+      isUserHarvestedCropsLoading ||
+      weeklyStatsLoading,
     refetch: {
       all: refetchAll,
       userItems: async () => {
