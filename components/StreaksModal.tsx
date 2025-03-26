@@ -133,7 +133,7 @@ export default function StreaksModal({ onClose }: { onClose: () => void }) {
         day: actualDay,
         rewards: [],
         claimable: actualDay <= currentDayStreak,
-        claimed: actualDay <= effectiveLastClaimedDay, // Mark previous days as claimed
+        claimed: actualDay <= lastClaimedDay,
       };
 
       for (const item of reward.rewards) {
@@ -147,7 +147,7 @@ export default function StreaksModal({ onClose }: { onClose: () => void }) {
         }
       }
 
-      if (actualDay === effectiveLastClaimedDay + 1) {
+      if (actualDay === lastClaimedDay + 1) {
         setActiveReward(streak);
       }
 
