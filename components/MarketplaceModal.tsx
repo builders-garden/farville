@@ -261,6 +261,7 @@ export default function MarketplaceModal({
                       onRequestClick={setSelectedItemForRequest}
                       onBuyClick={handleBuySellClick}
                       gridSize={gridSize}
+                      userCoins={state.coins}
                     />
                   ))}
               </motion.div>
@@ -291,6 +292,7 @@ export default function MarketplaceModal({
                         onRequestClick={setSelectedItemForRequest}
                         onBuyClick={handleBuySellClick}
                         gridSize={gridSize}
+                        userCoins={state.coins}
                       />
                     );
                   })}
