@@ -110,24 +110,53 @@ export default function StreaksModal({ onClose }: { onClose: () => void }) {
 
   useEffect(() => {
     // Calculate the effective day within the monthly cycle
-    const effectiveDay = ((currentDayStreak - 1) % 28) + 1;
     const effectiveLastClaimedDay = ((lastClaimedDay - 1) % 28) + 1;
 
-    // take from MONTHLY_REWARDS only the rewards starting from currentStreak day
-    let currentRewards = MONTHLY_REWARDS;
-    if (
-      effectiveLastClaimedDay > 3 &&
-      effectiveDay >= effectiveLastClaimedDay
-    ) {
-      currentRewards = MONTHLY_REWARDS.slice(
-        effectiveLastClaimedDay - 3,
-        MONTHLY_REWARDS.length
-      );
+    // Handle cycle transition - when lastClaimed is 28 and we're moving to 29+
+    const isNewCycle = lastClaimedDay === 28 && currentDayStreak > 28;
+
+    // Determine what range of rewards to show
+    let startIndex, endIndex;
+
+    if (isNewCycle) {
+      // If we're transitioning to a new cycle, show rewards starting from day 1
+      startIndex = 0;
+      endIndex = 6; // Show 6 rewards
+    } else {
+      // Always show some rewards before the last claimed day, the current day to claim,
+      // and a few upcoming rewards
+      startIndex = Math.max(0, effectiveLastClaimedDay - 2); // Show 2 days before last claimed
+      endIndex = startIndex + 6; // Show 6 rewards total
     }
 
+    // Slice the rewards to show the relevant portion
+    const currentRewards = MONTHLY_REWARDS.slice(startIndex, endIndex);
+
     const streaksRewards = currentRewards.map((reward) => {
-      // Adjust the day number to match the actual streak while keeping reward pattern
-      const actualDay = currentDayStreak - (effectiveDay - reward.day);
+      // Calculate the actual day
+      const adjustedRewardDay = reward.day;
+      const cycleOffset = Math.floor((lastClaimedDay - 1) / 28) * 28;
+
+      // Handle the cycle transition differently
+      let actualDay;
+      if (isNewCycle) {
+        // For new cycle, we add 28 to the reward day to get days 29, 30, etc.
+        actualDay = cycleOffset + adjustedRewardDay;
+
+        // If this is day 1 in the array, make it day 29 in the actual streak
+        if (adjustedRewardDay === 1) {
+          actualDay = 29;
+        } else {
+          actualDay = 28 + adjustedRewardDay;
+        }
+      } else {
+        // Standard calculation for non-transition cases
+        actualDay =
+          cycleOffset +
+          (adjustedRewardDay < effectiveLastClaimedDay
+            ? adjustedRewardDay
+            : adjustedRewardDay);
+      }
 
       const streak: StreakReward = {
         day: actualDay,
