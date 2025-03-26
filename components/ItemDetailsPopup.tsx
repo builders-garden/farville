@@ -3,6 +3,8 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import { DbItem } from "@/supabase/types";
 import { Slider } from "@/components/ui/slider";
+import copy from "copy-to-clipboard";
+import { useEffect, useState } from "react";
 
 interface ItemDetailsPopupProps {
   item: DbItem;
@@ -12,6 +14,7 @@ interface ItemDetailsPopupProps {
   onUse?: () => void;
   requestQuantity: number;
   onRequestQuantityChange: (quantity: number) => void;
+  requestUrl: string;
 }
 
 export default function ItemDetailsPopup({
@@ -22,8 +25,17 @@ export default function ItemDetailsPopup({
   onUse,
   requestQuantity,
   onRequestQuantityChange,
+  requestUrl,
 }: ItemDetailsPopupProps) {
   const maxRequestAmount = item.category === "perk" ? 1 : 10;
+  const [showCopiedMessage, setShowCopiedMessage] = useState(false);
+
+  useEffect(() => {
+    if (requestUrl !== "") {
+      copy(requestUrl);
+      setShowCopiedMessage(true);
+    }
+  }, [requestUrl]);
 
   return (
     <motion.div
@@ -100,10 +112,14 @@ export default function ItemDetailsPopup({
 
               <button
                 onClick={onRequest}
-                className="flex-1 bg-[#FFB938] text-[#7E4E31] px-4 py-2 rounded-lg font-bold 
-                           hover:bg-[#ffc661] transition-colors"
+                className={`flex-1 ${
+                  showCopiedMessage
+                    ? "bg-green-500 text-sm text-white py-3"
+                    : "bg-[#FFB938] hover:bg-[#ffc661] text-[#7E4E31] py-2"
+                } px-4 rounded-lg font-bold relative h-10`}
+                disabled={showCopiedMessage}
               >
-                Request on FC
+                {showCopiedMessage ? "Copied Request Link!" : "Request on FC"}
               </button>
             </>
           )}

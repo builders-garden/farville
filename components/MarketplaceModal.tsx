@@ -56,6 +56,7 @@ export default function MarketplaceModal({
   const [selectedItemForRequest, setSelectedItemForRequest] =
     useState<DbItem | null>(null);
   const [requestQuantity, setRequestQuantity] = useState(1);
+  const [requestUrl, setRequestUrl] = useState("");
 
   const gridSize = state.gridSize.width * state.gridSize.height;
 
@@ -71,11 +72,13 @@ export default function MarketplaceModal({
         },
         {
           onSuccess: async (data) => {
-            const { castUrl } = requestItemComposeCastUrl(
+            const { castUrl, requestUrl } = requestItemComposeCastUrl(
               data.id,
               selectedItemForRequest,
               requestQuantity
             );
+            setRequestUrl(requestUrl);
+            await new Promise((resolve) => setTimeout(resolve, 1000));
             await sdk.actions.openUrl(castUrl);
             setSelectedItemForRequest(null);
             setRequestQuantity(1);
@@ -359,6 +362,7 @@ export default function MarketplaceModal({
           requestQuantity={requestQuantity}
           onRequestQuantityChange={setRequestQuantity}
           onRequest={handleRequestItem}
+          requestUrl={requestUrl}
         />
       )}
 

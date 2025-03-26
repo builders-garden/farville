@@ -141,6 +141,7 @@ export default function Quest({
   const [requestQuantity, setRequestQuantity] = useState(
     quest.quest.amount || 1
   );
+  const [requestUrl, setRequestUrl] = useState("");
 
   // Handle showing item details
   const handleShowItemDetails = () => {
@@ -175,11 +176,13 @@ export default function Quest({
         },
         {
           onSuccess: async (data) => {
-            const { castUrl } = requestItemComposeCastUrl(
+            const { castUrl, requestUrl } = requestItemComposeCastUrl(
               data.id,
               selectedItem,
               requestQuantity
             );
+            setRequestUrl(requestUrl);
+            await new Promise((resolve) => setTimeout(resolve, 1000));
             await sdk.actions.openUrl(castUrl);
             setSelectedItem(null);
             setRequestQuantity(1);
@@ -321,6 +324,7 @@ export default function Quest({
           requestQuantity={requestQuantity}
           onRequestQuantityChange={setRequestQuantity}
           onRequest={handleRequestItem}
+          requestUrl={requestUrl}
         />
       )}
     </motion.div>
