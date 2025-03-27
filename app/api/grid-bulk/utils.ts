@@ -283,13 +283,19 @@ const rewardUserBulk = async (
     };
   });
   const totalXp = cropsWithRewards.reduce((acc, crop) => acc + crop.xp, 0);
-  const { didLevelUp, newXP } = await updateUserXP(fid, totalXp);
-  await updateUserWeeklyScore(fid, totalXp);
+  const updateResult = await updateUserXP(fid, totalXp);
+  await updateUserWeeklyScore(
+    fid,
+    totalXp,
+    updateResult.newLevel,
+    updateResult.oldXp,
+    updateResult.didLevelUp
+  );
 
   return {
     cropsWithRewards,
-    didLevelUp,
-    newXP,
+    didLevelUp: updateResult.didLevelUp,
+    newXp: updateResult.newXP,
   };
 };
 

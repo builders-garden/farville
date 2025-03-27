@@ -194,6 +194,7 @@ export default function GridCell({ cell }: GridCellProps) {
     state,
     updateGridCells,
     updateUserItems,
+    updateUserWeeklyStats,
   } = useGame();
   const { addUserXpsAndCheckLevelUp } = useUserXp();
   const { playSound } = useAudio();
@@ -413,6 +414,9 @@ export default function GridCell({ cell }: GridCellProps) {
           setFloatingNumbers((prev) => [...prev, newFloatingNumber]);
 
           addUserXpsAndCheckLevelUp(cropXP);
+          updateUserWeeklyStats({
+            currentScore: state.weeklyStats.currentScore + cropXP,
+          });
         }
         return;
       }

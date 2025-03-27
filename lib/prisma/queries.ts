@@ -163,6 +163,7 @@ export const updateUserXP = async (
   didLevelUp: boolean;
   newXP: number;
   newLevel: number;
+  oldXp: number;
 }> => {
   return await prisma.$transaction(
     async (tx) => {
@@ -203,6 +204,7 @@ export const updateUserXP = async (
         },
         didLevelUp,
         newXP,
+        oldXp: currentXP,
         newLevel,
       };
     },
@@ -825,39 +827,58 @@ export const getWeeklyUserLeaderboardByLeague = async (
 
 export const updateUserWeeklyScore = async (
   fid: number,
-  score: number
+  score: number,
+  userLevel: number,
+  currentUserXp: number,
+  didLevelUp: boolean = false
 ): Promise<{
   currentScore: number;
 }> => {
-  return await prisma.$transaction(
-    async (tx) => {
-      // Get current user data with a lock
-      const currentLeaderboardEntry = await tx.userLeaderboards.findUnique({
-        where: { fid },
-        select: { currentScore: true },
-      });
+  const level5 = LEVEL_XP_THRESHOLDS[4];
 
-      if (!currentLeaderboardEntry)
-        throw new Error("User leaderboard entry not found");
-
-      const newScore = currentLeaderboardEntry.currentScore + score;
-
-      // Update user's current score
-      const updatedEntry = await tx.userLeaderboards.update({
-        where: { fid },
-        data: {
-          currentScore: { increment: score },
-        },
-      });
-
-      return {
-        user: updatedEntry,
-        currentScore: newScore,
-      };
-    },
-    {
-      maxWait: 14000,
-      timeout: 14000,
+  if (userLevel >= 5) {
+    let weeklyScoreToAdd = 0;
+    if (didLevelUp && userLevel === 5) {
+      weeklyScoreToAdd = currentUserXp + score - level5;
+    } else {
+      weeklyScoreToAdd = score;
     }
-  );
+
+    return await prisma.$transaction(
+      async (tx) => {
+        // Get current user data with a lock
+        const currentLeaderboardEntry = await tx.userLeaderboards.findUnique({
+          where: { fid },
+          select: { currentScore: true },
+        });
+
+        if (!currentLeaderboardEntry)
+          throw new Error("User leaderboard entry not found");
+
+        const newScore =
+          currentLeaderboardEntry.currentScore + weeklyScoreToAdd;
+
+        // Update user's current score
+        const updatedEntry = await tx.userLeaderboards.update({
+          where: { fid },
+          data: {
+            currentScore: { increment: weeklyScoreToAdd },
+          },
+        });
+
+        return {
+          user: updatedEntry,
+          currentScore: newScore,
+        };
+      },
+      {
+        maxWait: 14000,
+        timeout: 14000,
+      }
+    );
+  } else {
+    return {
+      currentScore: 0,
+    };
+  }
 };

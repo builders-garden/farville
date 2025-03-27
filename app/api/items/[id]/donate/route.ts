@@ -10,6 +10,7 @@ import {
   getUserDonationByReceiver,
   getUserDonationsLast24h,
   updateUserDonationHistory,
+  updateUserWeeklyScore,
   updateUserXP,
 } from "@/lib/prisma/queries";
 import {
@@ -54,6 +55,11 @@ export const POST = async (
   }
 
   const { quantity, toFid, requestId } = requestBody.data;
+
+  const user = await getUser(Number(fid));
+  if (!user) {
+    return NextResponse.json({ message: "User not found" }, { status: 404 });
+  }
 
   // check if the user is donating to himself
   if (fid.toString() === toFid.toString()) {
@@ -114,7 +120,17 @@ export const POST = async (
 
   await removeUserItem(Number(fid), itemId, quantity);
   await addUserItem(Number(toFid), itemId, quantity);
-  await updateUserXP(Number(fid), quantity * XP_PER_DONATED_ITEM);
+  const userAfterUpdate = await updateUserXP(
+    Number(fid),
+    quantity * XP_PER_DONATED_ITEM
+  );
+  await updateUserWeeklyScore(
+    Number(fid),
+    quantity * XP_PER_DONATED_ITEM,
+    userAfterUpdate.newLevel,
+    user.xp,
+    userAfterUpdate.didLevelUp
+  );
 
   if (requestId) {
     await incrementRequestFilledQuantity(Number(requestId), quantity);
@@ -134,7 +150,6 @@ export const POST = async (
     lastDonation: new Date().toISOString(),
   });
 
-  const user = await getUser(Number(fid));
   await Promise.all([
     sendQuestsCalculation(Number(fid), "donate", itemId, quantity),
     sendQuestsCalculation(Number(toFid), "receive", itemId, quantity),

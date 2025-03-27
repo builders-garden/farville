@@ -8,8 +8,9 @@ export const useWeeklyLeaderboard = (
 ) => {
   const queryParams = new URLSearchParams();
   if (targetFid) queryParams.append("targetFid", targetFid.toString());
-  if (currentWeek) queryParams.append("currentWeek", currentWeek.toString());
-  if (league) queryParams.append("league", league.toString());
+  if (currentWeek !== undefined)
+    queryParams.append("currentWeek", currentWeek.toString());
+  if (league !== undefined) queryParams.append("league", league.toString());
 
   const url = `/api/weekly-leaderboard${
     queryParams.toString() ? `?${queryParams.toString()}` : ""
@@ -22,7 +23,7 @@ export const useWeeklyLeaderboard = (
     targetPosition?: number;
   }>({
     url,
-    queryKey: ["weekly-leaderboard", targetFid, currentWeek],
+    queryKey: ["weekly-leaderboard", targetFid, currentWeek, league],
     isProtected: true,
     enabled: !!targetFid,
     staleTime: 60 * 1000,

@@ -513,6 +513,28 @@ export const useGameState = () => {
     []
   );
 
+  const updateUserWeeklyStats = useCallback(
+    (weeklyStats: {
+      currentScore: number;
+      lastScore?: number;
+      league?: number;
+    }) => {
+      setState((prevState) => {
+        if (!prevState) return prevState;
+
+        return {
+          ...prevState,
+          weeklyStats: {
+            currentScore: weeklyStats.currentScore,
+            lastScore: weeklyStats.lastScore ?? prevState.weeklyStats.lastScore,
+            league: weeklyStats.league ?? prevState.weeklyStats.league,
+          },
+        };
+      });
+    },
+    []
+  );
+
   const updateUser = useCallback(
     (newParams: {
       xp?: number;
@@ -581,5 +603,6 @@ export const useGameState = () => {
     updateUserItems,
     updateUser,
     updateUserHarvestedCrops,
+    updateUserWeeklyStats,
   };
 };

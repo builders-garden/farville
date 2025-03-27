@@ -10,6 +10,7 @@ import {
 import { trackEvent } from "@/lib/posthog/server";
 import { z } from "zod";
 import { QuestStatus } from "@/types/game";
+import { updateUserWeeklyScore } from "@/lib/prisma/queries";
 
 export async function GET(
   request: NextRequest,
@@ -112,6 +113,13 @@ export async function POST(
     }
     if (userQuest.quest.xp) {
       const xp = await updateUserXP(Number(fid), userQuest.quest.xp);
+      await updateUserWeeklyScore(
+        Number(fid),
+        userQuest.quest.xp,
+        xp.newLevel,
+        user.xp,
+        xp.didLevelUp
+      );
       didLevelUp = xp.didLevelUp;
     }
     trackEvent(Number(fid), "claimed-quest", {

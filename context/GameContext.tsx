@@ -115,6 +115,11 @@ interface GameContextType {
   setShowMintOGBadge: Dispatch<SetStateAction<boolean>>;
   newGoldCropsFound: string[];
   setNewGoldCropsFound: Dispatch<SetStateAction<string[]>>;
+  updateUserWeeklyStats: (weeklyStats: {
+    currentScore: number;
+    lastScore?: number;
+    league?: number;
+  }) => void;
 }
 
 export const GameContext = createContext<GameContextType | null>(null);
@@ -145,6 +150,7 @@ export function GameProvider({
     updateUserItems,
     updateUser,
     updateUserHarvestedCrops,
+    updateUserWeeklyStats,
   } = useGameState();
   const [selectedSeed, setSelectedSeed] = useState<SeedType | null>(null);
   const [selectedPerk, setSelectedPerk] = useState<UserItem | null>(null);
@@ -548,6 +554,7 @@ export function GameProvider({
         setShowMintOGBadge,
         newGoldCropsFound,
         setNewGoldCropsFound,
+        updateUserWeeklyStats,
       }}
     >
       {children}

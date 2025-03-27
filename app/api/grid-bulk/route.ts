@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { SeedType, PerkType, ActionType } from "@/types/game";
 import { fertilizeBulk, harvestBulk, perkBulk, plantBulk } from "./utils";
 import { z } from "zod";
+import { getUser } from "@/lib/prisma/queries";
 
 export interface GridBulkRequest {
   action: ActionType;
@@ -30,6 +31,12 @@ export const POST = async (req: NextRequest) => {
 
   if (!fid) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const user = await getUser(Number(fid));
+
+  if (!user) {
+    return NextResponse.json({ error: "User not found" }, { status: 404 });
   }
 
   const requestJson = await req.json();
@@ -69,7 +76,10 @@ export const POST = async (req: NextRequest) => {
           data: plantResult,
         });
       case ActionType.Harvest:
-        const harvestResult = await harvestBulk(Number(fid), cells);
+        const harvestResult = await harvestBulk(Number(fid), cells, {
+          ...user,
+          createdAt: user.createdAt.toISOString(),
+        });
         return NextResponse.json({
           success: true,
           data: harvestResult,

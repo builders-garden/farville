@@ -10,7 +10,7 @@ import sdk from "@farcaster/frame-sdk";
 import { motion } from "framer-motion";
 import { Share2 } from "lucide-react";
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useFrameContext } from "../context/FrameContext";
 import { LeaderboardUserAvatar } from "./LeaderboardUserAvatar";
 import ProfileModal from "./ProfileModal";
@@ -51,21 +51,33 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
   const [leagueType, setLeagueType] = useState<number>(
     state.weeklyStats.league || 3
   );
-  const { weeklyLeaderboard: goldWeeklyLeaderboard } = useWeeklyLeaderboard(
-    state.weeklyStats.league === 3 ? state?.user.fid : undefined,
-    true,
-    3
-  );
-  const { weeklyLeaderboard: silverWeeklyLeaderboard } = useWeeklyLeaderboard(
-    state.weeklyStats.league === 2 ? state?.user.fid : undefined,
-    true,
-    2
-  );
-  const { weeklyLeaderboard: bronzeWeeklyLeaderboard } = useWeeklyLeaderboard(
-    state.weeklyStats.league === 1 ? state?.user.fid : undefined,
-    true,
-    1
-  );
+  const [isShowingCurrentWeek, setIsShowingCurrentWeek] = useState(true);
+
+  const { weeklyLeaderboard: goldWeeklyLeaderboard, refetch: refetchGold } =
+    useWeeklyLeaderboard(
+      state.weeklyStats.league === 3 ? state?.user.fid : undefined,
+      isShowingCurrentWeek,
+      3
+    );
+  const { weeklyLeaderboard: silverWeeklyLeaderboard, refetch: refetchSilver } =
+    useWeeklyLeaderboard(
+      state.weeklyStats.league === 2 ? state?.user.fid : undefined,
+      isShowingCurrentWeek,
+      2
+    );
+  const { weeklyLeaderboard: bronzeWeeklyLeaderboard, refetch: refetchBronze } =
+    useWeeklyLeaderboard(
+      state.weeklyStats.league === 1 ? state?.user.fid : undefined,
+      isShowingCurrentWeek,
+      1
+    );
+
+  useEffect(() => {
+    refetchGold();
+    refetchSilver();
+    refetchBronze();
+  }, [isShowingCurrentWeek, refetchGold, refetchSilver, refetchBronze]);
+
   const { safeAreaInsets } = useFrameContext();
 
   const [selectedUserFid, setSelectedUserFid] = useState<number | undefined>(
@@ -301,8 +313,8 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
                   <div className="flex flex-row justify-between my-2">
                     {[
                       { id: 3, label: "Gold", icon: "🏆" },
-                      { id: 2, label: "Silver", icon: "🥈" },
-                      { id: 1, label: "Bronze", icon: "🥉" },
+                      { id: 2, label: "Iron", icon: "🥈" },
+                      { id: 1, label: "Wood", icon: "🥉" },
                     ].map((tab) => (
                       <motion.button
                         key={tab.id}
@@ -339,7 +351,14 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
                   </div>
                   <Card className="bg-[#5c4121] text-white/90 mb-4 border-none">
                     <CardContent className="flex flex-row items-center gap-4 p-4">
-                      <div className="text-6xl w-[60px]">🏆</div>
+                      <div className="w-[80px]">
+                        <Image
+                          src={`/images/leagues/${leagueType}.png`}
+                          alt="League"
+                          width={80}
+                          height={80}
+                        />
+                      </div>
                       <div className="flex flex-col items-start w-full gap-2">
                         <div className="flex flex-row w-full justify-between">
                           <div className="flex flex-col gap-1 w-full">
@@ -347,8 +366,8 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
                               {leagueType === 3
                                 ? "Gold"
                                 : leagueType === 2
-                                ? "Silver"
-                                : "Bronze"}{" "}
+                                ? "Iron"
+                                : "Wood"}{" "}
                               League
                             </p>
                             <p className="text-[10px]">
@@ -364,9 +383,48 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
                             <p className="text-[10px]">prize</p>
                           </div>
                         </div>
-                        <p className="text-[8px] text-white/60">
-                          Ends in: 3d 4h
-                        </p>
+                        <div className="flex flex-row w-full items-end justify-between">
+                          <p className="text-[8px] text-white/60">
+                            {(() => {
+                              const now = new Date();
+                              const nextMonday = new Date();
+                              nextMonday.setDate(
+                                now.getDate() + ((1 + 7 - now.getDay()) % 7)
+                              );
+                              nextMonday.setHours(1, 0, 0, 0);
+
+                              if (now > nextMonday) {
+                                nextMonday.setDate(nextMonday.getDate() + 7);
+                              }
+
+                              const diff = nextMonday.getTime() - now.getTime();
+                              const days = Math.floor(
+                                diff / (1000 * 60 * 60 * 24)
+                              );
+                              const hours = Math.floor(
+                                (diff % (1000 * 60 * 60 * 24)) /
+                                  (1000 * 60 * 60)
+                              );
+                              const minutes = Math.floor(
+                                (diff % (1000 * 60 * 60)) / (1000 * 60)
+                              );
+
+                              return `Ends in: ${days}d ${hours}h ${minutes}m`;
+                            })()}
+                          </p>
+                          <button
+                            className="text-[8px] px-2 py-1 rounded-full bg-white/10 hover:bg-white/20 
+                                       text-white/70 hover:text-white/90 transition-all duration-200
+                                       border border-white/20"
+                            onClick={() =>
+                              setIsShowingCurrentWeek(!isShowingCurrentWeek)
+                            }
+                          >
+                            {isShowingCurrentWeek
+                              ? "Last week"
+                              : "Current week"}
+                          </button>
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
@@ -426,7 +484,12 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
                             </span>
                             <p className="text-white/60 text-xs">
                               {activeTab === "weekly" ? (
-                                <>GT:{state.weeklyStats.currentScore}</>
+                                <>
+                                  GT:
+                                  {isShowingCurrentWeek
+                                    ? state.weeklyStats.currentScore.toLocaleString()
+                                    : state.weeklyStats.lastScore.toLocaleString()}
+                                </>
                               ) : (
                                 <>XP:{state.user.xp.toLocaleString()}</>
                               )}
@@ -503,7 +566,12 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
                               </span>
                               <p className="text-white/60 text-xs">
                                 {activeTab === "weekly" ? (
-                                  <>GT:{entry.currentScore?.toLocaleString()}</>
+                                  <>
+                                    GT:
+                                    {isShowingCurrentWeek
+                                      ? entry.currentScore?.toLocaleString()
+                                      : entry.lastScore?.toLocaleString()}
+                                  </>
                                 ) : (
                                   <>XP:{entry.xp.toLocaleString()}</>
                                 )}
