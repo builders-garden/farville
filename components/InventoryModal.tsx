@@ -19,7 +19,6 @@ export default function InventoryModal({ onClose }: { onClose: () => void }) {
   const [selectedItem, setSelectedItem] = useState<DbItem | null>(null);
   const [requestQuantity, setRequestQuantity] = useState(1);
   const { mutate: createRequest } = useCreateRequest();
-  const [requestUrl, setRequestUrl] = useState("");
 
   const handlePerkClick = (perk: UserItem) => {
     if (perk.quantity && perk.quantity > 0) {
@@ -54,13 +53,11 @@ export default function InventoryModal({ onClose }: { onClose: () => void }) {
         },
         {
           onSuccess: async (data) => {
-            const { requestUrl, castUrl } = requestItemComposeCastUrl(
+            const { castUrl } = requestItemComposeCastUrl(
               data.id,
               item,
               requestQuantity
             );
-            setRequestUrl(requestUrl);
-            await new Promise((resolve) => setTimeout(resolve, 1000));
             await sdk.actions.openUrl(castUrl);
             setSelectedItem(null);
             setRequestQuantity(1);
@@ -105,12 +102,7 @@ export default function InventoryModal({ onClose }: { onClose: () => void }) {
           animate={{ x: 0, opacity: 1 }}
         >
           {isImageUrl ? (
-            <Image
-              src={icon}
-              alt={title}
-              width={28}
-              height={28}
-            />
+            <Image src={icon} alt={title} width={28} height={28} />
           ) : (
             <span className="text-2xl">{icon}</span>
           )}
@@ -228,7 +220,6 @@ export default function InventoryModal({ onClose }: { onClose: () => void }) {
               ? () => handleUseItem(selectedItem)
               : undefined
           }
-          requestUrl={requestUrl}
         />
       )}
     </div>
