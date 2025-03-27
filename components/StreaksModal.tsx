@@ -135,7 +135,8 @@ export default function StreaksModal({ onClose }: { onClose: () => void }) {
     const streaksRewards = currentRewards.map((reward) => {
       // Calculate the actual day
       const adjustedRewardDay = reward.day;
-      const cycleOffset = Math.floor((lastClaimedDay - 1) / 28) * 28;
+      const cycleOffset =
+        Math.floor((Math.max(1, lastClaimedDay) - 1) / 28) * 28;
 
       // Handle the cycle transition differently
       let actualDay;
