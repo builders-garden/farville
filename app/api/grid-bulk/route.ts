@@ -76,10 +76,7 @@ export const POST = async (req: NextRequest) => {
           data: plantResult,
         });
       case ActionType.Harvest:
-        const harvestResult = await harvestBulk(Number(fid), cells, {
-          ...user,
-          createdAt: user.createdAt.toISOString(),
-        });
+        const harvestResult = await harvestBulk(Number(fid), cells);
         return NextResponse.json({
           success: true,
           data: harvestResult,
