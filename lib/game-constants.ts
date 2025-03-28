@@ -1101,3 +1101,5 @@ export const ACHIEVEMENTS_GOLD_MULTIPLIER = 2.5;
 export const XP_PER_DONATED_ITEM = 5;
 
 export const OG_XP_THRESHOLD = 100;
+
+export const OPEN_LEAGUE_LEADERBOARDS = false;

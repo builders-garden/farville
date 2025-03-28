@@ -51,6 +51,47 @@ export const requestItemComposeCastUrl = (
   };
 };
 
+export const shareWelcomeLeaguesComposeCastUrl = (
+  fid: number,
+  league: number,
+  nearUsers?: LeaderboardResponse
+) => {
+  const timestamp = Date.now();
+  const frameUrl = `${process.env.NEXT_PUBLIC_URL}/flex-card/welcome-leagues/${fid}/${timestamp}`;
+
+  let text = `Who knew running a farm could be this competitive? 🤯\n\nSee you in the ${
+    league === 1 ? "Wood" : league === 2 ? "Iron" : "Gold"
+  } League`;
+
+  if (nearUsers) {
+    const targetPosition =
+      nearUsers.targetPosition ??
+      nearUsers.users.findIndex((user) => user.fid === fid);
+
+    const aboveUsers = nearUsers.users
+      .slice(0, targetPosition)
+      .slice(-3)
+      .map((user) => `@${user.username}`);
+
+    const belowUsers = nearUsers.users
+      .slice(targetPosition + 1)
+      .slice(0, 3)
+      .map((user) => `@${user.username}`);
+
+    const users = [...aboveUsers, ...belowUsers].filter(Boolean);
+
+    text += ` ${users.join(", ")} ⚔️`;
+  }
+
+  const urlFriendlyText = encodeURIComponent(text);
+  return {
+    frameUrl,
+    castUrl: `https://warpcast.com/~/compose?text=${urlFriendlyText}&embeds[]=${encodeURIComponent(
+      frameUrl
+    )}&channelKey=farville`,
+  };
+};
+
 export const streakFlexCardComposeCastUrl = (
   fid: number,
   streakNumber: number

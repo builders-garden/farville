@@ -5,10 +5,11 @@ import { useLeaderboard } from "@/hooks/use-leadeboard";
 import {
   getCurrentLevelAndProgress,
   leaderboardFlexCardComposeCastUrl,
+  shareWelcomeLeaguesComposeCastUrl,
 } from "@/lib/utils";
 import sdk from "@farcaster/frame-sdk";
 import { motion } from "framer-motion";
-import { Share2 } from "lucide-react";
+import { Clock, Info, Share2 } from "lucide-react";
 import Image from "next/image";
 import { useState, useEffect } from "react";
 import { useFrameContext } from "../context/FrameContext";
@@ -17,6 +18,8 @@ import ProfileModal from "./ProfileModal";
 import { Card, CardContent } from "./ui/card";
 import { useWeeklyLeaderboard } from "@/hooks/use-weekly-leadeboard";
 import { DbUser } from "@/supabase/types";
+import { OPEN_LEAGUE_LEADERBOARDS } from "@/lib/game-constants";
+import InfoModal from "./modals/InfoModal";
 
 const shimmerAnimation = `
   @keyframes shine {
@@ -84,6 +87,61 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
     undefined
   );
 
+  const [timeUntilNextWeek, setTimeUntilNextWeek] = useState({
+    days: 0,
+    hours: 0,
+    minutes: 0,
+  });
+
+  const [isLeagueInfoModalOpen, setIsLeagueInfoModalOpen] = useState(false);
+  const [isWhatIsAGtModalOpen, setIsWhatIsAGtModalOpen] = useState(false);
+
+  useEffect(() => {
+    const calculateTimeUntilNextWeek = () => {
+      const now = new Date();
+      const nextWeek = new Date();
+
+      // Get days until next Monday (Monday is 1, Sunday is 0)
+      const daysUntilMonday = (8 - now.getUTCDay()) % 7;
+
+      // Set to next Monday
+      nextWeek.setUTCDate(now.getUTCDate() + daysUntilMonday);
+
+      // Set to 4pm CET (3pm UTC during winter, 2pm UTC during summer)
+      const date = new Date();
+      const stdTimezoneOffset = Math.max(
+        new Date(date.getFullYear(), 0, 1).getTimezoneOffset(),
+        new Date(date.getFullYear(), 6, 1).getTimezoneOffset()
+      );
+      const isDST = date.getTimezoneOffset() < stdTimezoneOffset;
+      const utcHour = isDST ? 14 : 15; // 4pm CET converted to UTC
+
+      nextWeek.setUTCHours(utcHour, 0, 0, 0);
+
+      // If we're past Monday 4pm CET, move to next Monday
+      if (now > nextWeek) {
+        nextWeek.setUTCDate(nextWeek.getUTCDate() + 7);
+      }
+
+      const diff = nextWeek.getTime() - now.getTime();
+
+      return {
+        days: Math.floor(diff / (1000 * 60 * 60 * 24)),
+        hours: Math.floor((diff / (1000 * 60 * 60)) % 24),
+        minutes: Math.floor((diff / (1000 * 60)) % 60),
+      };
+    };
+
+    const timer = setInterval(() => {
+      setTimeUntilNextWeek(calculateTimeUntilNextWeek());
+    }, 60000); // Update every minute
+
+    // Initial calculation
+    setTimeUntilNextWeek(calculateTimeUntilNextWeek());
+
+    return () => clearInterval(timer);
+  }, []);
+
   const handleClose = () => {
     onClose();
   };
@@ -102,6 +160,15 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
           ? friendsData
           : questsFriendsData
         : undefined
+    );
+    await sdk.actions.openUrl(castUrl);
+  };
+
+  const handleShareWelcomeLeagues = async () => {
+    const { castUrl } = shareWelcomeLeaguesComposeCastUrl(
+      state.user.fid,
+      state.weeklyStats.league,
+      friendsData
     );
     await sdk.actions.openUrl(castUrl);
   };
@@ -309,8 +376,8 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
 
               {/* Weekly Card summary */}
               {activeTab === "weekly" && (
-                <>
-                  <div className="flex flex-row justify-between my-2">
+                <div className="flex flex-col gap-2 mb-2">
+                  <div className="flex flex-row justify-between gap-2">
                     {[
                       { id: 3, label: "Gold", icon: "🏆" },
                       { id: 2, label: "Iron", icon: "🥈" },
@@ -321,12 +388,12 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
                         initial={{ opacity: 0, y: -20 }}
                         animate={{ opacity: 1, y: 0 }}
                         onClick={() => setLeagueType(tab.id)}
-                        className={`px-3 py-1 rounded-full flex items-center justify-center gap-1.5 transition-all duration-200 text-xs
-                        ${
-                          leagueType === tab.id
-                            ? "bg-[#FFB938] text-[#5c4121] font-semibold shadow-md"
-                            : "text-white/70 hover:bg-white/10 border border-white/20"
-                        }`}
+                        className={`flex-1 px-3 py-1 rounded-full flex items-center justify-center gap-1.5 transition-all duration-200 text-xs
+                      ${
+                        leagueType === tab.id
+                          ? "bg-[#FFB938] text-[#5c4121] font-semibold shadow-md"
+                          : "text-white/70 hover:bg-white/10 border border-white/20"
+                      }`}
                         whileHover={{
                           scale: leagueType === tab.id ? 1.05 : 1.02,
                         }}
@@ -349,7 +416,7 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
                       </motion.button>
                     ))}
                   </div>
-                  <Card className="bg-[#5c4121] text-white/90 mb-4 border-none">
+                  <Card className="bg-[#5c4121] text-white/90 border-none">
                     <CardContent className="flex flex-row items-center gap-4 p-4">
                       <div className="w-[80px]">
                         <Image
@@ -379,215 +446,320 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
                             </p>
                           </div>
                           <div className="flex flex-col items-end">
-                            <p className="text-md font-bold">50$</p>
-                            <p className="text-[10px]">prize</p>
+                            <Info
+                              className="text-white/70 hover:text-white/90 cursor-pointer"
+                              onClick={() => setIsLeagueInfoModalOpen(true)}
+                            />
+                            {isLeagueInfoModalOpen && (
+                              <InfoModal
+                                title={`${
+                                  leagueType === 3
+                                    ? "Gold"
+                                    : leagueType === 2
+                                    ? "Iron"
+                                    : "Wood"
+                                } League`}
+                                onCancel={() => setIsLeagueInfoModalOpen(false)}
+                                icon={`/images/leagues/${leagueType}.png`}
+                              >
+                                <div className="flex flex-col gap-4 my-4 text-white/90 text-[10px]">
+                                  <p>Harvest, donate and complete quests ⚔️</p>
+                                  <p>
+                                    Compete against other players in your league
+                                    to earn rewards every week!
+                                  </p>
+                                  {leagueType === 3 && (
+                                    <>
+                                      <div>
+                                        The reward for the Gold League is 50
+                                        USDC pool divided as follows:
+                                        <ul className="list-disc list-inside mt-4 space-y-2">
+                                          <li>1st: 8 USDC</li>
+                                          <li>2nd: 6 USDC</li>
+                                          <li>3rd: 4 USDC</li>
+                                          <li>4-10th: 2 USDC</li>
+                                          <li>11-25th: 1.25 USDC</li>
+                                          <li>26-50th: 0.50 USDC</li>
+                                        </ul>
+                                      </div>
+                                    </>
+                                  )}
+                                  {leagueType === 2 && (
+                                    <p>
+                                      The reward for the Iron League are perks
+                                      give away as follows:
+                                      <ul className="list-disc list-inside mt-4 space-y-2">
+                                        <li>1st: 3 fertilizers</li>
+                                        <li>2nd: 1 fertilizer</li>
+                                        <li>3rd: 100 phosphorus</li>
+                                        <li>4th: 100 potassium</li>
+                                        <li>5th: 100 nitrogen</li>
+                                      </ul>
+                                    </p>
+                                  )}
+                                  {leagueType === 1 && (
+                                    <p>
+                                      The reward for the Wood League is a crops
+                                      give away as follows:
+                                      <ul className="list-disc list-inside mt-4 space-y-2">
+                                        <li>1st: 30 strawberries</li>
+                                        <li>2nd: 20 potatoes</li>
+                                        <li>3rd: 15 tomatoes</li>
+                                      </ul>
+                                    </p>
+                                  )}
+                                  <p className="mt-4">
+                                    Good luck and have fun! <br />
+                                    Brum Brum{" "}
+                                    <span className="text-xl">🚜💨</span>
+                                  </p>
+                                </div>
+                              </InfoModal>
+                            )}
                           </div>
                         </div>
                         <div className="flex flex-row w-full items-end justify-between">
-                          <p className="text-[8px] text-white/60">
-                            {(() => {
-                              const now = new Date();
-                              const nextMonday = new Date();
-                              nextMonday.setDate(
-                                now.getDate() + ((1 + 7 - now.getDay()) % 7)
-                              );
-                              nextMonday.setHours(1, 0, 0, 0);
-
-                              if (now > nextMonday) {
-                                nextMonday.setDate(nextMonday.getDate() + 7);
-                              }
-
-                              const diff = nextMonday.getTime() - now.getTime();
-                              const days = Math.floor(
-                                diff / (1000 * 60 * 60 * 24)
-                              );
-                              const hours = Math.floor(
-                                (diff % (1000 * 60 * 60 * 24)) /
-                                  (1000 * 60 * 60)
-                              );
-                              const minutes = Math.floor(
-                                (diff % (1000 * 60 * 60)) / (1000 * 60)
-                              );
-
-                              return `Ends in: ${days}d ${hours}h ${minutes}m`;
-                            })()}
-                          </p>
-                          <button
-                            className="text-[8px] px-2 py-1 rounded-full bg-white/10 hover:bg-white/20 
+                          {OPEN_LEAGUE_LEADERBOARDS && (
+                            <>
+                              <button
+                                className="text-[8px] px-2 py-1 rounded-full bg-white/10 hover:bg-white/20 
                                        text-white/70 hover:text-white/90 transition-all duration-200
                                        border border-white/20"
-                            onClick={() =>
-                              setIsShowingCurrentWeek(!isShowingCurrentWeek)
-                            }
-                          >
-                            {isShowingCurrentWeek
-                              ? "Last week"
-                              : "Current week"}
-                          </button>
+                                onClick={() =>
+                                  setIsShowingCurrentWeek(!isShowingCurrentWeek)
+                                }
+                              >
+                                {isShowingCurrentWeek
+                                  ? "Last week"
+                                  : "Current week"}
+                              </button>
+                              <button
+                                className="text-[8px] px-2 py-1 rounded-full bg-white/10 hover:bg-white/20 
+                                    text-white/70 hover:text-white/90 transition-all duration-200
+                                    border border-white/20 flex items-center gap-1"
+                                onClick={() => setIsWhatIsAGtModalOpen(true)}
+                              >
+                                What&apos;s a GT ☘️?
+                              </button>
+                              {isWhatIsAGtModalOpen && (
+                                <InfoModal
+                                  title="What is a GT?"
+                                  onCancel={() =>
+                                    setIsWhatIsAGtModalOpen(false)
+                                  }
+                                  icon={<>☘️</>}
+                                >
+                                  <div className="flex flex-col gap-4 my-4 text-white/90 text-[10px]">
+                                    <p>
+                                      A GT (Green Thumb) is a measure of your
+                                      progress in the game during the week.
+                                    </p>
+                                    <p>
+                                      You earn GT by harvesting, donating and
+                                      completing quests.
+                                    </p>
+                                    <p>
+                                      The more GT you earn, the higher your
+                                      weekly rank will be on the leaderboard!
+                                    </p>
+                                  </div>
+                                </InfoModal>
+                              )}
+                            </>
+                          )}
                         </div>
                       </div>
                     </CardContent>
                   </Card>
-                </>
+                  <div className="bg-gradient-to-br from-[#8B5c3C] to-[#6d4c2c] rounded-xl p-3 border border-[#ffa07a]/20">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2 text-white/80">
+                        <Clock size={18} className="text-[#FFB938]" />
+                        <span className="text-[9px]">Starts in:</span>
+                      </div>
+                      <div className="flex gap-1 text-white font-bold">
+                        <div className="bg-[#6d4c2c] px-2 py-1 rounded-md text-xs min-w-[30px] text-center">
+                          {timeUntilNextWeek.days.toString().padStart(2, "0")}
+                          <span className="text-[#FFB938] ml-1">d</span>
+                        </div>
+
+                        <div className="bg-[#6d4c2c] px-2 py-1 rounded-md text-xs min-w-[30px] text-center">
+                          {timeUntilNextWeek.hours.toString().padStart(2, "0")}
+                          <span className="text-[#FFB938] ml-1">h</span>
+                        </div>
+
+                        <div className="bg-[#6d4c2c] px-2 py-1 rounded-md text-xs min-w-[30px] text-center">
+                          {timeUntilNextWeek.minutes
+                            .toString()
+                            .padStart(2, "0")}
+                          <span className="text-[#FFB938] ml-1">m</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               )}
             </div>
 
             {/* Scrollable leaderboard list */}
             <div className="flex-1 overflow-y-auto min-h-0 no-scrollbar">
-              {getCurrentData()?.targetPosition && (
-                <motion.div
-                  key={state.user.fid}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.02 }}
-                  className="bg-gradient-to-r from-[#8B5E3C] to-[#6d4c2c] px-4 py-3 rounded-lg flex items-center gap-3
-                           border-2 border-[#FFB938] shadow-lg mb-4 relative overflow-hidden
-                           hover:scale-[1.02] transition-transform duration-200 cursor-pointer"
-                  onClick={() => setSelectedUserFid(state.user.fid)}
-                >
-                  {/* Add subtle shine effect */}
-                  <div
-                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent 
-                                  animate-[shine_3s_ease-in-out_infinite] pointer-events-none"
-                  />
-
-                  {/* Rank */}
-                  <div className="flex-none text-center px-2 py-1 bg-[#5c4121] rounded-lg text-white/90 text-xs font-medium">
-                    #{getCurrentData()?.targetPosition}
-                  </div>
-
-                  {/* Avatar */}
-                  {state.user.avatarUrl ? (
-                    <LeaderboardUserAvatar
-                      pfpUrl={state.user.avatarUrl}
-                      username={state.user.username}
-                      isOgUser={state.user.mintedOG}
-                    />
-                  ) : (
-                    <div className="w-10 h-10 rounded-full bg-[#5c4121] flex items-center justify-center text-white/90 flex-none">
-                      👤
-                    </div>
-                  )}
-
-                  {/* User Info */}
-                  <div className="flex-1 min-w-0 flex items-center justify-between gap-4">
-                    {/* Username and XP */}
-                    <div className="min-w-0 flex flex-col gap-1">
-                      <p className="text-white/90 font-medium truncate text-sm">
-                        {state.user.username}
-                      </p>
-                      <div className="flex items-center gap-4">
-                        {leaderboardType === "xp" ? (
-                          <>
-                            <span className="text-[#FFB938] rounded-full font-medium text-xs">
-                              Lvl {state.level}
-                            </span>
-                            <p className="text-white/60 text-xs">
-                              {activeTab === "weekly" ? (
-                                <>
-                                  GT:
-                                  {isShowingCurrentWeek
-                                    ? state.weeklyStats.currentScore.toLocaleString()
-                                    : state.weeklyStats.lastScore.toLocaleString()}
-                                </>
-                              ) : (
-                                <>XP:{state.user.xp.toLocaleString()}</>
-                              )}
-                            </p>
-                          </>
-                        ) : (
-                          <p className="text-white/60 text-[10px]">
-                            Completed Quests:{" "}
-                            {getCurrentData()?.questCount || 0}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </motion.div>
-              )}
-              <div className="space-y-2">
-                {getCurrentData()?.users?.map((entry, index) => (
-                  <motion.div
-                    key={entry.fid}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.05 }}
-                    onClick={() => setSelectedUserFid(entry.fid)}
-                    className={`px-4 py-3 rounded-lg flex items-center gap-3 shadow-md cursor-pointer
-                        ${
-                          entry.fid === state.user.fid
-                            ? "bg-gradient-to-r from-[#8B5E3C] to-[#6d4c2c] border-2 border-[#FFB938]"
-                            : "bg-[#6d4c2c] border border-[#8B5E3C]/50"
-                        }`}
+              {!OPEN_LEAGUE_LEADERBOARDS ? (
+                <div className="flex flex-col gap-8 items-center justify-center h-full w-full">
+                  <p className="text-white/90 text-xl font-bold">
+                    Crop war&apos;s on ⚔️
+                  </p>
+                  <motion.button
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    onClick={handleShareWelcomeLeagues}
+                    className="bg-[#FFB938] w-full justify-center text-[#5c4121] text-sm px-6 py-3 rounded-lg font-bold
+                       flex items-center gap-2 shadow-lg hover:bg-[#ffc65c] transition-colors"
                   >
-                    {/* Add shine effect for current user */}
-                    {entry.fid === state.user.fid && (
+                    <Share2 size={20} />
+                    Let them know
+                  </motion.button>
+                </div>
+              ) : (
+                <>
+                  {getCurrentData()?.targetPosition && (
+                    <motion.div
+                      key={state.user.fid}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.02 }}
+                      className="bg-gradient-to-r from-[#8B5E3C] to-[#6d4c2c] px-4 py-3 rounded-lg flex items-center gap-3
+                       border-2 border-[#FFB938] shadow-lg mb-4 relative overflow-hidden
+                       hover:scale-[1.02] transition-transform duration-200 cursor-pointer"
+                      onClick={() => setSelectedUserFid(state.user.fid)}
+                    >
                       <div
                         className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent 
-                                    animate-[shine_3s_ease-in-out_infinite] pointer-events-none"
+                        animate-[shine_3s_ease-in-out_infinite] pointer-events-none"
                       />
-                    )}
-
-                    {/* Rank */}
-                    <div className="flex-none text-center px-2 py-1 bg-[#5c4121] rounded-lg text-white/90 text-xs font-medium">
-                      #{index + 1}
-                    </div>
-
-                    {/* Avatar */}
-                    {entry.avatarUrl ? (
-                      <LeaderboardUserAvatar
-                        pfpUrl={entry.avatarUrl}
-                        username={entry.username}
-                        isOgUser={entry.mintedOG}
-                      />
-                    ) : (
-                      <div className="w-10 h-10 rounded-full bg-[#5c4121] flex items-center justify-center text-white/90 flex-none">
-                        👤
+                      <div className="flex-none text-center px-2 py-1 bg-[#5c4121] rounded-lg text-white/90 text-xs font-medium">
+                        #{getCurrentData()?.targetPosition}
                       </div>
-                    )}
-
-                    {/* User Info */}
-                    <div className="flex-1 min-w-0 flex items-center justify-between gap-4">
-                      {/* Username and XP */}
+                      {state.user.avatarUrl ? (
+                        <LeaderboardUserAvatar
+                          pfpUrl={state.user.avatarUrl}
+                          username={state.user.username}
+                          isOgUser={state.user.mintedOG}
+                        />
+                      ) : (
+                        <div className="w-10 h-10 rounded-full bg-[#5c4121] flex items-center justify-center text-white/90 flex-none">
+                          👤
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0 flex items-center justify-between gap-4"></div>
                       <div className="min-w-0 flex flex-col gap-1">
                         <p className="text-white/90 font-medium truncate text-sm">
-                          {entry.username}
+                          {state.user.username}
                         </p>
                         <div className="flex items-center gap-4">
                           {leaderboardType === "xp" ? (
                             <>
                               <span className="text-[#FFB938] rounded-full font-medium text-xs">
-                                Lvl{" "}
-                                {
-                                  getCurrentLevelAndProgress(entry.xp)
-                                    .currentLevel
-                                }
+                                Lvl {state.level}
                               </span>
                               <p className="text-white/60 text-xs">
                                 {activeTab === "weekly" ? (
                                   <>
                                     GT:
                                     {isShowingCurrentWeek
-                                      ? entry.currentScore?.toLocaleString()
-                                      : entry.lastScore?.toLocaleString()}
+                                      ? state.weeklyStats.currentScore.toLocaleString()
+                                      : state.weeklyStats.lastScore.toLocaleString()}
                                   </>
                                 ) : (
-                                  <>XP:{entry.xp.toLocaleString()}</>
+                                  <>XP:{state.user.xp.toLocaleString()}</>
                                 )}
                               </p>
                             </>
                           ) : (
                             <p className="text-white/60 text-[10px]">
-                              Completed Quests: {entry.questCount || 0}
+                              Completed Quests:{" "}
+                              {getCurrentData()?.questCount || 0}
                             </p>
                           )}
                         </div>
                       </div>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
+                    </motion.div>
+                  )}
+                  <div className="space-y-2">
+                    {getCurrentData()?.users?.map((entry, index) => (
+                      <motion.div
+                        key={entry.fid}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: index * 0.05 }}
+                        onClick={() => setSelectedUserFid(entry.fid)}
+                        className={`px-4 py-3 rounded-lg flex items-center gap-3 shadow-md cursor-pointer
+                    ${
+                      entry.fid === state.user.fid
+                        ? "bg-gradient-to-r from-[#8B5E3C] to-[#6d4c2c] border-2 border-[#FFB938]"
+                        : "bg-[#6d4c2c] border border-[#8B5E3C]/50"
+                    }`}
+                      >
+                        {entry.fid === state.user.fid && (
+                          <div
+                            className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent 
+                        animate-[shine_3s_ease-in-out_infinite] pointer-events-none"
+                          />
+                        )}
+                        <div className="flex-none text-center px-2 py-1 bg-[#5c4121] rounded-lg text-white/90 text-xs font-medium">
+                          #{index + 1}
+                        </div>
+                        {entry.avatarUrl ? (
+                          <LeaderboardUserAvatar
+                            pfpUrl={entry.avatarUrl}
+                            username={entry.username}
+                            isOgUser={entry.mintedOG}
+                          />
+                        ) : (
+                          <div className="w-10 h-10 rounded-full bg-[#5c4121] flex items-center justify-center text-white/90 flex-none">
+                            👤
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0 flex items-center justify-between gap-4">
+                          <div className="min-w-0 flex flex-col gap-1">
+                            <p className="text-white/90 font-medium truncate text-sm">
+                              {entry.username}
+                            </p>
+                            <div className="flex items-center gap-4">
+                              {leaderboardType === "xp" ? (
+                                <>
+                                  <span className="text-[#FFB938] rounded-full font-medium text-xs">
+                                    Lvl{" "}
+                                    {
+                                      getCurrentLevelAndProgress(entry.xp)
+                                        .currentLevel
+                                    }
+                                  </span>
+                                  <p className="text-white/60 text-xs">
+                                    {activeTab === "weekly" ? (
+                                      <>
+                                        GT:
+                                        {isShowingCurrentWeek
+                                          ? entry.currentScore?.toLocaleString()
+                                          : entry.lastScore?.toLocaleString()}
+                                      </>
+                                    ) : (
+                                      <>XP:{entry.xp.toLocaleString()}</>
+                                    )}
+                                  </p>
+                                </>
+                              ) : (
+                                <p className="text-white/60 text-[10px]">
+                                  Completed Quests: {entry.questCount || 0}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </motion.div>

@@ -34,7 +34,7 @@ async function loadGoogleFont(font: string, text: string) {
 }
 
 export async function GET(
-  request: Request,
+  _request: Request,
   {
     params,
   }: {
