@@ -31,7 +31,7 @@ export async function generateMetadata({
     version: "next",
     imageUrl: imageUrl.toString(),
     button: {
-      title: "Join me in FarVille 🧑‍🌾",
+      title: "Join me on FarVille 🧑‍🌾",
       action: {
         type: "launch_frame",
         name: "FarVille",

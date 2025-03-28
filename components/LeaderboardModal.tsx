@@ -418,7 +418,7 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
                   </div>
                   <Card className="bg-[#5c4121] text-white/90 border-none">
                     <CardContent className="flex flex-row items-center gap-4 p-4">
-                      <div className="w-[80px]">
+                      <div className="w-[80px] h-[80px]">
                         <Image
                           src={`/images/leagues/${leagueType}.png`}
                           alt="League"
@@ -603,7 +603,7 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
 
             {/* Scrollable leaderboard list */}
             <div className="flex-1 overflow-y-auto min-h-0 no-scrollbar">
-              {!OPEN_LEAGUE_LEADERBOARDS ? (
+              {!OPEN_LEAGUE_LEADERBOARDS && activeTab === "weekly" ? (
                 <div className="flex flex-col gap-8 items-center justify-center h-full w-full">
                   <p className="text-white/90 text-xl font-bold">
                     Crop war&apos;s on ⚔️
