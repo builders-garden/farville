@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createRequest, getItemById } from "@/supabase/queries";
-import { trackEvent } from "@/lib/posthog/server";
 import { z } from "zod";
 import { GAME_ITEMS } from "@/lib/game-constants";
 
@@ -54,11 +53,6 @@ export const POST = async (request: NextRequest) => {
       fid: Number(fid),
       itemId,
       quantity,
-    });
-    trackEvent(Number(fid), "created-request", {
-      itemId: itemId,
-      itemSlug: item.slug,
-      quantity: quantity,
     });
     return NextResponse.json(newRequest);
   } catch (error) {

@@ -5,7 +5,6 @@ import {
   XP_PER_DONATED_ITEM,
 } from "@/lib/game-constants";
 import { sendDelayedNotification } from "@/lib/game-notifications";
-import { trackEvent } from "@/lib/posthog/server";
 import {
   getUserDonationByReceiver,
   getUserDonationsLast24h,
@@ -161,13 +160,6 @@ export const POST = async (
       0
     ),
   ]);
-
-  trackEvent(Number(fid), "donated-item", {
-    itemId: itemId,
-    itemSlug: item.slug,
-    quantity: quantity,
-    toFid: toFid,
-  });
 
   return NextResponse.json({ message: "Item donated" }, { status: 200 });
 };

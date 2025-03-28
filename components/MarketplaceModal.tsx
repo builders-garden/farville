@@ -7,7 +7,6 @@ import { CROP_DATA } from "../lib/game-constants";
 import Image from "next/image";
 import ConfirmationModal from "./modals/ConfirmationModal";
 import { DbItem } from "@/supabase/types";
-import { trackEvent } from "../lib/posthog/client";
 import ItemDetailsPopup from "./ItemDetailsPopup";
 import { useFrameContext } from "@/context/FrameContext";
 import { useCreateRequest } from "@/hooks/game-actions/use-create-request";
@@ -122,12 +121,6 @@ export default function MarketplaceModal({
           CROP_DATA[item.slug.replace("-seeds", "")]?.growthTime / (60000 * 60),
       };
       setSelectedItem(itemDetails);
-      trackEvent("marketplace_item_selected", {
-        itemId: item.id,
-        itemName: item.name,
-        itemCategory: item.category,
-        buyPrice: item.buyPrice,
-      });
     }
   };
 
