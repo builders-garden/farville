@@ -16,7 +16,7 @@ export async function GET(request: Request) {
     const usersWeekSummaries = await getWeeklyUserLeaderboardByLeague(
       Number(league),
       currentWeek === "true",
-      10,
+      20,
       Number(targetFid)
     );
     return NextResponse.json(usersWeekSummaries, { headers });

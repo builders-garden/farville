@@ -413,7 +413,15 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
                       </motion.button>
                     ))}
                   </div>
-                  <Card className="bg-[#5c4121] text-white/90 border-none">
+                </div>
+              )}
+            </div>
+
+            {/* Scrollable leaderboard list */}
+            <div className="flex-1 overflow-y-auto min-h-0 no-scrollbar">
+              {activeTab === "weekly" && (
+                <>
+                  <Card className="bg-[#5c4121] text-white/90 border-none mb-2">
                     <CardContent className="flex flex-row items-center gap-4 p-4">
                       <Image
                         src={`/images/leagues/${leagueType}.png`}
@@ -575,7 +583,7 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
                       </div>
                     </CardContent>
                   </Card>
-                  <div className="bg-gradient-to-br from-[#8B5c3C] to-[#6d4c2c] rounded-xl p-3 border border-[#ffa07a]/20">
+                  <div className="bg-gradient-to-br from-[#8B5c3C] to-[#6d4c2c] rounded-xl p-3 border border-[#ffa07a]/20 mb-2">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2 text-white/80">
                         <Clock
@@ -604,12 +612,8 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
                       </div>
                     </div>
                   </div>
-                </div>
+                </>
               )}
-            </div>
-
-            {/* Scrollable leaderboard list */}
-            <div className="flex-1 overflow-y-auto min-h-0 no-scrollbar">
               {!OPEN_LEAGUE_LEADERBOARDS && activeTab === "weekly" ? (
                 <div className="flex flex-col gap-8 items-center justify-center h-full w-full">
                   <p className="text-white/90 text-xl font-bold">
