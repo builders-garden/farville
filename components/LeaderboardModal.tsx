@@ -104,21 +104,11 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
       // Get days until next Monday (Monday is 1, Sunday is 0)
       const daysUntilMonday = (8 - now.getUTCDay()) % 7;
 
-      // Set to next Monday
+      // Set to next Monday at 00:00 UTC
       nextWeek.setUTCDate(now.getUTCDate() + daysUntilMonday);
+      nextWeek.setUTCHours(0, 0, 0, 0);
 
-      // Set to 4pm CET (3pm UTC during winter, 2pm UTC during summer)
-      const date = new Date();
-      const stdTimezoneOffset = Math.max(
-        new Date(date.getFullYear(), 0, 1).getTimezoneOffset(),
-        new Date(date.getFullYear(), 6, 1).getTimezoneOffset()
-      );
-      const isDST = date.getTimezoneOffset() < stdTimezoneOffset;
-      const utcHour = isDST ? 14 : 15; // 4pm CET converted to UTC
-
-      nextWeek.setUTCHours(utcHour, 0, 0, 0);
-
-      // If we're past Monday 4pm CET, move to next Monday
+      // If we're past Monday 00:00 UTC, move to next Monday
       if (now > nextWeek) {
         nextWeek.setUTCDate(nextWeek.getUTCDate() + 7);
       }
