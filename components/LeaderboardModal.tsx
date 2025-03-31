@@ -5,6 +5,7 @@ import { useLeaderboard } from "@/hooks/use-leadeboard";
 import {
   getCurrentLevelAndProgress,
   leaderboardFlexCardComposeCastUrl,
+  shareWeeklyLeaderboardPositionComposeCastUrl,
   shareWelcomeLeaguesComposeCastUrl,
 } from "@/lib/utils";
 import sdk from "@farcaster/frame-sdk";
@@ -149,6 +150,15 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
     await sdk.actions.openUrl(castUrl);
   };
 
+  const handleShareWeeklyLeaderboard = async () => {
+    const { castUrl } = shareWeeklyLeaderboardPositionComposeCastUrl(
+      state.user.fid,
+      state.weeklyStats.league,
+      isShowingCurrentWeek
+    );
+    await sdk.actions.openUrl(castUrl);
+  };
+
   const handleShareWelcomeLeagues = async () => {
     const { castUrl } = shareWelcomeLeaguesComposeCastUrl(
       state.user.fid,
@@ -202,7 +212,10 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
   return (
     <div className="fixed inset-0 bg-black/50 flex items-start z-50">
       {selectedUserFid ? (
-        <ProfileModal onClose={handleCloseProfile} userFid={selectedUserFid} />
+        <ProfileModal
+          onClose={handleCloseProfile}
+          userFid={selectedUserFid}
+        />
       ) : (
         <motion.div
           initial={{ opacity: 0, y: 50 }}
@@ -402,14 +415,12 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
                   </div>
                   <Card className="bg-[#5c4121] text-white/90 border-none">
                     <CardContent className="flex flex-row items-center gap-4 p-4">
-                      <div className="w-[80px] h-[80px]">
-                        <Image
-                          src={`/images/leagues/${leagueType}.png`}
-                          alt="League"
-                          width={80}
-                          height={80}
-                        />
-                      </div>
+                      <Image
+                        src={`/images/leagues/${leagueType}.png`}
+                        alt="League"
+                        width={64}
+                        height={80}
+                      />
                       <div className="flex flex-col items-start w-full gap-2">
                         <div className="flex flex-row w-full justify-between">
                           <div className="flex flex-col gap-1 w-full">
@@ -523,15 +534,24 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
                                     border border-white/20 flex items-center gap-1"
                                 onClick={() => setIsWhatIsAGtModalOpen(true)}
                               >
-                                What&apos;s a GT ☘️?
+                                <div className="flex items-center gap-1">
+                                  <span>What&apos;s a GT</span>
+                                  <Image
+                                    src="/images/leagues/clover.png"
+                                    alt="GT"
+                                    width={12}
+                                    height={12}
+                                  />
+                                  <span>?</span>
+                                </div>
                               </button>
                               {isWhatIsAGtModalOpen && (
                                 <InfoModal
-                                  title="What is a GT?"
+                                  title="What's a GT?"
                                   onCancel={() =>
                                     setIsWhatIsAGtModalOpen(false)
                                   }
-                                  icon={<>☘️</>}
+                                  icon={"/images/leagues/clover.png"}
                                 >
                                   <div className="flex flex-col gap-4 my-4 text-white/90 text-[10px]">
                                     <p>
@@ -558,7 +578,10 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
                   <div className="bg-gradient-to-br from-[#8B5c3C] to-[#6d4c2c] rounded-xl p-3 border border-[#ffa07a]/20">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2 text-white/80">
-                        <Clock size={18} className="text-[#FFB938]" />
+                        <Clock
+                          size={18}
+                          className="text-[#FFB938]"
+                        />
                         <span className="text-[9px]">Ends in:</span>
                       </div>
                       <div className="flex gap-1 text-white font-bold">
@@ -634,30 +657,51 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
                           👤
                         </div>
                       )}
-                      <div className="min-w-0 flex flex-col gap-1">
+                      <div className="min-w-0 flex flex-col gap-1 w-full">
                         <p className="text-white/90 font-medium truncate text-sm">
                           {state.user.username}
                         </p>
                         <div className="flex items-center gap-4">
-                          {leaderboardType === "xp" ? (
+                          {activeTab === "weekly" ||
+                          leaderboardType === "xp" ? (
                             <>
                               {activeTab !== "weekly" && (
                                 <span className="text-[#FFB938] rounded-full font-medium text-xs">
                                   Lvl {state.level}
                                 </span>
                               )}
-                              <p className="text-white/60 text-xs">
-                                {activeTab === "weekly" ? (
-                                  <>
-                                    GT:
-                                    {isShowingCurrentWeek
-                                      ? state.weeklyStats.currentScore.toLocaleString()
-                                      : state.weeklyStats.lastScore.toLocaleString()}
-                                  </>
-                                ) : (
-                                  <>XP:{state.user.xp.toLocaleString()}</>
+                              <div className="flex justify-between w-full items-center">
+                                <p className="text-white/60 text-xs">
+                                  {activeTab === "weekly" ? (
+                                    <div className="flex items-center gap-2">
+                                      <Image
+                                        src="/images/leagues/clover.png"
+                                        alt="GT"
+                                        width={15}
+                                        height={15}
+                                      />
+                                      <>
+                                        {isShowingCurrentWeek
+                                          ? state.weeklyStats.currentScore.toLocaleString()
+                                          : state.weeklyStats.lastScore.toLocaleString()}
+                                      </>
+                                    </div>
+                                  ) : (
+                                    <>XP:{state.user.xp.toLocaleString()}</>
+                                  )}
+                                </p>
+                                {activeTab === "weekly" && (
+                                  <motion.button
+                                    whileHover={{ scale: 1.05 }}
+                                    whileTap={{ scale: 0.95 }}
+                                    onClick={handleShareWeeklyLeaderboard}
+                                    className="text-white/80 hover:text-white flex items-center gap-1 bg-[#5c4121]/80 hover:bg-[#5c4121] px-2 py-1 rounded text-[11px] transition-all"
+                                  >
+                                    <span>Share</span>
+                                    <Share2 size={10} />
+                                  </motion.button>
                                 )}
-                              </p>
+                              </div>
                             </>
                           ) : (
                             <p className="text-white/60 text-[10px]">
@@ -710,7 +754,8 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
                               {entry.username}
                             </p>
                             <div className="flex items-center gap-4">
-                              {leaderboardType === "xp" ? (
+                              {activeTab === "weekly" ||
+                              leaderboardType === "xp" ? (
                                 <>
                                   {activeTab !== "weekly" && (
                                     <span className="text-[#FFB938] rounded-full font-medium text-xs">
@@ -723,12 +768,17 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
                                   )}
                                   <p className="text-white/60 text-xs">
                                     {activeTab === "weekly" ? (
-                                      <>
-                                        GT:
+                                      <div className="flex items-center gap-2">
+                                        <Image
+                                          src="/images/leagues/clover.png"
+                                          alt="GT"
+                                          width={15}
+                                          height={15}
+                                        />
                                         {isShowingCurrentWeek
                                           ? entry.currentScore?.toLocaleString()
                                           : entry.lastScore?.toLocaleString()}
-                                      </>
+                                      </div>
                                     ) : (
                                       <>XP:{entry.xp.toLocaleString()}</>
                                     )}
