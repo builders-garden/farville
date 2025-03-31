@@ -181,9 +181,12 @@ export const updateUserXP = async (
       const currentLevel = LEVEL_XP_THRESHOLDS.findIndex(
         (threshold) => currentXP < threshold
       );
-      const newLevel = LEVEL_XP_THRESHOLDS.findIndex(
+      let newLevel = LEVEL_XP_THRESHOLDS.findIndex(
         (threshold) => newXP < threshold
       );
+      if (newLevel === -1) {
+        newLevel = LEVEL_XP_THRESHOLDS.length;
+      }
       const didLevelUp = newLevel > currentLevel;
 
       // Update user XP and potentially coins if leveled up
@@ -831,6 +834,13 @@ export const updateUserWeeklyScore = async (
 ): Promise<{
   currentScore: number;
 }> => {
+  console.log("params", {
+    fid,
+    score,
+    userLevel,
+    currentUserXp,
+    didLevelUp,
+  });
   const level5 = LEVEL_XP_THRESHOLDS[4];
 
   if (userLevel >= 5) {

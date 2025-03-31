@@ -5,11 +5,10 @@ import {
   getUserQuestById,
   updateUserCoins,
   updateUserQuest,
-  updateUserXP,
 } from "@/supabase/queries";
 import { z } from "zod";
 import { QuestStatus } from "@/types/game";
-import { updateUserWeeklyScore } from "@/lib/prisma/queries";
+import { updateUserWeeklyScore, updateUserXP } from "@/lib/prisma/queries";
 import { START_DATE_LEAGUES } from "@/lib/game-constants";
 
 export async function GET(

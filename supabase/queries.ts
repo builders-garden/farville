@@ -19,12 +19,7 @@ import {
   DbUserHasQuestStatus,
   DbUserHarvestedCrop,
 } from "./types";
-import {
-  CROP_DATA,
-  LEVEL_REWARDS,
-  LEVEL_XP_THRESHOLDS,
-  SPEED_BOOST,
-} from "@/lib/game-constants";
+import { CROP_DATA, SPEED_BOOST } from "@/lib/game-constants";
 import { CropType, PerkType, QuestStatus } from "@/types/game";
 import { getBoostTime, getCurrentLevelAndProgress } from "@/lib/utils";
 import {
@@ -136,46 +131,6 @@ export const updateUser = async (
 
   if (error) throw error;
   return data;
-};
-
-export const updateUserXP = async (
-  fid: number,
-  xp: number
-): Promise<{
-  user: DbUser;
-  didLevelUp: boolean;
-  newXP: number;
-  newLevel: number;
-}> => {
-  const { data: currentUser } = await supabase
-    .from("users")
-    .select("xp,coins")
-    .eq("fid", fid)
-    .single();
-  const currentXP = currentUser?.xp || 0;
-  const newXP = currentXP + xp;
-  const currentLevel = LEVEL_XP_THRESHOLDS.findIndex(
-    (threshold) => currentXP < threshold
-  );
-  const newLevel = LEVEL_XP_THRESHOLDS.findIndex(
-    (threshold) => newXP < threshold
-  );
-  const didLevelUp = newLevel > currentLevel;
-
-  const { data, error } = await supabase
-    .from("users")
-    .update({ xp: newXP })
-    .eq("fid", fid)
-    .select()
-    .single();
-
-  if (didLevelUp) {
-    const levelReward = LEVEL_REWARDS[newLevel - 1];
-    await updateUserCoins(fid, currentUser?.coins + levelReward.coins);
-  }
-
-  if (error) throw error;
-  return { user: data, didLevelUp, newXP: newXP, newLevel: newLevel };
 };
 
 export const updateUserCoins = async (
