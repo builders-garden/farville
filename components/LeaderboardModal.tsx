@@ -212,10 +212,7 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
   return (
     <div className="fixed inset-0 bg-black/50 flex items-start z-50">
       {selectedUserFid ? (
-        <ProfileModal
-          onClose={handleCloseProfile}
-          userFid={selectedUserFid}
-        />
+        <ProfileModal onClose={handleCloseProfile} userFid={selectedUserFid} />
       ) : (
         <motion.div
           initial={{ opacity: 0, y: 50 }}
@@ -302,15 +299,6 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
                   </motion.button>
                 ))}
               </div>
-
-              {/* Tab Title */}
-              {/* <h3 className="text-white/90 font-bold text-lg mb-4">
-                {activeTab === "weekly"
-                  ? "Weekly Leaders"
-                  : activeTab === "global"
-                  ? "Global Leaders"
-                  : "Friends Leaders"}
-              </h3> */}
 
               {/* Secondary tabs for XP/Quests */}
               {activeTab !== "weekly" && (
@@ -543,13 +531,14 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
                                 onClick={() => setIsWhatIsAGtModalOpen(true)}
                               >
                                 <div className="flex items-center gap-1">
-                                  <span>What&apos;s a GT</span>
+                                  <span>What&apos;s a </span>
                                   <Image
                                     src="/images/leagues/clover.png"
                                     alt="GT"
                                     width={12}
                                     height={12}
                                   />
+                                  <span>GT</span>
                                   <span>?</span>
                                 </div>
                               </button>
@@ -586,10 +575,7 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
                   <div className="bg-gradient-to-br from-[#8B5c3C] to-[#6d4c2c] rounded-xl p-3 border border-[#ffa07a]/20 mb-2">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2 text-white/80">
-                        <Clock
-                          size={18}
-                          className="text-[#FFB938]"
-                        />
+                        <Clock size={18} className="text-[#FFB938]" />
                         <span className="text-[9px]">Ends in:</span>
                       </div>
                       <div className="flex gap-1 text-white font-bold">
@@ -686,7 +672,8 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
                                       />
                                       <>
                                         {isShowingCurrentWeek
-                                          ? state.weeklyStats.currentScore.toLocaleString()
+                                          ? "GT " +
+                                            state.weeklyStats.currentScore.toLocaleString()
                                           : state.weeklyStats.lastScore.toLocaleString()}
                                       </>
                                     </div>
@@ -780,7 +767,8 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
                                           height={15}
                                         />
                                         {isShowingCurrentWeek
-                                          ? entry.currentScore?.toLocaleString()
+                                          ? "GT " +
+                                            entry.currentScore?.toLocaleString()
                                           : entry.lastScore?.toLocaleString()}
                                       </div>
                                     ) : (
