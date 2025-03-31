@@ -212,10 +212,7 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
   return (
     <div className="fixed inset-0 bg-black/50 flex items-start z-50">
       {selectedUserFid ? (
-        <ProfileModal
-          onClose={handleCloseProfile}
-          userFid={selectedUserFid}
-        />
+        <ProfileModal onClose={handleCloseProfile} userFid={selectedUserFid} />
       ) : (
         <motion.div
           initial={{ opacity: 0, y: 50 }}
@@ -482,7 +479,7 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
                                     </>
                                   )}
                                   {leagueType === 2 && (
-                                    <p>
+                                    <div>
                                       The reward for the Iron League are perks
                                       give away as follows:
                                       <ul className="list-disc list-inside mt-4 space-y-2">
@@ -492,10 +489,10 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
                                         <li>4th: 100 potassium</li>
                                         <li>5th: 100 nitrogen</li>
                                       </ul>
-                                    </p>
+                                    </div>
                                   )}
                                   {leagueType === 1 && (
-                                    <p>
+                                    <div>
                                       The reward for the Wood League is a crops
                                       give away as follows:
                                       <ul className="list-disc list-inside mt-4 space-y-2">
@@ -503,7 +500,7 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
                                         <li>2nd: 20 potatoes</li>
                                         <li>3rd: 15 tomatoes</li>
                                       </ul>
-                                    </p>
+                                    </div>
                                   )}
                                   <p className="mt-4">
                                     Good luck and have fun! <br />
@@ -571,11 +568,8 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
                   <div className="bg-gradient-to-br from-[#8B5c3C] to-[#6d4c2c] rounded-xl p-3 border border-[#ffa07a]/20">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2 text-white/80">
-                        <Clock
-                          size={18}
-                          className="text-[#FFB938]"
-                        />
-                        <span className="text-[9px]">Starts in:</span>
+                        <Clock size={18} className="text-[#FFB938]" />
+                        <span className="text-[9px]">Ends in:</span>
                       </div>
                       <div className="flex gap-1 text-white font-bold">
                         <div className="bg-[#6d4c2c] px-2 py-1 rounded-md text-xs min-w-[30px] text-center">
@@ -650,7 +644,6 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
                           👤
                         </div>
                       )}
-                      <div className="flex-1 min-w-0 flex items-center justify-between gap-4"></div>
                       <div className="min-w-0 flex flex-col gap-1">
                         <p className="text-white/90 font-medium truncate text-sm">
                           {state.user.username}
@@ -658,9 +651,11 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
                         <div className="flex items-center gap-4">
                           {leaderboardType === "xp" ? (
                             <>
-                              <span className="text-[#FFB938] rounded-full font-medium text-xs">
-                                Lvl {state.level}
-                              </span>
+                              {activeTab !== "weekly" && (
+                                <span className="text-[#FFB938] rounded-full font-medium text-xs">
+                                  Lvl {state.level}
+                                </span>
+                              )}
                               <p className="text-white/60 text-xs">
                                 {activeTab === "weekly" ? (
                                   <>
@@ -727,13 +722,15 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
                             <div className="flex items-center gap-4">
                               {leaderboardType === "xp" ? (
                                 <>
-                                  <span className="text-[#FFB938] rounded-full font-medium text-xs">
-                                    Lvl{" "}
-                                    {
-                                      getCurrentLevelAndProgress(entry.xp)
-                                        .currentLevel
-                                    }
-                                  </span>
+                                  {activeTab !== "weekly" && (
+                                    <span className="text-[#FFB938] rounded-full font-medium text-xs">
+                                      Lvl{" "}
+                                      {
+                                        getCurrentLevelAndProgress(entry.xp)
+                                          .currentLevel
+                                      }
+                                    </span>
+                                  )}
                                   <p className="text-white/60 text-xs">
                                     {activeTab === "weekly" ? (
                                       <>

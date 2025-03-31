@@ -70,6 +70,29 @@ export const shareWelcomeLeaguesComposeCastUrl = (
   };
 };
 
+export const shareWeeklyLeaderboardPositionComposeCastUrl = (
+  fid: number,
+  league: number,
+  currentWeek: boolean
+) => {
+  const timestamp = Date.now();
+  const frameUrl = `${process.env.NEXT_PUBLIC_URL}/flex-card/leaderboard/${fid}/${timestamp}/weekly?currentWeek=${currentWeek}`;
+
+  const text = `Yo farmers! Check my ${
+    currentWeek ? "current" : "last"
+  } week performance in the weekly ${
+    league === 1 ? "Wood" : league === 2 ? "Iron" : "Gold"
+  } League leaderboard! 🚜💨`;
+
+  const urlFriendlyText = encodeURIComponent(text);
+  return {
+    frameUrl,
+    castUrl: `https://warpcast.com/~/compose?text=${urlFriendlyText}&embeds[]=${encodeURIComponent(
+      frameUrl
+    )}&channelKey=farville`,
+  };
+};
+
 export const streakFlexCardComposeCastUrl = (
   fid: number,
   streakNumber: number
