@@ -1103,3 +1103,4 @@ export const XP_PER_DONATED_ITEM = 5;
 export const OG_XP_THRESHOLD = 100;
 
 export const OPEN_LEAGUE_LEADERBOARDS = false;
+export const START_DATE_LEAGUES = new Date("2025-03-31T14:00:00Z");

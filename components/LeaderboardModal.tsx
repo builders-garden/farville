@@ -154,12 +154,7 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
     const { castUrl } = leaderboardFlexCardComposeCastUrl(
       state.user.fid,
       leaderboardType,
-      activeTab === "friends",
       activeTab === "friends"
-        ? leaderboardType === "xp"
-          ? friendsData
-          : questsFriendsData
-        : undefined
     );
     await sdk.actions.openUrl(castUrl);
   };
@@ -167,8 +162,7 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
   const handleShareWelcomeLeagues = async () => {
     const { castUrl } = shareWelcomeLeaguesComposeCastUrl(
       state.user.fid,
-      state.weeklyStats.league,
-      friendsData
+      state.weeklyStats.league
     );
     await sdk.actions.openUrl(castUrl);
   };
@@ -218,7 +212,10 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
   return (
     <div className="fixed inset-0 bg-black/50 flex items-start z-50">
       {selectedUserFid ? (
-        <ProfileModal onClose={handleCloseProfile} userFid={selectedUserFid} />
+        <ProfileModal
+          onClose={handleCloseProfile}
+          userFid={selectedUserFid}
+        />
       ) : (
         <motion.div
           initial={{ opacity: 0, y: 50 }}
@@ -574,7 +571,10 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
                   <div className="bg-gradient-to-br from-[#8B5c3C] to-[#6d4c2c] rounded-xl p-3 border border-[#ffa07a]/20">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2 text-white/80">
-                        <Clock size={18} className="text-[#FFB938]" />
+                        <Clock
+                          size={18}
+                          className="text-[#FFB938]"
+                        />
                         <span className="text-[9px]">Starts in:</span>
                       </div>
                       <div className="flex gap-1 text-white font-bold">

@@ -10,6 +10,7 @@ import {
 import { z } from "zod";
 import { QuestStatus } from "@/types/game";
 import { updateUserWeeklyScore } from "@/lib/prisma/queries";
+import { START_DATE_LEAGUES } from "@/lib/game-constants";
 
 export async function GET(
   request: NextRequest,
@@ -112,13 +113,18 @@ export async function POST(
     }
     if (userQuest.quest.xp) {
       const xp = await updateUserXP(Number(fid), userQuest.quest.xp);
-      await updateUserWeeklyScore(
-        Number(fid),
-        userQuest.quest.xp,
-        xp.newLevel,
-        user.xp,
-        xp.didLevelUp
-      );
+      if (
+        userQuest.quest.endAt &&
+        new Date(userQuest.quest.endAt) > START_DATE_LEAGUES
+      ) {
+        await updateUserWeeklyScore(
+          Number(fid),
+          userQuest.quest.xp,
+          xp.newLevel,
+          user.xp,
+          xp.didLevelUp
+        );
+      }
       didLevelUp = xp.didLevelUp;
     }
   }
