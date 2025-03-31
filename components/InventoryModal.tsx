@@ -19,6 +19,8 @@ export default function InventoryModal({ onClose }: { onClose: () => void }) {
   const [selectedItem, setSelectedItem] = useState<DbItem | null>(null);
   const [requestQuantity, setRequestQuantity] = useState(1);
   const { mutate: createRequest } = useCreateRequest();
+  const [castUrl, setCastUrl] = useState<string | null>(null);
+  const [requestUrl, setRequestUrl] = useState<string | null>(null);
 
   const handlePerkClick = (perk: UserItem) => {
     if (perk.quantity && perk.quantity > 0) {
@@ -53,14 +55,13 @@ export default function InventoryModal({ onClose }: { onClose: () => void }) {
         },
         {
           onSuccess: async (data) => {
-            const { castUrl } = requestItemComposeCastUrl(
+            const { castUrl, requestUrl } = requestItemComposeCastUrl(
               data.id,
               item,
               requestQuantity
             );
-            await sdk.actions.openUrl(castUrl);
-            setSelectedItem(null);
-            setRequestQuantity(1);
+            setCastUrl(castUrl);
+            setRequestUrl(requestUrl);
           },
           onError: (error) => {
             console.error("Error creating requests", error);
@@ -69,6 +70,30 @@ export default function InventoryModal({ onClose }: { onClose: () => void }) {
       );
     } catch (error) {
       console.error("Error handling request:", error);
+    }
+  };
+
+  const handleCopyRequest = async () => {
+    if (!requestUrl) return;
+
+    try {
+      await navigator.clipboard.writeText(requestUrl);
+      console.log("Request URL copied to clipboard:", requestUrl);
+    } catch (error) {
+      console.error("Error copying request URL:", error);
+    }
+  };
+
+  const handleShareRequest = async () => {
+    if (!castUrl || !requestUrl) return;
+
+    try {
+      await navigator.clipboard.writeText(requestUrl);
+      await sdk.actions.openUrl(castUrl);
+      setSelectedItem(null);
+      setRequestQuantity(1);
+    } catch (error) {
+      console.error("Error sharing request URL:", error);
     }
   };
 
@@ -102,7 +127,12 @@ export default function InventoryModal({ onClose }: { onClose: () => void }) {
           animate={{ x: 0, opacity: 1 }}
         >
           {isImageUrl ? (
-            <Image src={icon} alt={title} width={28} height={28} />
+            <Image
+              src={icon}
+              alt={title}
+              width={28}
+              height={28}
+            />
           ) : (
             <span className="text-2xl">{icon}</span>
           )}
@@ -210,6 +240,8 @@ export default function InventoryModal({ onClose }: { onClose: () => void }) {
           }
           onClose={() => {
             setSelectedItem(null);
+            setRequestUrl(null);
+            setCastUrl(null);
             setRequestQuantity(1); // Reset quantity when closing
           }}
           requestQuantity={requestQuantity}
@@ -220,6 +252,9 @@ export default function InventoryModal({ onClose }: { onClose: () => void }) {
               ? () => handleUseItem(selectedItem)
               : undefined
           }
+          onCopyRequest={handleCopyRequest}
+          onShareRequest={handleShareRequest}
+          urlReady={!!requestUrl}
         />
       )}
     </div>

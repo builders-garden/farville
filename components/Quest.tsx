@@ -141,6 +141,8 @@ export default function Quest({
   const [requestQuantity, setRequestQuantity] = useState(
     quest.quest.amount || 1
   );
+  const [castUrl, setCastUrl] = useState<string | null>(null);
+  const [requestUrl, setRequestUrl] = useState<string | null>(null);
 
   // Handle showing item details
   const handleShowItemDetails = () => {
@@ -175,14 +177,13 @@ export default function Quest({
         },
         {
           onSuccess: async (data) => {
-            const { castUrl } = requestItemComposeCastUrl(
+            const { castUrl, requestUrl } = requestItemComposeCastUrl(
               data.id,
               selectedItem,
               requestQuantity
             );
-            await sdk.actions.openUrl(castUrl);
-            setSelectedItem(null);
-            setRequestQuantity(1);
+            setCastUrl(castUrl);
+            setRequestUrl(requestUrl);
           },
           onError: (error) => {
             console.error("Error creating request", error);
@@ -191,6 +192,30 @@ export default function Quest({
       );
     } catch (error) {
       console.error("Error handling request:", error);
+    }
+  };
+
+  const handleCopyRequest = async () => {
+    if (!requestUrl) return;
+
+    try {
+      await navigator.clipboard.writeText(requestUrl);
+      console.log("Request URL copied to clipboard:", requestUrl);
+    } catch (error) {
+      console.error("Error copying request URL:", error);
+    }
+  };
+
+  const handleShareRequest = async () => {
+    if (!castUrl || !requestUrl) return;
+
+    try {
+      await navigator.clipboard.writeText(requestUrl);
+      await sdk.actions.openUrl(castUrl);
+      setSelectedItem(null);
+      setRequestQuantity(1);
+    } catch (error) {
+      console.error("Error sharing request URL:", error);
     }
   };
 
@@ -317,10 +342,15 @@ export default function Quest({
           onClose={() => {
             setSelectedItem(null);
             setRequestQuantity(quest.quest.amount || 1);
+            setCastUrl(null);
+            setRequestUrl(null);
           }}
           requestQuantity={requestQuantity}
           onRequestQuantityChange={setRequestQuantity}
           onRequest={handleRequestItem}
+          onCopyRequest={handleCopyRequest}
+          onShareRequest={handleShareRequest}
+          urlReady={!!requestUrl}
         />
       )}
     </motion.div>

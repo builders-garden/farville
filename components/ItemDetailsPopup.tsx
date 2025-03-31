@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import { DbItem } from "@/supabase/types";
 import { Slider } from "@/components/ui/slider";
+import { useEffect, useState } from "react";
 
 interface ItemDetailsPopupProps {
   item: DbItem;
@@ -12,6 +13,9 @@ interface ItemDetailsPopupProps {
   onUse?: () => void;
   requestQuantity: number;
   onRequestQuantityChange: (quantity: number) => void;
+  onShareRequest?: () => void;
+  onCopyRequest: () => void;
+  urlReady: boolean;
 }
 
 export default function ItemDetailsPopup({
@@ -22,8 +26,35 @@ export default function ItemDetailsPopup({
   onUse,
   requestQuantity,
   onRequestQuantityChange,
+  onShareRequest,
+  onCopyRequest,
+  urlReady,
 }: ItemDetailsPopupProps) {
+  const [copied, setCopied] = useState(false);
+  const [isCreatingRequest, setIsCreatingRequest] = useState(false);
+
   const maxRequestAmount = item.category === "perk" ? 1 : 10;
+
+  const handleCopy = () => {
+    if (urlReady) {
+      onCopyRequest();
+      setCopied(true);
+      setTimeout(() => {
+        setCopied(false);
+      }, 2000);
+    }
+  };
+
+  const handleCreateRequest = () => {
+    setIsCreatingRequest(true);
+    onRequest();
+  };
+
+  useEffect(() => {
+    if (urlReady) {
+      setIsCreatingRequest(false);
+    }
+  }, [urlReady]);
 
   return (
     <motion.div
@@ -90,6 +121,7 @@ export default function ItemDetailsPopup({
                     step={1}
                     onValueChange={(value) => onRequestQuantityChange(value[0])}
                     className="cursor-pointer"
+                    disabled={isCreatingRequest}
                   />
 
                   <p className="text-white/70 text-xs text-right">
@@ -98,13 +130,51 @@ export default function ItemDetailsPopup({
                 </div>
               </div>
 
-              <button
-                onClick={onRequest}
-                className="flex-1 bg-[#FFB938] text-[#7E4E31] px-4 py-2 rounded-lg font-bold 
-                           hover:bg-[#ffc661] transition-colors"
-              >
-                Request on FC
-              </button>
+              {!urlReady ? (
+                <button
+                  onClick={handleCreateRequest}
+                  disabled={isCreatingRequest}
+                  className="flex-1 bg-[#FFB938] text-[#7E4E31] px-4 py-2 rounded-lg font-bold 
+                     hover:bg-[#ffc661] transition-colors relative"
+                >
+                  {isCreatingRequest ? (
+                    <div className="flex items-center justify-center">
+                      <div className="h-5 w-5 border-2 border-t-transparent border-[#7E4E31] rounded-full animate-spin mr-2"></div>
+                      Creating...
+                    </div>
+                  ) : (
+                    "Create Request"
+                  )}
+                </button>
+              ) : (
+                <div className="flex gap-2">
+                  <button
+                    className="flex-1 bg-[#FFB938] text-[#7E4E31] px-4 py-2 rounded-lg font-bold
+                   hover:bg-[#ffc661] transition-colors relative"
+                    onClick={handleCopy}
+                    disabled={!urlReady}
+                  >
+                    {copied ? "Copied!" : "Copy"}
+                    {copied && (
+                      <motion.span
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0 }}
+                        className="absolute inset-0 bg-green-500 text-white rounded-lg flex items-center justify-center"
+                      >
+                        Copied!
+                      </motion.span>
+                    )}
+                  </button>
+                  <button
+                    className="flex-1 bg-[#FFB938] text-[#7E4E31] px-4 py-2 rounded-lg font-bold 
+                     hover:bg-[#ffc661] transition-colors"
+                    onClick={onShareRequest}
+                  >
+                    Share
+                  </button>
+                </div>
+              )}
             </>
           )}
           {onUse && (
