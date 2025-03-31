@@ -678,9 +678,6 @@ export const getUser = async (fid: number) => {
   const user = await prisma.user.findUnique({
     where: {
       fid,
-      xp: {
-        gt: 0,
-      },
     },
   });
 
