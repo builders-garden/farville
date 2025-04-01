@@ -1,4 +1,4 @@
-import { MIDJOURNEY_API_URL } from "@/lib/constants";
+import { MIDJOURNEY_API_URL, PFP_NFT_IMAGE_SYSTEM_PROMPT_1, PFP_NFT_IMAGE_SYSTEM_PROMPT_2 } from "@/lib/constants";
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
@@ -22,7 +22,7 @@ export async function POST(request: Request) {
         model: "midjourney",
         task_type: "imagine",
         input: {
-          prompt,
+          prompt: `${PFP_NFT_IMAGE_SYSTEM_PROMPT_1} ${prompt} ${PFP_NFT_IMAGE_SYSTEM_PROMPT_2}`,
           aspect_ratio: "1:1",
           process_mode: "turbo",
         },

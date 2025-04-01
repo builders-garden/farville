@@ -19,7 +19,8 @@ export default async function middleware(req: NextRequest) {
     req.nextUrl.pathname.includes("/api/pfp-nft-text") || // TODO
     req.nextUrl.pathname.includes("/api/pfp-nft-image-ask") || // TODO
     req.nextUrl.pathname.includes("/api/pfp-nft-image-get") || // TODO
-    req.nextUrl.pathname.includes("/api/pfp-nft-pinata") // TODO
+    req.nextUrl.pathname.includes("/api/pfp-nft-pinata") || // TODO
+    req.nextUrl.pathname.includes("/api/pfp-nft-signature") // TODO
   ) {
     return NextResponse.next();
   }
