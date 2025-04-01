@@ -4,13 +4,15 @@ import { useApiQuery } from "./use-api-query";
 export const useWeeklyLeaderboard = (
   targetFid?: number,
   currentWeek?: boolean,
-  league?: number
+  league?: number,
+  limit?: number
 ) => {
   const queryParams = new URLSearchParams();
   if (targetFid) queryParams.append("targetFid", targetFid.toString());
   if (currentWeek !== undefined)
     queryParams.append("currentWeek", currentWeek.toString());
   if (league !== undefined) queryParams.append("league", league.toString());
+  if (limit !== undefined) queryParams.append("limit", limit.toString());
 
   const url = `/api/weekly-leaderboard${
     queryParams.toString() ? `?${queryParams.toString()}` : ""

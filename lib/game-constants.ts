@@ -1104,3 +1104,5 @@ export const OG_XP_THRESHOLD = 100;
 
 export const OPEN_LEAGUE_LEADERBOARDS = true;
 export const START_DATE_LEAGUES = new Date("2025-03-31T14:00:00Z");
+
+export const CREATOR_FIDS = [4461, 5698, 262800];
