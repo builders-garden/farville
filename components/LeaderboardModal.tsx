@@ -259,7 +259,7 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
             }}
             className="bg-[#7E4E31] w-full h-full"
           >
-            <div className="max-w-4xl mx-auto w-full h-full p-4 flex flex-col">
+            <div className="max-w-4xl mx-auto w-full h-full p-4 mt-2 flex flex-col">
               <div className="flex-none">
                 <div className="flex justify-between items-center mb-6">
                   <div>
