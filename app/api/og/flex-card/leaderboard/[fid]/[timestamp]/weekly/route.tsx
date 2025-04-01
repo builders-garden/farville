@@ -80,7 +80,7 @@ export async function GET(
     );
 
     const currentWeeklyLeaderboardUsers =
-      await getWeeklyLeaderboardUsersByLeague(3);
+      await getWeeklyLeaderboardUsersByLeague(userWeeklyStats.league);
 
     const userPosition = usersWeekSummaries.targetPosition as number;
 
