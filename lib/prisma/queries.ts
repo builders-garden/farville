@@ -782,6 +782,19 @@ export const getUserLeaderboardEntry = async (fid: number) => {
   });
 };
 
+export const getWeeklyLeaderboardUsersByLeague = async (league: number) => {
+  const userCount = await prisma.userLeaderboards.count({
+    where: {
+      league,
+      currentScore: {
+        gt: 0,
+      },
+    },
+  });
+
+  return userCount;
+};
+
 export const getWeeklyUserLeaderboardByLeague = async (
   league: number,
   currentWeek: boolean,

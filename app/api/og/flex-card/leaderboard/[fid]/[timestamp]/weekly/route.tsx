@@ -1,5 +1,6 @@
 import {
   getUserLeaderboardEntry,
+  getWeeklyLeaderboardUsersByLeague,
   getWeeklyUserLeaderboardByLeague,
 } from "@/lib/prisma/queries";
 import { getUser } from "@/supabase/queries";
@@ -77,6 +78,9 @@ export async function GET(
       10,
       Number(fid)
     );
+
+    const currentWeeklyLeaderboardUsers =
+      await getWeeklyLeaderboardUsersByLeague(3);
 
     const userPosition = usersWeekSummaries.targetPosition as number;
 
@@ -406,7 +410,7 @@ export async function GET(
                       color: "#ffffff",
                     }}
                   >
-                    +{usersWeekSummaries.users.length}{" "}
+                    +{currentWeeklyLeaderboardUsers}{" "}
                     <span style={{ marginLeft: "5px" }}>
                       farmers in{" "}
                       {userWeeklyStats.league === 3
