@@ -106,7 +106,7 @@ export default function TimelineModal({ onClose }: { onClose: () => void }) {
           }}
           className="bg-[#7E4E31] w-full h-full"
         >
-          <div className="w-full h-full p-6 flex flex-col">
+          <div className="w-full h-full p-4 mt-2 flex flex-col">
             {/* Header */}
             <div className="border-b border-[#8B5E3C] pb-6">
               <div className="flex justify-between max-w-4xl mx-auto w-full">
