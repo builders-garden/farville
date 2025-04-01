@@ -15,7 +15,11 @@ export default async function middleware(req: NextRequest) {
     req.nextUrl.pathname.includes("/api/weekly-leaderboard") ||
     // Skip auth check for leaderboard API when called from server-side OG image generation
     (req.nextUrl.pathname === "/api/leaderboard" &&
-      req.headers.get("user-agent")?.includes("Next.js OG"))
+      req.headers.get("user-agent")?.includes("Next.js OG")) ||
+    req.nextUrl.pathname.includes("/api/pfp-nft-text") || // TODO
+    req.nextUrl.pathname.includes("/api/pfp-nft-image-ask") || // TODO
+    req.nextUrl.pathname.includes("/api/pfp-nft-image-get") || // TODO
+    req.nextUrl.pathname.includes("/api/pfp-nft-pinata") // TODO
   ) {
     return NextResponse.next();
   }
