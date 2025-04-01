@@ -37,30 +37,31 @@ export const HarvestHonour = ({
 
   return (
     <Card className="bg-gradient-to-br from-[#6D4C2C] to-[#5B4120] rounded-lg border-none w-full">
-      <CardContent className="flex flex-col items-center gap-2 p-4">
+      <CardContent className="flex flex-col items-center gap-2 p-3 sm:p-4">
         <div className="flex flex-row justify-between w-full relative">
           {/* Add connecting line */}
-          <div className="absolute top-[22px] left-0 right-0 h-2 bg-[#C69F69]/80 z-8" />
+          <div className="absolute top-[24px] sm:top-[28px] left-0 right-0 h-2 bg-[#C69F69]/80 z-8" />
 
           {/* render trophies */}
           {[1, 2, 3, 4].map((trophy) =>
             step < trophy ? (
               <div
                 key={trophy}
-                className="h-12 w-12 bg-[#7B5B30] rounded-lg flex items-center justify-center relative overflow-hidden z-10"
+                className="h-14 w-14 sm:h-16 sm:w-16 bg-[#7B5B30] rounded-lg flex items-center justify-center relative overflow-hidden z-10"
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-[#7B5B30] via-[#8a6b38] to-[#7B5B30] opacity-50"></div>
                 <Image
                   src={`/images/profile/question-mark-yellow.png`}
                   alt="Yellow question mark"
-                  width={24}
-                  height={24}
+                  width={28}
+                  height={28}
+                  className="w-[28px] h-[28px] sm:w-[32px] sm:h-[32px]"
                 />
               </div>
             ) : (
               <div
                 key={trophy}
-                className={`h-12 w-12 bg-[#7E4E31] rounded-lg flex items-center justify-center border-2 z-10
+                className={`h-14 w-14 sm:h-16 sm:w-16 bg-[#7E4E31] rounded-lg flex items-center justify-center border-2 z-10
             ${
               step === trophy
                 ? "border border-[#f2a311]"
@@ -96,11 +97,12 @@ export const HarvestHonour = ({
                 <Image
                   src={`/images/badge/honours/${crop}-${trophy}.png`}
                   alt={`Badge ${trophy}`}
-                  width={50}
-                  height={50}
+                  width={60}
+                  height={60}
                   className={`rounded-md transition-transform duration-300 ${
                     step > trophy ? "group-hover:scale-110" : ""
                   } ${step === trophy ? "opacity-50" : ""}`}
+                  sizes="(max-width: 420px) 56px, 64px"
                 />
               </div>
             )
@@ -112,12 +114,13 @@ export const HarvestHonour = ({
         </p>
         <hr className="w-full opacity-30 my-2" />
         <div className="flex flex-row w-full justify-between gap-4">
-          <div className="relative w-12 h-12 rounded-md [image-rendering:pixelated] bg-[#7E4E31]">
+          <div className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-md [image-rendering:pixelated] bg-[#7E4E31]">
             <Image
               src={`/images/crop/${crop}.png`}
               alt={crop}
               fill
-              sizes="48px"
+              sizes="(max-width: 420px) 56px, 64px"
+              className="p-1 sm:p-2"
             />
           </div>
 
@@ -139,14 +142,13 @@ export const HarvestHonour = ({
             <Image
               src="/images/special/gold.png"
               alt="Gold ingot"
-              width={32}
-              height={32}
+              width={36}
+              height={36}
               priority
-              style={{
-                width: "auto",
-              }}
+              className="w-[36px] h-[36px] sm:w-[40px] sm:h-[40px]"
+              sizes="(max-width: 420px) 36px, 40px"
             />
-            <p className="text-[8px] font-bold text-[#FFD700]">
+            <p className="text-[9px] font-bold text-[#FFD700]">
               {goldCropChancePercentage * 100}%
             </p>
           </div>
@@ -177,11 +179,12 @@ export const HarvestHonour = ({
                 </p>
                 <Card className="bg-gradient-to-br from-[#6D4C2C] to-[#5B4120] rounded-lg border-none w-full mt-4">
                   <CardContent className="flex flex-row text-white/90 justify-between items-center p-4">
-                    <div className="relative w-12 h-12">
+                    <div className="relative w-14 h-14 sm:w-16 sm:h-16">
                       <Image
                         src={`/images/crop/gold-${crop}.png`}
                         alt={`Gold ${crop}`}
                         fill
+                        sizes="(max-width: 420px) 56px, 64px"
                       />
                     </div>
                     <p className="w-4/5 text-xs">
