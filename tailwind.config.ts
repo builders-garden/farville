@@ -79,6 +79,9 @@ export default {
         "accordion-up": "accordion-up 0.2s ease-out",
       },
     },
+    screens: {
+      xs: "370px",
+    },
   },
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   plugins: [require("tailwindcss-animate")],

@@ -106,7 +106,7 @@ export default function TimelineModal({ onClose }: { onClose: () => void }) {
           }}
           className="bg-[#7E4E31] w-full h-full"
         >
-          <div className="w-full h-full p-6 flex flex-col">
+          <div className="w-full h-full p-4 mt-2 flex flex-col">
             {/* Header */}
             <div className="border-b border-[#8B5E3C] pb-6">
               <div className="flex justify-between max-w-4xl mx-auto w-full">
@@ -144,7 +144,7 @@ export default function TimelineModal({ onClose }: { onClose: () => void }) {
             </div>
 
             {/* Content area */}
-            <div className="flex-1 overflow-y-auto mt-4 no-scrollbar">
+            <div className="flex-1 overflow-y-auto no-scrollbar pt-4">
               <Card className="flex items-center bg-[#5B4120] border-none mb-4">
                 <CardContent className="w-full p-4 gap-4">
                   <h3 className="text-white/90 font-semibold text-lg mb-2">
@@ -195,7 +195,7 @@ export default function TimelineModal({ onClose }: { onClose: () => void }) {
                         }`}
                       >
                         <TimelineDot
-                          className={`p-6 rounded-full mt-0 ${
+                          className={`p-5 xs:p-6 rounded-full mt-0 ${
                             item.level === userStats.level
                               ? "bg-[#ffb938] text-[#5B4120]"
                               : "bg-[#5B4120] text-[#ffb938]"

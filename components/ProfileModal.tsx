@@ -132,19 +132,20 @@ export default function ProfileModal({
         exit={{ opacity: 0, y: 50 }}
         className="bg-[#7E4E31] w-full min-h-screen"
       >
-        <div className="max-w-4xl mx-auto px-2 py-6">
-          <div className="flex justify-between items-center mb-6 px-4">
+        <div className="max-w-4xl mx-auto p-4 mt-2">
+          <div className="flex justify-between items-center mb-3 xs:mb-6">
             <div>
               <motion.h2
-                className={`text-white/90 font-bold text-2xl mb-1 flex items-center gap-2`}
+                className={`text-white/90 font-bold text-xl xs:text-2xl mb-1 flex items-center gap-1 xs:gap-2`}
                 animate={{ rotate: [0, -3, 3, 0] }}
                 transition={{ duration: 0.5, repeat: Infinity, repeatDelay: 5 }}
               >
                 <Image
                   src="/images/icons/farmer.png"
                   alt="Profile"
-                  width={36}
-                  height={36}
+                  width={28}
+                  height={28}
+                  className="w-[28px] h-[28px] xs:w-[36px] xs:h-[36px]"
                 />
                 Profile
               </motion.h2>
@@ -158,12 +159,12 @@ export default function ProfileModal({
             </button>
           </div>
 
-          <div className="space-y-4 overflow-y-auto h-[calc(100vh-100px)] px-4 py-0 pb-4 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-[#6D4B2B] [&::-webkit-scrollbar-thumb]:bg-[#8A5E3B]">
+          <div className="space-y-3 xs:space-y-4 overflow-y-auto h-[calc(100vh-80px)] xs:h-[calc(100vh-100px)] xs:pb-4 no-scrollbar">
             <div className="flex flex-col items-center gap-8">
               {/* Profile Information */}
               <Card className="bg-gradient-to-br from-[#6D4C2C] to-[#5B4120] rounded-lg border-none w-full max-w-2xl">
-                <CardContent className="flex flex-col w-full gap-4 p-4">
-                  <div className="flex flex-row items-center gap-4">
+                <CardContent className="flex flex-col w-full gap-3 xs:gap-4 p-3 xs:p-4">
+                  <div className="flex flex-row items-center gap-3 xs:gap-4">
                     <div
                       className={`relative flex-none w-fit ${
                         !isCurrentUser ? "cursor-pointer" : ""
@@ -181,14 +182,14 @@ export default function ProfileModal({
                         username={user?.username}
                         isOgUser={user?.mintedOG}
                         size={{
-                          width: 20,
-                          height: 20,
+                          width: 16,
+                          height: 16,
                         }}
-                        borderSize={4}
+                        borderSize={3}
                       />
                     </div>
-                    <div className="flex flex-col w-full gap-2">
-                      <h3 className="text-white/90 font-bold text-sm">
+                    <div className="flex flex-col w-full gap-1 xs:gap-2">
+                      <h3 className="text-white/90 font-bold text-xs xs:text-sm">
                         {!user?.displayName
                           ? "Farmer"
                           : user?.displayName?.length > 17
@@ -196,11 +197,11 @@ export default function ProfileModal({
                           : user?.displayName}
                       </h3>
                       <div className="flex flex-row justify-between w-full">
-                        <div className="text-[#f2a311] text-xs">
+                        <div className="text-[#f2a311] text-[10px] xs:text-xs">
                           Lvl{" "}
                           {isCurrentUser ? state.level : userData?.level || 1}
                         </div>
-                        <div className="flex flex-row text-white/70 text-xs gap-1">
+                        <div className="flex flex-row text-white/70 text-[10px] xs:text-xs gap-1">
                           <span>XP:</span>
                           <span>{user?.xp.toLocaleString() || 0}</span>
                         </div>
@@ -211,7 +212,7 @@ export default function ProfileModal({
                   <hr className="w-full border-white/20" />
 
                   {/* Statistics */}
-                  <div className="flex flex-col gap-2 text-white/80">
+                  <div className="flex flex-col gap-1 xs:gap-2 text-white/80">
                     <Statistic
                       title="Farmer since"
                       image="/images/icons/farmer.png"
@@ -234,39 +235,41 @@ export default function ProfileModal({
 
                   {/* Special Badges - profile only */}
                   {isCurrentUser && (
-                    <div className="flex flex-row justify-between mt-2">
+                    <div className="flex flex-row gap-3 mt-1 xs:mt-2 w-full">
                       {isOgFarmer ? (
-                        <div
-                          className="relative w-[70px] h-[70px] border-2 border-[#179ef9] rounded-lg cursor-pointer overflow-hidden group"
-                          onClick={() => {
-                            if (isCurrentUser) {
-                              setShowMintOGBadge(true);
-                            }
-                          }}
-                        >
-                          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent shimmer-effect"></div>
-                          <Image
-                            src="/images/badge/og.png"
-                            alt="Farville OG Badge"
-                            fill
-                            sizes="38px"
-                            className={`${
-                              user?.mintedOG ? "" : "opacity-30"
-                            } rounded-lg transition-transform duration-300 group-hover:scale-110`}
-                          />
+                        <div className="relative w-full aspect-square flex-1">
+                          <div
+                            className="w-full h-full rounded-lg cursor-pointer overflow-hidden group relative border-2 border-[#179ef9] bg-[#7B5B30]"
+                            onClick={() => {
+                              if (isCurrentUser) {
+                                setShowMintOGBadge(true);
+                              }
+                            }}
+                          >
+                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent z-10"></div>
+                            <Image
+                              src="/images/badge/og.png"
+                              alt="Farville OG Badge"
+                              fill
+                              sizes="(max-width: 420px) 25vw, 70px"
+                              className={`${
+                                user?.mintedOG ? "" : "opacity-30"
+                              } rounded-lg transition-transform duration-300 group-hover:scale-110`}
+                            />
+                          </div>
                         </div>
                       ) : (
-                        <div className="relative w-[70px] h-[70px]">
+                        <div className="relative w-full aspect-square flex-1">
                           <div className="w-full h-full rounded-lg bg-[#7B5B30] flex items-center justify-center"></div>
                         </div>
                       )}
-                      <div className="relative w-[70px] h-[70px]">
+                      <div className="relative w-full aspect-square flex-1">
                         <div className="w-full h-full rounded-lg bg-[#7B5B30] flex items-center justify-center"></div>
                       </div>
-                      <div className="relative w-[70px] h-[70px]">
+                      <div className="relative w-full aspect-square flex-1">
                         <div className="w-full h-full rounded-lg bg-[#7B5B30] flex items-center justify-center"></div>
                       </div>
-                      <div className="relative w-[70px] h-[70px]">
+                      <div className="relative w-full aspect-square flex-1">
                         <div className="w-full h-full rounded-lg bg-[#7B5B30] flex items-center justify-center"></div>
                       </div>
                     </div>
@@ -276,12 +279,12 @@ export default function ProfileModal({
 
               {isCurrentUser ? (
                 <>
-                  {/* Glowing crops section */}
-                  <div className="w-full flex flex-col gap-2">
-                    <div className="flex flex-row items-center justify-between">
-                      <div className="flex flex-row items-center gap-2">
+                  {/* Gold crops section */}
+                  <div className="w-full flex flex-col gap-3 xs:gap-4">
+                    <div className="flex flex-row items-center justify-between px-2">
+                      <div className="flex flex-row items-center gap-1 xs:gap-2">
                         <h3
-                          className={`text-white/90 text-sm font-bold ${
+                          className={`text-white/90 text-sm xs:text-md font-bold ${
                             newGoldCropsFound.length > 0 ? "animate-pulse" : ""
                           }`}
                           style={{
@@ -298,14 +301,14 @@ export default function ProfileModal({
                             <span className="text-[#FFB938]">✨</span>
                           )}
                         </h3>
-                        <p className="text-white/70 text-xs">
+                        <p className="text-white/70 text-[9px] xs:text-xs">
                           ({selectedCrops.length}/{goldCropsData.length})
                         </p>
                         <button
                           className="text-white/70 hover:text-white/90 transition-colors cursor-pointer -mt-1"
                           onClick={() => setIsWhatIsThisOpen(true)}
                         >
-                          <Info />
+                          <Info className="w-3.5 h-3.5 xs:w-5 xs:h-5" />
                         </button>
                       </div>
                       {showMoreGoldCropsBadges ? (
@@ -313,14 +316,14 @@ export default function ProfileModal({
                           className="text-white/70 hover:text-white/90 transition-colors cursor-pointer -mt-1"
                           onClick={() => setShowMoreGoldCropsBadges(false)}
                         >
-                          <ChevronUp />
+                          <ChevronUp className="w-3.5 h-3.5 xs:w-5 xs:h-5" />
                         </button>
                       ) : (
                         <button
                           className="text-white/70 hover:text-white/90 transition-colors cursor-pointer -mt-1"
                           onClick={() => setShowMoreGoldCropsBadges(true)}
                         >
-                          <ChevronDown />
+                          <ChevronDown className="w-3.5 h-3.5 xs:w-5 xs:h-5" />
                         </button>
                       )}
                       {isWhatIsThisOpen && (
@@ -352,7 +355,7 @@ export default function ProfileModal({
                           : ""
                       }`}
                     >
-                      <CardContent className="grid grid-cols-4 gap-4 p-4">
+                      <CardContent className="grid grid-cols-4 gap-3 p-3">
                         {(showMoreGoldCropsBadges
                           ? goldCropsData
                           : goldCropsData?.slice(0, 4)
@@ -363,13 +366,13 @@ export default function ProfileModal({
                           ) ? (
                             <div
                               key={index}
-                              className={`relative w-[70px] h-[70px] mx-auto rounded-lg bg-gradient-to-br from-[#6D4C2C] to-[#5B4120] border-2 overflow-hidden
-                          ${
-                            newGoldCropsFound.includes(crop.slug)
-                              ? "border-[#FFB938] shadow-lg shadow-[#FFB938]/40"
-                              : "border-[#f2a311]"
-                          } 
-                          ${isCurrentUser ? "cursor-pointer group" : ""}`}
+                              className={`relative aspect-square w-full rounded-lg bg-gradient-to-br from-[#6D4C2C] to-[#5B4120] border-2 overflow-hidden
+                        ${
+                          newGoldCropsFound.includes(crop.slug)
+                            ? "border-[#FFB938] shadow-lg shadow-[#FFB938]/40"
+                            : "border-[#f2a311]"
+                        } 
+                        ${isCurrentUser ? "cursor-pointer group" : ""}`}
                               onClick={() => {
                                 setBadgeModalData({
                                   name: crop.name,
@@ -399,49 +402,36 @@ export default function ProfileModal({
                                     ? ""
                                     : "filter blur-[3px] brightness-[50%] animate-pulse-slow"
                                 }`}
-                                sizes="38px"
+                                sizes="(max-width: 640px) 25vw, 20vw"
                               />
                             </div>
                           ) : (
                             <div
                               key={index}
-                              className="w-[70px] h-[70px] bg-[#7B5B30] rounded-lg flex items-center justify-center opacity-50 overflow-hidden relative"
+                              className="relative aspect-square w-full bg-[#7B5B30] rounded-lg flex items-center justify-center opacity-50 overflow-hidden"
                             >
                               <div className="absolute inset-0 bg-gradient-to-r from-[#7B5B30] via-[#8a6b38] to-[#7B5B30] opacity-30"></div>
                               <Image
                                 src={`/images/profile/question-mark-yellow.png`}
                                 alt="Yellow question mark"
-                                width={44}
-                                height={44}
+                                width={35}
+                                height={35}
+                                className="w-[35px] h-[35px] xs:w-[44px] xs:h-[44px]"
                               />
                             </div>
                           )
                         )}
-
-                        {/* Empty slots for other users if they don't have 3 crops */}
-                        {!isCurrentUser &&
-                          selectedCrops.length < 3 &&
-                          Array.from({
-                            length: 3 - selectedCrops.length,
-                          }).map((_, index) => (
-                            <div
-                              key={index}
-                              className="w-24 h-24 mx-auto rounded-lg bg-[#7E4E31] flex items-center justify-center opacity-50"
-                            >
-                              <div className="text-white/40 text-xs">Empty</div>
-                            </div>
-                          ))}
                       </CardContent>
                     </Card>
                   </div>
 
                   {/* Harvest Honours section */}
-                  <div className="w-full flex flex-col gap-2">
-                    <div className="flex flex-row items-center gap-2">
-                      <h3 className="text-white/90 text-sm font-bold">
+                  <div className="w-full flex flex-col gap-3 xs:gap-4">
+                    <div className="flex flex-row items-center gap-1 xs:gap-2 px-2">
+                      <h3 className="text-white/90 text-sm xs:text-md font-bold">
                         Harvest Honours
                       </h3>
-                      <p className="text-white/70 text-xs">
+                      <p className="text-white/70 text-[9px] xs:text-xs">
                         ({harvestHonours.totalAchievementsCompleted}/
                         {harvestHonours.totalAchievements})
                       </p>
@@ -464,7 +454,7 @@ export default function ProfileModal({
                 <>
                   {/* Collectibles section */}
                   <div className="w-full flex flex-col gap-2">
-                    <h3 className="text-white/90 text-sm font-bold">
+                    <h3 className="text-white/90 text-xs xs:text-sm font-bold">
                       Collectibles (
                       {harvestHonours.totalAchievementsCompleted +
                         (userData.specialCrops?.length || 0) +
@@ -476,20 +466,20 @@ export default function ProfileModal({
                       )
                     </h3>
                     <Card className="bg-gradient-to-br from-[#6D4C2C] to-[#5B4120] rounded-lg border-none">
-                      <CardContent className="p-4 space-y-6">
+                      <CardContent className="p-3 xs:p-4 space-y-4 xs:space-y-6">
                         {/* Special Badges */}
-                        <div className="flex flex-col gap-2">
+                        <div className="flex flex-col gap-1 xs:gap-2">
                           <div className="flex flex-row justify-between items-center">
-                            <h4 className="text-white/90 text-xs font-bold">
+                            <h4 className="text-white/90 text-[9px] xs:text-xs font-bold">
                               Special Badges
                             </h4>
-                            <p className="text-white/70 text-xs">
+                            <p className="text-white/70 text-[9px] xs:text-xs">
                               {userData.user?.mintedOG ? "1" : "0"}/1
                             </p>
                           </div>
-                          <div className="grid grid-cols-8 gap-2">
+                          <div className="grid grid-cols-8 gap-[0.2rem] xs:gap-1">
                             <div
-                              className={`relative w-9 h-9 rounded-lg bg-[#7E4E31] flex items-center justify-center ${
+                              className={`relative aspect-square w-full rounded-lg bg-[#7E4E31] ${
                                 userData?.user?.mintedOG
                                   ? "border border-[#179ef9] cursor-pointer"
                                   : "opacity-50"
@@ -514,38 +504,41 @@ export default function ProfileModal({
                                   alt="OG Badge"
                                   fill
                                   className="rounded-lg"
-                                  sizes="38px"
+                                  sizes="(max-width: 420px) 100%, 36px"
                                 />
                               ) : (
-                                <Image
-                                  src="/images/profile/question-mark-yellow.png"
-                                  alt="Yellow question mark"
-                                  width={18}
-                                  height={18}
-                                />
+                                <div className="w-full h-full flex items-center justify-center">
+                                  <Image
+                                    src="/images/profile/question-mark-yellow.png"
+                                    alt="Yellow question mark"
+                                    width={14}
+                                    height={14}
+                                    className="w-[14px] h-[14px] xs:w-[18px] xs:h-[18px]"
+                                  />
+                                </div>
                               )}
                             </div>
                           </div>
                         </div>
 
                         {/* Glowing Crops */}
-                        <div className="flex flex-col gap-2">
+                        <div className="flex flex-col gap-1 xs:gap-2">
                           <div className="flex flex-row justify-between items-center">
-                            <h4 className="text-white/90 text-xs font-bold">
+                            <h4 className="text-white/90 text-[9px] xs:text-xs font-bold">
                               Gold Crops
                             </h4>
-                            <p className="text-white/70 text-xs">
+                            <p className="text-white/70 text-[9px] xs:text-xs">
                               ({selectedCrops.length}/{goldCropsData.length})
                             </p>
                           </div>
-                          <div className="grid grid-cols-8 gap-2">
+                          <div className="grid grid-cols-8 gap-[0.2rem] xs:gap-1">
                             {goldCropsData.map((crop, index) =>
                               userData.specialCrops?.find(
                                 (c) => c.item.slug === crop.slug
                               ) ? (
                                 <div
                                   key={index}
-                                  className="relative w-9 h-9 rounded-lg bg-[#7E4E31] border border-[#FFB938] cursor-pointer"
+                                  className="relative aspect-square w-full rounded-lg bg-[#7E4E31] border border-[#FFB938] cursor-pointer"
                                   onClick={() => {
                                     setBadgeModalData({
                                       name: crop.name,
@@ -572,20 +565,21 @@ export default function ProfileModal({
                                     src={`/images/badge/gold-crops/${crop.slug}.png`}
                                     alt={crop.name}
                                     fill
-                                    sizes="38px"
+                                    sizes="(max-width: 420px) 100%, 36px"
                                     className="rounded-lg"
                                   />
                                 </div>
                               ) : (
                                 <div
                                   key={index}
-                                  className="relative w-9 h-9 bg-[#7E4E31] rounded-lg flex items-center justify-center opacity-50"
+                                  className="relative aspect-square w-full bg-[#7E4E31] rounded-lg flex items-center justify-center opacity-50"
                                 >
                                   <Image
                                     src={`/images/profile/question-mark-yellow.png`}
                                     alt="Yellow question mark"
-                                    width={18}
-                                    height={18}
+                                    width={14}
+                                    height={14}
+                                    className="w-[14px] h-[14px] xs:w-[18px] xs:h-[18px]"
                                   />
                                 </div>
                               )
@@ -594,23 +588,23 @@ export default function ProfileModal({
                         </div>
 
                         {/* Harvest Honours */}
-                        <div className="flex flex-col gap-2">
+                        <div className="flex flex-col gap-1 xs:gap-2">
                           <div className="flex flex-row justify-between items-center">
-                            <h4 className="text-white/90 text-xs font-bold">
+                            <h4 className="text-white/90 text-[9px] xs:text-xs font-bold">
                               Harvest Honours
                             </h4>
-                            <p className="text-white/70 text-xs">
+                            <p className="text-white/70 text-[9px] xs:text-xs">
                               {harvestHonours.totalAchievementsCompleted}/
                               {harvestHonours.totalAchievements}
                             </p>
                           </div>
-                          <div className="grid grid-cols-8 gap-2">
+                          <div className="grid grid-cols-8 gap-[0.2rem] xs:gap-1">
                             {harvestHonours.harvestAchievements.map((honour) =>
                               Array.from({ length: 4 }).map((_, index) =>
                                 honour.step > index + 1 ? (
                                   <div
                                     key={index}
-                                    className={`relative w-9 h-9 rounded-lg bg-[#7E4E31] border border-[#FFB938] cursor-pointer`}
+                                    className="relative aspect-square w-full rounded-lg bg-[#7E4E31] border border-[#FFB938] cursor-pointer"
                                     onClick={() => {
                                       const crop = honour.crop;
                                       const cropAchievements =
@@ -647,20 +641,21 @@ export default function ProfileModal({
                                       }-${index + 1}.png`}
                                       alt={`Badge ${honour.crop} ${index + 1}`}
                                       fill
-                                      sizes="38px"
+                                      sizes="(max-width: 420px) 100%, 36px"
                                       className="rounded-lg"
                                     />
                                   </div>
                                 ) : (
                                   <div
                                     key={index}
-                                    className={`flex w-9 h-9 rounded-lg bg-[#7E4E31] justify-center items-center opacity-50`}
+                                    className="relative aspect-square w-full bg-[#7E4E31] rounded-lg flex items-center justify-center opacity-50"
                                   >
                                     <Image
                                       src={`/images/profile/question-mark-yellow.png`}
                                       alt="Yellow question mark"
-                                      width={18}
-                                      height={18}
+                                      width={14}
+                                      height={14}
+                                      className="w-[14px] h-[14px] xs:w-[18px] xs:h-[18px]"
                                     />
                                   </div>
                                 )
@@ -705,7 +700,7 @@ export default function ProfileModal({
               mintable={badgeModalData.mintable}
             >
               <div className="flex flex-col items-center gap-2">
-                <div className="relative w-52 h-52 rounded-lg my-4 border-4 border-[#f2a311] overflow-hidden group">
+                <div className="relative w-36 h-36 xs:w-52 xs:h-52 rounded-lg my-2 xs:my-4 border-3 xs:border-4 border-[#f2a311] overflow-hidden group">
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent shimmer-effect z-10"></div>
                   <motion.div
                     initial={{ scale: 0.9, opacity: 0.5 }}
@@ -725,7 +720,7 @@ export default function ProfileModal({
                   initial={{ y: 10, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
                   transition={{ delay: 0.2, duration: 0.5 }}
-                  className="text-lg font-bold text-[#f2a311]"
+                  className="text-base xs:text-lg font-bold text-[#f2a311] text-center px-2"
                 >
                   {badgeModalData.title}
                 </motion.p>
@@ -733,7 +728,7 @@ export default function ProfileModal({
                   initial={{ y: 10, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
                   transition={{ delay: 0.3, duration: 0.5 }}
-                  className="text-white/90 text-xs mt-4 mb-12 text-center"
+                  className="text-white/90 text-[10px] xs:text-xs mt-2 xs:mt-4 mb-6 xs:mb-12 text-center px-2"
                 >
                   {badgeModalData.description}
                 </motion.p>
