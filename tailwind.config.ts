@@ -80,7 +80,7 @@ export default {
       },
     },
     screens: {
-      xs: "420px",
+      xs: "370px",
     },
   },
   // eslint-disable-next-line @typescript-eslint/no-require-imports

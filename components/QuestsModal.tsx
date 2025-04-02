@@ -104,7 +104,7 @@ export default function QuestsModal({
         }}
         className="bg-[#7E4E31] w-full h-full"
       >
-        <div className="w-full h-full p-6 flex flex-col">
+        <div className="w-full h-full p-4 mt-2 flex flex-col">
           {/* Header */}
           <div className="flex-none">
             <div className="flex justify-between items-center mb-6">

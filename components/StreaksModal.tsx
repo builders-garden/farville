@@ -296,7 +296,9 @@ export default function StreaksModal({ onClose }: { onClose: () => void }) {
               <div className="flex items-center justify-between">
                 <div className="flex flex-col gap-2">
                   <div className="flex items-center gap-4">
-                    <span className="text-[#ffa07a] text-sm">Your Streak</span>
+                    <span className="text-[#ffa07a] text-xs xs:text-sm">
+                      Your Streak
+                    </span>
                     <motion.button
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
@@ -309,7 +311,7 @@ export default function StreaksModal({ onClose }: { onClose: () => void }) {
                     </motion.button>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-5xl font-bold text-white/90">
+                    <span className="text-4xl xs:text-5xl font-bold text-white/90">
                       {currentDayStreak}
                     </span>
                   </div>
@@ -323,17 +325,18 @@ export default function StreaksModal({ onClose }: { onClose: () => void }) {
                   transition={{ duration: 2, repeat: Infinity }}
                   className="relative"
                 >
-                  <Image
-                    src={
-                      hasPlayedToday
-                        ? "/images/special/fire.png"
-                        : "/images/special/frost.png"
-                    }
-                    alt={hasPlayedToday ? "Active Streak" : "Inactive Streak"}
-                    width={80}
-                    height={80}
-                    className="drop-shadow-[0_2px_8px_rgba(255,165,0,0.5)]"
-                  />
+                  <div className="relative w-[65px] h-[65px] xs:w-[80px] xs:h-[80px]">
+                    <Image
+                      src={
+                        hasPlayedToday
+                          ? "/images/special/fire.png"
+                          : "/images/special/frost.png"
+                      }
+                      alt={hasPlayedToday ? "Active Streak" : "Inactive Streak"}
+                      className="object-contain drop-shadow-[0_2px_8px_rgba(255,165,0,0.5)]"
+                      fill
+                    />
+                  </div>
                 </motion.div>
               </div>
             </motion.div>
@@ -343,55 +346,54 @@ export default function StreaksModal({ onClose }: { onClose: () => void }) {
               className="bg-gradient-to-br from-sky-900 to-sky-700
                           rounded-2xl p-4 py-3 border border-sky-600"
             >
-              <div className="flex flex-row gap-3 justify-between">
-                <div className="flex flex-col h-auto justify-between gap-2">
-                  <p className="flex flex-row items-center text-sky-300 text-xs gap-2">
-                    Streak Frosts
-                    {/* <button className="text-sky-300/70 hover:text-sky-300 transition-colors">
-                      <Info />
-                    </button> */}
-                  </p>
-                  <p className="text-white text-sm font-bold">
-                    {frostsAvailable}
-                    <span className="text-sm text-white/50">/2</span>
-                  </p>
-                  <div className="flex w-full">
-                    <button
-                      className="text-[8px] text-sky-200/80 hover:text-sky-200 transition-colors px-2 py-1 rounded-md border border-sky-200/80"
-                      onClick={() => setIsFrostInfoOpen(true)}
-                    >
-                      How it works?
-                    </button>
-                  </div>
-                </div>
-                <div className="flex gap-3 items-center">
-                  {[...Array(MAX_FROSTS_QUANTITY)].map((_, i) => (
-                    <div
-                      key={i}
-                      className={`w-16 h-16 rounded-xl flex items-center justify-center
-                          ${
-                            i < frostsAvailable
-                              ? "bg-gradient-to-br from-[#1E90FF]/80 to-[#00BFFF]/60 border-2 border-[#ADD8E6]/50 pointer-events-none"
-                              : "bg-[#00BFFF]/40 border-2 border-[#ADD8E6]/60 cursor-pointer"
-                          }`}
-                      onClick={() => {
-                        setIsConfirmationOpen(true);
-                      }}
-                    >
-                      {i < frostsAvailable ? (
-                        <Image
-                          src="/images/special/frost.png"
-                          alt="Frost"
-                          width={38}
-                          height={38}
-                        />
-                      ) : (
-                        <span className="text-[#ADD8E6] text-2xl font-bold">
-                          <Plus />
-                        </span>
-                      )}
+              <div className="flex flex-col gap-2">
+                <p className="flex flex-row items-center text-sky-300 text-xs gap-2">
+                  Streak Frosts
+                </p>
+                <div className="flex items-center justify-between">
+                  <div className="flex flex-col h-auto justify-between gap-2">
+                    <p className="text-white text-sm font-bold">
+                      {frostsAvailable}
+                      <span className="text-sm text-white/50">/2</span>
+                    </p>
+                    <div className="flex w-full">
+                      <button
+                        className="text-[8px] text-sky-200/80 hover:text-sky-200 transition-colors px-2 py-1 rounded-md border border-sky-200/80"
+                        onClick={() => setIsFrostInfoOpen(true)}
+                      >
+                        How it works?
+                      </button>
                     </div>
-                  ))}
+                  </div>
+                  <div className="flex gap-3 items-center">
+                    {[...Array(MAX_FROSTS_QUANTITY)].map((_, i) => (
+                      <div
+                        key={i}
+                        className={`w-12 h-12 xs:w-16 xs:h-16 rounded-xl flex items-center justify-center
+                            ${
+                              i < frostsAvailable
+                                ? "bg-gradient-to-br from-[#1E90FF]/80 to-[#00BFFF]/60 border-2 border-[#ADD8E6]/50 pointer-events-none"
+                                : "bg-[#00BFFF]/40 border-2 border-[#ADD8E6]/60 cursor-pointer"
+                            }`}
+                        onClick={() => {
+                          setIsConfirmationOpen(true);
+                        }}
+                      >
+                        {i < frostsAvailable ? (
+                          <Image
+                            src="/images/special/frost.png"
+                            alt="Frost"
+                            width={38}
+                            height={38}
+                          />
+                        ) : (
+                          <span className="text-[#ADD8E6] text-2xl font-bold">
+                            <Plus />
+                          </span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             </motion.div>

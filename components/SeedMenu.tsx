@@ -107,7 +107,7 @@ export default function SeedMenu() {
       data-tutorial={"seed-menu"}
     >
       <motion.div
-        className="bg-[#7E4E31]/40 px-4 py-2 rounded-lg shadow-lg border-2 border-[#8B5E3C]/60 w-full relative"
+        className="bg-[#7E4E31]/40 p-1 xs:px-4 xs:py-2 rounded-lg shadow-lg border-2 border-[#8B5E3C]/60 w-full relative"
         whileHover={{ scale: 1.02 }}
       >
         {showScrollHints.left && (
@@ -151,7 +151,10 @@ export default function SeedMenu() {
                   : perk?.quantity || 0;
 
               return (
-                <div key={item.id} className="py-1 px-1">
+                <div
+                  key={item.id}
+                  className="py-1 px-1"
+                >
                   <motion.button
                     onClick={() => handleClick(item)}
                     className={`
