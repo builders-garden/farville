@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
-import { Wallet } from "ethers";
+import { privateKeyToAccount } from "viem/accounts";
 
 export async function POST(request: Request) {
   try {
-    const { message } = await request.json();
+    const { recipient, tokenId, tokenIdURI } = await request.json();
 
-    if (!message) {
+    if (!recipient || !tokenId || !tokenIdURI) {
       return NextResponse.json(
-        { error: "Message is required" },
+        { error: "Recipient, tokenId, and tokenIdURI are required" },
         { status: 400 }
       );
     }
@@ -18,17 +18,20 @@ export async function POST(request: Request) {
       throw new Error("Signer private key not configured");
     }
 
-    // Create a wallet instance
-    const wallet = new Wallet(privateKey);
+    // Create an account from the private key
+    const account = privateKeyToAccount(privateKey as `0x${string}`);
 
-    // Sign the message
-    const signature = await wallet.signMessage(message);
+    // Create the message hash 
+    const messageHash = await account.signMessage({
+      message: {
+        raw: recipient + tokenId + tokenIdURI,
+      },
+    });
 
     // Return the signature and the signer's address for verification
     return NextResponse.json({
-      signature,
-      signerAddress: wallet.address,
-      message,
+      signature: messageHash,
+      signerAddress: account.address,
     });
   } catch (error) {
     console.error("Error signing message:", error);
