@@ -202,25 +202,26 @@ export default function MarketplaceModal({
         }}
         className="bg-[#7E4E31] w-full h-screen flex flex-col"
       >
-        <div className="max-w-4xl mx-auto w-full p-6 flex flex-col h-full">
+        <div className="max-w-4xl mx-auto w-full p-4 mt-2 flex flex-col h-full">
           {/* Header */}
-          <div className="flex justify-between mb-6 flex-shrink-0">
-            <div className="flex flex-col gap-1">
+          <div className="flex justify-between mb-2 xs:mb-4 sm:mb-6 flex-shrink-0">
+            <div className="flex flex-col gap-0.5 xs:gap-1">
               <motion.h2
-                className="text-white/90 font-bold text-2xl mb-1 flex items-center gap-2"
+                className="text-white/90 font-bold text-xl xs:text-2xl mb-0 xs:mb-1 flex items-center gap-1 xs:gap-2"
                 animate={{ rotate: [0, -3, 3, 0] }}
                 transition={{ duration: 0.5, repeat: Infinity, repeatDelay: 5 }}
               >
                 <Image
                   src="/images/icons/market.png"
                   alt="Market"
-                  width={24}
-                  height={24}
+                  width={20}
+                  height={20}
+                  className="w-5 h-5 xs:w-6 xs:h-6"
                 />
                 Market
               </motion.h2>
               <motion.p
-                className="text-white/70 text-sm flex items-center gap-1"
+                className="text-white/70 text-xs xs:text-sm flex items-center gap-1"
                 animate={{ scale: [1, 1.05, 1] }}
                 transition={{ duration: 1, repeat: Infinity }}
               >
@@ -233,7 +234,7 @@ export default function MarketplaceModal({
             </div>
             <button
               onClick={onClose}
-              className="w-8 h-8 hover:bg-black/20 rounded-full transition-colors text-white/90 
+              className="w-6 h-6 xs:w-8 xs:h-8 hover:bg-black/20 rounded-full transition-colors text-white/90 
                        flex items-center justify-center hover:rotate-90 transform duration-200"
             >
               ✕
@@ -247,7 +248,7 @@ export default function MarketplaceModal({
           />
 
           {/* Content area */}
-          <div className="overflow-y-auto flex-1 -mr-2 pr-2 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-[#6D4B2B] [&::-webkit-scrollbar-thumb]:bg-[#8A5E3B]">
+          <div className="overflow-y-auto flex-1 -mr-2 pr-2 no-scrollbar">
             {/* Seeds Tab */}
             {activeTab === "seeds" && (
               <motion.div
@@ -256,7 +257,7 @@ export default function MarketplaceModal({
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 20 }}
               >
-                <div className="text-white/60 text-[8px] text-center mb-1 italic">
+                <div className="text-white/60 text-[10px] text-center mb-1 italic">
                   Click on any seed to view detailed information
                 </div>
                 {state.items

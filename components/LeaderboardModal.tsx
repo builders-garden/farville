@@ -241,7 +241,10 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
   return (
     <div className="fixed inset-0 bg-black/50 flex items-start z-50">
       {selectedUserFid ? (
-        <ProfileModal onClose={handleCloseProfile} userFid={selectedUserFid} />
+        <ProfileModal
+          onClose={handleCloseProfile}
+          userFid={selectedUserFid}
+        />
       ) : (
         <>
           <motion.div
@@ -256,7 +259,7 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
             }}
             className="bg-[#7E4E31] w-full h-full"
           >
-            <div className="max-w-4xl mx-auto w-full h-full p-6 flex flex-col">
+            <div className="max-w-4xl mx-auto w-full h-full p-4 mt-2 flex flex-col">
               <div className="flex-none">
                 <div className="flex justify-between items-center mb-6">
                   <div>
@@ -599,7 +602,10 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
                     <div className="bg-gradient-to-br from-[#8B5c3C] to-[#6d4c2c] rounded-xl p-3 border border-[#ffa07a]/20 mb-2">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2 text-white/80">
-                          <Clock size={18} className="text-[#FFB938]" />
+                          <Clock
+                            size={18}
+                            className="text-[#FFB938]"
+                          />
                           <span className="text-[9px]">Ends in:</span>
                         </div>
                         <div className="flex gap-1 text-white font-bold">

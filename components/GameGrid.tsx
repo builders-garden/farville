@@ -25,7 +25,7 @@ export default function GameGrid() {
   );
 
   return (
-    <div className="flex flex-col h-full w-full items-start p-4 justify-start overflow-hidden gap-8">
+    <div className="flex flex-col h-full w-full items-start p-4 justify-start overflow-hidden gap-2 xs:gap-8">
       {/* overlay to display the harvested gold crops */}
       {showHarvestedNewGoldCrops && gridBulkResult?.rewards?.goldCrops && (
         <HarvestedGoldCrop
@@ -57,7 +57,10 @@ export default function GameGrid() {
       >
         {grid.map((row) =>
           row.map((cell) => (
-            <GridCell key={`${cell.fid}-${cell.x}-${cell.y}`} cell={cell} />
+            <GridCell
+              key={`${cell.fid}-${cell.x}-${cell.y}`}
+              cell={cell}
+            />
           ))
         )}
       </div>
