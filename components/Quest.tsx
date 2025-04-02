@@ -195,17 +195,6 @@ export default function Quest({
     }
   };
 
-  const handleCopyRequest = async () => {
-    if (!requestUrl) return;
-
-    try {
-      await navigator.clipboard.writeText(requestUrl);
-      console.log("Request URL copied to clipboard:", requestUrl);
-    } catch (error) {
-      console.error("Error copying request URL:", error);
-    }
-  };
-
   const handleShareRequest = async () => {
     if (!castUrl || !requestUrl) return;
 
@@ -347,9 +336,8 @@ export default function Quest({
           requestQuantity={requestQuantity}
           onRequestQuantityChange={setRequestQuantity}
           onRequest={handleRequestItem}
-          onCopyRequest={handleCopyRequest}
           onShareRequest={handleShareRequest}
-          urlReady={!!requestUrl}
+          requestUrl={requestUrl}
         />
       )}
     </motion.div>
