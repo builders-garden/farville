@@ -22,6 +22,7 @@ import { useEffect } from "react";
 import TimelineModal from "./TimelineModal";
 import ProfileModal from "./ProfileModal";
 import { useUserQuests } from "@/hooks/use-quests";
+import { useNextStep } from "nextstepjs";
 
 // const WelcomeOverlay = dynamic(() => import("./../components/WelcomeOverlay"), {
 //   ssr: false,
@@ -201,6 +202,12 @@ export default function GameWrapper() {
     startBackgroundMusic();
   };
 
+  const { startNextStep } = useNextStep();
+
+  useEffect(() => {
+    startNextStep("mainTour");
+  }, []);
+
   return (
     <div className="relative z-10">
       {/* <ClickEffect /> */}
@@ -234,7 +241,7 @@ export default function GameWrapper() {
           className="flex flex-col h-[100dvh] w-full overflow-hidden"
         >
           <Header />
-          <div className="flex-1 relative min-h-0">
+          <div className="flex-1 relative min-h-0" id="game-grid">
             <GameGrid />
           </div>
           <Toolbar safeAreaInsets={safeAreaInsets} />

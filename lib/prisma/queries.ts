@@ -584,9 +584,6 @@ export const getUsersByFids = async (
       fid: {
         in: fids.map(Number), // Convert string[] to number[]
       },
-      xp: {
-        gt: 0,
-      },
     },
     orderBy: {
       xp: "desc",
