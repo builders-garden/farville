@@ -1,5 +1,9 @@
 import { prisma } from "./client";
-import { LEVEL_XP_THRESHOLDS, LEVEL_REWARDS } from "@/lib/game-constants";
+import {
+  LEVEL_XP_THRESHOLDS,
+  LEVEL_REWARDS,
+  CREATOR_FIDS,
+} from "@/lib/game-constants";
 import {
   DbGridCell,
   DbStreak,
@@ -181,9 +185,12 @@ export const updateUserXP = async (
       const currentLevel = LEVEL_XP_THRESHOLDS.findIndex(
         (threshold) => currentXP < threshold
       );
-      const newLevel = LEVEL_XP_THRESHOLDS.findIndex(
+      let newLevel = LEVEL_XP_THRESHOLDS.findIndex(
         (threshold) => newXP < threshold
       );
+      if (newLevel === -1) {
+        newLevel = LEVEL_XP_THRESHOLDS.length;
+      }
       const didLevelUp = newLevel > currentLevel;
 
       // Update user XP and potentially coins if leveled up
@@ -577,9 +584,6 @@ export const getUsersByFids = async (
       fid: {
         in: fids.map(Number), // Convert string[] to number[]
       },
-      xp: {
-        gt: 0,
-      },
     },
     orderBy: {
       xp: "desc",
@@ -775,6 +779,19 @@ export const getUserLeaderboardEntry = async (fid: number) => {
   });
 };
 
+export const getWeeklyLeaderboardUsersByLeague = async (league: number) => {
+  const userCount = await prisma.userLeaderboards.count({
+    where: {
+      league,
+      currentScore: {
+        gt: 0,
+      },
+    },
+  });
+
+  return userCount;
+};
+
 export const getWeeklyUserLeaderboardByLeague = async (
   league: number,
   currentWeek: boolean,
@@ -784,6 +801,11 @@ export const getWeeklyUserLeaderboardByLeague = async (
   const filter = {
     where: {
       league,
+      fid: {
+        not: {
+          in: CREATOR_FIDS,
+        },
+      },
     },
     orderBy: currentWeek
       ? { currentScore: "desc" as const }
@@ -798,22 +820,31 @@ export const getWeeklyUserLeaderboardByLeague = async (
 
   let targetPosition: number | undefined;
   if (targetFid) {
-    const targetEntry = await prisma.userLeaderboards.findUnique({
-      where: { fid: targetFid },
-    });
+    if (!CREATOR_FIDS.includes(targetFid)) {
+      const targetEntry = await prisma.userLeaderboards.findUnique({
+        where: { fid: targetFid },
+      });
 
-    if (!targetEntry) {
-      throw new Error("Target user not found in leaderboard");
-    }
+      if (!targetEntry) {
+        throw new Error("Target user not found in leaderboard");
+      }
 
-    targetPosition = await prisma.userLeaderboards.count({
-      where: {
-        league,
-        [currentWeek ? "currentScore" : "lastScore"]: {
-          gte: targetEntry[currentWeek ? "currentScore" : "lastScore"],
+      targetPosition = await prisma.userLeaderboards.count({
+        where: {
+          league,
+          [currentWeek ? "currentScore" : "lastScore"]: {
+            gte: targetEntry[currentWeek ? "currentScore" : "lastScore"],
+          },
+          fid: {
+            not: {
+              in: CREATOR_FIDS,
+            },
+          },
         },
-      },
-    });
+      });
+    } else {
+      targetPosition = -1;
+    }
   }
 
   return {
@@ -831,6 +862,13 @@ export const updateUserWeeklyScore = async (
 ): Promise<{
   currentScore: number;
 }> => {
+  console.log("params", {
+    fid,
+    score,
+    userLevel,
+    currentUserXp,
+    didLevelUp,
+  });
   const level5 = LEVEL_XP_THRESHOLDS[4];
 
   if (userLevel >= 5) {

@@ -6,6 +6,7 @@ export async function GET(request: Request) {
   const targetFid = searchParams.get("targetFid");
   const league = searchParams.get("league") || "3";
   const currentWeek = searchParams.get("currentWeek") || "true";
+  const limit = searchParams.get("limit") || "20";
 
   // Add cache headers
   const headers = {
@@ -16,7 +17,7 @@ export async function GET(request: Request) {
     const usersWeekSummaries = await getWeeklyUserLeaderboardByLeague(
       Number(league),
       currentWeek === "true",
-      20,
+      Number(limit),
       Number(targetFid)
     );
     return NextResponse.json(usersWeekSummaries, { headers });

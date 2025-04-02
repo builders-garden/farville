@@ -16,7 +16,7 @@
     "@farcaster/frame-node": "^0.0.10",
     "@farcaster/frame-sdk": "^0.0.26",
     "@farcaster/frame-wagmi-connector": "^0.0.19",
-    "@frames.js/debugger": "^0.4.1",
+    "@frames.js/debugger": "^0.5.0",
     "@heroicons/react": "^2.2.0",
     "@openzeppelin/merkle-tree": "^1.0.8",
     "@prisma/client": "^6.2.1",

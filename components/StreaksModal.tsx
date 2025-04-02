@@ -215,23 +215,24 @@ export default function StreaksModal({ onClose }: { onClose: () => void }) {
         }}
         className="bg-[#7e4e31] w-full h-full flex flex-col overflow-y-auto"
       >
-        <div className="p-6 border-b border-[#8B5c3C]">
+        <div className="p-3 xs:p-4 mt-2 border-b border-[#8B5c3C]">
           <div className="flex justify-between max-w-4xl mx-auto w-full">
             <div className="flex flex-col gap-1">
               <motion.h2
-                className="text-white/90 font-bold text-2xl mb-1 flex items-center gap-2"
+                className="text-white/90 font-bold text-xl xs:text-2xl mb-1 flex items-center gap-2"
                 animate={{ rotate: [0, -3, 3, 0] }}
                 transition={{ duration: 0.5, repeat: Infinity, repeatDelay: 5 }}
               >
                 <Image
                   src="/images/special/fire.png"
                   alt="Streaks"
-                  width={35}
-                  height={35}
+                  width={30}
+                  height={30}
+                  className="w-7 h-7 xs:w-9 xs:h-9"
                 />
                 Streaks
               </motion.h2>
-              <p className="text-white/60 text-[10px]">
+              <p className="text-white/60 text-[9px] xs:text-[10px]">
                 Earn rewards farming daily!
               </p>
               <motion.p
@@ -251,274 +252,282 @@ export default function StreaksModal({ onClose }: { onClose: () => void }) {
             </button>
           </div>
         </div>
-        <div className="p-6 flex flex-col gap-4">
-          {/* Next Day Countdown */}
-          <div className="bg-gradient-to-br from-[#8B5c3C] to-[#6d4c2c] rounded-xl p-3 border border-[#ffa07a]/20">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-white/80">
-                <Clock
-                  size={18}
-                  className="text-[#FFB938]"
-                />
-                <span className="text-[9px]">Next day in:</span>
-              </div>
-              <div className="flex gap-1 text-white font-bold">
-                <div className="bg-[#6d4c2c] px-2 py-1 rounded-md text-xs min-w-[30px] text-center">
-                  {timeUntilNextDay.hours.toString().padStart(2, "0")}
+        <div className="flex-1 overflow-y-auto no-scrollbar">
+          <div className="p-3 xs:p-4 flex flex-col gap-3 xs:gap-4">
+            {/* Next Day Countdown */}
+            <div className="bg-gradient-to-br from-[#8B5c3C] to-[#6d4c2c] rounded-xl p-2 xs:p-3 border border-[#ffa07a]/20">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1 xs:gap-2 text-white/80">
+                  <Clock
+                    size={16}
+                    className="text-[#FFB938]"
+                  />
+                  <span className="text-[8px] xs:text-[9px]">Next day in:</span>
                 </div>
-                <span className="text-[#FFB938]">:</span>
-                <div className="bg-[#6d4c2c] px-2 py-1 rounded-md text-xs min-w-[30px] text-center">
-                  {timeUntilNextDay.minutes.toString().padStart(2, "0")}
-                </div>
-                <span className="text-[#FFB938]">:</span>
-                <div className="bg-[#6d4c2c] px-2 py-1 rounded-md text-xs min-w-[30px] text-center">
-                  {timeUntilNextDay.seconds.toString().padStart(2, "0")}
+                <div className="flex gap-1 text-white font-bold">
+                  <div className="bg-[#6d4c2c] px-1.5 xs:px-2 py-0.5 xs:py-1 rounded-md text-[10px] xs:text-xs min-w-[25px] xs:min-w-[30px] flex items-center justify-center">
+                    {timeUntilNextDay.hours.toString().padStart(2, "0")}
+                  </div>
+                  <span className="text-[#FFB938] flex items-center">:</span>
+                  <div className="bg-[#6d4c2c] px-1.5 xs:px-2 py-0.5 xs:py-1 rounded-md text-[10px] xs:text-xs min-w-[25px] xs:min-w-[30px] flex items-center justify-center">
+                    {timeUntilNextDay.minutes.toString().padStart(2, "0")}
+                  </div>
+                  <span className="text-[#FFB938] flex items-center">:</span>
+                  <div className="bg-[#6d4c2c] px-1.5 xs:px-2 py-0.5 xs:py-1 rounded-md text-[10px] xs:text-xs min-w-[25px] xs:min-w-[30px] flex items-center justify-center">
+                    {timeUntilNextDay.seconds.toString().padStart(2, "0")}
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          {/* New Streak Status Section */}
-          <motion.div
-            animate={{
-              boxShadow: [
-                "0 0 20px rgba(255,165,0,0.3)",
-                "0 0 40px rgba(255,165,0,0.5)",
-                "0 0 20px rgba(255,165,0,0.3)",
-              ],
-            }}
-            transition={{ duration: 2, repeat: Infinity }}
-            className="bg-gradient-to-br from-[#a13810] to-[#822800] 
-              rounded-2xl p-4 border-2 border-[#ffa07a]/30"
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex flex-col gap-2">
-                <div className="flex items-center gap-4">
-                  <span className="text-[#ffa07a] text-sm">Your Streak</span>
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="bg-gradient-to-r from-[#a13810] to-[#822800] text-[#ffa07a] p-1.5 rounded-md flex items-center justify-center 
-                  hover:bg-gradient-to-r hover:from-[#b44c1e] hover:to-[#943000] transition-colors border border-[#ffa07a]/30
-                  shadow-[0_0_10px_rgba(255,160,122,0.3)]"
-                    onClick={handleShareStreak}
-                  >
-                    <Share2 size={14} />
-                  </motion.button>
+            {/* New Streak Status Section */}
+            <motion.div
+              animate={{
+                boxShadow: [
+                  "0 0 20px rgba(255,165,0,0.3)",
+                  "0 0 40px rgba(255,165,0,0.5)",
+                  "0 0 20px rgba(255,165,0,0.3)",
+                ],
+              }}
+              transition={{ duration: 2, repeat: Infinity }}
+              className="bg-gradient-to-br from-[#a13810] to-[#822800] 
+                      rounded-2xl p-4 border-2 border-[#ffa07a]/30"
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex flex-col gap-2">
+                  <div className="flex items-center gap-4">
+                    <span className="text-[#ffa07a] text-xs xs:text-sm">
+                      Your Streak
+                    </span>
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      className="bg-gradient-to-r from-[#a13810] to-[#822800] text-[#ffa07a] p-1.5 rounded-md flex items-center justify-center 
+                          hover:bg-gradient-to-r hover:from-[#b44c1e] hover:to-[#943000] transition-colors border border-[#ffa07a]/30
+                          shadow-[0_0_10px_rgba(255,160,122,0.3)]"
+                      onClick={handleShareStreak}
+                    >
+                      <Share2 size={14} />
+                    </motion.button>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-4xl xs:text-5xl font-bold text-white/90">
+                      {currentDayStreak}
+                    </span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-5xl font-bold text-white/90">
-                    {currentDayStreak}
-                  </span>
-                </div>
-              </div>
-              <motion.div
-                animate={
-                  hasPlayedToday
-                    ? { rotate: [-5, 5, -5], scale: [0.95, 1.05, 0.95] }
-                    : { rotate: [-3, 3, -3], scale: [0.98, 1.02, 0.98] }
-                }
-                transition={{ duration: 2, repeat: Infinity }}
-                className="relative"
-              >
-                <Image
-                  src={
+                <motion.div
+                  animate={
                     hasPlayedToday
-                      ? "/images/special/fire.png"
-                      : "/images/special/frost.png"
+                      ? { rotate: [-5, 5, -5], scale: [0.95, 1.05, 0.95] }
+                      : { rotate: [-3, 3, -3], scale: [0.98, 1.02, 0.98] }
                   }
-                  alt={hasPlayedToday ? "Active Streak" : "Inactive Streak"}
-                  width={80}
-                  height={80}
-                  className="drop-shadow-[0_2px_8px_rgba(255,165,0,0.5)]"
-                />
-              </motion.div>
-            </div>
-          </motion.div>
+                  transition={{ duration: 2, repeat: Infinity }}
+                  className="relative"
+                >
+                  <div className="relative w-[65px] h-[65px] xs:w-[80px] xs:h-[80px]">
+                    <Image
+                      src={
+                        hasPlayedToday
+                          ? "/images/special/fire.png"
+                          : "/images/special/frost.png"
+                      }
+                      alt={hasPlayedToday ? "Active Streak" : "Inactive Streak"}
+                      className="object-contain drop-shadow-[0_2px_8px_rgba(255,165,0,0.5)]"
+                      fill
+                    />
+                  </div>
+                </motion.div>
+              </div>
+            </motion.div>
 
-          {/* Frost Counter Card */}
-          <motion.div
-            className="bg-gradient-to-br from-sky-900 to-sky-700
-                  rounded-2xl p-4 py-3 border border-sky-600"
-          >
-            <div className="flex flex-row gap-3 justify-between">
-              <div className="flex flex-col h-auto justify-between gap-2">
+            {/* Frost Counter Card */}
+            <motion.div
+              className="bg-gradient-to-br from-sky-900 to-sky-700
+                          rounded-2xl p-4 py-3 border border-sky-600"
+            >
+              <div className="flex flex-col gap-2">
                 <p className="flex flex-row items-center text-sky-300 text-xs gap-2">
                   Streak Frosts
-                  {/* <button className="text-sky-300/70 hover:text-sky-300 transition-colors">
-                    <Info />
-                  </button> */}
                 </p>
-                <p className="text-white text-sm font-bold">
-                  {frostsAvailable}
-                  <span className="text-sm text-white/50">/2</span>
-                </p>
-                <div className="flex w-full">
-                  <button
-                    className="text-[8px] text-sky-200/80 hover:text-sky-200 transition-colors px-2 py-1 rounded-md border border-sky-200/80"
-                    onClick={() => setIsFrostInfoOpen(true)}
-                  >
-                    How it works?
-                  </button>
-                </div>
-              </div>
-              <div className="flex gap-3 items-center">
-                {[...Array(MAX_FROSTS_QUANTITY)].map((_, i) => (
-                  <div
-                    key={i}
-                    className={`w-16 h-16 rounded-xl flex items-center justify-center
-                  ${
-                    i < frostsAvailable
-                      ? "bg-gradient-to-br from-[#1E90FF]/80 to-[#00BFFF]/60 border-2 border-[#ADD8E6]/50 pointer-events-none"
-                      : "bg-[#00BFFF]/40 border-2 border-[#ADD8E6]/60 cursor-pointer"
-                  }`}
-                    onClick={() => {
-                      setIsConfirmationOpen(true);
-                    }}
-                  >
-                    {i < frostsAvailable ? (
-                      <Image
-                        src="/images/special/frost.png"
-                        alt="Frost"
-                        width={38}
-                        height={38}
-                      />
-                    ) : (
-                      <span className="text-[#ADD8E6] text-2xl font-bold">
-                        <Plus />
-                      </span>
-                    )}
+                <div className="flex items-center justify-between">
+                  <div className="flex flex-col h-auto justify-between gap-2">
+                    <p className="text-white text-sm font-bold">
+                      {frostsAvailable}
+                      <span className="text-sm text-white/50">/2</span>
+                    </p>
+                    <div className="flex w-full">
+                      <button
+                        className="text-[8px] text-sky-200/80 hover:text-sky-200 transition-colors px-2 py-1 rounded-md border border-sky-200/80"
+                        onClick={() => setIsFrostInfoOpen(true)}
+                      >
+                        How it works?
+                      </button>
+                    </div>
                   </div>
-                ))}
-              </div>
-            </div>
-          </motion.div>
-          {
-            // Frost Info Card
-            isFrostInfoOpen && (
-              <InfoModal
-                title="Streak Frosts"
-                icon="/images/special/frost.png"
-                onCancel={() => setIsFrostInfoOpen(false)}
-                options={{
-                  titleColor: "text-sky-200",
-                }}
-              >
-                <div className="flex flex-col gap-4 my-4 text-white/80 text-sm">
-                  <p>
-                    Streak Frosts are special items that protect your streak,
-                    even if you miss a day.
-                  </p>
-                  <p>If you skip a day, a Frost will be automatically used.</p>
-                  <p>
-                    Out of Frosts? Your streak will
-                    <span className="text-red-500 font-bold"> DIE</span>!
-                  </p>
-                  <p>You can hold a maximum of 2 Frosts at a time.</p>
+                  <div className="flex gap-3 items-center">
+                    {[...Array(MAX_FROSTS_QUANTITY)].map((_, i) => (
+                      <div
+                        key={i}
+                        className={`w-12 h-12 xs:w-16 xs:h-16 rounded-xl flex items-center justify-center
+                            ${
+                              i < frostsAvailable
+                                ? "bg-gradient-to-br from-[#1E90FF]/80 to-[#00BFFF]/60 border-2 border-[#ADD8E6]/50 pointer-events-none"
+                                : "bg-[#00BFFF]/40 border-2 border-[#ADD8E6]/60 cursor-pointer"
+                            }`}
+                        onClick={() => {
+                          setIsConfirmationOpen(true);
+                        }}
+                      >
+                        {i < frostsAvailable ? (
+                          <Image
+                            src="/images/special/frost.png"
+                            alt="Frost"
+                            width={38}
+                            height={38}
+                          />
+                        ) : (
+                          <span className="text-[#ADD8E6] text-2xl font-bold">
+                            <Plus />
+                          </span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </InfoModal>
-            )
-          }
-        </div>
-        {isConfirmationOpen && (
-          <ConfirmationModal
-            title="Buy Streaks Frosts"
-            message={
-              state.user.coins >= FROST_COST
-                ? `Do you want to buy a Streak Frost for ${FROST_COST}🪙 coins?`
-                : `You don't have enough coins to buy a Streak Frost. One costs ${FROST_COST}🪙 coins.`
+              </div>
+            </motion.div>
+            {
+              // Frost Info Card
+              isFrostInfoOpen && (
+                <InfoModal
+                  title="Streak Frosts"
+                  icon="/images/special/frost.png"
+                  onCancel={() => setIsFrostInfoOpen(false)}
+                  options={{
+                    titleColor: "text-sky-200",
+                  }}
+                >
+                  <div className="flex flex-col gap-4 my-4 text-white/80 text-sm">
+                    <p>
+                      Streak Frosts are special items that protect your streak,
+                      even if you miss a day.
+                    </p>
+                    <p>
+                      If you skip a day, a Frost will be automatically used.
+                    </p>
+                    <p>
+                      Out of Frosts? Your streak will
+                      <span className="text-red-500 font-bold"> DIE</span>!
+                    </p>
+                    <p>You can hold a maximum of 2 Frosts at a time.</p>
+                  </div>
+                </InfoModal>
+              )
             }
-            onCancel={() => setIsConfirmationOpen(false)}
-            onConfirm={() => {
-              buyItem({ itemId: 29, quantity: 1 });
-              setIsConfirmationOpen(false);
-            }}
-            confirmDisabled={state.user.coins < FROST_COST}
+          </div>
+          {isConfirmationOpen && (
+            <ConfirmationModal
+              title="Buy Streaks Frosts"
+              message={
+                state.user.coins >= FROST_COST
+                  ? `Do you want to buy a Streak Frost for ${FROST_COST}🪙 coins?`
+                  : `You don't have enough coins to buy a Streak Frost. One costs ${FROST_COST}🪙 coins.`
+              }
+              onCancel={() => setIsConfirmationOpen(false)}
+              onConfirm={() => {
+                buyItem({ itemId: 29, quantity: 1 });
+                setIsConfirmationOpen(false);
+              }}
+              confirmDisabled={state.user.coins < FROST_COST}
+            />
+          )}
+          <div className="flex flex-col w-full gap-1 p-4 pt-4 pb-4">
+            <h3 className="text-white/90 text-lg font-bold">Your Progress</h3>
+            <p className="text-white/60 text-[10px]">
+              Keep track of your daily activity
+            </p>
+          </div>
+          <Calendar
+            mode="multiple"
+            selected={streakDates}
+            className="rounded-md w-auto mx-4 
+                            [&_.selected]:bg-[#FFB938] [&_.selected]:text-[#5B4120]"
+            disabled={state.frosts.allFrostsDates.map(
+              (frost) => new Date(frost)
+            )}
           />
-        )}
-        <div className="flex flex-col w-full gap-1 p-6 pt-4 pb-4">
-          <h3 className="text-white/90 text-lg font-bold">Your Progress</h3>
-          <p className="text-white/60 text-[10px]">
-            Keep track of your daily activity
-          </p>
-        </div>
-        <Calendar
-          mode="multiple"
-          selected={streakDates}
-          className="rounded-md w-auto mx-6 
-                    [&_.selected]:bg-[#FFB938] [&_.selected]:text-[#5B4120]"
-          disabled={state.frosts.allFrostsDates.map((frost) => new Date(frost))}
-        />
-        <div className="flex flex-col w-full gap-1 p-6 pt-8 pb-2">
-          <h3 className="text-white/90 text-lg font-bold">Rewards</h3>
-          <p className="text-white/60 text-[10px]">
-            Claim your rewards for the current streak
-          </p>
-        </div>
-        <Timeline className="flex-1 mt-4 px-6">
-          {rewards.map((reward) => {
-            const isActivePrecursor = reward.day === lastClaimedDay;
-            const isActive =
-              reward.day === lastClaimedDay + 1 &&
-              reward.day <= currentDayStreak;
-            const isClaimableButDisabled =
-              reward.day > lastClaimedDay + 1 && reward.day <= currentDayStreak;
+          <div className="flex flex-col w-full gap-1 p-4 pt-8 pb-2">
+            <h3 className="text-white/90 text-lg font-bold">Rewards</h3>
+            <p className="text-white/60 text-[10px]">
+              Claim your rewards for the current streak
+            </p>
+          </div>
+          <Timeline className="flex-1 mt-4 px-4">
+            {rewards.map((reward) => {
+              const isActivePrecursor = reward.day === lastClaimedDay;
+              const isActive =
+                reward.day === lastClaimedDay + 1 &&
+                reward.day <= currentDayStreak;
+              const isClaimableButDisabled =
+                reward.day > lastClaimedDay + 1 &&
+                reward.day <= currentDayStreak;
 
-            const rewardToUse = isActive ? activeReward : reward;
+              const rewardToUse = isActive ? activeReward : reward;
 
-            const allClaimed = lastClaimedDay === currentDayStreak;
+              const allClaimed = lastClaimedDay === currentDayStreak;
 
-            if (!rewardToUse) {
-              return null;
-            }
+              if (!rewardToUse) {
+                return null;
+              }
 
-            return (
-              <TimelineItem key={reward.day}>
-                <TimelineSeparator>
-                  <TimelineDot
-                    className={`mt-0 p-6 rounded-lg transition-all duration-300 ${
-                      isActive
-                        ? "bg-gradient-to-br from-[#FFD700] to-[#FFA500] text-[#5B4120] scale-110 shadow-[0_0_20px_rgba(255,215,0,0.3)]"
-                        : rewardToUse.day > lastClaimedDay
-                        ? "bg-[#5B4120]/50 text-[#FFB938]/50"
-                        : "bg-[#feb938] text-[#5B4120]"
-                    }`}
-                  >
-                    {rewardToUse.day}
-                  </TimelineDot>
-                  <TimelineConnector
-                    className={`my-0 ${
-                      !allClaimed
-                        ? rewardToUse.day === lastClaimedDay + 1
+              return (
+                <TimelineItem key={reward.day}>
+                  <TimelineSeparator>
+                    <TimelineDot
+                      className={`mt-0 p-5 xs:p-6 rounded-lg transition-all duration-300 ${
+                        isActive
+                          ? "bg-gradient-to-br from-[#FFD700] to-[#FFA500] text-[#5B4120] scale-110 shadow-[0_0_20px_rgba(255,215,0,0.3)]"
+                          : rewardToUse.day > lastClaimedDay
+                          ? "bg-[#5B4120]/50 text-[#FFB938]/50"
+                          : "bg-[#feb938] text-[#5B4120]"
+                      }`}
+                    >
+                      {rewardToUse.day}
+                    </TimelineDot>
+                    <TimelineConnector
+                      className={`my-0 ${
+                        !allClaimed
+                          ? rewardToUse.day === lastClaimedDay + 1
+                            ? "bg-gradient-to-b from-[#FFD700]/20 to-[#5B4120]"
+                            : isActivePrecursor
+                            ? "bg-gradient-to-b from-[#5B4120] to-[#FFD700]/20"
+                            : "bg-[#5B4120]"
+                          : rewardToUse.day === currentDayStreak
                           ? "bg-gradient-to-b from-[#FFD700]/20 to-[#5B4120]"
-                          : isActivePrecursor
+                          : rewardToUse.day === currentDayStreak - 1
                           ? "bg-gradient-to-b from-[#5B4120] to-[#FFD700]/20"
                           : "bg-[#5B4120]"
-                        : rewardToUse.day === currentDayStreak
-                        ? "bg-gradient-to-b from-[#FFD700]/20 to-[#5B4120]"
-                        : rewardToUse.day === currentDayStreak - 1
-                        ? "bg-gradient-to-b from-[#5B4120] to-[#FFD700]/20"
-                        : "bg-[#5B4120]"
-                    } w-1`}
-                  />
-                </TimelineSeparator>
-                <TimelineContent>
-                  <motion.div
-                    initial={false}
-                    animate={
-                      isActive &&
-                      !rewardToUse.claimed &&
-                      !isClaimableButDisabled
-                        ? {
-                            scale: [1, 1.02, 1],
-                            transition: {
-                              duration: 2,
-                              repeat: Infinity,
-                            },
-                          }
-                        : {}
-                    }
-                    className={`bg-gradient-to-br from-[#6D4C2C] to-[#5B4120] p-4 rounded-lg 
+                      } w-1`}
+                    />
+                  </TimelineSeparator>
+                  <TimelineContent>
+                    <motion.div
+                      initial={false}
+                      animate={
+                        isActive &&
+                        !rewardToUse.claimed &&
+                        !isClaimableButDisabled
+                          ? {
+                              scale: [1, 1.02, 1],
+                              transition: {
+                                duration: 2,
+                                repeat: Infinity,
+                              },
+                            }
+                          : {}
+                      }
+                      className={`bg-gradient-to-br from-[#6D4C2C] to-[#5B4120] p-4 rounded-lg 
                                 border border-[#FFD700]/20 
                                 ${
                                   rewardToUse.day > currentDayStreak ||
@@ -526,65 +535,65 @@ export default function StreaksModal({ onClose }: { onClose: () => void }) {
                                     ? "opacity-30"
                                     : ""
                                 }`}
-                  >
-                    <div className="flex flex-col gap-2">
-                      <div className="text-[#feb938] text-sm font-semibold flex justify-between items-center">
-                        <span>Rewards</span>
-                        {rewardToUse.claimed && (
-                          <span className="text-xs bg-green-500/20 text-green-500 px-2 py-1 rounded">
-                            Claimed
-                          </span>
-                        )}
-                      </div>
-                      <div className="flex gap-4 my-2 items-center">
-                        {rewardToUse.rewards.map((item, idx) => (
-                          <motion.div
-                            key={idx}
-                            className="p-2 bg-[#6d4c2c] aspect-square rounded-lg relative flex items-center justify-center
+                    >
+                      <div className="flex flex-col gap-2">
+                        <div className="text-[#feb938] text-sm font-semibold flex justify-between items-center">
+                          <span>Rewards</span>
+                          {rewardToUse.claimed && (
+                            <span className="text-xs bg-green-500/20 text-green-500 px-2 py-1 rounded">
+                              Claimed
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex gap-4 my-2 items-center">
+                          {rewardToUse.rewards.map((item, idx) => (
+                            <motion.div
+                              key={idx}
+                              className="p-2 bg-[#6d4c2c] aspect-square rounded-lg relative flex items-center justify-center
                                    shadow-lg hover:shadow-xl transition-shadow duration-200
                                    border-2 border-[#8B5E3C]"
-                            whileHover={{ scale: 1.02 }}
-                          >
-                            <motion.img
-                              src={`/images${item.icon}`}
-                              alt={`${item.itemId} seed`}
-                              className="w-8 h-8 object-contain"
-                              animate={{ y: [0, -2, 0] }}
-                              transition={{ duration: 1.5, repeat: Infinity }}
-                            />
-                            <motion.div
-                              className="absolute -top-2 -right-2 bg-[#FFB938] text-[#7E4E31] text-xs px-2 py-0.5 
-                                     rounded-full font-bold shadow-md border border-[#7E4E31]"
-                              animate={{
-                                scale: item.quantity ? [1, 1.1, 1] : 1,
-                              }}
-                              transition={{ duration: 0.3 }}
+                              whileHover={{ scale: 1.02 }}
                             >
-                              {item.quantity}
+                              <motion.img
+                                src={`/images${item.icon}`}
+                                alt={`${item.itemId} seed`}
+                                className="w-8 h-8 object-contain"
+                                animate={{ y: [0, -2, 0] }}
+                                transition={{ duration: 1.5, repeat: Infinity }}
+                              />
+                              <motion.div
+                                className="absolute -top-2 -right-2 bg-[#FFB938] text-[#7E4E31] text-xs px-2 py-0.5 
+                                     rounded-full font-bold shadow-md border border-[#7E4E31]"
+                                animate={{
+                                  scale: item.quantity ? [1, 1.1, 1] : 1,
+                                }}
+                                transition={{ duration: 0.3 }}
+                              >
+                                {item.quantity}
+                              </motion.div>
                             </motion.div>
-                          </motion.div>
-                        ))}
-                      </div>
-                      {(isActive || isClaimableButDisabled) &&
-                        !rewardToUse.claimed && (
-                          <motion.button
-                            whileHover={
-                              isClaimableButDisabled ? {} : { scale: 1.05 }
-                            }
-                            whileTap={{ scale: 0.95 }}
-                            animate={{
-                              boxShadow: [
-                                "0 0 10px rgba(255,215,0,0.3)",
-                                "0 0 20px rgba(255,215,0,0.5)",
-                                "0 0 10px rgba(255,215,0,0.3)",
-                              ],
-                            }}
-                            transition={{
-                              duration: 2,
-                              repeat: Infinity,
-                            }}
-                            onClick={() => handleClaim(rewardToUse.day)}
-                            className={`bg-gradient-to-r from-[#FFD700] to-[#FFA500] text-[#5B4120] 
+                          ))}
+                        </div>
+                        {(isActive || isClaimableButDisabled) &&
+                          !rewardToUse.claimed && (
+                            <motion.button
+                              whileHover={
+                                isClaimableButDisabled ? {} : { scale: 1.05 }
+                              }
+                              whileTap={{ scale: 0.95 }}
+                              animate={{
+                                boxShadow: [
+                                  "0 0 10px rgba(255,215,0,0.3)",
+                                  "0 0 20px rgba(255,215,0,0.5)",
+                                  "0 0 10px rgba(255,215,0,0.3)",
+                                ],
+                              }}
+                              transition={{
+                                duration: 2,
+                                repeat: Infinity,
+                              }}
+                              onClick={() => handleClaim(rewardToUse.day)}
+                              className={`bg-gradient-to-r from-[#FFD700] to-[#FFA500] text-[#5B4120] 
                                  px-4 py-2 rounded-lg mt-2 font-bold text-sm 
                                  ${
                                    !isClaimableButDisabled
@@ -593,22 +602,23 @@ export default function StreaksModal({ onClose }: { onClose: () => void }) {
                                  } transition-all
                                  shadow-[0_0_15px_rgba(255,215,0,0.3)]
                                  disabled:opacity-50 disabled:cursor-not-allowed`}
-                            disabled={
-                              !rewardToUse.claimable ||
-                              isClaimableButDisabled ||
-                              rewardToUse.isLoading
-                            }
-                          >
-                            Claim Reward
-                          </motion.button>
-                        )}
-                    </div>
-                  </motion.div>
-                </TimelineContent>
-              </TimelineItem>
-            );
-          })}
-        </Timeline>
+                              disabled={
+                                !rewardToUse.claimable ||
+                                isClaimableButDisabled ||
+                                rewardToUse.isLoading
+                              }
+                            >
+                              Claim
+                            </motion.button>
+                          )}
+                      </div>
+                    </motion.div>
+                  </TimelineContent>
+                </TimelineItem>
+              );
+            })}
+          </Timeline>
+        </div>
       </motion.div>
     </div>
   );

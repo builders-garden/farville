@@ -92,47 +92,52 @@ export default function Header() {
           </div>
         )} */}
 
-        {/* streak counter button */}
-        <motion.div
-          className={`h-[42px] flex flex-row flex gap-1 items-center text-white/90 tracking-wide font-bold cursor-pointer relative
-          ${state.claimableStreakReward ? "bg-transparent animate-pulse" : ""}`}
-          whileHover={{ scale: 1.02 }}
-          onClick={() => setShowStreaks(true)}
-        >
-          {state.claimableStreakReward && (
-            <div className="absolute -top-[-3px] -right-1 w-3 h-3 bg-[#FFD700] rounded-full z-30" />
-          )}
-          <Image
-            src="/images/special/fire.png"
-            alt="Streak"
-            width={22}
-            height={22}
-            className="mt-[-2px]"
-          />
-          <p
-            className={`${
-              state.currentStreakDays > 9999 ? "text-xs" : "text-md"
-            } ${
-              state.claimableStreakReward
-                ? "drop-shadow-[0_0_3px_rgba(255,255,255,0.7)]"
-                : ""
+        {/* Currency elements container - column on mobile, row on desktop */}
+        <div className="flex flex-col xs:flex-row xs:items-center xs:gap-4 items-end">
+          {/* streak counter button */}
+          <motion.div
+            className={`h-auto xs:h-[42px] flex flex-row gap-1 items-center text-white/90 tracking-wide font-bold cursor-pointer relative
+            ${
+              state.claimableStreakReward ? "bg-transparent animate-pulse" : ""
             }`}
+            whileHover={{ scale: 1.02 }}
+            onClick={() => setShowStreaks(true)}
           >
-            {state.currentStreakDays}
-          </p>
-        </motion.div>
+            {state.claimableStreakReward && (
+              <div className="absolute -top-[1px] xs:-top-[-3px] -right-2 xs:-right-1 w-3 h-3 bg-[#FFD700] rounded-full z-30" />
+            )}
+            <Image
+              src="/images/special/fire.png"
+              alt="Streak"
+              width={22}
+              height={22}
+              className="mt-[-2px]"
+            />
+            <p
+              className={`${
+                state.currentStreakDays > 9999 ? "text-xs" : "text-md"
+              } ${
+                state.claimableStreakReward
+                  ? "drop-shadow-[0_0_3px_rgba(255,255,255,0.7)]"
+                  : ""
+              }`}
+            >
+              {state.currentStreakDays}
+            </p>
+          </motion.div>
 
-        <motion.div
-          className={`h-[42px] mr-1 flex gap-1 items-center text-white/90 tracking-wide font-bold ${
-            state.coins > 9999 ? "text-sm" : "text-md"
-          }`}
-          whileHover={{ scale: 1.02 }}
-          animate={{ rotate: [0, -1, 1, -1, 1, 0] }}
-          transition={{ duration: 0.5, repeat: Infinity, repeatDelay: 5 }}
-        >
-          <span className="mt-[-5px]">🪙</span>
-          <span>{state.coins}</span>
-        </motion.div>
+          <motion.div
+            className={`h-auto xs:h-[42px] flex gap-1 items-center text-white/90 tracking-wide font-bold ${
+              state.coins > 9999 ? "text-sm" : "text-md"
+            }`}
+            whileHover={{ scale: 1.02 }}
+            animate={{ rotate: [0, -1, 1, -1, 1, 0] }}
+            transition={{ duration: 0.5, repeat: Infinity, repeatDelay: 5 }}
+          >
+            <span className="mt-[-5px]">🪙</span>
+            <span>{state.coins}</span>
+          </motion.div>
+        </div>
       </div>
     </div>
   );
