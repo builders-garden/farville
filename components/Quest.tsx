@@ -210,7 +210,6 @@ export default function Quest({
     if (!castUrl || !requestUrl) return;
 
     try {
-      await navigator.clipboard.writeText(requestUrl);
       await sdk.actions.openUrl(castUrl);
       setSelectedItem(null);
       setRequestQuantity(1);

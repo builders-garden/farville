@@ -105,7 +105,6 @@ export default function MarketplaceModal({
     if (!castUrl || !requestUrl) return;
 
     try {
-      await navigator.clipboard.writeText(requestUrl);
       await sdk.actions.openUrl(castUrl);
       setSelectedItemForRequest(null);
       setRequestQuantity(1);
