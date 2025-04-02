@@ -9,7 +9,7 @@ import Confetti from "./animations/Confetti";
 import { AllQuests } from "@/hooks/use-game-state";
 
 type Tab = "active" | "claimable" | "expired";
-type SubTab = "daily" | "weekly" | "farmer";
+type SubTab = "daily" | "weekly";
 
 export default function QuestsModal({
   onClose,
@@ -40,7 +40,6 @@ export default function QuestsModal({
   const subTabs = [
     { id: "daily", label: "daily", icon: "📅" },
     { id: "weekly", label: "weekly", icon: "📅" },
-    { id: "farmer", label: "farmer", icon: "🌾" },
   ];
 
   const [rewardAnimation, setRewardAnimation] = useState<{
@@ -167,7 +166,7 @@ export default function QuestsModal({
 
             {/* Subtabs - Only show when active tab is selected */}
             {activeTab === "active" && (
-              <div className="grid grid-cols-3 gap-2 mb-6 bg-[#573d23] p-2 rounded-lg">
+              <div className="grid grid-cols-2 gap-2 mb-6 bg-[#573d23] p-2 rounded-lg">
                 {subTabs.map((tab, index) => (
                   <motion.button
                     key={tab.id}
@@ -233,28 +232,6 @@ export default function QuestsModal({
                           />
                         ))
                       ))}
-                    {activeSubTab === "farmer" && (
-                      <div>
-                        <div className="text-white/70 text-sm">
-                          Hey Farmer, wait for the Beta release to get your
-                          quests!
-                        </div>
-                      </div>
-                    )}
-                    {/*
-                      TODO: Uncomment when farmer quests are available (BETA)
-                    (quests?.farmer.length === 0 ? (
-                        <div>No farmer quests available.</div>
-                      ) : (
-                        quests?.farmer.map((quest) => (
-                          <Quest
-                            quest={quest}
-                            key={quest.id}
-                            claimable={false}
-                          />
-                        ))
-                      ))
-                      */}
                   </div>
                 )}
 
