@@ -112,7 +112,7 @@ export const HarvestHonour = ({
         </p>
         <hr className="w-full opacity-30 my-2" />
         <div className="flex flex-row w-full justify-between gap-4">
-          <div className="relative w-12 h-12 rounded-md [image-rendering:pixelated] bg-[#7E4E31]">
+          <div className="relative aspect-square w-12 h-12 rounded-md [image-rendering:pixelated] bg-[#7E4E31]">
             <Image
               src={`/images/crop/${crop}.png`}
               alt={crop}

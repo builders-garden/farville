@@ -88,7 +88,7 @@ export default function MarketplaceItem({
       initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ delay: index * 0.1 }}
-      className={`bg-[#6d4c2c] px-4 py-3 rounded-lg flex flex-col md:flex-row md:items-center gap-3
+      className={`bg-[#6d4c2c] px-3 xs:px-4 py-3 xs:py-3 rounded-lg flex flex-col md:flex-row md:items-center gap-2 xs:gap-3
                border border-[#8B5E3C]/50 shadow-md relative
                hover:bg-[#7d583a] transition-colors ${
                  isLevelRequired ? "opacity-75" : ""
@@ -96,36 +96,36 @@ export default function MarketplaceItem({
     >
       {isLevelRequired && (
         <div className="absolute inset-0 bg-red-900/20 backdrop-blur-[1px] rounded-lg flex items-center justify-center z-10">
-          <span className="text-white/90 font-medium bg-red-900/90 px-3 py-1 rounded-lg text-sm">
+          <span className="text-white/90 font-medium bg-red-900/90 px-2 xs:px-3 py-0.5 xs:py-1 rounded-lg text-xs">
             Level {requiredLevel} Required
           </span>
         </div>
       )}
       <div
-        className="flex items-center gap-3 flex-1"
+        className="flex items-center gap-2 xs:gap-3 flex-1"
         id="card-header"
         onClick={() => onItemSelect(item)}
       >
-        <div className="w-10 h-10 flex items-center justify-center">
+        <div className="w-8 h-8 xs:w-10 xs:h-10 flex items-center justify-center">
           <motion.img
             src={`/images${item.icon}`}
             alt={item.name}
-            className="w-8 h-8 object-contain"
+            className="w-6 h-6 xs:w-8 xs:h-8 object-contain"
             animate={{ y: [0, -2, 0] }}
             transition={{ duration: 1.5, repeat: Infinity }}
           />
         </div>
-        <div className="flex-1 flex flex-col gap-2">
+        <div className="flex-1 flex flex-col gap-1 xs:gap-2">
           <div className="flex flex-row gap-1 justify-between">
-            <p className="text-white/90 font-medium cursor-pointer hover:text-white">
+            <p className="text-white/90 text-sm xs:text-base font-medium cursor-pointer hover:text-white">
               {item.name}
             </p>
-            <p className="text-white/90 flex items-center">
+            <p className="text-white/90 flex items-center text-sm xs:text-base">
               <span className="pb-1 mr-1">🪙</span>
               {item.category === "crop" ? item.sellPrice : item.buyPrice}
             </p>
           </div>
-          <div className="flex items-center justify-between text-[10px]">
+          <div className="flex items-center justify-between text-[9px] xs:text-[10px]">
             <span className="text-white/60">
               Owned:
               <span className="text-white/90 font-medium ml-1">
@@ -142,11 +142,11 @@ export default function MarketplaceItem({
 
       {canBuy && (
         <div className="flex flex-col w-full gap-1">
-          <div className="flex gap-4 ml-13 md:ml-0 items-center">
-            <span className="text-xs w-fit text-white/90">
+          <div className="flex gap-2 xs:gap-4 ml-13 md:ml-0 items-center">
+            <span className="text-[10px] xs:text-xs w-fit text-white/90">
               {item.category === "crop" ? "Sell" : "Buy"}
             </span>
-            <div className="flex gap-2 w-full">
+            <div className="flex gap-2 xs:gap-2 w-full">
               {item.category === "crop"
                 ? // Sell options for crops
                   [1, 5, 10, "ALL"].map((amount) => (
@@ -180,13 +180,13 @@ export default function MarketplaceItem({
           >
             <AccordionItem
               value="custom-quantity"
-              className="border-0 pb-0 pt-2"
+              className="border-0 pb-0 pt-1 xs:pt-2"
             >
-              <AccordionTrigger className="py-1 text-xs text-white/70 hover:no-underline">
+              <AccordionTrigger className="py-0.5 xs:py-1 text-[10px] xs:text-xs text-white/70 hover:no-underline">
                 Custom quantity
               </AccordionTrigger>
-              <AccordionContent className="pt-2 pb-0">
-                <div className="flex flex-col gap-2">
+              <AccordionContent className="pt-1 xs:pt-2 pb-0">
+                <div className="flex flex-col gap-1 xs:gap-2">
                   <div className="flex gap-2 items-center w-full justify-between">
                     <Input
                       type="text"
@@ -194,7 +194,7 @@ export default function MarketplaceItem({
                       pattern="[0-9]*"
                       value={customQuantity}
                       onChange={handleCustomQuantityChange}
-                      className="h-7 bg-[#5A4129] border-[#8B5E3C] text-white/90 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 max-w-[50%]"
+                      className="h-6 xs:h-7 bg-[#5A4129] border-[#8B5E3C] text-white/90 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 max-w-[50%]"
                       placeholder="Quantity"
                       style={{ fontSize: "16px" }}
                       onFocus={(e) => {
@@ -204,7 +204,7 @@ export default function MarketplaceItem({
                         e.currentTarget.select();
                       }}
                     />
-                    <div className="text-xs text-white/80">
+                    <div className="text-[10px] xs:text-xs text-white/80">
                       {!isNaN(parseInt(customQuantity, 10))
                         ? parseInt(customQuantity, 10) *
                           (item.category === "crop"
@@ -225,8 +225,8 @@ export default function MarketplaceItem({
                       isNaN(parseInt(customQuantity, 10)) ||
                       parseInt(customQuantity, 10) <= 0
                     }
-                    className="w-full px-3 py-2 bg-[#2B593B] text-white/90 rounded hover:bg-[#346344] 
-                            transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-xs font-medium
+                    className="w-full px-2 xs:px-3 py-1.5 xs:py-2 bg-[#2B593B] text-white/90 rounded hover:bg-[#346344] 
+                            transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-[10px] xs:text-xs font-medium
                             border border-white/10"
                   >
                     {item.category === "crop" ? "Sell" : "Buy"} {customQuantity}
@@ -261,8 +261,8 @@ function BuySellButton({
         onClick(itemId, quantity);
       }}
       disabled={disabled}
-      className="w-full px-2 py-1.5 bg-[#2B593B] text-white/90 rounded hover:bg-[#346344] 
-            transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-xs font-medium
+      className="w-full px-1 xs:px-2 py-1 xs:py-1.5 bg-[#2B593B] text-white/90 rounded hover:bg-[#346344] 
+            transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-[10px] xs:text-xs font-medium
             border border-white/10"
     >
       {amount}

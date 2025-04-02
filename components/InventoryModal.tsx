@@ -212,7 +212,7 @@ export default function InventoryModal({ onClose }: { onClose: () => void }) {
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto no-scrollbar">
           <div className="max-w-4xl mx-auto p-6">
             <div className="space-y-8">
               {renderCategorySection("seed", "🌱", "Seeds")}
