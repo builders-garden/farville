@@ -159,7 +159,7 @@ export default function ProfileModal({
             </button>
           </div>
 
-          <div className="space-y-3 sm:space-y-4 overflow-y-auto h-[calc(100vh-80px)] sm:h-[calc(100vh-100px)] sm:pb-4 [&::-webkit-scrollbar]:w-0">
+          <div className="space-y-3 sm:space-y-4 overflow-y-auto h-[calc(100vh-80px)] sm:h-[calc(100vh-100px)] sm:pb-4 no-scrollbar">
             <div className="flex flex-col items-center gap-8">
               {/* Profile Information */}
               <Card className="bg-gradient-to-br from-[#6D4C2C] to-[#5B4120] rounded-lg border-none w-full max-w-2xl">

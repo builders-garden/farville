@@ -252,7 +252,7 @@ export default function StreaksModal({ onClose }: { onClose: () => void }) {
             </button>
           </div>
         </div>
-        <div className="flex-1 overflow-y-auto [&::-webkit-scrollbar]:w-0">
+        <div className="flex-1 overflow-y-auto no-scrollbar">
           <div className="p-3 xs:p-4 flex flex-col gap-3 xs:gap-4">
             {/* Next Day Countdown */}
             <div className="bg-gradient-to-br from-[#8B5c3C] to-[#6d4c2c] rounded-xl p-2 xs:p-3 border border-[#ffa07a]/20">
@@ -485,7 +485,7 @@ export default function StreaksModal({ onClose }: { onClose: () => void }) {
                 <TimelineItem key={reward.day}>
                   <TimelineSeparator>
                     <TimelineDot
-                      className={`mt-0 p-6 rounded-lg transition-all duration-300 ${
+                      className={`mt-0 p-5 xs:p-6 rounded-lg transition-all duration-300 ${
                         isActive
                           ? "bg-gradient-to-br from-[#FFD700] to-[#FFA500] text-[#5B4120] scale-110 shadow-[0_0_20px_rgba(255,215,0,0.3)]"
                           : rewardToUse.day > lastClaimedDay
@@ -608,7 +608,7 @@ export default function StreaksModal({ onClose }: { onClose: () => void }) {
                                 rewardToUse.isLoading
                               }
                             >
-                              Claim Reward
+                              Claim
                             </motion.button>
                           )}
                       </div>

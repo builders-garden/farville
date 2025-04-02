@@ -248,7 +248,7 @@ export default function MarketplaceModal({
           />
 
           {/* Content area */}
-          <div className="overflow-y-auto flex-1 -mr-2 pr-2 [&::-webkit-scrollbar]:w-0">
+          <div className="overflow-y-auto flex-1 -mr-2 pr-2 no-scrollbar">
             {/* Seeds Tab */}
             {activeTab === "seeds" && (
               <motion.div
