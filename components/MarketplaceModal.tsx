@@ -204,7 +204,7 @@ export default function MarketplaceModal({
       >
         <div className="max-w-4xl mx-auto w-full p-4 mt-2 flex flex-col h-full">
           {/* Header */}
-          <div className="flex justify-between mb-2 xs:mb-4 sm:mb-6 flex-shrink-0">
+          <div className="flex justify-between mb-2 xs:mb-4 flex-shrink-0">
             <div className="flex flex-col gap-0.5 xs:gap-1">
               <motion.h2
                 className="text-white/90 font-bold text-xl xs:text-2xl mb-0 xs:mb-1 flex items-center gap-1 xs:gap-2"

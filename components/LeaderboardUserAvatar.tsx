@@ -20,7 +20,7 @@ export function LeaderboardUserAvatar({
   borderSize = 2,
 }: LeaderboardUserAvatarProps) {
   return (
-    <div className="relative flex-none sm:w-[20px] sm:h-[20px]">
+    <div className="relative flex-none">
       <Image
         src={pfpUrl !== "" ? pfpUrl : "/images/profile/default-avatar.png"}
         alt={`${username ?? "user"}'s avatar`}
