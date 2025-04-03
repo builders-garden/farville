@@ -1,10 +1,12 @@
 import { NextResponse } from "next/server";
 import { pinata } from "@/lib/pinata";
+import { updateUserCollectible } from "@/supabase/queries";
+import { CollectibleStatus } from "@/types/game";
 
 export async function POST(request: Request) {
   try {
-    const { imageUrl, fid } = await request.json();
-    if (!imageUrl) {
+    const { imageUrl, fid, collectibleId } = await request.json();
+    if (!imageUrl || !fid || !collectibleId) {
       return NextResponse.json(
         { success: false, error: "Invalid pinata arguments" },
         { status: 400 }
@@ -16,8 +18,8 @@ export async function POST(request: Request) {
     const buffer = Buffer.from(await imageResponse.arrayBuffer());
 
     // Create Blob and File objects
-    const blob = new Blob([buffer], { type: 'image/png' });
-    const file = new File([blob], `${fid}.png`, { type: 'image/png' });
+    const blob = new Blob([buffer], { type: "image/png" });
+    const file = new File([blob], `${fid}.png`, { type: "image/png" });
 
     // Upload to Pinata using their SDK
     const imageUploadData = await pinata.upload.file(file);
@@ -29,7 +31,8 @@ export async function POST(request: Request) {
       [
         JSON.stringify({
           name: "Farville Avatar",
-          description: "This exclusive Farville Avatar is a unique symbol of your membership to the Farville community.",
+          description:
+            "This exclusive Farville Avatar is a unique symbol of your membership to the Farville community.",
           image: `ipfs://${imageCID}`,
           external_url: `https://farville.farm`,
         }),
@@ -44,6 +47,15 @@ export async function POST(request: Request) {
     const metadataUploadData = await pinata.upload.file(metadataFile);
     const metadataCID = `ipfs://${metadataUploadData.IpfsHash}`;
     const metadataUrl = `https://gateway.pinata.cloud/ipfs/${metadataCID}`;
+
+    // save metadataUrl to db
+    console.log("saving metadataUrl to db", metadataUrl);
+    const res = await updateUserCollectible(fid, collectibleId, {
+      mintedMetadataUrl: metadataUrl,
+      mintedImageUrl: imageMetadataUrl,
+      status: CollectibleStatus.Minted,
+    });
+    console.log("saved to db res", res);
 
     return NextResponse.json(
       {
@@ -65,5 +77,4 @@ export async function POST(request: Request) {
       { status: 500 }
     );
   }
-  
 }

@@ -113,6 +113,8 @@ interface GameContextType {
   setShowAchievedNewBadges: Dispatch<SetStateAction<boolean>>;
   showMintOGBadge: boolean;
   setShowMintOGBadge: Dispatch<SetStateAction<boolean>>;
+  showMintCollectible: boolean;
+  setShowMintCollectible: Dispatch<SetStateAction<boolean>>;
   newGoldCropsFound: string[];
   setNewGoldCropsFound: Dispatch<SetStateAction<string[]>>;
   updateUserWeeklyStats: (weeklyStats: {
@@ -142,6 +144,7 @@ export function GameProvider({
   const [showTimeline, setShowTimeline] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
   const [showMintOGBadge, setShowMintOGBadge] = useState(false);
+  const [showMintCollectible, setShowMintCollectible] = useState(true);
   const {
     state,
     refetch,
@@ -552,6 +555,8 @@ export function GameProvider({
         setShowAchievedNewBadges,
         showMintOGBadge,
         setShowMintOGBadge,
+        showMintCollectible,
+        setShowMintCollectible,
         newGoldCropsFound,
         setNewGoldCropsFound,
         updateUserWeeklyStats,

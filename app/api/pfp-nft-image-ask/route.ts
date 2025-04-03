@@ -1,15 +1,18 @@
-import { MIDJOURNEY_API_URL, PFP_NFT_IMAGE_SYSTEM_PROMPT_1, PFP_NFT_IMAGE_SYSTEM_PROMPT_2 } from "@/lib/constants";
+import {
+  MIDJOURNEY_API_URL,
+  PFP_NFT_IMAGE_SYSTEM_PROMPT_1,
+  PFP_NFT_IMAGE_SYSTEM_PROMPT_2,
+} from "@/lib/constants";
+import { addUserCollectible } from "@/supabase/queries";
+import { CollectibleStatus } from "@/types/game";
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
   try {
-    const { prompt } = await request.json();
+    const { prompt, fid, collectibleId } = await request.json();
 
-    if (!prompt) {
-      return NextResponse.json(
-        { error: "Prompt is required" },
-        { status: 400 }
-      );
+    if (!prompt || !fid || !collectibleId) {
+      return NextResponse.json({ error: "Invalid arguments" }, { status: 400 });
     }
 
     const response = await fetch(MIDJOURNEY_API_URL, {
@@ -35,6 +38,16 @@ export async function POST(request: Request) {
     }
 
     const data = await response.json();
+
+    // save taskId to db
+    console.log("saving taskId to db", data.data.task_id);
+    const res = await addUserCollectible(
+      parseInt(fid),
+      parseInt(collectibleId),
+      CollectibleStatus.Pending,
+      data.data.task_id
+    );
+    console.log("res", res);
     //Return only the taskId to be used in the image-get route
     return NextResponse.json({ taskId: data.data.task_id });
   } catch (error) {

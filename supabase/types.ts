@@ -1,4 +1,4 @@
-import { QuestStatus } from "@/types/game";
+import { CollectibleStatus, QuestStatus } from "@/types/game";
 
 export interface DbItem {
   id: number;
@@ -35,6 +35,30 @@ export interface DbUserHasItem {
   createdAt: string;
 }
 
+export interface DbCollectible {
+  id: number;
+  name: string;
+  description: string;
+  category: string;
+  imageUrl: string;
+  createdAt: string;
+}
+
+export type DbUserHasCollectibleStatus = CollectibleStatus;
+
+export interface DbUserHasCollectible {
+  userFid: number;
+  collectibleId: number;
+  status: DbUserHasCollectibleStatus;
+  generatedTaskId: string | null;
+  generatedImageUrls: string[] | null;
+  mintedImageUrl: string | null;
+  mintedMetadataUrl: string | null;
+  txHash: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface DbReferrals {
   id: number;
   fid: number;
@@ -46,7 +70,10 @@ export interface DbReferrals {
 export type InsertDbItem = Omit<DbItem, "id" | "createdAt">;
 export type InsertDbUser = Omit<DbUser, "createdAt">;
 export type InsertDbUserHasItem = Omit<DbUserHasItem, "id" | "createdAt">;
-
+export type InsertDbUserHasCollectible = Omit<
+  DbUserHasCollectible,
+  "createdAt" | "updatedAt"
+>;
 export interface DbGridCell {
   fid: number;
   x: number;

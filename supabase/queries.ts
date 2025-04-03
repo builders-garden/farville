@@ -18,6 +18,9 @@ import {
   InsertDbUserHasQuest,
   DbUserHasQuestStatus,
   DbUserHarvestedCrop,
+  DbCollectible,
+  DbUserHasCollectible,
+  DbUserHasCollectibleStatus,
 } from "./types";
 import { CROP_DATA, SPEED_BOOST } from "@/lib/game-constants";
 import { CropType, PerkType, QuestStatus } from "@/types/game";
@@ -1455,6 +1458,144 @@ export const deleteUserHarvestedCrop = async (
     .delete()
     .eq("fid", fid)
     .eq("crop", crop);
+
+  if (error) throw error;
+};
+
+export const getCollectibles = async (
+  category?: string
+): Promise<DbCollectible[]> => {
+  const query = supabase
+    .from("collectibles")
+    .select(`*`)
+    .order("createdAt", { ascending: false });
+
+  if (category) {
+    query.eq("category", category);
+  }
+  const { data, error } = await query;
+
+  if (error) throw error;
+  return data;
+};
+
+export const getCollectibleById = async (
+  id: number
+): Promise<DbCollectible | null> => {
+  const { data, error } = await supabase
+    .from("collectibles")
+    .select("*")
+    .eq("id", id)
+    .maybeSingle();
+
+  if (error) throw error;
+  return data;
+};
+
+export const getUserCollectibleByCollectibleId = async (
+  fid: number,
+  collectibleId: number
+): Promise<(DbUserHasCollectible & { collectible: DbCollectible }) | null> => {
+  const { data, error } = await supabase
+    .from("user_has_collectibles")
+    .select("*, collectible:collectibles(*)")
+    .eq("fid", fid)
+    .eq("collectibleId", collectibleId)
+    .maybeSingle();
+
+  if (error) throw error;
+  return data;
+};
+
+// User Items queries
+export const getUserCollectibles = async (
+  fid: number,
+  category?: string
+): Promise<DbUserHasCollectible[]> => {
+  const query = supabase
+    .from("user_has_collectibles")
+    .select(`*, collectible:collectibles(*)`)
+    .eq("fid", fid)
+    .order("createdAt", { ascending: false });
+
+  if (category) {
+    query.eq("collectibles.category", category);
+  }
+
+  const { data, error } = await query;
+
+  if (error) throw error;
+  return data;
+};
+
+export const updateUserCollectible = async (
+  fid: number,
+  collectibleId: number,
+  updatedData: Partial<DbUserHasCollectible>
+): Promise<DbUserHasCollectible> => {
+  const { data, error } = await supabase
+    .from("user_has_collectibles")
+    .upsert(
+      {
+        fid,
+        collectibleId,
+        ...updatedData,
+      },
+      {
+        onConflict: "fid,collectibleId",
+      }
+    )
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+};
+
+export const addUserCollectible = async (
+  fid: number,
+  collectibleId: number,
+  status: DbUserHasCollectibleStatus,
+  taskId: string
+): Promise<DbUserHasCollectible> => {
+  const { data, error } = await supabase
+    .from("user_has_collectibles")
+    .upsert(
+      {
+        fid,
+        collectibleId,
+        status,
+        generatedTaskId: taskId,
+      },
+      {
+        onConflict: "fid,collectibleId",
+      }
+    )
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+};
+
+export const removeUserCollectible = async (
+  fid: number,
+  collectibleId: number
+): Promise<void> => {
+  const { data: existing } = await supabase
+    .from("user_has_collectibles")
+    .select("*")
+    .eq("fid", fid)
+    .eq("collectibleId", collectibleId)
+    .maybeSingle();
+
+  if (!existing) return;
+
+  const { error } = await supabase
+    .from("user_has_collectibles")
+    .delete()
+    .eq("fid", fid)
+    .eq("collectibleId", collectibleId);
 
   if (error) throw error;
 };

@@ -6,6 +6,7 @@ import { HarvestedGoldCrop } from "./modals/HarvestedGoldCrop";
 import { NewAchievementReached } from "./modals/NewAchievementReached";
 import SeedMenu from "./SeedMenu";
 import MintOgModal from "./modals/MintOgModal";
+import MintCollectibleModal from "./modals/MintCollectibleModal";
 
 export default function GameGrid() {
   const {
@@ -17,6 +18,8 @@ export default function GameGrid() {
     setShowAchievedNewBadges,
     showMintOGBadge,
     setShowMintOGBadge,
+    showMintCollectible,
+    setShowMintCollectible,
   } = useGame();
 
   // Create a 2D grid from the flat array
@@ -46,6 +49,10 @@ export default function GameGrid() {
         <MintOgModal onCancel={() => setShowMintOGBadge(false)} />
       )}
 
+      {showMintCollectible && (
+        <MintCollectibleModal onCancel={() => setShowMintCollectible(false)} />
+      )}
+
       {/* Render the grid */}
       <div
         data-tutorial="grid"
@@ -57,10 +64,7 @@ export default function GameGrid() {
       >
         {grid.map((row) =>
           row.map((cell) => (
-            <GridCell
-              key={`${cell.fid}-${cell.x}-${cell.y}`}
-              cell={cell}
-            />
+            <GridCell key={`${cell.fid}-${cell.x}-${cell.y}`} cell={cell} />
           ))
         )}
       </div>

@@ -2,11 +2,13 @@ import { useUserItems, UserItem } from "./use-user-items";
 import { useEffect, useState, useCallback } from "react";
 import { useGridCells } from "./use-grid-cells";
 import {
+  DbCollectible,
   DbGridCell,
   DbItem,
   DbStreak,
   DbUser,
   DbUserHarvestedCrop,
+  DbUserHasCollectible,
   DbUserHasQuestWithQuest,
 } from "@/supabase/types";
 import { useItems } from "./use-items";
@@ -17,6 +19,7 @@ import { useUpdateUserFrosts, useUserStreaks } from "./use-user-streaks";
 import { useUserFrosts } from "./use-user-frosts";
 import { useUserHarvestedCrops } from "./use-user-harvested-crops";
 import { useWeeklyStats } from "./use-weekly-stats";
+import { useUserCollectibles } from "./use-user-collectibles";
 
 export interface RefetchType {
   all: () => Promise<void>;
@@ -70,6 +73,7 @@ export interface GameState {
     lastScore: number;
     league: number;
   };
+  collectibles: (DbUserHasCollectible & { collectible: DbCollectible })[];
 }
 
 export const useGameState = () => {
@@ -112,6 +116,7 @@ export const useGameState = () => {
       lastScore: 0,
       league: 0,
     },
+    collectibles: [],
   });
   const {
     userItems,
@@ -158,6 +163,12 @@ export const useGameState = () => {
     isLoading: weeklyStatsLoading,
     refetch: refetchWeeklyStats,
   } = useWeeklyStats(state?.user?.fid);
+
+  const {
+    userCollectibles,
+    isLoading: userCollectiblesLoading,
+    refetch: refetchUserCollectibles,
+  } = useUserCollectibles(state?.user?.fid);
 
   const updateUserState = useCallback(() => {
     if (user) {
@@ -272,6 +283,15 @@ export const useGameState = () => {
     }
   }, [userWeeklyStats]);
 
+  const updateUserCollectiblesState = useCallback(() => {
+    if (userCollectibles) {
+      setState((prevState) => ({
+        ...prevState!,
+        collectibles: userCollectibles,
+      }));
+    }
+  }, [userCollectibles]);
+
   useEffect(() => {
     updateUserState();
   }, [user, updateUserState]);
@@ -354,12 +374,14 @@ export const useGameState = () => {
     if (state.user?.fid) {
       updateUserHarvestedCropsState();
       updateUserWeeklyStatsState();
+      updateUserCollectiblesState();
     }
   }, [
     userHarvestedCrops,
     updateUserHarvestedCropsState,
     state.user?.fid,
     updateUserWeeklyStatsState,
+    updateUserCollectiblesState,
   ]);
 
   const refetchAll = useCallback(async () => {
@@ -372,6 +394,7 @@ export const useGameState = () => {
       refetchStreaks(),
       refetchUserHarvestedCrops(),
       refetchWeeklyStats(),
+      refetchUserCollectibles(),
     ]);
   }, [
     refetchUserItems,
@@ -382,6 +405,7 @@ export const useGameState = () => {
     refetchStreaks,
     refetchUserHarvestedCrops,
     refetchWeeklyStats,
+    refetchUserCollectibles,
   ]);
 
   // Add new method to update grid cells directly
@@ -574,7 +598,8 @@ export const useGameState = () => {
       streaksLoading ||
       frostsLoading ||
       isUserHarvestedCropsLoading ||
-      weeklyStatsLoading,
+      weeklyStatsLoading ||
+      userCollectiblesLoading,
     refetch: {
       all: refetchAll,
       userItems: async () => {
@@ -591,6 +616,9 @@ export const useGameState = () => {
       },
       claimableQuests: async () => {
         await refetchClaimableQuests();
+      },
+      collectibles: async () => {
+        await refetchUserCollectibles();
       },
       streaks: async () => {
         await refetchStreaks();
