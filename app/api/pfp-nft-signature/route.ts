@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { privateKeyToAccount } from "viem/accounts";
+import { encodePacked, keccak256 } from "viem";
 
 export async function POST(request: Request) {
   try {
@@ -21,16 +22,23 @@ export async function POST(request: Request) {
     // Create an account from the private key
     const account = privateKeyToAccount(privateKey as `0x${string}`);
 
-    // Create the message hash 
-    const messageHash = await account.signMessage({
-      message: {
-        raw: recipient + tokenId + tokenIdURI,
-      },
+    console.log(recipient, tokenId, tokenIdURI);
+
+    const messageHash = keccak256(
+      encodePacked(
+        ["address", "uint256", "string"],
+        [recipient, tokenId, tokenIdURI]
+      )
+    );
+
+    // Sign the hash directly as a hex string
+    const signature = await account.signMessage({
+      message: { raw: messageHash },
     });
 
     // Return the signature and the signer's address for verification
     return NextResponse.json({
-      signature: messageHash,
+      signature: signature,
       signerAddress: account.address,
     });
   } catch (error) {

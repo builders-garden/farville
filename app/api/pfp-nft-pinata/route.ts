@@ -29,7 +29,7 @@ export async function POST(request: Request) {
       [
         JSON.stringify({
           name: "Farville Avatar",
-          description: "This exclusive Farville Avatar NFT is a unique symbol of your membership to the Farville community.",
+          description: "This exclusive Farville Avatar is a unique symbol of your membership to the Farville community.",
           image: `ipfs://${imageCID}`,
           external_url: `https://farville.farm`,
         }),
