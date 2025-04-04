@@ -25,6 +25,25 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+export const formatNumberWithSuffix = (value: number, decimals = 2): string => {
+  if (value === null || value === undefined || isNaN(value)) {
+    return "0";
+  }
+
+  // For values less than 1000, just return the number with fixed decimals
+  if (Math.abs(value) < 1000) {
+    return value.toFixed(decimals);
+  }
+
+  // For thousands (k)
+  if (Math.abs(value) < 1000000) {
+    return (value / 1000).toFixed(decimals) + "k";
+  }
+
+  // For millions (M)
+  return (value / 1000000).toFixed(decimals) + "M";
+};
+
 export const warpcastComposeCastUrl = () => {
   const frameUrl = `${process.env.NEXT_PUBLIC_URL}`;
   const text = `I'm tired of touching grass IRL, and I can't wait to touch PIXEL grass in /farville...\n\nBuild my dream farm and grow quirky crops. It's honest work, but way more fun than real farming!🧑‍🌾`;

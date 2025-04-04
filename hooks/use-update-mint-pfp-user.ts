@@ -7,8 +7,15 @@ export const useUpdateMintPfpUser = () => {
   return useApiMutation({
     url: () => `/api/users/me/mint-pfp`,
     method: "POST",
-    body: ({ nftId }: { nftId: number }) => ({
-      tokenId: nftId,
+    body: ({
+      collectibleId,
+      txHash,
+    }: {
+      collectibleId: number;
+      txHash: string;
+    }) => ({
+      collectibleId,
+      txHash,
     }),
     onSuccess: () => {
       // update the user mintedPfp to true

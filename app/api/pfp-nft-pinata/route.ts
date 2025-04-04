@@ -19,7 +19,9 @@ export async function POST(request: Request) {
 
     // Create Blob and File objects
     const blob = new Blob([buffer], { type: "image/png" });
-    const file = new File([blob], `${fid}.png`, { type: "image/png" });
+    const file = new File([blob], `image-farmer-${fid}.png`, {
+      type: "image/png",
+    });
 
     // Upload to Pinata using their SDK
     const imageUploadData = await pinata.upload.file(file);
@@ -30,14 +32,14 @@ export async function POST(request: Request) {
     const metadataFile = new File(
       [
         JSON.stringify({
-          name: "Farville Avatar",
+          name: `Farville Farmer #${fid}`,
           description:
-            "This exclusive Farville Avatar is a unique symbol of your membership to the Farville community.",
+            "This exclusive Farville Farmer is a unique symbol of your membership to the Farville community.",
           image: `ipfs://${imageCID}`,
           external_url: `https://farville.farm`,
         }),
       ],
-      "metadata.json",
+      `metadata-farmer-${fid}.json`,
       {
         type: "application/json",
       }
@@ -53,7 +55,7 @@ export async function POST(request: Request) {
     const res = await updateUserCollectible(fid, collectibleId, {
       mintedMetadataUrl: metadataUrl,
       mintedImageUrl: imageMetadataUrl,
-      status: CollectibleStatus.Minted,
+      status: CollectibleStatus.Uploaded,
     });
     console.log("saved to db res", res);
 

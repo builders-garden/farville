@@ -1,8 +1,6 @@
 "use client";
 
-import "react-medium-image-zoom/dist/styles.css";
 import { motion } from "framer-motion";
-import Zoom from "react-medium-image-zoom";
 import Image from "next/image";
 import { Card, CardContent } from "./ui/card";
 import { useGame } from "@/context/GameContext";
@@ -24,6 +22,7 @@ import { useOtherUserProfile } from "@/hooks/use-other-user-profile";
 import AchievementBadgeModal from "./modals/AchievementBadgeModal";
 import { ACHIEVEMENTS_THRESHOLDS } from "@/lib/game-constants";
 import { OG_FIDS_LIST } from "@/lib/contracts/constants";
+import { CollectibleStatus } from "@/types/game";
 
 export interface BadgeModalData {
   name: string;
@@ -47,8 +46,13 @@ export default function ProfileModal({
   onClose: () => void;
   userFid?: number;
 }) {
-  const { state, setShowMintOGBadge, newGoldCropsFound, setNewGoldCropsFound } =
-    useGame();
+  const {
+    state,
+    setShowMintOGBadge,
+    setShowMintCollectible,
+    newGoldCropsFound,
+    setNewGoldCropsFound,
+  } = useGame();
   const [isWhatIsThisOpen, setIsWhatIsThisOpen] = useState(false);
   const [isWhatIsThisCollectibleOpen, setIsWhatIsCollectibleThisOpen] =
     useState(false);
@@ -74,8 +78,6 @@ export default function ProfileModal({
   const goldCropsData = state.items.filter(
     (item) => item.category === "special-crop"
   );
-
-  console.log("collectibles", state.collectibles);
 
   useEffect(() => {
     if (isCurrentUser) {
@@ -380,41 +382,32 @@ export default function ProfileModal({
                         {(showMoreCollectibles
                           ? state.collectibles
                           : state.collectibles?.slice(0, 4)
-                        )?.map((collectible, index) =>
-                          collectible ? (
+                        )?.map((collectible, index) => {
+                          const collectibleImage =
+                            collectible.userHasCollectibles
+                              ? collectible.userHasCollectibles.status ===
+                                  CollectibleStatus.Minted &&
+                                collectible.userHasCollectibles.mintedImageUrl
+                                ? collectible.userHasCollectibles.mintedImageUrl
+                                : collectible.userHasCollectibles.status ===
+                                  CollectibleStatus.Generated
+                                ? collectible.userHasCollectibles
+                                    .generatedImageUrls?.[0] ??
+                                  collectible.imageUrl
+                                : collectible.imageUrl
+                              : collectible.imageUrl;
+                          return collectible ? (
                             <div
                               key={index}
-                              className={`relative aspect-square w-full rounded-lg bg-gradient-to-br from-[#6D4C2C] to-[#5B4120] border-2 overflow-hidden
-                        ${
-                          newGoldCropsFound.includes(collectible.id.toString())
-                            ? "border-[#FFB938] shadow-lg shadow-[#FFB938]/40"
-                            : "border-[#f2a311]"
-                        } 
-                        ${isCurrentUser ? "cursor-pointer group" : ""}`}
-                              onClick={() => {
-                                setBadgeModalData({
-                                  name: collectible.name,
-                                  title: collectible.name,
-                                  description: `A rare ${collectible.name} badge earned through luck and constancy in cultivating this crop in Farville.`,
-                                  badgeUrl: collectible.imageUrl,
-                                  type: "collectible",
-                                  shareable: true,
-                                  mintable: true,
-                                  generated: true,
-                                  collectibleId: collectible.id.toString(),
-                                  collectibleName: collectible.name,
-                                });
-                                if (isCurrentUser) {
-                                  // setNewGoldCropsFound((prev) =>
-                                  //   prev.filter((slug) => slug !== crop.slug)
-                                  // );
-                                }
-                              }}
+                              className={`relative aspect-square w-full rounded-lg bg-gradient-to-br from-[#6D4C2C] to-[#5B4120] border-2 overflow-hidden ${
+                                isCurrentUser ? "cursor-pointer group" : ""
+                              }`}
+                              onClick={() => setShowMintCollectible(true)}
                             >
                               <div className="absolute inset-0 bg-gradient-to-b from-yellow/30 to-transparent z-10 animate-pulse pointer-events-none"></div>
 
                               <Image
-                                src={collectible.imageUrl}
+                                src={collectibleImage}
                                 alt={collectible.name}
                                 fill
                                 className={`rounded-lg transition-transform duration-300 group-hover:scale-110 ${
@@ -422,7 +415,7 @@ export default function ProfileModal({
                                     collectible.id.toString()
                                   )
                                     ? ""
-                                    : "filter blur-[3px] brightness-[50%] animate-pulse-slow"
+                                    : "filter blur-[3px]"
                                 }`}
                                 sizes="(max-width: 640px) 25vw, 20vw"
                               />
@@ -441,8 +434,8 @@ export default function ProfileModal({
                                 className="w-[35px] h-[35px] xs:w-[44px] xs:h-[44px]"
                               />
                             </div>
-                          )
-                        )}
+                          );
+                        })}
                       </CardContent>
                     </Card>
                   </div>
@@ -879,14 +872,12 @@ export default function ProfileModal({
                     transition={{ duration: 0.5 }}
                     className="absolute inset-0"
                   >
-                    <Zoom>
-                      <Image
-                        src={badgeModalData.badgeUrl}
-                        alt={badgeModalData.title}
-                        layout="fill"
-                        className="rounded-sm"
-                      />
-                    </Zoom>
+                    <Image
+                      src={badgeModalData.badgeUrl}
+                      alt={badgeModalData.title}
+                      layout="fill"
+                      className="rounded-sm"
+                    />
                   </motion.div>
                 </div>
                 <motion.p

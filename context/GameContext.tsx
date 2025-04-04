@@ -9,7 +9,12 @@ import {
   useRef,
   useState,
 } from "react";
-import { ActionType, type CropType, type SeedType } from "../types/game";
+import {
+  ActionType,
+  CollectibleStatus,
+  type CropType,
+  type SeedType,
+} from "../types/game";
 import { GameState, useGameState } from "@/hooks/use-game-state";
 import { useBuyItem } from "@/hooks/game-actions/use-buy-item";
 import { useExpandGrid } from "@/hooks/game-actions/use-expand-grid";
@@ -182,7 +187,15 @@ export function GameProvider({
 
   useEffect(() => {
     if (state.collectibles.length > 0) {
-      setShowMintCollectible(true);
+      const collectible = state.collectibles.find(
+        (collectible) => collectible.id === 1
+      );
+      if (
+        !collectible?.userHasCollectibles ||
+        collectible?.userHasCollectibles?.status !== CollectibleStatus.Minted
+      ) {
+        setShowMintCollectible(true);
+      }
     }
   }, [state.collectibles]);
 

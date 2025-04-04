@@ -135,6 +135,7 @@ export enum QuestStatus {
 export enum CollectibleStatus {
   Pending = "pending",
   Generated = "generated",
+  Uploaded = "uploaded",
   Minted = "minted",
   Error = "error",
 }
