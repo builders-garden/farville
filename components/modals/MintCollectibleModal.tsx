@@ -87,6 +87,11 @@ export default function MintCollectibleModal({
   );
 
   useEffect(() => {
+    console.log(
+      farvilleAvatarCollectible,
+      "user has collectibles",
+      farvilleAvatarCollectible?.userHasCollectibles
+    );
     if (
       farvilleAvatarCollectible &&
       farvilleAvatarCollectible.userHasCollectibles
@@ -350,23 +355,8 @@ export default function MintCollectibleModal({
               />
 
               {/* New pulsing yellow shadow around image */}
-              <motion.div
-                animate={{
-                  boxShadow: [
-                    "0 0 20px 8px rgba(234, 179, 8, 0.5)",
-                    "0 0 40px 15px rgba(234, 179, 8, 0.7)",
-                    "0 0 20px 8px rgba(234, 179, 8, 0.5)",
-                  ],
-                }}
-                transition={{
-                  duration: 3,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                }}
-                className="absolute top-1/2 left-1/2 w-52 h-52 -translate-x-1/2 -translate-y-1/2 rounded-xl bg-yellow-400/10 blur-md -z-5"
-              />
-              {midjourneyImageUrl ? (
-                <div className="grid grid-cols-2 gap-4">
+              {midjourneyImageUrls ? (
+                <div className="grid grid-cols-2 gap-x-4 gap-y-2">
                   {midjourneyImageUrls?.map((imageUrl) => (
                     <CustomImage
                       key={imageUrl}
@@ -378,25 +368,42 @@ export default function MintCollectibleModal({
                   ))}
                 </div>
               ) : (
-                <motion.div
-                  animate={{
-                    scale: [1, 1.05, 1],
-                  }}
-                  transition={{
-                    duration: 3,
-                    repeat: Infinity,
-                    ease: "easeInOut",
-                  }}
-                  className="relative w-56 h-56 rounded-2xl border-8 border-yellow-400/40"
-                >
-                  <Image
-                    src={userPfp ?? `/images/badge/og.png`}
-                    fill
-                    alt={`User Pfp Generation`}
-                    className="rounded-lg [animation:rotate_20s_linear_infinite] 
-         [filter:drop-shadow(0_0_10px_rgba(234,179,8,0.5))]"
+                <>
+                  <motion.div
+                    animate={{
+                      boxShadow: [
+                        "0 0 20px 8px rgba(234, 179, 8, 0.5)",
+                        "0 0 40px 15px rgba(234, 179, 8, 0.7)",
+                        "0 0 20px 8px rgba(234, 179, 8, 0.5)",
+                      ],
+                    }}
+                    transition={{
+                      duration: 3,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                    }}
+                    className="absolute top-1/2 left-1/2 w-52 h-52 -translate-x-1/2 -translate-y-1/2 rounded-xl bg-yellow-400/10 blur-md -z-5"
                   />
-                </motion.div>
+                  <motion.div
+                    animate={{
+                      scale: [1, 1.05, 1],
+                    }}
+                    transition={{
+                      duration: 3,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                    }}
+                    className="relative w-56 h-56 rounded-2xl border-8 border-yellow-400/40"
+                  >
+                    <Image
+                      src={userPfp ?? `/images/badge/og.png`}
+                      fill
+                      alt={`User Pfp Generation`}
+                      className="rounded-lg [animation:rotate_20s_linear_infinite] 
+         [filter:drop-shadow(0_0_10px_rgba(234,179,8,0.5))]"
+                    />
+                  </motion.div>
+                </>
               )}
             </div>
           </div>
@@ -451,16 +458,16 @@ export default function MintCollectibleModal({
                     {[1, 3, 5].map((price) => (
                       <Button
                         key={`mint-price-${price}`}
-                        variant="outline"
+                        variant="ghost"
                         onClick={() => setSelectedPrice(price)}
                         className={cn(
                           "text-md px-3 w-full rounded-xl text-white font-semibold",
                           selectedPrice === price
-                            ? "text-black bg-yellow-400 hover:bg-yellow-400/80 border-2 border-white"
-                            : "bg-yellow-800 hover:bg-yellow-800/60 border-2 border-white"
+                            ? "bg-[#8A5F3C] opacity-100 border-2 border-white/80"
+                            : "bg-[#8A5F3C] hover:bg-[#8A5F3C]/80 hover:text-white/80 opacity-80 border-2 border-transparent hover:border-white/80"
                         )}
                       >
-                        $ {price}
+                        ${price}
                       </Button>
                     ))}
                   </div>
@@ -513,23 +520,19 @@ export default function MintCollectibleModal({
                   isLoading ||
                   !address ||
                   !selectedImageUrl ||
-                  nftId === -1 ||
                   isPending ||
                   isReceiptLoading ||
-                  state.user.mintedOG ||
                   hasInsufficientBalance
                 }
-                className={`flex-1 py-2 px-4 rounded bg-yellow-500/20 text-yellow-400 ${
+                className={`flex-1 py-2 px-4 rounded ${
+                  isLoading ||
                   !address ||
                   !selectedImageUrl ||
-                  nftId === -1 ||
-                  isLoading ||
                   isPending ||
                   isReceiptLoading ||
-                  state.user.mintedOG ||
                   hasInsufficientBalance
                     ? "text-yellow-400/50 cursor-not-allowed bg-yellow-500/10"
-                    : "hover:bg-yellow-500/30"
+                    : "bg-yellow-500 text-yellow-500/20"
                 } ${
                   isReceiptSuccess
                     ? "bg-green-500 text-green-200 cursor-not-allowed"
@@ -583,33 +586,37 @@ const CustomImage = ({
   onSelect: () => void;
 }) => {
   return (
-    <motion.div
-      animate={{
-        scale: [1, 1.05, 1],
-      }}
-      transition={{
-        duration: 3,
-        repeat: Infinity,
-        ease: "easeInOut",
-      }}
-      className={cn(
-        "relative rounded-2xl border-8 border-yellow-400/20 size-32",
-        selected && "border-green-400/80"
-      )}
+    <div
+      className="flex flex-col gap-2 px-2 py-1 items-center justify-center cursor-pointer"
       onClick={onSelect}
     >
-      {selected && (
-        <Check className="absolute -top-3 -right-3 bg-green-400 text-white rounded-full p-1 z-10" />
-      )}
-      <Zoom>
-        <Image
-          src={imageUrl ?? `/images/badge/og.png`}
-          alt={alt}
-          fill
-          className="rounded-lg [animation:rotate_20s_linear_infinite] 
+      <motion.div
+        animate={{
+          scale: [1, 1.05, 1],
+        }}
+        transition={{
+          duration: 3,
+          repeat: Infinity,
+          ease: "easeInOut",
+        }}
+        className={cn(
+          "relative rounded-2xl border-8 border-yellow-400/20 size-32",
+          selected && "border-green-400/80"
+        )}
+      >
+        {selected && (
+          <Check className="absolute -top-3 -right-3 bg-green-400 text-white rounded-full p-1 z-10" />
+        )}
+        <Zoom>
+          <Image
+            src={imageUrl ?? `/images/badge/og.png`}
+            alt={alt}
+            fill
+            className="rounded-lg [animation:rotate_20s_linear_infinite] 
            [filter:drop-shadow(0_0_10px_rgba(234,179,8,0.5))]"
-        />
-      </Zoom>
-    </motion.div>
+          />
+        </Zoom>
+      </motion.div>
+    </div>
   );
 };
