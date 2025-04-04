@@ -16,6 +16,8 @@ export default function PerkItem({
   gridSize,
   userCoins,
 }: PerkItemProps) {
+  const buttons = gridSize > 10 ? [1, 5, 10, gridSize] : [1, 5, 10];
+
   return (
     <motion.div
       key={perk.id}
@@ -70,24 +72,22 @@ export default function PerkItem({
             Buy
           </span>
           <div className="flex gap-2 w-full">
-            {gridSize > 10
-              ? [1, 5, 10, gridSize]
-              : [1, 5, 10].map((amount) => (
-                  <motion.button
-                    key={amount}
-                    whileHover={{ scale: 1.03 }}
-                    whileTap={{ scale: 0.97 }}
-                    onClick={() => {
-                      onBuyClick(perk.id, amount);
-                    }}
-                    disabled={userCoins < (perk.buyPrice || 0) * amount}
-                    className="w-full px-1 xs:px-2 py-1 xs:py-1.5 bg-[#2B593B] text-white/90 rounded hover:bg-[#346344] 
+            {buttons.map((amount) => (
+              <motion.button
+                key={amount}
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+                onClick={() => {
+                  onBuyClick(perk.id, amount);
+                }}
+                disabled={userCoins < (perk.buyPrice || 0) * amount}
+                className="w-full px-1 xs:px-2 py-1 xs:py-1.5 bg-[#2B593B] text-white/90 rounded hover:bg-[#346344] 
                 transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-[10px] xs:text-xs font-medium
                 border border-white/10"
-                  >
-                    {amount}
-                  </motion.button>
-                ))}
+              >
+                {amount}
+              </motion.button>
+            ))}
           </div>
         </div>
       )}
