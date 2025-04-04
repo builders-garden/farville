@@ -192,9 +192,8 @@ export default function GameWrapper() {
   useEffect(() => {
     if (state.showGridCellsTutorial) {
       startNextStep("mainTour");
-      startBackgroundMusic();
     }
-  }, []);
+  }, [startNextStep, state.showGridCellsTutorial]);
 
   return (
     <div className="relative z-10">
