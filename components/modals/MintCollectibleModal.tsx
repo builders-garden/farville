@@ -411,7 +411,7 @@ export default function MintCollectibleModal({
             duration: 0.2,
             ease: [0.4, 0, 0.2, 1], // Custom easing for smooth animation
           }}
-          className="flex flex-col gap-4 bg-gradient-to-br from-[#8B5E3C] to-[#6A4123] p-6 rounded-lg max-w-sm w-full mx-4 border border-[#8B5E3C]/50 
+          className="flex flex-col gap-2 xs:gap-4 bg-gradient-to-br from-[#8B5E3C] to-[#6A4123] p-4 xs:p-6 rounded-lg max-w-sm w-full mx-4 border border-[#8B5E3C]/50 
           [box-shadow:0_0_50px_rgba(234,179,8,0.3)] relative will-change-transform"
         >
           <button
@@ -485,7 +485,7 @@ export default function MintCollectibleModal({
                       repeat: Infinity,
                       ease: "easeInOut",
                     }}
-                    className="relative w-56 h-56 rounded-2xl border-8 border-yellow-400/40"
+                    className="relative w-48 h-48 xs:w-56 xs:h-56 rounded-2xl border-8 border-yellow-400/40"
                   >
                     <Image
                       src={userPfp ?? `/images/badge/og.png`}
@@ -499,7 +499,7 @@ export default function MintCollectibleModal({
               )}
             </div>
           </div>
-          <div className="flex flex-col gap-4 mb-2">
+          <div className="flex flex-col gap-2 xs:gap-4 mb-2">
             <span className="text-yellow-300/90 text-[10px] text-center">
               Pick your farmer. Make it yours.
             </span>
@@ -522,12 +522,14 @@ export default function MintCollectibleModal({
                 {(receiptError.cause as any).details || "Tx to mint failed."}
               </span>
             )}
-            {hasInsufficientBalance && state.user.mintedOG === false && (
-              <span className="bg-red-500 text-red-200 text-[8px] p-2 rounded">
-                Insufficient ETH balance to mint. Please add some ETH to your
-                wallet.
-              </span>
-            )}
+            {address !== undefined &&
+              hasInsufficientBalance &&
+              state.user.mintedOG === false && (
+                <span className="bg-red-500 text-red-200 text-[8px] p-2 rounded">
+                  Insufficient ETH balance to mint. Please add some ETH to your
+                  wallet.
+                </span>
+              )}
           </div>
           <div className="flex flex-col gap-3">
             {/* PRICE */}
@@ -613,9 +615,14 @@ export default function MintCollectibleModal({
                   CollectibleStatus.Pending &&
                 !midjourneyTaskId) ? (
               <button
-                disabled={pfpDescriptionLoading || !pfpDescription}
+                disabled={pfpDescriptionLoading || !pfpDescription || !address}
                 onClick={handleGenerate}
-                className={`flex-1 py-2 px-4 rounded bg-[#179ef9]/20 text-[#179ef9] hover:bg-[#179ef9]/30 transition-colors text-sm font-medium border border-[#179ef9]/30 flex items-center justify-center gap-2`}
+                className={`flex-1 py-2 px-4 rounded ${
+                  pfpDescriptionLoading || !pfpDescription || !address
+                    ? "bg-[#179ef9]/10 text-[#179ef9]/50 cursor-not-allowed"
+                    : "bg-[#179ef9]/20 text-[#179ef9] hover:bg-[#179ef9]/30"
+                } 
+                  transition-colors text-sm font-medium border border-[#179ef9]/30 flex items-center justify-center gap-2`}
               >
                 Generate
               </button>
@@ -718,7 +725,7 @@ export default function MintCollectibleModal({
               </button>
             ) : null}
             {!state.user.mintedOG && !address && (
-              <span className="text-center text-[9px] text-white/70 border border-white/70 rounded w-fit px-4 py-2 m-auto mt-2">
+              <span className="text-center text-[9px] text-white/70 border border-white/70 rounded w-fit px-4 py-2 m-auto mt-1 xs:mt-2">
                 Please connect a wallet to mint the badge.
               </span>
             )}
@@ -768,7 +775,7 @@ const CustomImage = ({
           ease: "easeInOut",
         }}
         className={cn(
-          "relative rounded-2xl border-8 border-yellow-400/20 size-32",
+          "relative rounded-2xl border-8 border-yellow-400/20 size-28 xs:size-32",
           selected && "border-green-400/80"
         )}
       >

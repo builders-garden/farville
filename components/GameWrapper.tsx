@@ -179,7 +179,13 @@ function TimelineModalContainer() {
 
 export default function GameWrapper() {
   const { startBackgroundMusic } = useAudio();
-  const { state, activeOverlay, setActiveOverlay } = useGame();
+  const {
+    state,
+    activeOverlay,
+    setActiveOverlay,
+    showMintCollectible,
+    loading,
+  } = useGame();
   const { safeAreaInsets } = useFrameContext();
 
   const handleOverlayComplete = () => {
@@ -190,10 +196,15 @@ export default function GameWrapper() {
   const { startNextStep } = useNextStep();
 
   useEffect(() => {
-    if (state.showGridCellsTutorial) {
+    if (state.showGridCellsTutorial && !loading && !showMintCollectible) {
       startNextStep("mainTour");
     }
-  }, [startNextStep, state.showGridCellsTutorial]);
+  }, [
+    loading,
+    showMintCollectible,
+    startNextStep,
+    state.showGridCellsTutorial,
+  ]);
 
   return (
     <div className="relative z-10">

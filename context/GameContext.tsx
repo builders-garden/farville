@@ -49,6 +49,7 @@ export interface FloatingNumberData {
 // Update the context type
 interface GameContextType {
   state: GameState;
+  loading: boolean;
   selectedSeed: SeedType | null;
   setSelectedSeed: (seed: SeedType | null) => void;
   selectedPerk: UserItem | null;
@@ -147,6 +148,8 @@ export function GameProvider({
   const [showProfile, setShowProfile] = useState(false);
   const [showMintOGBadge, setShowMintOGBadge] = useState(false);
   const [showMintCollectible, setShowMintCollectible] = useState(false);
+  const [isLoadingMintCollectible, setIsLoadingMintCollectible] =
+    useState(true);
   const {
     state,
     refetch,
@@ -191,6 +194,7 @@ export function GameProvider({
       ) {
         setShowMintCollectible(true);
       }
+      setIsLoadingMintCollectible(false);
     }
   }, [state.collectibles]);
 
@@ -498,18 +502,13 @@ export function GameProvider({
     <GameContext.Provider
       value={{
         state,
+        loading: isLoadingMintCollectible,
         selectedSeed,
         setSelectedSeed,
         selectedPerk,
         setSelectedPerk,
         addGridOperation,
         gridBulkResult,
-        // fertilize: (params) =>
-        //   applyPerkMutation({
-        //     ...params,
-        //     itemSlug: "fertilizer",
-        //     setIsLoading: params.setIsLoading,
-        //   }),
         buyItem,
         sellItem,
         expandGrid,
