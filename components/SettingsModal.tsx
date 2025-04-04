@@ -2,14 +2,12 @@
 
 import { motion } from "framer-motion";
 import { useAudio } from "../context/AudioContext";
-import { useGame } from "../context/GameContext";
 import Image from "next/image";
 import sdk from "@farcaster/frame-sdk";
 
 export default function SettingsModal({ onClose }: { onClose: () => void }) {
   const { toggleMusic, isMusicPlaying, isSoundEnabled, toggleSound } =
     useAudio();
-  const { setTutorialComplete, setActiveOverlay } = useGame();
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-start z-50">
@@ -65,7 +63,7 @@ export default function SettingsModal({ onClose }: { onClose: () => void }) {
                 </div>
                 <div className="flex-1 min-w-0 xs:min-w-[180px]">
                   <h3 className="text-white/90 text-lg xs:text-xl font-semibold mb-0 xs:mb-1">
-                    Tutorial
+                    Read Wiki
                   </h3>
                   <p className="text-white/60 text-xs xs:text-sm">
                     Review the game instructions
@@ -73,7 +71,7 @@ export default function SettingsModal({ onClose }: { onClose: () => void }) {
                 </div>
               </div>
 
-              <div className="mt-3 xs:mt-5">
+              {/* <div className="mt-3 xs:mt-5">
                 <motion.button
                   whileHover={{ scale: 1.03 }}
                   whileTap={{ scale: 0.97 }}
@@ -90,7 +88,7 @@ export default function SettingsModal({ onClose }: { onClose: () => void }) {
                 >
                   Show Tutorial 📖
                 </motion.button>
-              </div>
+              </div> */}
             </motion.div>
 
             <motion.div

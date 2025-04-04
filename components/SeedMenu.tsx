@@ -104,7 +104,6 @@ export default function SeedMenu() {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 20 }}
       className="flex items-center gap-2 px-2 overflow-y-hidden"
-      data-tutorial={"seed-menu"}
       id="seed-menu"
     >
       <motion.div

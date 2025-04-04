@@ -17,7 +17,6 @@ import PlantingIndicator from "./PlantingIndicator";
 import QuestsModal from "./QuestsModal";
 import { useAudio } from "@/context/AudioContext";
 import RequestModal from "./RequestModal";
-import TutorialOverlay from "./TutorialOverlay";
 import { useEffect } from "react";
 import TimelineModal from "./TimelineModal";
 import ProfileModal from "./ProfileModal";
@@ -180,26 +179,11 @@ function TimelineModalContainer() {
 
 export default function GameWrapper() {
   const { startBackgroundMusic } = useAudio();
-  const {
-    state,
-    activeOverlay,
-    setActiveOverlay,
-    tutorialComplete,
-    setTutorialComplete,
-  } = useGame();
+  const { state, activeOverlay, setActiveOverlay } = useGame();
   const { safeAreaInsets } = useFrameContext();
-
-  // Check if user is new and show tutorial
-  useEffect(() => {
-    if (!tutorialComplete) {
-      setActiveOverlay({ type: "tutorial" });
-    }
-  }, [tutorialComplete]);
 
   const handleOverlayComplete = () => {
     setActiveOverlay(null);
-    setTutorialComplete(true);
-    localStorage.setItem("tutorialComplete", "true");
     startBackgroundMusic();
   };
 
@@ -208,19 +192,13 @@ export default function GameWrapper() {
   useEffect(() => {
     if (state.showGridCellsTutorial) {
       startNextStep("mainTour");
+      startBackgroundMusic();
     }
   }, []);
 
   return (
     <div className="relative z-10">
       {/* <ClickEffect /> */}
-
-      {/* Render tutorial overlay */}
-      {activeOverlay?.type === "tutorial" && (
-        <AnimatePresence>
-          <TutorialOverlay onComplete={handleOverlayComplete} />
-        </AnimatePresence>
-      )}
 
       {activeOverlay?.type === "requests" && (
         <AnimatePresence>
@@ -229,7 +207,7 @@ export default function GameWrapper() {
       )}
 
       {/* Main game content */}
-      {(!activeOverlay || activeOverlay.type === "tutorial") && (
+      {!activeOverlay && (
         <div
           style={{
             backgroundColor: "#255F37",

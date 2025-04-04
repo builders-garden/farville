@@ -48,7 +48,6 @@ export default function GameGrid() {
 
       {/* Render the grid */}
       <div
-        data-tutorial="grid"
         className="grid gap-1 aspect-square w-full"
         id="fields-grid"
         style={{
