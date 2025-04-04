@@ -20,12 +20,13 @@ import {
   streakFlexCardComposeCastUrl,
 } from "@/lib/utils";
 import { motion } from "framer-motion";
-import { Clock, Plus, Share2 } from "lucide-react";
+import { Clock, Plus } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import ConfirmationModal from "./modals/ConfirmationModal";
 import InfoModal from "./modals/InfoModal";
 import sdk from "@farcaster/frame-sdk";
+import { FloatingShareButton } from "./FloatingShareButton";
 
 interface StreakReward {
   day: number;
@@ -258,10 +259,7 @@ export default function StreaksModal({ onClose }: { onClose: () => void }) {
             <div className="bg-gradient-to-br from-[#8B5c3C] to-[#6d4c2c] rounded-xl p-2 xs:p-3 border border-[#ffa07a]/20">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-1 xs:gap-2 text-white/80">
-                  <Clock
-                    size={16}
-                    className="text-[#FFB938]"
-                  />
+                  <Clock size={16} className="text-[#FFB938]" />
                   <span className="text-[8px] xs:text-[9px]">Next day in:</span>
                 </div>
                 <div className="flex gap-1 text-white font-bold">
@@ -299,16 +297,6 @@ export default function StreaksModal({ onClose }: { onClose: () => void }) {
                     <span className="text-[#ffa07a] text-xs xs:text-sm">
                       Your Streak
                     </span>
-                    <motion.button
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      className="bg-gradient-to-r from-[#a13810] to-[#822800] text-[#ffa07a] p-1.5 rounded-md flex items-center justify-center 
-                          hover:bg-gradient-to-r hover:from-[#b44c1e] hover:to-[#943000] transition-colors border border-[#ffa07a]/30
-                          shadow-[0_0_10px_rgba(255,160,122,0.3)]"
-                      onClick={handleShareStreak}
-                    >
-                      <Share2 size={14} />
-                    </motion.button>
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-4xl xs:text-5xl font-bold text-white/90">
@@ -620,6 +608,9 @@ export default function StreaksModal({ onClose }: { onClose: () => void }) {
           </Timeline>
         </div>
       </motion.div>
+      {currentDayStreak > 0 && (
+        <FloatingShareButton onClick={handleShareStreak} />
+      )}
     </div>
   );
 }
