@@ -1511,16 +1511,16 @@ export const getUserCollectibleByCollectibleId = async (
 export const getUserCollectibles = async (
   fid: number,
   category?: string
-): Promise<DbUserHasCollectible[]> => {
+): Promise<
+  (DbCollectible & { userHasCollectible: DbUserHasCollectible | null })[]
+> => {
   const query = supabase
-    .from("user_has_collectibles")
-    .select(`*, collectible:collectibles(*)`)
-    .eq("fid", fid)
+    .from("collectibles")
+    .select(`*,user_has_collectibles!left(*)`)
+    .eq("user_has_collectibles.fid", fid)
     .order("createdAt", { ascending: false });
 
-  if (category) {
-    query.eq("collectibles.category", category);
-  }
+  if (category) query.eq("category", category);
 
   const { data, error } = await query;
 

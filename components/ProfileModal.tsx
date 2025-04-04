@@ -386,26 +386,23 @@ export default function ProfileModal({
                               key={index}
                               className={`relative aspect-square w-full rounded-lg bg-gradient-to-br from-[#6D4C2C] to-[#5B4120] border-2 overflow-hidden
                         ${
-                          newGoldCropsFound.includes(
-                            collectible.collectible.id.toString()
-                          )
+                          newGoldCropsFound.includes(collectible.id.toString())
                             ? "border-[#FFB938] shadow-lg shadow-[#FFB938]/40"
                             : "border-[#f2a311]"
                         } 
                         ${isCurrentUser ? "cursor-pointer group" : ""}`}
                               onClick={() => {
                                 setBadgeModalData({
-                                  name: collectible.collectible.name,
-                                  title: collectible.collectible.name,
-                                  description: `A rare ${collectible.collectible.name} badge earned through luck and constancy in cultivating this crop in Farville.`,
-                                  badgeUrl: collectible.collectible.imageUrl,
+                                  name: collectible.name,
+                                  title: collectible.name,
+                                  description: `A rare ${collectible.name} badge earned through luck and constancy in cultivating this crop in Farville.`,
+                                  badgeUrl: collectible.imageUrl,
                                   type: "collectible",
                                   shareable: true,
                                   mintable: true,
                                   generated: true,
-                                  collectibleId:
-                                    collectible.collectible.id.toString(),
-                                  collectibleName: collectible.collectible.name,
+                                  collectibleId: collectible.id.toString(),
+                                  collectibleName: collectible.name,
                                 });
                                 if (isCurrentUser) {
                                   // setNewGoldCropsFound((prev) =>
@@ -417,12 +414,12 @@ export default function ProfileModal({
                               <div className="absolute inset-0 bg-gradient-to-b from-yellow/30 to-transparent z-10 animate-pulse pointer-events-none"></div>
 
                               <Image
-                                src={collectible.collectible.imageUrl}
-                                alt={collectible.collectible.name}
+                                src={collectible.imageUrl}
+                                alt={collectible.name}
                                 fill
                                 className={`rounded-lg transition-transform duration-300 group-hover:scale-110 ${
                                   !newGoldCropsFound.includes(
-                                    collectible.collectible.id.toString()
+                                    collectible.id.toString()
                                   )
                                     ? ""
                                     : "filter blur-[3px] brightness-[50%] animate-pulse-slow"

@@ -144,7 +144,7 @@ export function GameProvider({
   const [showTimeline, setShowTimeline] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
   const [showMintOGBadge, setShowMintOGBadge] = useState(false);
-  const [showMintCollectible, setShowMintCollectible] = useState(true);
+  const [showMintCollectible, setShowMintCollectible] = useState(false);
   const {
     state,
     refetch,
@@ -179,6 +179,12 @@ export function GameProvider({
   >();
   const [toastIds, setToastIds] = useState<Map<string, string>>(new Map());
   const [newGoldCropsFound, setNewGoldCropsFound] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (state.collectibles.length > 0) {
+      setShowMintCollectible(true);
+    }
+  }, [state.collectibles]);
 
   const { mutate: updateUserStreaks } = useUpdateUserStreaks({
     refetchStreaks: refetch.streaks,

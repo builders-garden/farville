@@ -18,6 +18,7 @@
     "@farcaster/frame-wagmi-connector": "^0.0.19",
     "@frames.js/debugger": "^0.5.0",
     "@heroicons/react": "^2.2.0",
+    "@lifi/sdk": "^3.6.5",
     "@openzeppelin/merkle-tree": "^1.0.8",
     "@prisma/client": "^6.2.1",
     "@radix-ui/react-accordion": "^1.2.3",

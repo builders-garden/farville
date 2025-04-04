@@ -73,7 +73,9 @@ export interface GameState {
     lastScore: number;
     league: number;
   };
-  collectibles: (DbUserHasCollectible & { collectible: DbCollectible })[];
+  collectibles: (DbCollectible & {
+    userHasCollectibles: DbUserHasCollectible | null;
+  })[];
 }
 
 export const useGameState = () => {

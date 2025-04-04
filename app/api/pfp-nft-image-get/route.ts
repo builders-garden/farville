@@ -3,12 +3,9 @@ import { updateUserCollectible } from "@/supabase/queries";
 import { CollectibleStatus } from "@/types/game";
 import { NextResponse } from "next/server";
 
-export async function GET(request: Request) {
+export async function POST(request: Request) {
   try {
-    const { searchParams } = new URL(request.url);
-    const taskId = searchParams.get("taskId");
-    const fid = searchParams.get("fid");
-    const collectibleId = searchParams.get("collectibleId");
+    const { taskId, fid, collectibleId } = await request.json();
 
     if (!taskId || !fid || !collectibleId) {
       return NextResponse.json({ error: "Invalid arguments" }, { status: 400 });

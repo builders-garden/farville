@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getUserCollectibles } from "@/supabase/queries";
+import { getUserCollectibles } from "@/lib/prisma/queries";
 
 export async function GET(
   request: NextRequest,
@@ -12,10 +12,7 @@ export async function GET(
       return NextResponse.json({ error: "Invalid FID" }, { status: 400 });
     }
 
-    const { searchParams } = new URL(request.url);
-    const category = searchParams.get("category");
-
-    const collectibles = await getUserCollectibles(fid, category ?? undefined);
+    const collectibles = await getUserCollectibles(fid);
 
     return NextResponse.json(collectibles);
   } catch (error) {
