@@ -21,6 +21,7 @@ import { useWeeklyLeaderboard } from "@/hooks/use-weekly-leadeboard";
 import { DbUser } from "@/supabase/types";
 import { OPEN_LEAGUE_LEADERBOARDS } from "@/lib/game-constants";
 import InfoModal from "./modals/InfoModal";
+import { FloatingShareButton } from "./FloatingShareButton";
 
 const shimmerAnimation = `
   @keyframes shine {
@@ -37,24 +38,6 @@ const shimmerAnimation = `
     50% { transform: scale(1.05); opacity: 1; }
   }
 `;
-
-const FloatingShareButton = ({ onClick }: { onClick: () => void }) => {
-  return (
-    <motion.button
-      initial={{ scale: 0 }}
-      animate={{ scale: 1 }}
-      whileHover={{ scale: 1.1 }}
-      whileTap={{ scale: 0.9 }}
-      onClick={onClick}
-      className="fixed bottom-6 right-6 px-3 h-10 rounded-full bg-[#FFB938] text-[#5c4121] 
-                 flex items-center justify-center gap-2 shadow-lg hover:bg-[#ffc65c] transition-colors
-                 z-50 text-xs"
-    >
-      Share
-      <Share2 size={16} />
-    </motion.button>
-  );
-};
 
 export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
   const { state } = useGame();
@@ -833,7 +816,7 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
               </div>
             </div>
           </motion.div>
-          <FloatingShareButton onClick={handleShare} />
+          {state.level >= 5 && <FloatingShareButton onClick={handleShare} />}
         </>
       )}
     </div>
