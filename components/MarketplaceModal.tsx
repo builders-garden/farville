@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useGame } from "../context/GameContext";
 import { CROP_DATA } from "../lib/game-constants";
 import Image from "next/image";
@@ -12,13 +12,12 @@ import { useFrameContext } from "@/context/FrameContext";
 import { useCreateRequest } from "@/hooks/game-actions/use-create-request";
 import sdk from "@farcaster/frame-sdk";
 import { requestItemComposeCastUrl } from "@/lib/utils";
-import MarketplaceTabs from "./marketplace/MarketplaceTabs";
+import MarketplaceTabs, { Tab } from "./marketplace/MarketplaceTabs";
 import MarketplaceItem from "./marketplace/MarketplaceItem";
 import PerkItem from "./marketplace/PerkItem";
 import ExpansionPanel from "./marketplace/ExpansionPanel";
 import ItemDetailsModal from "./marketplace/ItemDetailsModal";
-
-type Tab = "seeds" | "crops" | "perks" | "expansions";
+import { useNextStep } from "nextstepjs";
 
 // Add new type for selected item details
 type SelectedItemDetails = {
@@ -43,7 +42,8 @@ export default function MarketplaceModal({
     useGame();
   const { context } = useFrameContext();
   const { mutate: createRequest } = useCreateRequest();
-  const [activeTab, setActiveTab] = useState<Tab>("seeds");
+  const [activeTab, setActiveTab] = useState<Tab>("buy");
+  const [buySubTab, setBuySubTab] = useState<"seeds" | "perks">("seeds");
   const [confirmAction, setConfirmAction] = useState<{
     type: "buy" | "sell";
     itemId: number;
@@ -59,6 +59,14 @@ export default function MarketplaceModal({
   const [requestUrl, setRequestUrl] = useState<string | null>(null);
 
   const gridSize = state.gridSize.width * state.gridSize.height;
+
+  const { startNextStep } = useNextStep();
+
+  useEffect(() => {
+    if (state.showMarketplaceTutorial) {
+      startNextStep("marketplaceTour");
+    }
+  }, []);
 
   // Handle requesting an item
   const handleRequestItem = async () => {
@@ -230,49 +238,97 @@ export default function MarketplaceModal({
           </div>
 
           {/* Tabs */}
-          <MarketplaceTabs
-            activeTab={activeTab}
-            setActiveTab={setActiveTab}
-          />
+          <MarketplaceTabs activeTab={activeTab} setActiveTab={setActiveTab} />
 
           {/* Content area */}
           <div className="overflow-y-auto flex-1 -mr-2 pr-2 no-scrollbar">
-            {/* Seeds Tab */}
-            {activeTab === "seeds" && (
+            {/* buy Tab */}
+            {activeTab === "buy" && (
               <motion.div
                 className="grid gap-3 pb-6"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 20 }}
               >
-                <div className="text-white/60 text-[10px] text-center mb-1 italic">
-                  Click on any seed to view detailed information
+                {/* Sub tabs */}
+                <div className="grid grid-cols-2 gap-2 mb-2">
+                  <button
+                    className={`px-4 py-1.5 rounded-lg text-[10px] transition-colors ${
+                      buySubTab === "seeds"
+                        ? "bg-[#9E6B49] text-white"
+                        : "bg-black/20 text-white/70 hover:bg-black/30"
+                    }`}
+                    onClick={() => setBuySubTab("seeds")}
+                  >
+                    🌱 Seeds
+                  </button>
+                  <button
+                    className={`px-4 py-1.5 rounded-lg text-[10px] transition-colors ${
+                      buySubTab === "perks"
+                        ? "bg-[#9E6B49] text-white"
+                        : "bg-black/20 text-white/70 hover:bg-black/30"
+                    }`}
+                    onClick={() => setBuySubTab("perks")}
+                  >
+                    ✨ Perks
+                  </button>
                 </div>
-                {state.items
-                  .filter((item) => item.category === "seed")
-                  .map((item, index) => (
-                    <MarketplaceItem
-                      key={item.slug}
-                      item={item}
-                      ownedQuantity={
-                        state.seeds.find((seed) => seed.item.id === item.id)
-                          ?.quantity || 0
-                      }
-                      index={index}
-                      isLevelRequired={state.level < item.requiredLevel}
-                      requiredLevel={item.requiredLevel}
-                      onItemSelect={handleItemSelect}
-                      onRequestClick={setSelectedItemForRequest}
-                      onBuyClick={handleBuySellClick}
-                      gridSize={gridSize}
-                      userCoins={state.coins}
-                    />
-                  ))}
+
+                {buySubTab === "seeds" && (
+                  <>
+                    <div className="text-white/60 text-[10px] text-center mb-1 italic">
+                      Click on any seed to view detailed information
+                    </div>
+                    {state.items
+                      .filter((item) => item.category === "seed")
+                      .map((item, index) => (
+                        <MarketplaceItem
+                          key={item.slug}
+                          item={item}
+                          ownedQuantity={
+                            state.seeds.find((seed) => seed.item.id === item.id)
+                              ?.quantity || 0
+                          }
+                          index={index}
+                          isLevelRequired={state.level < item.requiredLevel}
+                          requiredLevel={item.requiredLevel}
+                          onItemSelect={handleItemSelect}
+                          onRequestClick={setSelectedItemForRequest}
+                          onBuyClick={handleBuySellClick}
+                          gridSize={gridSize}
+                          userCoins={state.coins}
+                        />
+                      ))}
+                  </>
+                )}
+
+                {buySubTab === "perks" && (
+                  <div className="grid gap-3">
+                    {state.items
+                      .filter((item) => item.category === "perk")
+                      .map((perk) => {
+                        const ownedQuantity =
+                          state.perks.find((p) => p.itemId === perk.id)
+                            ?.quantity || 0;
+
+                        return (
+                          <PerkItem
+                            key={perk.id}
+                            perk={perk}
+                            ownedQuantity={ownedQuantity}
+                            onBuyClick={handleBuySellClick}
+                            gridSize={gridSize}
+                            userCoins={state.coins}
+                          />
+                        );
+                      })}
+                  </div>
+                )}
               </motion.div>
             )}
 
-            {/* Crops Tab */}
-            {activeTab === "crops" && (
+            {/* Sell Tab */}
+            {activeTab === "sell" && (
               <motion.div
                 className="grid gap-3 pb-6"
                 initial={{ opacity: 0, y: 20 }}
@@ -317,39 +373,6 @@ export default function MarketplaceModal({
                   userCoins={state.coins}
                   onExpand={expandGrid}
                 />
-              </motion.div>
-            )}
-
-            {/* Perks Tab */}
-            {activeTab === "perks" && (
-              <motion.div
-                className="space-y-3 pb-6"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 20 }}
-              >
-                <div className="grid gap-3">
-                  {state.items
-                    .filter(
-                      (item) =>
-                        item.category === "perk" && item.slug !== "fertilizer"
-                    )
-                    .map((perk) => {
-                      const ownedQuantity =
-                        state.perks.find((p) => p.itemId === perk.id)
-                          ?.quantity || 0;
-
-                      return (
-                        <PerkItem
-                          key={perk.id}
-                          perk={perk}
-                          ownedQuantity={ownedQuantity}
-                          onBuyClick={handleBuySellClick}
-                          gridSize={gridSize}
-                        />
-                      );
-                    })}
-                </div>
               </motion.div>
             )}
           </div>

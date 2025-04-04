@@ -17,6 +17,7 @@ import { useUpdateUserFrosts, useUserStreaks } from "./use-user-streaks";
 import { useUserFrosts } from "./use-user-frosts";
 import { useUserHarvestedCrops } from "./use-user-harvested-crops";
 import { useWeeklyStats } from "./use-weekly-stats";
+import { CROP_DATA } from "../lib/game-constants";
 
 export interface RefetchType {
   all: () => Promise<void>;
@@ -70,6 +71,8 @@ export interface GameState {
     lastScore: number;
     league: number;
   };
+  showGridCellsTutorial: boolean;
+  showMarketplaceTutorial: boolean;
 }
 
 export const useGameState = () => {
@@ -112,6 +115,8 @@ export const useGameState = () => {
       lastScore: 0,
       league: 0,
     },
+    showGridCellsTutorial: false,
+    showMarketplaceTutorial: false,
   });
   const {
     userItems,
@@ -361,6 +366,26 @@ export const useGameState = () => {
     state.user?.fid,
     updateUserWeeklyStatsState,
   ]);
+
+  useEffect(() => {
+    if (state.user) {
+      // check if the user should see the grid cells tutorial
+      if (state.user.xp === 0) {
+        setState((prevState) => ({
+          ...prevState!,
+          showGridCellsTutorial: true,
+        }));
+      }
+      const carrotsXp = CROP_DATA["carrot"].rewardXP;
+      // check if the user should see the marketplace tutorial
+      if (state.user.xp <= carrotsXp * 4 && state.coins === 0) {
+        setState((prevState) => ({
+          ...prevState!,
+          showMarketplaceTutorial: true,
+        }));
+      }
+    }
+  }, [state.user.xp]);
 
   const refetchAll = useCallback(async () => {
     await Promise.all([

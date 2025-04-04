@@ -2,14 +2,15 @@
 
 import { motion } from "framer-motion";
 import { useAudio } from "../context/AudioContext";
-import { useGame } from "../context/GameContext";
 import Image from "next/image";
 import sdk from "@farcaster/frame-sdk";
+import { useNextStep } from "nextstepjs";
 
 export default function SettingsModal({ onClose }: { onClose: () => void }) {
   const { toggleMusic, isMusicPlaying, isSoundEnabled, toggleSound } =
     useAudio();
-  const { setTutorialComplete, setActiveOverlay } = useGame();
+
+  const { startNextStep } = useNextStep();
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-start z-50">
@@ -65,7 +66,7 @@ export default function SettingsModal({ onClose }: { onClose: () => void }) {
                 </div>
                 <div className="flex-1 min-w-0 xs:min-w-[180px]">
                   <h3 className="text-white/90 text-lg xs:text-xl font-semibold mb-0 xs:mb-1">
-                    Tutorial
+                    Show Tutorial
                   </h3>
                   <p className="text-white/60 text-xs xs:text-sm">
                     Review the game instructions
@@ -78,11 +79,8 @@ export default function SettingsModal({ onClose }: { onClose: () => void }) {
                   whileHover={{ scale: 1.03 }}
                   whileTap={{ scale: 0.97 }}
                   onClick={() => {
-                    setTutorialComplete(false);
-                    setActiveOverlay({
-                      type: "tutorial",
-                    });
                     onClose();
+                    startNextStep("mainTour");
                   }}
                   className="w-full h-9 xs:h-11 bg-[#8B5E3C] text-white/90 rounded-lg hover:bg-[#9b6a44] 
                            transition-colors text-xs xs:text-sm font-medium border border-white/10 flex items-center justify-center gap-2
@@ -110,7 +108,7 @@ export default function SettingsModal({ onClose }: { onClose: () => void }) {
                 </div>
                 <div className="flex-1 min-w-0 xs:min-w-[180px]">
                   <h3 className="text-white/90 text-lg xs:text-xl font-semibold mb-0 xs:mb-1">
-                    How to Play
+                    Farville Wiki
                   </h3>
                   <p className="text-white/60 text-xs xs:text-sm">
                     Read the Farville documentation
