@@ -174,7 +174,8 @@ export default function QuestsModal({
               <div className="space-y-3">
                 <div className="flex flex-col text-white/70 text-sm gap-4">
                   {activeTab === "daily" &&
-                    (incompleteQuests?.daily.length === 0 ? (
+                    (incompleteQuests?.daily.length === 0 &&
+                    completedQuests?.daily.length === 0 ? (
                       <div>No daily quests available.</div>
                     ) : (
                       <>
@@ -197,7 +198,8 @@ export default function QuestsModal({
                     ))}
 
                   {activeTab === "weekly" &&
-                    (incompleteQuests?.weekly.length === 0 ? (
+                    (incompleteQuests?.weekly.length === 0 &&
+                    completedQuests?.weekly.length === 0 ? (
                       <div>No weekly quests available.</div>
                     ) : (
                       <>
