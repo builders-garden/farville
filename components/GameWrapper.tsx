@@ -181,6 +181,7 @@ function TimelineModalContainer() {
 export default function GameWrapper() {
   const { startBackgroundMusic } = useAudio();
   const {
+    state,
     activeOverlay,
     setActiveOverlay,
     tutorialComplete,
@@ -205,7 +206,9 @@ export default function GameWrapper() {
   const { startNextStep } = useNextStep();
 
   useEffect(() => {
-    startNextStep("mainTour");
+    if (state.showGridCellsTutorial) {
+      startNextStep("mainTour");
+    }
   }, []);
 
   return (

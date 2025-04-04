@@ -5,6 +5,8 @@ import { AudioProvider } from "./../context/AudioContext";
 import posthog from "posthog-js";
 import { PostHogProvider } from "posthog-js/react";
 import { NextStepProvider, NextStep } from "nextstepjs";
+import { steps } from "@/components/tutorial/steps";
+import CustomTutorialCard from "@/components/tutorial/CustomTutorialCard";
 
 const WagmiProvider = dynamic(() => import("./../components/WagmiProvider"), {
   ssr: false,
@@ -20,61 +22,16 @@ if (typeof window !== "undefined") {
   });
 }
 
-const steps = [
-  {
-    tour: "mainTour",
-    steps: [
-      {
-        icon: "👩‍🌾",
-        title: "Welcome Farmer",
-        content: "Let's get started with your Farville journey!",
-        showControls: true,
-        showSkip: true,
-      },
-      {
-        icon: "🌱",
-        title: "Choose a Seed",
-        content: "Select carrots seeds from the inventory to plant them.",
-        selector: "#carrot-seeds",
-        // side: "right",
-        showControls: true,
-        showSkip: true,
-        pointerPadding: 4,
-        pointerRadius: 8,
-      },
-      {
-        icon: "🌱",
-        title: "Plant",
-        content: "Now plant the carrot seeds in the field.",
-        selector: "#carrot-seeds",
-        // side: "right",
-        showControls: true,
-        showSkip: true,
-        pointerPadding: 4,
-        pointerRadius: 8,
-      },
-      {
-        icon: "🌱",
-        title: "Fertilize",
-        content: "Don't waste time, fertilize your seeds to grow faster.",
-        selector: "#carrot-seeds",
-        // side: "right",
-        showControls: true,
-        showSkip: true,
-        pointerPadding: 4,
-        pointerRadius: 8,
-      },
-      // More steps...
-    ],
-  },
-];
-
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <PostHogProvider client={posthog}>
       <WagmiProvider>
         <NextStepProvider>
-          <NextStep steps={steps}>
+          <NextStep
+            steps={steps}
+            cardComponent={CustomTutorialCard}
+            shadowOpacity="0.4"
+          >
             <AudioProvider>{children}</AudioProvider>
           </NextStep>
         </NextStepProvider>

@@ -32,7 +32,10 @@ export default function Toolbar({
         }}
         data-tutorial="toolbar"
       >
-        <div className="flex flex-col items-center w-[48px]">
+        <div
+          className="flex flex-col items-center w-[48px]"
+          id="market-toolbar-btn"
+        >
           <motion.button
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.98 }}
@@ -74,11 +77,7 @@ export default function Toolbar({
               <div className="absolute -top-1 -right-1 w-3 h-3 bg-[#FFD700] rounded-full" />
             )}
             <div className="relative w-6 h-6 xs:w-8 xs:h-8">
-              <Image
-                src="/images/icons/quests.png"
-                alt="Quests"
-                fill
-              />
+              <Image src="/images/icons/quests.png" alt="Quests" fill />
             </div>
           </motion.button>
           <span
@@ -124,11 +123,7 @@ export default function Toolbar({
             className="relative w-9 h-9 xs:w-12 xs:h-12 rounded-lg flex items-center justify-center bg-[#8B5E3C] hover:bg-[#6d4c2c] transition-colors"
           >
             <div className="relative w-6 h-6 xs:w-8 xs:h-8">
-              <Image
-                src="/images/icons/inventory.png"
-                alt="Inventory"
-                fill
-              />
+              <Image src="/images/icons/inventory.png" alt="Inventory" fill />
             </div>
           </motion.button>
           <span className="text-[4px] xs:text-[6px] text-white mt-1">
@@ -146,11 +141,7 @@ export default function Toolbar({
             className="w-9 h-9 xs:w-12 xs:h-12 rounded-lg flex items-center justify-center bg-[#8B5E3C] hover:bg-[#6d4c2c] transition-colors"
           >
             <div className="relative w-6 h-6 xs:w-8 xs:h-8">
-              <Image
-                src="/images/icons/settings.png"
-                alt="Settings"
-                fill
-              />
+              <Image src="/images/icons/settings.png" alt="Settings" fill />
             </div>
           </motion.button>
           <span className="text-[4px] xs:text-[6px] text-white mt-1">
