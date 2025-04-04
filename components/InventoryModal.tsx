@@ -73,22 +73,10 @@ export default function InventoryModal({ onClose }: { onClose: () => void }) {
     }
   };
 
-  const handleCopyRequest = async () => {
-    if (!requestUrl) return;
-
-    try {
-      await navigator.clipboard.writeText(requestUrl);
-      console.log("Request URL copied to clipboard:", requestUrl);
-    } catch (error) {
-      console.error("Error copying request URL:", error);
-    }
-  };
-
   const handleShareRequest = async () => {
     if (!castUrl || !requestUrl) return;
 
     try {
-      await navigator.clipboard.writeText(requestUrl);
       await sdk.actions.openUrl(castUrl);
       setSelectedItem(null);
       setRequestQuantity(1);
@@ -252,9 +240,8 @@ export default function InventoryModal({ onClose }: { onClose: () => void }) {
               ? () => handleUseItem(selectedItem)
               : undefined
           }
-          onCopyRequest={handleCopyRequest}
           onShareRequest={handleShareRequest}
-          urlReady={!!requestUrl}
+          requestUrl={requestUrl}
         />
       )}
     </div>

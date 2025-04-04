@@ -32,7 +32,6 @@ import { useUpdateUserStreaks } from "@/hooks/use-user-streaks";
 export type OverlayConfig =
   | { type: "welcome" }
   | { type: "requests"; id: number }
-  | { type: "tutorial"; step?: number }
   | null;
 
 // Update the floatingNumbers type to be an array
@@ -92,8 +91,6 @@ interface GameContextType {
   setIsActionInProgress: (value: boolean) => void;
   activeOverlay: OverlayConfig;
   setActiveOverlay: (overlay: OverlayConfig) => void;
-  tutorialComplete: boolean;
-  setTutorialComplete: (complete: boolean) => void;
   showLevelUpConfetti: boolean;
   setShowLevelUpConfetti: Dispatch<SetStateAction<boolean>>;
   floatingNumbers: FloatingNumberData[];
@@ -153,7 +150,6 @@ export function GameProvider({
   const {
     state,
     refetch,
-    loading,
     updateGridCells,
     updateUserItems,
     updateUser,
@@ -165,7 +161,6 @@ export function GameProvider({
   const [isActionInProgress, setIsActionInProgress] = useState(false);
   const [activeOverlay, setActiveOverlay] =
     useState<OverlayConfig>(initialOverlay);
-  const [tutorialComplete, setTutorialComplete] = useState(true);
   const [showLevelUpConfetti, setShowLevelUpConfetti] = useState(false);
   const [floatingNumbers, setFloatingNumbers] = useState<FloatingNumberData[]>(
     []
@@ -491,15 +486,6 @@ export function GameProvider({
     setIsActionInProgress,
   });
 
-  useEffect(() => {
-    if (!loading) {
-      const tutorialComplete =
-        localStorage.getItem("tutorialComplete") === "true" ||
-        (state?.user?.xp && state?.user?.xp > 0);
-      setTutorialComplete(!!tutorialComplete);
-    }
-  }, [state?.user?.xp, loading]);
-
   if (!state) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -555,8 +541,6 @@ export function GameProvider({
         setIsActionInProgress,
         activeOverlay,
         setActiveOverlay,
-        tutorialComplete,
-        setTutorialComplete,
         showLevelUpConfetti,
         setShowLevelUpConfetti,
         floatingNumbers,

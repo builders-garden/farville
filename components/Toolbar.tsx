@@ -32,7 +32,10 @@ export default function Toolbar({
         }}
         data-tutorial="toolbar"
       >
-        <div className="flex flex-col items-center w-[48px]">
+        <div
+          className="flex flex-col items-center w-[48px]"
+          id="market-toolbar-btn"
+        >
           <motion.button
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.98 }}
@@ -47,6 +50,7 @@ export default function Toolbar({
                 src="/images/icons/market.png"
                 alt="Marketplace"
                 fill
+                sizes="48"
                 className="object-contain"
               />
             </div>
@@ -78,6 +82,7 @@ export default function Toolbar({
                 src="/images/icons/quests.png"
                 alt="Quests"
                 fill
+                sizes="48"
               />
             </div>
           </motion.button>
@@ -106,6 +111,7 @@ export default function Toolbar({
                 src={`/images/leagues/${state.weeklyStats.league || 1}.png`}
                 alt="League"
                 fill
+                sizes="48"
               />
             </div>
           </motion.button>
@@ -128,6 +134,7 @@ export default function Toolbar({
                 src="/images/icons/inventory.png"
                 alt="Inventory"
                 fill
+                sizes="48"
               />
             </div>
           </motion.button>
@@ -150,6 +157,7 @@ export default function Toolbar({
                 src="/images/icons/settings.png"
                 alt="Settings"
                 fill
+                sizes="48"
               />
             </div>
           </motion.button>
@@ -181,6 +189,7 @@ export default function Toolbar({
                 src={state.user?.avatarUrl || "/images/icons/farmer.png"}
                 alt="Profile"
                 fill
+                sizes="48"
                 className={
                   state.user?.avatarUrl
                     ? "rounded-full w-[36px] h-[36px] object-cover"

@@ -216,7 +216,7 @@ model UserLeaderboards {
   league       Int      @default(0)
   createdAt    DateTime @default(now()) @db.Timestamptz(6)
   updatedAt    DateTime @default(now()) @db.Timestamptz(6)
-  user         User     @relation(fields: [fid], references: [fid], onDelete: Cascade, onUpdate: NoAction)
+  user         User     @relation(fields: [fid], references: [fid], onDelete: NoAction, onUpdate: NoAction)
 
   @@map("user_leaderboards")
 }

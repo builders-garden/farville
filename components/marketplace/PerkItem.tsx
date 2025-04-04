@@ -6,6 +6,7 @@ interface PerkItemProps {
   ownedQuantity: number;
   onBuyClick: (itemId: number, quantity: number) => void;
   gridSize: number;
+  userCoins: number;
 }
 
 export default function PerkItem({
@@ -13,7 +14,10 @@ export default function PerkItem({
   ownedQuantity,
   onBuyClick,
   gridSize,
+  userCoins,
 }: PerkItemProps) {
+  const buttons = gridSize > 10 ? [1, 5, 10, gridSize] : [1, 5, 10];
+
   return (
     <motion.div
       key={perk.id}
@@ -40,10 +44,12 @@ export default function PerkItem({
             <h3 className="text-xs xs:text-sm text-white/90 font-medium">
               {perk.name}
             </h3>
-            <p className="text-white/90 flex items-center text-xs xs:text-sm">
-              <span className="pb-1 mr-1">🪙</span>
-              {perk.buyPrice}
-            </p>
+            {perk.buyPrice && (
+              <p className="text-white/90 flex items-center text-xs xs:text-sm">
+                <span className="pb-1 mr-1">🪙</span>
+                {perk.buyPrice}
+              </p>
+            )}
           </div>
           <div className="flex flex-col gap-0.5 xs:gap-1">
             <p className="text-white/90 text-[9px] xs:text-[10px]">
@@ -52,31 +58,39 @@ export default function PerkItem({
             <p className="text-white/60 text-[9px] xs:text-[10px]">
               {perk.description}
             </p>
+            {!perk.buyPrice && (
+              <p className="text-white/60 text-[9px] xs:text-[10px]">
+                (this perk is not available for purchase. You can only earn it)
+              </p>
+            )}
           </div>
         </div>
       </div>
-      <div className="flex gap-3 ml-13 md:ml-0 items-center">
-        <span className="text-[10px] xs:text-xs w-fit text-white/90 pl-1">
-          Buy
-        </span>
-        <div className="flex gap-2 w-full">
-          {[1, 5, 10, gridSize].map((amount) => (
-            <motion.button
-              key={amount}
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.97 }}
-              onClick={() => {
-                onBuyClick(perk.id, amount);
-              }}
-              className="w-full px-1 xs:px-2 py-1 xs:py-1.5 bg-[#2B593B] text-white/90 rounded hover:bg-[#346344] 
+      {perk.buyPrice && (
+        <div className="flex gap-3 ml-13 md:ml-0 items-center">
+          <span className="text-[10px] xs:text-xs w-fit text-white/90 pl-1">
+            Buy
+          </span>
+          <div className="flex gap-2 w-full">
+            {buttons.map((amount) => (
+              <motion.button
+                key={amount}
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+                onClick={() => {
+                  onBuyClick(perk.id, amount);
+                }}
+                disabled={userCoins < (perk.buyPrice || 0) * amount}
+                className="w-full px-1 xs:px-2 py-1 xs:py-1.5 bg-[#2B593B] text-white/90 rounded hover:bg-[#346344] 
                 transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-[10px] xs:text-xs font-medium
                 border border-white/10"
-            >
-              {amount}
-            </motion.button>
-          ))}
+              >
+                {amount}
+              </motion.button>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
     </motion.div>
   );
 }

@@ -4,6 +4,9 @@ import dynamic from "next/dynamic";
 import { AudioProvider } from "./../context/AudioContext";
 import posthog from "posthog-js";
 import { PostHogProvider } from "posthog-js/react";
+import { NextStepProvider, NextStep } from "nextstepjs";
+import { steps } from "@/components/tutorial/steps";
+import CustomTutorialCard from "@/components/tutorial/CustomTutorialCard";
 
 const WagmiProvider = dynamic(() => import("./../components/WagmiProvider"), {
   ssr: false,
@@ -23,7 +26,15 @@ export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <PostHogProvider client={posthog}>
       <WagmiProvider>
-        <AudioProvider>{children}</AudioProvider>
+        <NextStepProvider>
+          <NextStep
+            steps={steps}
+            cardComponent={CustomTutorialCard}
+            shadowOpacity="0.4"
+          >
+            <AudioProvider>{children}</AudioProvider>
+          </NextStep>
+        </NextStepProvider>
       </WagmiProvider>
     </PostHogProvider>
   );

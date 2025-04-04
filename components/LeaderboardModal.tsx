@@ -21,6 +21,7 @@ import { useWeeklyLeaderboard } from "@/hooks/use-weekly-leadeboard";
 import { DbUser } from "@/supabase/types";
 import { OPEN_LEAGUE_LEADERBOARDS } from "@/lib/game-constants";
 import InfoModal from "./modals/InfoModal";
+import { FloatingShareButton } from "./FloatingShareButton";
 
 const shimmerAnimation = `
   @keyframes shine {
@@ -37,24 +38,6 @@ const shimmerAnimation = `
     50% { transform: scale(1.05); opacity: 1; }
   }
 `;
-
-const FloatingShareButton = ({ onClick }: { onClick: () => void }) => {
-  return (
-    <motion.button
-      initial={{ scale: 0 }}
-      animate={{ scale: 1 }}
-      whileHover={{ scale: 1.1 }}
-      whileTap={{ scale: 0.9 }}
-      onClick={onClick}
-      className="fixed bottom-6 right-6 px-3 h-10 rounded-full bg-[#FFB938] text-[#5c4121] 
-                 flex items-center justify-center gap-2 shadow-lg hover:bg-[#ffc65c] transition-colors
-                 z-50 text-xs"
-    >
-      Share
-      <Share2 size={16} />
-    </motion.button>
-  );
-};
 
 export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
   const { state } = useGame();
@@ -241,10 +224,7 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
   return (
     <div className="fixed inset-0 bg-black/50 flex items-start z-50">
       {selectedUserFid ? (
-        <ProfileModal
-          onClose={handleCloseProfile}
-          userFid={selectedUserFid}
-        />
+        <ProfileModal onClose={handleCloseProfile} userFid={selectedUserFid} />
       ) : (
         <>
           <motion.div
@@ -510,11 +490,12 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
                                         The reward for the Iron League are perks
                                         give away as follows:
                                         <ul className="list-disc list-inside mt-4 space-y-2">
-                                          <li>1st: 3 fertilizers</li>
-                                          <li>2nd: 1 fertilizer</li>
-                                          <li>3rd: 100 phosphorus</li>
-                                          <li>4th: 100 potassium</li>
-                                          <li>5th: 100 nitrogen</li>
+                                          <li>1st: 5 fertilizers</li>
+                                          <li>2nd: 3 fertilizers</li>
+                                          <li>3rd: 25 pumpkin seeds</li>
+                                          <li>4-10th: 10 pumpkin seeds</li>
+                                          <li>11-25th: 30 phosphorus</li>
+                                          <li>26-50th: 25 potassium</li>
                                         </ul>
                                       </div>
                                     )}
@@ -523,9 +504,12 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
                                         The reward for the Wood League is a
                                         crops give away as follows:
                                         <ul className="list-disc list-inside mt-4 space-y-2">
-                                          <li>1st: 30 strawberries</li>
-                                          <li>2nd: 20 potatoes</li>
-                                          <li>3rd: 15 tomatoes</li>
+                                          <li>1st: 20 pumpkin seeds</li>
+                                          <li>2nd: 10 pumpkin seeds</li>
+                                          <li>3rd: 30 strawberries</li>
+                                          <li>4-10th: 20 tomatoes</li>
+                                          <li>11-25th: 15 potatoes</li>
+                                          <li>26-50th: 15 corns</li>
                                         </ul>
                                       </div>
                                     )}
@@ -658,10 +642,7 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
                       className="bg-[#FFB938] w-full justify-center text-[#5c4121] text-xs xs:text-sm px-4 xs:px-6 py-2 xs:py-3 rounded-lg font-bold
                          flex items-center gap-2 shadow-lg hover:bg-[#ffc65c] transition-colors"
                     >
-                      <Share2
-                        size={18}
-                        className="w-4 h-4 xs:w-5 xs:h-5"
-                      />
+                      <Share2 size={18} className="w-4 h-4 xs:w-5 xs:h-5" />
                       Let them know
                     </motion.button>
                   </div>
@@ -835,7 +816,7 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
               </div>
             </div>
           </motion.div>
-          <FloatingShareButton onClick={handleShare} />
+          {state.level >= 5 && <FloatingShareButton onClick={handleShare} />}
         </>
       )}
     </div>

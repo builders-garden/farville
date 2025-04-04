@@ -104,7 +104,7 @@ export default function SeedMenu() {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 20 }}
       className="flex items-center gap-2 px-2 overflow-y-hidden"
-      data-tutorial={"seed-menu"}
+      id="seed-menu"
     >
       <motion.div
         className="bg-[#7E4E31]/40 p-1 xs:px-4 xs:py-2 rounded-lg shadow-lg border-2 border-[#8B5E3C]/60 w-full relative"
@@ -151,10 +151,7 @@ export default function SeedMenu() {
                   : perk?.quantity || 0;
 
               return (
-                <div
-                  key={item.id}
-                  className="py-1 px-1"
-                >
+                <div key={item.id} id={item.slug} className="py-1 px-1">
                   <motion.button
                     onClick={() => handleClick(item)}
                     className={`

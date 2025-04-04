@@ -161,23 +161,24 @@ export default function MarketplaceItem({
                     />
                   ))
                 : // Buy options for seeds and perks
-                  [1, 5, 10, gridSize].map((amount) => (
-                    <BuySellButton
-                      key={amount}
-                      amount={amount}
-                      itemId={item.id}
-                      disabled={false}
-                      onClick={onBuyClick}
-                    />
-                  ))}
+                  (gridSize < 10 ? [1, 5, 10] : [1, 5, 10, gridSize]).map(
+                    (amount) => (
+                      <BuySellButton
+                        key={amount}
+                        amount={amount}
+                        itemId={item.id}
+                        disabled={
+                          item.category === "seed" &&
+                          userCoins < (item.buyPrice || 0) * Number(amount)
+                        }
+                        onClick={onBuyClick}
+                      />
+                    )
+                  )}
             </div>
           </div>
 
-          <Accordion
-            type="single"
-            collapsible
-            className="w-full"
-          >
+          <Accordion type="single" collapsible className="w-full">
             <AccordionItem
               value="custom-quantity"
               className="border-0 pb-0 pt-1 xs:pt-2"
