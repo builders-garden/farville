@@ -27,24 +27,32 @@ export async function POST(request: Request) {
     const data = await response.json();
 
     console.log("saving imageUrl to db", data.data.output.image_url);
-    const res = await updateUserCollectible(
-      parseInt(fid),
-      parseInt(collectibleId),
-      {
-        status: CollectibleStatus.Generated,
-        generatedImageUrls: [
-          data.data.output.image_url,
-          ...data.data.output.temporary_image_urls,
-        ],
-      }
-    );
-    console.log("saved to db res", res);
+    if (data.data.output.image_url) {
+      const res = await updateUserCollectible(
+        parseInt(fid),
+        parseInt(collectibleId),
+        {
+          status: CollectibleStatus.Generated,
+          generatedImageUrls: [
+            data.data.output.image_url,
+            ...data.data.output.temporary_image_urls,
+          ],
+        }
+      );
+      console.log("saved to db res", res);
 
-    return NextResponse.json({
-      status: data.data.status,
-      imageUrl: data.data.output.image_url,
-      imageUrls: data.data.output.temporary_image_urls,
-    });
+      return NextResponse.json({
+        status: data.data.status,
+        imageUrl: data.data.output.image_url,
+        imageUrls: data.data.output.temporary_image_urls,
+      });
+    } else {
+      return NextResponse.json({
+        status: data.data.status,
+        imageUrl: null,
+        imageUrls: null,
+      });
+    }
   } catch (error) {
     console.error("Error getting task status:", error);
     return NextResponse.json(

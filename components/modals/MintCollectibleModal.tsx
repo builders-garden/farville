@@ -41,6 +41,7 @@ import { useGetMidjourneyImage } from "@/hooks/use-get-midjourney-image";
 import { PFP_NFT_ABI } from "@/lib/contracts/pfp-nft/abi";
 import { Button } from "@/components/ui/button";
 import { usePinata } from "@/hooks/use-pinata";
+import { useGetImageDescription } from "@/hooks/use-get-image-description";
 
 interface MintCollectibleModalProps {
   onCancel: () => void;
@@ -70,6 +71,10 @@ export default function MintCollectibleModal({
   >(null);
   const { mutate: getBackendSignature } = useGetBackendSignature({
     setBackendSignature,
+  });
+  const { mutate: getImageDescription } = useGetImageDescription({
+    setImageDescription: setPfpDescription,
+    setImageDescriptionLoading: setPfpDescriptionLoading,
   });
   const { mutate: generateMidjourneyImage } = useGenerateMidjourneyImage({
     setMidjourneyTaskId,
@@ -112,12 +117,53 @@ export default function MintCollectibleModal({
     },
   });
 
-  const { data: allowanceTxHash, writeContract: writeContractAllowance } =
-    useWriteContract();
+  const hasEnoughEthBalance = useMemo(() => {
+    if (!balance || !address) return false;
+    const requiredEth = BigInt(0);
+    return BigInt(balance.value) > requiredEth;
+  }, [balance, address]);
+
+  const hasEnoughUsdcBalance = useMemo(() => {
+    if (!usdcBalance || !address) return false;
+    const requiredUsdc = BigInt(Math.ceil(selectedPrice * 10 ** 6));
+    return BigInt(usdcBalance) >= requiredUsdc;
+  }, [usdcBalance, address, selectedPrice]);
+
+  const {
+    writeContract: writeContractMint,
+    isError,
+    error,
+    isPending,
+    data: mintTxHash,
+  } = useWriteContract();
+
+  const {
+    isLoading: isReceiptLoading,
+    isSuccess: isReceiptSuccess,
+    isError: isReceiptError,
+    error: receiptError,
+  } = useWaitForTransactionReceipt({
+    hash: mintTxHash,
+    query: {
+      enabled: mintTxHash !== undefined,
+    },
+  });
+
+  const {
+    data: allowanceTxHash,
+    writeContract: writeContractAllowance,
+    isPending: isAllowancePending,
+  } = useWriteContract();
 
   const allowanceTxResult = useWaitForTransactionReceipt({
     hash: allowanceTxHash,
   });
+
+  const hasEnoughUsdcAllowance = useMemo(() => {
+    if (!usdcAllowance || !address) return false;
+    const requiredAllowance = BigInt(Math.ceil(selectedPrice * 10 ** 6));
+    return BigInt(usdcAllowance) >= requiredAllowance;
+  }, [usdcAllowance, address, selectedPrice]);
 
   useEffect(() => {
     if (allowanceTxResult.isSuccess) {
@@ -125,59 +171,53 @@ export default function MintCollectibleModal({
     }
   }, [allowanceTxResult.isSuccess, refetchAllowance]);
 
-  const farvilleAvatarCollectible = useMemo(
+  const selectedCollectible = useMemo(
     () => state.collectibles.find((collectible) => collectible.id === 1),
     [state.collectibles]
   );
 
   useEffect(() => {
-    if (
-      farvilleAvatarCollectible &&
-      farvilleAvatarCollectible.userHasCollectibles
-    ) {
-      switch (farvilleAvatarCollectible.userHasCollectibles.status) {
+    if (selectedCollectible && selectedCollectible.userHasCollectibles) {
+      switch (selectedCollectible.userHasCollectibles.status) {
         case CollectibleStatus.Minted:
-          if (farvilleAvatarCollectible.userHasCollectibles.txHash) {
-            setFinalTxHash(
-              farvilleAvatarCollectible.userHasCollectibles.txHash
-            );
+          if (selectedCollectible.userHasCollectibles.txHash) {
+            setFinalTxHash(selectedCollectible.userHasCollectibles.txHash);
           }
         case CollectibleStatus.Uploaded:
-          if (farvilleAvatarCollectible.userHasCollectibles.mintedMetadataUrl) {
+          if (selectedCollectible.userHasCollectibles.mintedMetadataUrl) {
             setSelectedImageUrl(
-              farvilleAvatarCollectible.userHasCollectibles.mintedImageUrl
+              selectedCollectible.userHasCollectibles.mintedImageUrl
             );
             const metadataCID =
-              farvilleAvatarCollectible.userHasCollectibles.mintedMetadataUrl.split(
+              selectedCollectible.userHasCollectibles.mintedMetadataUrl.split(
                 "https://gateway.pinata.cloud/ipfs/"
               )[1];
             setPinataMetadataCID(metadataCID);
           }
         case CollectibleStatus.Generated:
           if (
-            farvilleAvatarCollectible.userHasCollectibles.generatedImageUrls &&
-            farvilleAvatarCollectible.userHasCollectibles.generatedImageUrls
-              .length > 0
+            selectedCollectible.userHasCollectibles.generatedImageUrls &&
+            selectedCollectible.userHasCollectibles.generatedImageUrls.length >
+              0
           ) {
             setMidjourneyImageUrl(
-              farvilleAvatarCollectible.userHasCollectibles
-                .generatedImageUrls[0]
+              selectedCollectible.userHasCollectibles.generatedImageUrls[0]
             );
             setMidjourneyImageUrls(
-              farvilleAvatarCollectible.userHasCollectibles.generatedImageUrls.slice(
+              selectedCollectible.userHasCollectibles.generatedImageUrls.slice(
                 1
               )
             );
           }
         case CollectibleStatus.Pending:
-          if (farvilleAvatarCollectible.userHasCollectibles.generatedTaskId) {
+          if (selectedCollectible.userHasCollectibles.generatedTaskId) {
             setMidjourneyTaskId(
-              farvilleAvatarCollectible.userHasCollectibles.generatedTaskId
+              selectedCollectible.userHasCollectibles.generatedTaskId
             );
           }
       }
     }
-  }, [farvilleAvatarCollectible]);
+  }, [selectedCollectible]);
 
   const userPfp = useMemo(() => {
     let avatarUrl = state.user.avatarUrl;
@@ -204,41 +244,79 @@ export default function MintCollectibleModal({
     return avatarUrl;
   }, [state.user.avatarUrl]);
 
+  const canGenerate = useMemo(() => {
+    const isNullOrPendingStatus =
+      (selectedCollectible && !selectedCollectible.userHasCollectibles) ||
+      (selectedCollectible &&
+        selectedCollectible.userHasCollectibles &&
+        selectedCollectible.userHasCollectibles.status ===
+          CollectibleStatus.Pending);
+    return (
+      !pfpDescriptionLoading &&
+      pfpDescription &&
+      address &&
+      isNullOrPendingStatus
+    );
+  }, [pfpDescriptionLoading, pfpDescription, address, selectedCollectible]);
+
+  const canApprove = useMemo(() => {
+    const isGeneratedOrPendingStatus =
+      selectedCollectible &&
+      selectedCollectible.userHasCollectibles &&
+      (selectedCollectible.userHasCollectibles.status ===
+        CollectibleStatus.Generated ||
+        selectedCollectible.userHasCollectibles.status ===
+          CollectibleStatus.Pending);
+    return address && isGeneratedOrPendingStatus && midjourneyImageUrls;
+  }, [
+    address,
+    selectedCollectible,
+    hasEnoughUsdcAllowance,
+    hasEnoughEthBalance,
+  ]);
+
+  const canMint = useMemo(() => {
+    return (
+      address &&
+      selectedCollectible &&
+      selectedCollectible.userHasCollectibles &&
+      (selectedCollectible.userHasCollectibles.status ===
+        CollectibleStatus.Generated ||
+        selectedCollectible.userHasCollectibles.status ===
+          CollectibleStatus.Uploaded) &&
+      midjourneyImageUrl &&
+      !finalTxHash &&
+      !mintTxHash
+    );
+  }, [
+    address,
+    hasEnoughEthBalance,
+    hasEnoughUsdcBalance,
+    hasEnoughUsdcAllowance,
+    selectedCollectible,
+    midjourneyImageUrl,
+    finalTxHash,
+    mintTxHash,
+  ]);
+
   // get pfp description from openai
   useEffect(() => {
     const loadPfpDescription = async () => {
       if (userPfp) {
         setPfpDescriptionLoading(true);
-        fetch(`/api/pfp-nft-text`, {
-          method: "POST",
-          body: JSON.stringify({ imageUrl: userPfp }),
-        })
-          .then((res) => res.json())
-          .then((data) => {
-            setPfpDescription(data.description);
-            setPfpDescriptionLoading(false);
-          })
-          .catch((err) => {
-            console.error("Error fetching pfp description:", err);
-            setPfpDescriptionLoading(false);
-          });
+        getImageDescription({ imageUrl: userPfp });
       }
     };
-    if (
-      !pfpDescription &&
-      userPfp &&
-      ((farvilleAvatarCollectible &&
-        !farvilleAvatarCollectible.userHasCollectibles) ||
-        (farvilleAvatarCollectible &&
-          farvilleAvatarCollectible.userHasCollectibles &&
-          farvilleAvatarCollectible.userHasCollectibles.status ===
-            CollectibleStatus.Pending))
-    ) {
+    const isNullOrPendingStatus =
+      (selectedCollectible && !selectedCollectible.userHasCollectibles) ||
+      (selectedCollectible &&
+        selectedCollectible.userHasCollectibles &&
+        selectedCollectible.userHasCollectibles.status ===
+          CollectibleStatus.Pending);
+    if (!pfpDescription && userPfp && isNullOrPendingStatus) {
       loadPfpDescription();
     }
-  }, [userPfp, farvilleAvatarCollectible?.userHasCollectibles]);
-
-  const hasInsufficientBalance = !balance || balance.value <= BigInt(0);
+  }, [userPfp, selectedCollectible]);
 
   useEffect(() => {
     if (chainId !== base.id) {
@@ -248,68 +326,37 @@ export default function MintCollectibleModal({
     }
   }, [chainId, switchChain]);
 
-  const {
-    writeContract: writeContractMint,
-    isError,
-    error,
-    isPending,
-    data: mintTxHash,
-  } = useWriteContract();
-
-  const {
-    isLoading: isReceiptLoading,
-    isSuccess: isReceiptSuccess,
-    isError: isReceiptError,
-    error: receiptError,
-  } = useWaitForTransactionReceipt({
-    hash: mintTxHash,
-    query: {
-      enabled: mintTxHash !== undefined,
-    },
-  });
   const { mutate: updateMintPfpUser } = useUpdateMintPfpUser();
 
-  const hasEnoughUsdcBalance = useMemo(() => {
-    if (!usdcBalance || !address) return false;
-    const requiredUsdc = BigInt(Math.ceil(selectedPrice * 10 ** 6));
-    return BigInt(usdcBalance) >= requiredUsdc;
-  }, [usdcBalance, address, selectedPrice]);
-
-  const hasEnoughUsdcAllowance = useMemo(() => {
-    if (!usdcAllowance || !address) return false;
-    const requiredAllowance = BigInt(Math.ceil(selectedPrice * 10 ** 6));
-    return BigInt(usdcAllowance) >= requiredAllowance;
-  }, [usdcAllowance, address, selectedPrice]);
-
   const handleGenerate = async () => {
-    if (pfpDescription && !midjourneyTaskId) {
+    if (canGenerate && pfpDescription && !midjourneyTaskId) {
       setIsLoading(true);
       generateMidjourneyImage({
         prompt: pfpDescription,
         fid: state.user.fid,
-        collectibleId: farvilleAvatarCollectible?.id ?? 1,
+        collectibleId: selectedCollectible?.id ?? 1,
       });
     }
   };
 
   const handleGetImage = async () => {
-    if (midjourneyTaskId && farvilleAvatarCollectible) {
+    if (midjourneyTaskId && selectedCollectible) {
       setIsLoading(true);
       getMidjourneyImage({
         taskId: midjourneyTaskId,
         fid: state.user.fid.toString(),
-        collectibleId: farvilleAvatarCollectible.id.toString() ?? "1",
+        collectibleId: selectedCollectible.id.toString() ?? "1",
       });
     }
   };
 
   const handleMint = async () => {
-    if (address && selectedImageUrl && !finalTxHash && !mintTxHash) {
+    if (canMint && selectedImageUrl) {
       setIsLoading(true);
       uploadPinata({
         imageUrl: selectedImageUrl,
         fid: state.user.fid,
-        collectibleId: farvilleAvatarCollectible?.id ?? 1,
+        collectibleId: selectedCollectible?.id ?? 1,
       });
     }
   };
@@ -330,7 +377,12 @@ export default function MintCollectibleModal({
   };
 
   useEffect(() => {
-    if (pinataMetadataCID && address) {
+    if (
+      pinataMetadataCID &&
+      address &&
+      selectedImageUrl &&
+      (!finalTxHash || !mintTxHash)
+    ) {
       getBackendSignature({
         address,
         nftId: state.user.fid,
@@ -382,7 +434,7 @@ export default function MintCollectibleModal({
   useEffect(() => {
     if (isReceiptSuccess && mintTxHash) {
       updateMintPfpUser({
-        collectibleId: farvilleAvatarCollectible?.id ?? 1,
+        collectibleId: selectedCollectible?.id ?? 1,
         txHash: mintTxHash,
       });
       setFinalTxHash(mintTxHash);
@@ -393,8 +445,8 @@ export default function MintCollectibleModal({
   const handleShareMint = async () => {
     const { castUrl } = mintedCollectibleFlexCardComposeCastUrl(
       state.user.fid,
-      farvilleAvatarCollectible?.id.toString() ?? "",
-      farvilleAvatarCollectible?.name ?? ""
+      selectedCollectible?.id.toString() ?? "",
+      selectedCollectible?.name ?? ""
     );
     await sdk.actions.openUrl(castUrl);
   };
@@ -543,7 +595,7 @@ export default function MintCollectibleModal({
               </span>
             )}
             {address !== undefined &&
-              hasInsufficientBalance &&
+              !hasEnoughEthBalance &&
               state.user.mintedOG === false && (
                 <span className="bg-red-500 text-red-200 text-[8px] p-2 rounded">
                   Insufficient ETH balance to mint. Please add some ETH to your
@@ -553,17 +605,19 @@ export default function MintCollectibleModal({
           </div>
           <div className="flex flex-col gap-3">
             {/* PRICE */}
-            {farvilleAvatarCollectible &&
-            farvilleAvatarCollectible.userHasCollectibles &&
-            (farvilleAvatarCollectible.userHasCollectibles.status ===
-              CollectibleStatus.Generated ||
-              (farvilleAvatarCollectible.userHasCollectibles.status ===
+            {selectedCollectible &&
+            selectedCollectible.userHasCollectibles &&
+            (selectedCollectible.userHasCollectibles.status ===
+              CollectibleStatus.Uploaded ||
+              selectedCollectible.userHasCollectibles.status ===
+                CollectibleStatus.Generated ||
+              (selectedCollectible.userHasCollectibles.status ===
                 CollectibleStatus.Pending &&
                 midjourneyImageUrl)) ? (
               <div className="flex flex-col items-center justify-center gap-2">
                 <div className="w-full flex flex-row items-center justify-between gap-2">
                   <span className="text-white/70 text-lg">Pay</span>
-                  {/* USDC logo */}
+                  {/* USDC balance */}
                   <div className="w-full flex items-center justify-end gap-2">
                     {usdcBalance && usdcBalance > BigInt(0) ? (
                       <span className="flex flex-row items-center gap-1 text-white/70 text-[8px]">
@@ -572,6 +626,7 @@ export default function MintCollectibleModal({
                         USDC
                       </span>
                     ) : null}
+                    {/* USDC logo */}
                     <svg
                       id="Layer_1"
                       xmlns="http://www.w3.org/2000/svg"
@@ -626,31 +681,32 @@ export default function MintCollectibleModal({
                 Share
               </button>
             ) : (!midjourneyTaskId &&
-                farvilleAvatarCollectible &&
-                !farvilleAvatarCollectible.userHasCollectibles) ||
-              (farvilleAvatarCollectible &&
-                farvilleAvatarCollectible.userHasCollectibles &&
-                farvilleAvatarCollectible.userHasCollectibles.status ===
+                selectedCollectible &&
+                !selectedCollectible.userHasCollectibles) ||
+              (selectedCollectible &&
+                selectedCollectible.userHasCollectibles &&
+                selectedCollectible.userHasCollectibles.status ===
                   CollectibleStatus.Pending &&
                 !midjourneyTaskId) ? (
               <button
-                disabled={pfpDescriptionLoading || !pfpDescription || !address}
+                disabled={!canGenerate || isLoading}
                 onClick={handleGenerate}
                 className={`flex-1 py-2 px-4 rounded ${
-                  pfpDescriptionLoading || !pfpDescription || !address
+                  !canGenerate
                     ? "bg-[#179ef9]/10 text-[#179ef9]/50 cursor-not-allowed"
                     : "bg-[#179ef9]/20 text-[#179ef9] hover:bg-[#179ef9]/30"
                 } 
                   transition-colors text-sm font-medium border border-[#179ef9]/30 flex items-center justify-center gap-2`}
               >
-                Generate
+                {pfpDescriptionLoading ? "Loading..." : "Generate"}
               </button>
             ) : (midjourneyTaskId &&
-                farvilleAvatarCollectible &&
-                !farvilleAvatarCollectible.userHasCollectibles) ||
-              (farvilleAvatarCollectible &&
-                farvilleAvatarCollectible.userHasCollectibles &&
-                farvilleAvatarCollectible.userHasCollectibles.status ===
+                !midjourneyImageUrls &&
+                selectedCollectible &&
+                !selectedCollectible.userHasCollectibles) ||
+              (selectedCollectible &&
+                selectedCollectible.userHasCollectibles &&
+                selectedCollectible.userHasCollectibles.status ===
                   CollectibleStatus.Pending &&
                 midjourneyTaskId &&
                 !midjourneyImageUrl) ? (
@@ -660,24 +716,14 @@ export default function MintCollectibleModal({
               >
                 Get Image
               </button>
-            ) : !hasEnoughUsdcAllowance && !finalTxHash && !mintTxHash ? (
+            ) : canApprove ? (
               <button
                 onClick={handleApprove}
                 disabled={
-                  isLoading ||
-                  !address ||
-                  !selectedImageUrl ||
-                  isPending ||
-                  isReceiptLoading ||
-                  hasInsufficientBalance
+                  !canApprove || isLoading || isPending || isReceiptLoading
                 }
                 className={`flex-1 py-2 px-4 rounded ${
-                  isLoading ||
-                  !address ||
-                  !selectedImageUrl ||
-                  isPending ||
-                  isReceiptLoading ||
-                  hasInsufficientBalance
+                  !canApprove || isLoading || isPending || isReceiptLoading
                     ? "text-yellow-400/50 cursor-not-allowed bg-yellow-500/10"
                     : "text-[#5C4121] bg-yellow-500"
                 } ${
@@ -689,7 +735,10 @@ export default function MintCollectibleModal({
               >
                 {!selectedImageUrl
                   ? "Select an image"
-                  : isLoading || isPending || isReceiptLoading
+                  : isLoading ||
+                    isPending ||
+                    isReceiptLoading ||
+                    isAllowancePending
                   ? "Approving..."
                   : isReceiptSuccess
                   ? "Approved Successfully!"
@@ -697,32 +746,14 @@ export default function MintCollectibleModal({
                   ? "Already Minted"
                   : "Approve"}
               </button>
-            ) : hasEnoughUsdcBalance &&
-              hasEnoughUsdcAllowance &&
-              farvilleAvatarCollectible &&
-              farvilleAvatarCollectible.userHasCollectibles &&
-              (farvilleAvatarCollectible.userHasCollectibles.status ===
-                CollectibleStatus.Generated ||
-                farvilleAvatarCollectible.userHasCollectibles.status ===
-                  CollectibleStatus.Uploaded) &&
-              midjourneyImageUrl ? (
+            ) : canMint ? (
               <button
                 onClick={handleMint}
                 disabled={
-                  isLoading ||
-                  !address ||
-                  !selectedImageUrl ||
-                  isPending ||
-                  isReceiptLoading ||
-                  hasInsufficientBalance
+                  !canMint || isLoading || isPending || isReceiptLoading
                 }
                 className={`flex-1 py-2 px-4 rounded ${
-                  isLoading ||
-                  !address ||
-                  !selectedImageUrl ||
-                  isPending ||
-                  isReceiptLoading ||
-                  hasInsufficientBalance
+                  !canMint || isLoading || isPending || isReceiptLoading
                     ? "text-yellow-400/50 cursor-not-allowed bg-yellow-500/10"
                     : "text-[#5C4121] bg-yellow-500"
                 } ${
