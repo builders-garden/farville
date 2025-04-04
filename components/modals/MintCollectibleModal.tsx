@@ -405,9 +405,9 @@ export default function MintCollectibleModal({
               Pick your farmer. Make it yours.
             </span>
             <Separator className="w-[80%] m-auto bg-yellow-500/50" />
-            <span className="text-white/70 text-[8px] text-center px-2">
-              Choose your custom Farville avatar to represent you on the farm
-              and stand out in the leaderboards with your own unique style.
+            <span className="text-white/70 text-[8px] text-center">
+              Choose a custom avatar to represent you and climb the leaderboards
+              in style.
             </span>
             {isError &&
               /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
