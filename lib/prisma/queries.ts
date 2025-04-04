@@ -862,13 +862,6 @@ export const updateUserWeeklyScore = async (
 ): Promise<{
   currentScore: number;
 }> => {
-  console.log("params", {
-    fid,
-    score,
-    userLevel,
-    currentUserXp,
-    didLevelUp,
-  });
   const level5 = LEVEL_XP_THRESHOLDS[4];
 
   if (userLevel >= 5) {
