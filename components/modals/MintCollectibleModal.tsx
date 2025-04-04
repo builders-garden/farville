@@ -532,7 +532,7 @@ export default function MintCollectibleModal({
                   isReceiptLoading ||
                   hasInsufficientBalance
                     ? "text-yellow-400/50 cursor-not-allowed bg-yellow-500/10"
-                    : "bg-yellow-500 text-yellow-500/20"
+                    : "text-[#5C4121] bg-yellow-500"
                 } ${
                   isReceiptSuccess
                     ? "bg-green-500 text-green-200 cursor-not-allowed"
