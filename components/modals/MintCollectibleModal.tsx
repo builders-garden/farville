@@ -64,6 +64,7 @@ export default function MintCollectibleModal({
   const [pinataMetadataCID, setPinataMetadataCID] = useState<string | null>(
     null
   );
+  const [finalTxHash, setFinalTxHash] = useState<string | null>(null);
   const [midjourneyImageUrls, setMidjourneyImageUrls] = useState<
     string[] | null
   >(null);
@@ -135,8 +136,17 @@ export default function MintCollectibleModal({
       farvilleAvatarCollectible.userHasCollectibles
     ) {
       switch (farvilleAvatarCollectible.userHasCollectibles.status) {
+        case CollectibleStatus.Minted:
+          if (farvilleAvatarCollectible.userHasCollectibles.txHash) {
+            setFinalTxHash(
+              farvilleAvatarCollectible.userHasCollectibles.txHash
+            );
+          }
         case CollectibleStatus.Uploaded:
           if (farvilleAvatarCollectible.userHasCollectibles.mintedMetadataUrl) {
+            setSelectedImageUrl(
+              farvilleAvatarCollectible.userHasCollectibles.mintedImageUrl
+            );
             const metadataCID =
               farvilleAvatarCollectible.userHasCollectibles.mintedMetadataUrl.split(
                 "https://gateway.pinata.cloud/ipfs/"
@@ -294,7 +304,7 @@ export default function MintCollectibleModal({
   };
 
   const handleMint = async () => {
-    if (address && selectedImageUrl) {
+    if (address && selectedImageUrl && !finalTxHash && !mintTxHash) {
       setIsLoading(true);
       uploadPinata({
         imageUrl: selectedImageUrl,
@@ -331,6 +341,7 @@ export default function MintCollectibleModal({
 
   useEffect(() => {
     if (
+      !finalTxHash &&
       !mintTxHash &&
       selectedImageUrl &&
       address &&
@@ -374,9 +385,10 @@ export default function MintCollectibleModal({
         collectibleId: farvilleAvatarCollectible?.id ?? 1,
         txHash: mintTxHash,
       });
+      setFinalTxHash(mintTxHash);
       setShowConfetti(true);
     }
-  }, [isReceiptSuccess]);
+  }, [isReceiptSuccess, mintTxHash]);
 
   const handleShareMint = async () => {
     const { castUrl } = mintedCollectibleFlexCardComposeCastUrl(
@@ -445,9 +457,17 @@ export default function MintCollectibleModal({
                   transform: "translateX(-50%) translateY(60%)",
                 }}
               />
-
-              {/* New pulsing yellow shadow around image */}
-              {midjourneyImageUrls ? (
+              {finalTxHash || mintTxHash ? (
+                <CustomImage
+                  key={finalTxHash || mintTxHash}
+                  imageUrl={
+                    selectedImageUrl ?? "/images/badge/farville-avatar.png"
+                  }
+                  alt={`User Pfp Generation`}
+                  selected={true}
+                  onSelect={() => {}}
+                />
+              ) : midjourneyImageUrls ? (
                 <div className="grid grid-cols-2 gap-x-4 gap-y-2">
                   {midjourneyImageUrls?.map((imageUrl) => (
                     <CustomImage
@@ -533,11 +553,13 @@ export default function MintCollectibleModal({
           </div>
           <div className="flex flex-col gap-3">
             {/* PRICE */}
-            {(farvilleAvatarCollectible &&
-              farvilleAvatarCollectible.userHasCollectibles &&
-              farvilleAvatarCollectible.userHasCollectibles.status ===
-                CollectibleStatus.Generated) ||
-            midjourneyImageUrl ? (
+            {farvilleAvatarCollectible &&
+            farvilleAvatarCollectible.userHasCollectibles &&
+            (farvilleAvatarCollectible.userHasCollectibles.status ===
+              CollectibleStatus.Generated ||
+              (farvilleAvatarCollectible.userHasCollectibles.status ===
+                CollectibleStatus.Pending &&
+                midjourneyImageUrl)) ? (
               <div className="flex flex-col items-center justify-center gap-2">
                 <div className="w-full flex flex-row items-center justify-between gap-2">
                   <span className="text-white/70 text-lg">Pay</span>
@@ -596,10 +618,7 @@ export default function MintCollectibleModal({
             ) : null}
 
             {/* BIG BUTTON */}
-            {farvilleAvatarCollectible &&
-            farvilleAvatarCollectible.userHasCollectibles &&
-            farvilleAvatarCollectible.userHasCollectibles.status ===
-              CollectibleStatus.Minted ? (
+            {finalTxHash || mintTxHash ? (
               <button
                 onClick={handleShareMint}
                 className={`flex-1 py-2 px-4 rounded bg-[#179ef9]/20 text-[#179ef9] hover:bg-[#179ef9]/30 transition-colors text-sm font-medium border border-[#179ef9]/30 flex items-center justify-center gap-2`}
@@ -641,7 +660,7 @@ export default function MintCollectibleModal({
               >
                 Get Image
               </button>
-            ) : !hasEnoughUsdcAllowance ? (
+            ) : !hasEnoughUsdcAllowance && !finalTxHash && !mintTxHash ? (
               <button
                 onClick={handleApprove}
                 disabled={

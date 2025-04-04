@@ -4,8 +4,7 @@ import { getGlobalLeaderboard } from "@/lib/utils";
 import { getUser, getUserCollectibleByCollectibleId } from "@/supabase/queries";
 import { DbUser } from "@/supabase/types";
 import { ImageResponse } from "next/og";
-import { fetchUser } from "@/lib/neynar";
-import { merkleValues } from "@/lib/contracts/og-nft/merkle-root/merkleValues";
+import { CollectibleStatus } from "@/types/game";
 
 export const dynamic = "force-dynamic";
 const size = {
@@ -73,13 +72,17 @@ export async function GET(
     }
 
     const user = await getUser(Number(fid));
-    const userData = await fetchUser(fid);
+
     const userCollectible = await getUserCollectibleByCollectibleId(
       Number(fid),
       Number(collectibleId)
     );
 
-    if (!userCollectible) {
+    if (
+      !userCollectible ||
+      !userCollectible.mintedImageUrl ||
+      userCollectible.status !== CollectibleStatus.Minted
+    ) {
       return new Response("User has not minted a PFP NFT", {
         status: 400,
       });
@@ -106,9 +109,7 @@ export async function GET(
     );
     const bgImage = await bgImageRes.arrayBuffer();
 
-    const badgeImage = await fetch(
-      new URL(`${appUrl}/images/badge/og.png`, import.meta.url)
-    );
+    const badgeImage = await fetch(new URL(userCollectible.mintedImageUrl));
     const badgeImageBuffer = await badgeImage.arrayBuffer();
 
     const username = user?.username || "Farmer";
@@ -118,30 +119,6 @@ export async function GET(
       // put here all the text that it's potentially going to be displayed
       "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+-=[]{}|;':,.<>/?"
     );
-
-    let nftId = -1;
-
-    // Check if user has verified addresses and find matching merkle value
-    if (userData?.verifications && userData.verifications.length > 0) {
-      for (const address of userData.verifications) {
-        const normalizedAddress = address.toLowerCase();
-        // Search for the address in merkleValues array
-        const match = merkleValues.find(
-          ([addr]) => addr.toLowerCase() === normalizedAddress
-        );
-
-        if (match) {
-          nftId = parseInt(match[1], 10);
-          break; // Use the first match found
-        }
-      }
-    }
-
-    if (nftId === -1) {
-      return new Response("User has not minted an OG NFT", {
-        status: 400,
-      });
-    }
 
     return new ImageResponse(
       (
@@ -280,17 +257,30 @@ export async function GET(
                 }}
               >
                 {/* Badge Title */}
-                <span
-                  style={{
-                    fontSize: "20px",
-                    color: "#FFD700",
-                    textShadow: "0px 3px 10px rgba(255, 215, 0, 0.6)",
-                    position: "relative",
-                    lineHeight: "1.5",
-                  }}
-                >
-                  Farville OG Badge #{nftId}
-                </span>
+                <div style={{ display: "flex", flexDirection: "column" }}>
+                  <span
+                    style={{
+                      fontSize: "17px",
+                      color: "#FFD700",
+                      textShadow: "0px 3px 10px rgba(255, 215, 0, 0.6)",
+                      position: "relative",
+                      lineHeight: "1.5",
+                    }}
+                  >
+                    Farville Farmer
+                  </span>
+                  <span
+                    style={{
+                      fontSize: "15px",
+                      color: "#FFD700",
+                      textShadow: "0px 3px 10px rgba(255, 215, 0, 0.6)",
+                      position: "relative",
+                      lineHeight: "1.5",
+                    }}
+                  >
+                    #{fid}
+                  </span>
+                </div>
                 {/* Badge Description */}
                 <span
                   style={{
@@ -301,7 +291,7 @@ export async function GET(
                     lineHeight: "1.8",
                   }}
                 >
-                  {username} is an OG farmer in Farville.
+                  {username} minted his custom Farville Farmer.
                 </span>
                 {/* Top Leaderboard Users */}
                 <div

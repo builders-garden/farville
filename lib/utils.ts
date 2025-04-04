@@ -147,8 +147,8 @@ export const mintedCollectibleFlexCardComposeCastUrl = (
   collectibleName: string
 ) => {
   const timestamp = Date.now();
-  const frameUrl = `${process.env.NEXT_PUBLIC_URL}/flex-card/minted-collectible/${fid}/${timestamp}?collectibleId=${collectibleId}`;
-  const text = `I just minted my ${collectibleName}!\n\nbrum brum 🚜💨`;
+  const frameUrl = `${process.env.NEXT_PUBLIC_URL}/flex-card/collectibles/${fid}/${collectibleId}/${timestamp}`;
+  const text = `I just minted my ${collectibleName} image!\n\nbrum brum 🚜💨`;
   const urlFriendlyText = encodeURIComponent(text);
   return {
     frameUrl,

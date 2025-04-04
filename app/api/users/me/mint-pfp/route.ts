@@ -5,6 +5,7 @@ import { PFP_NFT_BASE_ADDRESS } from "@/lib/contracts/constants";
 import { z } from "zod";
 import { publicClient } from "@/lib/viem";
 import { PFP_NFT_ABI } from "@/lib/contracts/pfp-nft/abi";
+import { CollectibleStatus } from "@/types/game";
 
 const requestSchema = z.object({
   txHash: z.string().min(1),
@@ -41,6 +42,7 @@ export const POST = async (req: NextRequest) => {
     if (nftMinted) {
       await updateUserCollectible(Number(fid), collectibleId, {
         txHash,
+        status: CollectibleStatus.Minted,
       });
 
       return NextResponse.json({
