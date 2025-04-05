@@ -703,10 +703,10 @@
   resolved "https://registry.yarnpkg.com/@fastify/busboy/-/busboy-2.1.1.tgz#b9da6a878a371829a0502c9b6c1c143ef6663f4d"
   integrity sha512-vBZP4NlzfOlerQTnba4aqZoMhE/a9HY7HRqoOPaETQcSQuWEIyZMHGfVu6w9wGtGK5fED5qRs2DteVCjOH60sA==
 
-"@frames.js/debugger@^0.4.1":
-  version "0.4.4"
-  resolved "https://registry.yarnpkg.com/@frames.js/debugger/-/debugger-0.4.4.tgz#9dc4c1d8ec72cf9880121a865aa1677ff671b9e3"
-  integrity sha512-Z6RJDrY9FeJ76TJDef0WAdkAfCuOtQJizZUk3qRsGubWluEwimabaqAAvaLZPxvbZ3zQN7GR9AQDscF+XLVYbA==
+"@frames.js/debugger@^0.5.0":
+  version "0.5.0"
+  resolved "https://registry.yarnpkg.com/@frames.js/debugger/-/debugger-0.5.0.tgz#067a8d81477955adcef502222121d9b66c9726b1"
+  integrity sha512-CVMGqZlf9HuRNaCuvJy1ofuz8Cyhq+ErKPK0UOXHicWRdoabS6KuuDtpwJgfgspYQ1gx7hWH/lW8k0FBc0+yQw==
   dependencies:
     "@farcaster/auth-kit" "^0.6.0"
     "@farcaster/frame-sdk" "^0.0.26"
