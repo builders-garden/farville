@@ -20,6 +20,8 @@ import {
   getUserPosition,
   getUsersByXp,
 } from "./prisma/queries";
+import { encodeFunctionData, Address, Hex } from "viem";
+import { PFP_NFT_ABI } from "./contracts/pfp-nft/abi";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -500,4 +502,25 @@ export const getGlobalLeaderboard = async (
     );
   }
   return users;
+};
+
+export const getPfpNftTxCalldata = (params: {
+  address: Address;
+  fid: bigint;
+  priceInUSD: number;
+  pinataMetadataCID: string;
+  backendSignature: Hex;
+}) => {
+  const priceInUSDCbigint = BigInt(params.priceInUSD * 10 ** 6);
+  return encodeFunctionData({
+    abi: PFP_NFT_ABI,
+    functionName: "mint",
+    args: [
+      params.address,
+      params.fid,
+      priceInUSDCbigint,
+      params.pinataMetadataCID,
+      params.backendSignature,
+    ],
+  });
 };

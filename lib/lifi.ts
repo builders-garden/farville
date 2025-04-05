@@ -1,37 +1,119 @@
-import { createConfig, getToken } from "@lifi/sdk";
-import { base } from "viem/chains";
+import {
+  ChainType,
+  createConfig,
+  EVM,
+  getTokenBalancesByChain,
+  getTokens,
+  TokenAmount,
+} from "@lifi/sdk";
+import { Address, formatUnits } from "viem";
 
-import { BASE_WETH_ADDRESS, BASE_ETH_ADDRESS } from "@/lib/contracts/constants";
+import { wagmiConfig } from "@/lib/wagmi";
+import { getWalletClient, switchChain } from "@wagmi/core";
 
 createConfig({
-  integrator: "Farville",
+  integrator: "FarVille",
   // apiKey: env.LIFI_API_KEY,
+  providers: [
+    EVM({
+      getWalletClient: async () => {
+        const client = await getWalletClient(wagmiConfig);
+        return client;
+      },
+      switchChain: async (chainId) => {
+        const chain = await switchChain(wagmiConfig, { chainId });
+        return getWalletClient(wagmiConfig, { chainId: chain.id });
+      },
+    }),
+  ],
 });
 
-export const getLatestWETHPrice = async (): Promise<number> => {
+export const getWalletBalance = async (
+  walletAddress: Address
+): Promise<{
+  totalBalanceUSD: number;
+  tokenBalances: { [chainId: number]: TokenAmount[] };
+}> => {
   try {
-    const token = await getToken(base.id, BASE_WETH_ADDRESS);
-    if (!token.priceUSD) throw new Error("WETH price not found");
-    return Number(token.priceUSD);
-  } catch (error) {
-    console.error(
-      "Error getting WETH price from LiFi, fetching from pyth:",
-      error
+    const tokensResponse = await getTokens({
+      chainTypes: [ChainType.EVM],
+      minPriceUSD: 0.1,
+    });
+
+    const tokenBalances = await getTokenBalancesByChain(
+      walletAddress,
+      tokensResponse.tokens
     );
-    return 0;
+
+    // Filter tokens with positive balances while maintaining the original structure
+    const filteredTokenBalances: { [chainId: number]: TokenAmount[] } = {};
+
+    for (const [chainId, balances] of Object.entries(tokenBalances)) {
+      filteredTokenBalances[Number(chainId)] = balances.filter(
+        (balance) => balance.amount && Number(balance.amount) > 0
+      );
+    }
+
+    // get wallet total balance in USD
+    const walletTotalBalanceUSD = Object.values(filteredTokenBalances).reduce(
+      (total, balances) =>
+        total +
+        balances.reduce(
+          (sum, balance) => sum + getTokenBalanceUSDValue(balance),
+          0
+        ),
+      0
+    );
+    return {
+      totalBalanceUSD: walletTotalBalanceUSD,
+      tokenBalances: filteredTokenBalances,
+    };
+  } catch (error) {
+    console.error(error);
   }
+  return {
+    totalBalanceUSD: 0,
+    tokenBalances: {},
+  };
 };
 
-export const getLatestETHPrice = async (): Promise<number> => {
-  try {
-    const token = await getToken(base.id, BASE_ETH_ADDRESS);
-    if (!token.priceUSD) throw new Error("ETH price not found");
-    return Number(token.priceUSD);
-  } catch (error) {
-    console.error(
-      "Error getting ETH price from LiFi, fetching from pyth:",
-      error
-    );
+/**
+ * Gets the USD value of a token balance
+ * @param token The token amount object from LiFi SDK
+ * @returns USD value as a number
+ */
+export function getTokenBalanceUSDValue(token: TokenAmount): number {
+  if (!token.amount || Number(token.amount) === 0 || !token.priceUSD) {
     return 0;
   }
-};
+
+  const formattedAmount = formatUnits(
+    BigInt(token.amount.toString()),
+    token.decimals
+  );
+  return Number(formattedAmount) * Number(token.priceUSD);
+}
+
+/**
+ * Formats a token balance for display, taking into account the token's decimals
+ * @param token The token amount object from LiFi SDK
+ * @param displayDecimals Number of decimals to show in the formatted output (default: 4)
+ * @returns Formatted balance as a string
+ */
+export function formatTokenBalance(
+  token: TokenAmount,
+  displayDecimals: number = 4
+): string {
+  if (!token.amount || Number(token.amount) === 0) {
+    return "0";
+  }
+
+  // Format the amount using the token's decimals
+  const formattedAmount = formatUnits(
+    BigInt(token.amount.toString()),
+    token.decimals
+  );
+
+  // Convert to number and fix to the desired display decimals
+  return Number(formattedAmount).toFixed(displayDecimals);
+}

@@ -3,8 +3,10 @@ import { useApiMutation } from "./use-api-mutation";
 
 export const useGenerateMidjourneyImage = ({
   setMidjourneyTaskId,
+  setIsLoading,
 }: {
   setMidjourneyTaskId: Dispatch<SetStateAction<string | null>>;
+  setIsLoading: Dispatch<SetStateAction<boolean>>;
 }) => {
   return useApiMutation({
     url: () => `/api/pfp-nft-image-ask`,
@@ -24,6 +26,10 @@ export const useGenerateMidjourneyImage = ({
     method: "POST",
     onSuccess: (data: { taskId: string }) => {
       setMidjourneyTaskId(data.taskId);
+      setIsLoading(false);
+    },
+    onError: () => {
+      setIsLoading(false);
     },
   });
 };

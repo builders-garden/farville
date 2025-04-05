@@ -12,6 +12,8 @@
     "prisma:generate": "prisma generate"
   },
   "dependencies": {
+    "@daimo/common": "^1.6.0",
+    "@daimo/pay": "^1.6.3",
     "@farcaster/auth-client": "^0.3.0",
     "@farcaster/frame-node": "^0.0.10",
     "@farcaster/frame-sdk": "^0.0.26",
@@ -31,6 +33,7 @@
     "@supabase/supabase-js": "^2.47.10",
     "@tanstack/react-query": "^5.62.10",
     "@upstash/qstash": "^2.7.20",
+    "@wagmi/core": "^2.16.7",
     "axios": "^1.7.9",
     "canvas-confetti": "^1.9.3",
     "class-variance-authority": "^0.7.1",
@@ -44,9 +47,9 @@
     "motion": "^12.6.3",
     "next": "15.1.2",
     "next-auth": "^4.24.11",
+    "nextstepjs": "^2.0.0",
     "openai": "^4.91.0",
     "pinata-web3": "^0.5.4",
-    "nextstepjs": "^2.0.0",
     "posthog-js": "^1.203.2",
     "posthog-node": "^4.3.2",
     "react": "^19.0.0",
@@ -57,7 +60,7 @@
     "tailwind-merge": "^3.0.1",
     "tailwindcss-animate": "^1.0.7",
     "uuid": "^9.0.0",
-    "viem": "2.x",
+    "viem": "^2.23.3",
     "wagmi": "^2.14.6",
     "zod": "^3.24.1",
     "zustand": "^4.5.0"

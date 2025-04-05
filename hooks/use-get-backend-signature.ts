@@ -3,8 +3,10 @@ import { useApiMutation } from "./use-api-mutation";
 
 export const useGetBackendSignature = ({
   setBackendSignature,
+  setIsLoading,
 }: {
   setBackendSignature: Dispatch<SetStateAction<`0x${string}` | null>>;
+  setIsLoading: Dispatch<SetStateAction<boolean>>;
 }) => {
   return useApiMutation({
     url: () => `/api/pfp-nft-signature`,
@@ -27,6 +29,10 @@ export const useGetBackendSignature = ({
       signerAddress: `0x${string}`;
     }) => {
       setBackendSignature(data.signature);
+      setIsLoading(false);
+    },
+    onError: () => {
+      setIsLoading(false);
     },
   });
 };

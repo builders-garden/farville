@@ -3,8 +3,10 @@ import { useApiMutation } from "./use-api-mutation";
 
 export const usePinata = ({
   setMetadataCID,
+  setConfirmedSelection,
 }: {
   setMetadataCID: Dispatch<SetStateAction<string | null>>;
+  setConfirmedSelection: Dispatch<SetStateAction<boolean>>;
 }) => {
   return useApiMutation({
     url: () => `/api/pfp-nft-pinata`,
@@ -29,8 +31,8 @@ export const usePinata = ({
       metadataUrl: string;
       metadataCID: string;
     }) => {
-      console.log("usePinata onSuccess", data);
       setMetadataCID(data.metadataCID);
+      setConfirmedSelection(true);
     },
   });
 };
