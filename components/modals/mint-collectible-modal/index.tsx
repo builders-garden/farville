@@ -16,14 +16,7 @@ import { useGetBackendSignature } from "@/hooks/use-get-backend-signature";
 import { useUpdateMintPfpUser } from "@/hooks/use-update-mint-pfp-user";
 
 import { motion } from "framer-motion";
-import { Check, X, ZoomInIcon } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { X } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import Confetti from "@/components/animations/Confetti";
@@ -45,11 +38,12 @@ import {
 } from "@/lib/contracts/constants";
 import {
   cn,
-  formatNumberWithSuffix,
   getPfpNftTxCalldata,
   mintedCollectibleFlexCardComposeCastUrl,
 } from "@/lib/utils";
 import { CollectibleStatus } from "@/types/game";
+import { CustomImage } from "./custom-image";
+import { SelectMintPrice } from "./select-mint-price";
 import { env } from "@/lib/env";
 
 interface MintCollectibleModalProps {
@@ -156,7 +150,7 @@ export default function MintCollectibleModal({
 
   // needed for Step 5. Construct mint tx calldata once the backend signature is ready
   const txCalldata = useMemo(() => {
-    if (!backendSignature || !pinataMetadataCID || !address) return null;
+    if (!backendSignature || !pinataMetadataCID || !address) return "0x";
     return getPfpNftTxCalldata({
       address,
       fid: BigInt(state.user.fid),
@@ -252,6 +246,34 @@ export default function MintCollectibleModal({
     }
   }, [selectedCollectible]);
 
+  // Check if select mint price should be shown
+  const showSelectMintPrice = useMemo(() => {
+    if (!selectedCollectible || !selectedCollectible.userHasCollectibles)
+      return false;
+    const status = selectedCollectible.userHasCollectibles.status;
+    return (
+      selectedCollectible &&
+      selectedCollectible.userHasCollectibles &&
+      (status === CollectibleStatus.Uploaded ||
+        status === CollectibleStatus.Generated ||
+        (status === CollectibleStatus.Pending && midjourneyImageUrl))
+    );
+  }, [midjourneyImageUrl, selectedCollectible]);
+
+  // Check if generate button should be shown
+  const showGenerateButton = useMemo(() => {
+    return (
+      (!midjourneyTaskId &&
+        selectedCollectible &&
+        !selectedCollectible.userHasCollectibles) ||
+      (selectedCollectible &&
+        selectedCollectible.userHasCollectibles &&
+        selectedCollectible.userHasCollectibles.status ===
+          CollectibleStatus.Pending &&
+        !midjourneyTaskId)
+    );
+  }, [midjourneyTaskId, selectedCollectible]);
+
   // Check if user can generate image
   const canGenerate = useMemo(() => {
     const isNullOrPendingStatus =
@@ -268,20 +290,68 @@ export default function MintCollectibleModal({
     );
   }, [pfpDescriptionLoading, pfpDescription, address, selectedCollectible]);
 
-  // Check if user can mint
-  const canMint = useMemo(() => {
+  // Check if get image button should be shown
+  const showGetImageButton = useMemo(() => {
+    return (
+      (midjourneyTaskId &&
+        !midjourneyImageUrls &&
+        selectedCollectible &&
+        !selectedCollectible.userHasCollectibles) ||
+      (selectedCollectible &&
+        selectedCollectible.userHasCollectibles &&
+        selectedCollectible.userHasCollectibles.status ===
+          CollectibleStatus.Pending &&
+        midjourneyTaskId &&
+        !midjourneyImageUrl)
+    );
+  }, [
+    midjourneyImageUrl,
+    midjourneyImageUrls,
+    midjourneyTaskId,
+    selectedCollectible,
+  ]);
+
+  // Check if confirm selection button should be shown
+  const showConfirmSelectionButton = useMemo(() => {
     if (!selectedCollectible || !selectedCollectible.userHasCollectibles)
-      return false;
+      return true;
     const status = selectedCollectible.userHasCollectibles.status;
     return (
       address &&
       (status === CollectibleStatus.Pending ||
         status === CollectibleStatus.Generated ||
         status === CollectibleStatus.Uploaded) &&
-      midjourneyImageUrl &&
-      !finalTxHash
+      midjourneyImageUrl
     );
-  }, [address, selectedCollectible, midjourneyImageUrl, finalTxHash]);
+  }, [address, midjourneyImageUrl, selectedCollectible]);
+
+  // Check if user can mint
+  const canMint = useMemo(() => {
+    if (!selectedCollectible || !selectedCollectible.userHasCollectibles)
+      return false;
+    const status = selectedCollectible.userHasCollectibles.status;
+    return (
+      (address &&
+        (status === CollectibleStatus.Pending ||
+          status === CollectibleStatus.Generated ||
+          status === CollectibleStatus.Uploaded) &&
+        midjourneyImageUrl &&
+        selectedImageUrl &&
+        confirmedSelection &&
+        !finalTxHash &&
+        paymentStarted) ||
+      paymentCompleted
+    );
+  }, [
+    address,
+    selectedCollectible,
+    midjourneyImageUrl,
+    finalTxHash,
+    selectedImageUrl,
+    confirmedSelection,
+    paymentStarted,
+    paymentCompleted,
+  ]);
 
   // get pfp description from openai
   useEffect(() => {
@@ -358,17 +428,6 @@ export default function MintCollectibleModal({
       });
     }
   }, [address, pinataMetadataCID, getBackendSignature, state.user.fid]);
-
-  /*
-  !finalTxHash &&
-      !mintTxHash &&
-      selectedImageUrl &&
-      address &&
-      pinataMetadataCID &&
-      chainId === base.id &&
-      backendSignature &&
-      selectedPrice > 0
-      */
 
   // Step 6. mint handle daimo events: PaymentStarted, PaymentCompleted, PaymentBounced
   const handlePaymentStarted = (e: PaymentStartedEvent) => {
@@ -472,9 +531,10 @@ export default function MintCollectibleModal({
                   imageUrl={
                     selectedImageUrl ?? "/images/badge/farville-avatar.png"
                   }
-                  alt={`User Pfp Generation`}
+                  alt={`Selected Pfp Generation`}
                   selected={true}
                   onSelect={() => {}}
+                  confirmedSelection={confirmedSelection}
                 />
               ) : midjourneyImageUrls ? (
                 <div className="grid grid-cols-2 gap-x-4 gap-y-2">
@@ -485,6 +545,7 @@ export default function MintCollectibleModal({
                       alt={`User Pfp Generation`}
                       selected={selectedImageUrl === imageUrl}
                       onSelect={() => setSelectedImageUrl(imageUrl)}
+                      confirmedSelection={confirmedSelection}
                     />
                   ))}
                 </div>
@@ -554,58 +615,16 @@ export default function MintCollectibleModal({
           </div>
           <div className="flex flex-col gap-3">
             {/* PAY PRICE */}
-            {selectedCollectible &&
-            selectedCollectible.userHasCollectibles &&
-            (selectedCollectible.userHasCollectibles.status ===
-              CollectibleStatus.Uploaded ||
-              selectedCollectible.userHasCollectibles.status ===
-                CollectibleStatus.Generated ||
-              (selectedCollectible.userHasCollectibles.status ===
-                CollectibleStatus.Pending &&
-                midjourneyImageUrl)) ? (
-              <div className="flex flex-col items-center justify-center gap-2">
-                <div className="w-full flex flex-row items-center justify-between gap-2">
-                  <span className="text-white/70 text-lg">Pay</span>
-                  {/* USDC balance */}
-                  <div className="w-full flex items-center justify-end gap-2">
-                    <span className="flex flex-row items-center gap-1 text-white/70 text-[8px]">
-                      You have{" "}
-                      {tokenBalancesData &&
-                      tokenBalancesData.totalBalanceUSD > BigInt(0)
-                        ? formatNumberWithSuffix(
-                            tokenBalancesData.totalBalanceUSD
-                          )
-                        : "0"}{" "}
-                      USD
-                    </span>
-                    <UsdcLogo />
-                  </div>
-                </div>
-
-                {/* SELECT MINT PRICE */}
-                <div className="w-full flex flex-row items-center justify-between gap-2">
-                  <div className="w-full relative flex flex-row items-center gap-2">
-                    {[1, 3, 5].map((price) => (
-                      <Button
-                        key={`mint-price-${price}`}
-                        variant="ghost"
-                        onClick={() => setSelectedPrice(price)}
-                        className={cn(
-                          "text-md px-3 w-full rounded-md text-white font-semibold",
-                          selectedPrice === price
-                            ? "bg-[#8A5F3C] opacity-100 border-2 border-white/80"
-                            : "bg-[#8A5F3C] hover:bg-[#8A5F3C]/80 hover:text-white/80 opacity-80 border-2 border-transparent hover:border-white/80"
-                        )}
-                      >
-                        ${price}
-                      </Button>
-                    ))}
-                  </div>
-                </div>
-              </div>
+            {showSelectMintPrice ? (
+              <SelectMintPrice
+                totalBalanceUSD={tokenBalancesData?.totalBalanceUSD ?? 0}
+                selectedPrice={selectedPrice}
+                setSelectedPrice={setSelectedPrice}
+                confirmedSelection={confirmedSelection}
+              />
             ) : null}
 
-            {/* BIG BUTTON */}
+            {/* BIG BUTTON Generate/Get Image/Select/Confirm/Mint/Share */}
             {finalTxHash ? (
               <button
                 onClick={handleShareMint}
@@ -613,14 +632,7 @@ export default function MintCollectibleModal({
               >
                 Share
               </button>
-            ) : (!midjourneyTaskId &&
-                selectedCollectible &&
-                !selectedCollectible.userHasCollectibles) ||
-              (selectedCollectible &&
-                selectedCollectible.userHasCollectibles &&
-                selectedCollectible.userHasCollectibles.status ===
-                  CollectibleStatus.Pending &&
-                !midjourneyTaskId) ? (
+            ) : showGenerateButton ? (
               <button
                 disabled={!canGenerate || isLoading}
                 onClick={handleGenerate}
@@ -637,16 +649,7 @@ export default function MintCollectibleModal({
                   ? "Generating..."
                   : "Generate"}
               </button>
-            ) : (midjourneyTaskId &&
-                !midjourneyImageUrls &&
-                selectedCollectible &&
-                !selectedCollectible.userHasCollectibles) ||
-              (selectedCollectible &&
-                selectedCollectible.userHasCollectibles &&
-                selectedCollectible.userHasCollectibles.status ===
-                  CollectibleStatus.Pending &&
-                midjourneyTaskId &&
-                !midjourneyImageUrl) ? (
+            ) : showGetImageButton ? (
               <button
                 disabled={isLoading}
                 onClick={handleGetImage}
@@ -654,23 +657,22 @@ export default function MintCollectibleModal({
               >
                 {isLoading ? "Fetching..." : "Get Image"}
               </button>
-            ) : canMint ? (
+            ) : showConfirmSelectionButton ? (
               <div className="w-full flex flex-col gap-2 items-center pb-4">
                 <DaimoPayButton.Custom
                   appId={env.NEXT_PUBLIC_DAIMO_PAY_ID}
                   metadata={{
                     userId: state.user.fid.toString(),
-                    selectedPrice: selectedPrice.toString(),
                     pinataMetadataCID: pinataMetadataCID ?? "",
                   }}
                   preferredChains={[base.id, mainnet.id]}
                   preferredTokens={[
-                    { chain: 8453, address: BASE_USDC_ADDRESS },
-                    { chain: 8453, address: BASE_DEGEN_ADDRESS },
+                    { chain: base.id, address: BASE_USDC_ADDRESS },
+                    { chain: base.id, address: BASE_DEGEN_ADDRESS },
                   ]}
                   toAddress={PFP_NFT_BASE_ADDRESS}
                   toChain={base.id}
-                  toUnits={BigInt(selectedPrice * 10 ** 6).toString()}
+                  toUnits={selectedPrice.toString()}
                   toToken={BASE_USDC_ADDRESS}
                   toCallData={txCalldata as `0x${string}`}
                   closeOnSuccess
@@ -685,10 +687,9 @@ export default function MintCollectibleModal({
                         "w-full flex-1 py-2 px-4 rounded-[5px]",
                         !canMint
                           ? "text-yellow-400/50 cursor-not-allowed bg-yellow-500/10"
-                          : "text-[#5C4121] bg-yellow-500",
-                        paymentCompleted
-                          ? "bg-green-500 text-green-200 cursor-not-allowed"
-                          : ""
+                          : "text-[#5C4121] bg-yellow-500 hover:bg-yellow-500/80 hover:text-[#5C4121]",
+                        paymentCompleted &&
+                          "bg-green-500 text-green-200 cursor-not-allowed"
                       )}
                       onClick={() => {
                         if (!confirmedSelection) {
@@ -700,7 +701,7 @@ export default function MintCollectibleModal({
                         }
                       }}
                       disabled={
-                        !selectedImageUrl || paymentStarted || paymentCompleted
+                        confirmedSelection ? !canMint : !selectedImageUrl
                       }
                     >
                       {!selectedImageUrl
@@ -743,86 +744,3 @@ export default function MintCollectibleModal({
     </>
   );
 }
-
-const CustomImage = ({
-  imageUrl,
-  alt,
-  selected,
-  onSelect,
-}: {
-  imageUrl: string;
-  alt: string;
-  selected: boolean;
-  onSelect: () => void;
-}) => {
-  return (
-    <div
-      className="relative flex flex-col gap-2 px-2 py-1 items-center justify-center cursor-pointer"
-      onClick={onSelect}
-    >
-      <motion.div
-        animate={{
-          scale: [1, 1.05, 1],
-        }}
-        transition={{
-          duration: 3,
-          repeat: Infinity,
-          ease: "easeInOut",
-        }}
-        className={cn(
-          "relative rounded-2xl border-8 border-yellow-400/20 size-28 xs:size-32",
-          selected && "border-green-400/80"
-        )}
-      >
-        {selected && (
-          <Check className="absolute -top-3 -right-3 bg-green-400 text-white rounded-full p-1 z-10" />
-        )}
-        <Image
-          src={imageUrl ?? `/images/badge/og.png`}
-          alt={alt}
-          fill
-          className="rounded-lg [animation:rotate_20s_linear_infinite] 
-           [filter:drop-shadow(0_0_10px_rgba(234,179,8,0.5))] cursor-normal"
-        />
-        <Dialog>
-          <DialogTrigger asChild>
-            <div className="absolute right-0 bottom-3 items-center justify-center flex">
-              <div className="w-full h-full flex items-center justify-center size-8 bg-white/70 p-1 rounded-full cursor-zoom-in">
-                <ZoomInIcon className="size-4 text-black" />
-              </div>
-            </div>
-          </DialogTrigger>
-          <DialogContent className="w-full h-full">
-            <DialogTitle className="sr-only">{alt}</DialogTitle>
-            <DialogDescription className="sr-only">{alt}</DialogDescription>
-            <Image
-              src={imageUrl ?? `/images/badge/og.png`}
-              alt={alt}
-              fill
-              className="object-contain"
-            />
-          </DialogContent>
-        </Dialog>
-      </motion.div>
-    </div>
-  );
-};
-
-const UsdcLogo = () => {
-  return (
-    <svg className="w-[20px] h-[20px]" viewBox="0 0 2000 2000">
-      <path
-        d="M1000 2000c554.17 0 1000-445.83 1000-1000S1554.17 0 1000 0 0 445.83 0 1000s445.83 1000 1000 1000z"
-        fill="#2775ca"
-      />
-      <path
-        d="M1275 1158.33c0-145.83-87.5-195.83-262.5-216.66-125-16.67-150-50-150-108.34s41.67-95.83 125-95.83c75 0 116.67 25 137.5 87.5 4.17 12.5 16.67 20.83 29.17 20.83h66.66c16.67 0 29.17-12.5 29.17-29.16v-4.17c-16.67-91.67-91.67-162.5-187.5-170.83v-100c0-16.67-12.5-29.17-33.33-33.34h-62.5c-16.67 0-29.17 12.5-33.34 33.34v95.83c-125 16.67-204.16 100-204.16 204.17 0 137.5 83.33 191.66 258.33 212.5 116.67 20.83 154.17 45.83 154.17 112.5s-58.34 112.5-137.5 112.5c-108.34 0-145.84-45.84-158.34-108.34-4.16-16.66-16.66-25-29.16-25h-70.84c-16.66 0-29.16 12.5-29.16 29.17v4.17c16.66 104.16 83.33 179.16 220.83 200v100c0 16.66 12.5 29.16 33.33 33.33h62.5c16.67 0 29.17-12.5 33.34-33.33v-100c125-20.84 208.33-108.34 208.33-220.84z"
-        fill="#fff"
-      />
-      <path
-        d="M787.5 1595.83c-325-116.66-491.67-479.16-370.83-800 62.5-175 200-308.33 370.83-370.83 16.67-8.33 25-20.83 25-41.67V325c0-16.67-8.33-29.17-25-33.33-4.17 0-12.5 0-16.67 4.16-395.83 125-612.5 545.84-487.5 941.67 75 233.33 254.17 412.5 487.5 487.5 16.67 8.33 33.34 0 37.5-16.67 4.17-4.16 4.17-8.33 4.17-16.66v-58.34c0-12.5-12.5-29.16-25-37.5zM1229.17 295.83c-16.67-8.33-33.34 0-37.5 16.67-4.17 4.17-4.17 8.33-4.17 16.67v58.33c0 16.67 12.5 33.33 25 41.67 325 116.66 491.67 479.16 370.83 800-62.5 175-200 308.33-370.83 370.83-16.67 8.33-25 20.83-25 41.67V1700c0 16.67 8.33 29.17 25 33.33 4.17 0 12.5 0 16.67-4.16 395.83-125 612.5-545.84 487.5-941.67-75-237.5-258.34-416.67-487.5-491.67z"
-        fill="#fff"
-      />
-    </svg>
-  );
-};

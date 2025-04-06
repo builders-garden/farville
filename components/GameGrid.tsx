@@ -6,7 +6,7 @@ import { HarvestedGoldCrop } from "./modals/HarvestedGoldCrop";
 import { NewAchievementReached } from "./modals/NewAchievementReached";
 import SeedMenu from "./SeedMenu";
 import MintOgModal from "./modals/MintOgModal";
-import MintCollectibleModal from "./modals/MintCollectibleModal";
+import MintCollectibleModal from "./modals/mint-collectible-modal";
 
 export default function GameGrid() {
   const {
