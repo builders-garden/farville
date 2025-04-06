@@ -1,7 +1,8 @@
 import { Metadata } from "next";
 import App from "./app";
+import { env } from "@/lib/env";
 
-const appUrl = process.env.NEXT_PUBLIC_URL;
+const appUrl = env.NEXT_PUBLIC_URL;
 
 const frame = {
   version: "next",

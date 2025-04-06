@@ -3,6 +3,7 @@ import {
   PFP_NFT_IMAGE_SYSTEM_PROMPT_1,
   PFP_NFT_IMAGE_SYSTEM_PROMPT_2,
 } from "@/lib/constants";
+import { env } from "@/lib/env";
 import { addUserCollectible } from "@/supabase/queries";
 import { CollectibleStatus } from "@/types/game";
 import { NextResponse } from "next/server";
@@ -19,7 +20,7 @@ export async function POST(request: Request) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "x-api-key": process.env.MIDJOURNEY_API_KEY || "",
+        "x-api-key": env.MIDJOURNEY_API_KEY,
       },
       body: JSON.stringify({
         model: "midjourney",

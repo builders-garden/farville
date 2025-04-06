@@ -1,3 +1,4 @@
+import { env } from "@/lib/env";
 import { getActiveStreaksCount } from "@/lib/prisma/queries";
 import { getGlobalLeaderboard } from "@/lib/utils";
 import { getUser } from "@/supabase/queries";
@@ -58,7 +59,7 @@ export async function GET(
     // const friends = searchParams.get("friends") === "true";
     const quests = searchParams.get("quests") === "true";
 
-    const appUrl = process.env.NEXT_PUBLIC_URL;
+    const appUrl = env.NEXT_PUBLIC_URL;
 
     if (!fid) {
       return new Response("Farmer ID is required", {

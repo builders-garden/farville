@@ -50,6 +50,7 @@ import {
   mintedCollectibleFlexCardComposeCastUrl,
 } from "@/lib/utils";
 import { CollectibleStatus } from "@/types/game";
+import { env } from "@/lib/env";
 
 interface MintCollectibleModalProps {
   onCancel: () => void;
@@ -656,7 +657,7 @@ export default function MintCollectibleModal({
             ) : canMint ? (
               <div className="w-full flex flex-col gap-2 items-center pb-4">
                 <DaimoPayButton.Custom
-                  appId={process.env.NEXT_PUBLIC_DAIMO_PAY_ID!}
+                  appId={env.NEXT_PUBLIC_DAIMO_PAY_ID}
                   metadata={{
                     userId: state.user.fid.toString(),
                     selectedPrice: selectedPrice.toString(),

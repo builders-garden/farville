@@ -16,6 +16,7 @@ import { farcasterFrame } from "@farcaster/frame-wagmi-connector";
 import { frameConnector } from "@/lib/connector";
 
 import { getDefaultConfig } from "@daimo/pay";
+import { env } from "@/lib/env";
 
 const chains = [
   mainnet,
@@ -34,10 +35,10 @@ const chains = [
 export const wagmiConfig = createConfig(
   getDefaultConfig({
     appName: "FarVille",
-    appIcon: "https://farville.farm/images/icon.png",
+    appIcon: `${env.NEXT_PUBLIC_URL}/images/icon.png`,
     appDescription: "FarVille",
-    appUrl: "https://farville.farm",
-    walletConnectProjectId: process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID!,
+    appUrl: env.NEXT_PUBLIC_URL,
+    walletConnectProjectId: env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID,
     ssr: true,
     chains: chains,
     transports: {

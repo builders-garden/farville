@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { privateKeyToAccount } from "viem/accounts";
 import { encodePacked, keccak256 } from "viem";
+import { env } from "@/lib/env";
 
 export async function POST(request: Request) {
   try {
@@ -14,7 +15,7 @@ export async function POST(request: Request) {
     }
 
     // Get the private key from environment variables
-    const privateKey = process.env.SIGNER_PRIVATE_KEY;
+    const privateKey = env.SIGNER_PRIVATE_KEY;
     if (!privateKey) {
       throw new Error("Signer private key not configured");
     }

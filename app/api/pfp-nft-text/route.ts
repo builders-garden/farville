@@ -1,9 +1,10 @@
 import { PFP_NFT_TEXT_SYSTEM_PROMPT } from "@/lib/constants";
+import { env } from "@/lib/env";
 import { NextResponse } from "next/server";
 import OpenAI from "openai";
 
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
+  apiKey: env.OPENAI_API_KEY,
 });
 
 export async function POST(request: Request) {
@@ -22,8 +23,7 @@ export async function POST(request: Request) {
       messages: [
         {
           role: "system",
-          content:
-          PFP_NFT_TEXT_SYSTEM_PROMPT,
+          content: PFP_NFT_TEXT_SYSTEM_PROMPT,
         },
         {
           role: "user",

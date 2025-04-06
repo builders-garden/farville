@@ -1,3 +1,4 @@
+import { env } from "@/lib/env";
 import {
   getActiveStreaksCount,
   getTopStreaks,
@@ -66,7 +67,7 @@ export async function GET(
       }
     }
 
-    const appUrl = process.env.NEXT_PUBLIC_URL;
+    const appUrl = env.NEXT_PUBLIC_URL;
 
     const bgImageRes = await fetch(
       new URL(`${appUrl}/images/bg-empty.png`, import.meta.url)

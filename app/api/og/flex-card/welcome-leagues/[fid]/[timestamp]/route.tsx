@@ -1,3 +1,4 @@
+import { env } from "@/lib/env";
 import {
   getActiveStreaksCount,
   getTopStreaks,
@@ -47,7 +48,7 @@ export async function GET(
   try {
     const { fid } = await params;
 
-    const appUrl = process.env.NEXT_PUBLIC_URL;
+    const appUrl = env.NEXT_PUBLIC_URL;
 
     if (!fid) {
       return new Response("Farmer ID is required", {

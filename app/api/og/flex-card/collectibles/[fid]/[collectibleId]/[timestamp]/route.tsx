@@ -5,6 +5,7 @@ import { getUser, getUserCollectibleByCollectibleId } from "@/supabase/queries";
 import { DbUser } from "@/supabase/types";
 import { ImageResponse } from "next/og";
 import { CollectibleStatus } from "@/types/game";
+import { env } from "@/lib/env";
 
 export const dynamic = "force-dynamic";
 const size = {
@@ -58,7 +59,7 @@ export async function GET(
   try {
     const { fid, collectibleId } = await params;
 
-    const appUrl = process.env.NEXT_PUBLIC_URL;
+    const appUrl = env.NEXT_PUBLIC_URL;
 
     if (!fid) {
       return new Response("Farmer ID is required", {

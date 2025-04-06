@@ -2,8 +2,9 @@ import { AnimatePresence } from "framer-motion";
 import { Metadata } from "next";
 import LeaderboardPage from "../../components/LeaderboardPage";
 import { getReferralLeaderboard } from "../../supabase/queries";
+import { env } from "@/lib/env";
 
-const appUrl = process.env.NEXT_PUBLIC_URL;
+const appUrl = env.NEXT_PUBLIC_URL;
 
 const frame = {
   version: "next",

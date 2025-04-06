@@ -7,14 +7,15 @@ import { PostHogProvider } from "posthog-js/react";
 import { NextStepProvider, NextStep } from "nextstepjs";
 import { steps } from "@/components/tutorial/steps";
 import CustomTutorialCard from "@/components/tutorial/CustomTutorialCard";
+import { env } from "@/lib/env";
 
 const WagmiProvider = dynamic(() => import("./../components/WagmiProvider"), {
   ssr: false,
 });
 
 if (typeof window !== "undefined") {
-  posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY!, {
-    // api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST!,
+  posthog.init(env.NEXT_PUBLIC_POSTHOG_KEY, {
+    // api_host: env.NEXT_PUBLIC_POSTHOG_HOST!,
     autocapture: false,
     api_host: "/ingest",
     ui_host: "https://eu.posthog.com",

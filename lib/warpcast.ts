@@ -1,3 +1,5 @@
+import { env } from "@/lib/env";
+
 /**
  * Get the farcaster manifest for the frame, generate yours from Warpcast Mobile
  *  On your phone to Settings > Developer > Domains > insert website hostname > Generate domain manifest
@@ -5,7 +7,7 @@
  */
 export async function getFarcasterManifest() {
   let frameName = "FarVille";
-  const appUrl = process.env.NEXT_PUBLIC_URL!;
+  const appUrl = env.NEXT_PUBLIC_URL;
   if (appUrl.includes("localhost")) {
     frameName += " Local";
   } else if (appUrl.includes("ngrok")) {
@@ -15,9 +17,9 @@ export async function getFarcasterManifest() {
   }
   return {
     accountAssociation: {
-      header: process.env.NEXT_PUBLIC_FARCASTER_HEADER!,
-      payload: process.env.NEXT_PUBLIC_FARCASTER_PAYLOAD!,
-      signature: process.env.NEXT_PUBLIC_FARCASTER_SIGNATURE!,
+      header: env.NEXT_PUBLIC_FARCASTER_HEADER,
+      payload: env.NEXT_PUBLIC_FARCASTER_PAYLOAD,
+      signature: env.NEXT_PUBLIC_FARCASTER_SIGNATURE,
     },
     frame: {
       version: "1",

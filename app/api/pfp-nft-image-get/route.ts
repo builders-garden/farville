@@ -1,4 +1,5 @@
 import { MIDJOURNEY_API_URL } from "@/lib/constants";
+import { env } from "@/lib/env";
 import { updateUserCollectible } from "@/supabase/queries";
 import { CollectibleStatus } from "@/types/game";
 import { NextResponse } from "next/server";
@@ -15,7 +16,7 @@ export async function POST(request: Request) {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        "x-api-key": process.env.MIDJOURNEY_API_KEY || "",
+        "x-api-key": env.MIDJOURNEY_API_KEY,
       },
     });
 

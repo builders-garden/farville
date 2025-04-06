@@ -1,6 +1,7 @@
 import { SeedType } from "@/types/game";
 import { qstashPublishJSON } from "../qstash";
 import { CROP_DATA } from "@/lib/game-constants";
+import { env } from "@/lib/env";
 
 export async function sendDelayedNotification(
   fid: string,
@@ -9,11 +10,11 @@ export async function sendDelayedNotification(
   category: string,
   delay?: number | `${bigint}s` | `${bigint}m` | `${bigint}h` | `${bigint}d`
 ) {
-  if (process.env.NEXT_PUBLIC_URL === "http://localhost:3000") {
+  if (env.NEXT_PUBLIC_URL === "http://localhost:3000") {
     return;
   }
   const res = await qstashPublishJSON({
-    url: `${process.env.NEXT_PUBLIC_URL}/api/qstash/send-notification`,
+    url: `${env.NEXT_PUBLIC_URL}/api/qstash/send-notification`,
     body: {
       fid: fid.toString(),
       title,

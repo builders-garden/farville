@@ -1,6 +1,7 @@
 import { PinataSDK } from "pinata-web3";
+import { env } from "@/lib/env";
 
 export const pinata = new PinataSDK({
-  pinataJwt: `${process.env.PINATA_JWT_SECRET}`,
-  pinataGateway: `${process.env.NEXT_PUBLIC_GATEWAY_URL}`,
+  pinataJwt: env.PINATA_JWT_SECRET,
+  pinataGateway: env.NEXT_PUBLIC_GATEWAY_URL,
 });
