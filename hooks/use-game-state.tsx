@@ -586,6 +586,24 @@ export const useGameState = () => {
     []
   );
 
+  const updateUserCollectibles = useCallback(
+    (
+      updatedCollectibles: (DbCollectible & {
+        userHasCollectibles: DbUserHasCollectible | null;
+      })[]
+    ) => {
+      setState((prevState) => {
+        if (!prevState) return prevState;
+
+        return {
+          ...prevState,
+          collectibles: updatedCollectibles,
+        };
+      });
+    },
+    []
+  );
+
   const updateUser = useCallback(
     (newParams: {
       xp?: number;
@@ -659,5 +677,6 @@ export const useGameState = () => {
     updateUser,
     updateUserHarvestedCrops,
     updateUserWeeklyStats,
+    updateUserCollectibles,
   };
 };

@@ -5,11 +5,15 @@ import { DbUserHasCollectible } from "@/supabase/types";
 interface UseGenerateMidjourneyImageProps {
   setMidjourneyTaskId: Dispatch<SetStateAction<string | null>>;
   setIsLoading: Dispatch<SetStateAction<boolean>>;
+  handleUpdateStateCollectibles: (
+    userHasCollectibles: DbUserHasCollectible
+  ) => void;
 }
 
 export const useGenerateMidjourneyImage = ({
   setMidjourneyTaskId,
   setIsLoading,
+  handleUpdateStateCollectibles,
 }: UseGenerateMidjourneyImageProps) => {
   return useApiMutation({
     url: () => `/api/pfp-nft-image-ask`,
@@ -33,6 +37,7 @@ export const useGenerateMidjourneyImage = ({
     }) => {
       setMidjourneyTaskId(data.taskId);
       setIsLoading(false);
+      handleUpdateStateCollectibles(data.userHasCollectible);
     },
     onError: () => {
       setIsLoading(false);

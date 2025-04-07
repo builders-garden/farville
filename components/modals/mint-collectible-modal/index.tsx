@@ -45,6 +45,7 @@ import { CollectibleStatus } from "@/types/game";
 import { CustomImage } from "./custom-image";
 import { SelectMintPrice } from "./select-mint-price";
 import { env } from "@/lib/env";
+import { DbUserHasCollectible } from "@/supabase/types";
 
 interface MintCollectibleModalProps {
   onCancel: () => void;
@@ -53,7 +54,7 @@ interface MintCollectibleModalProps {
 export default function MintCollectibleModal({
   onCancel,
 }: MintCollectibleModalProps) {
-  const { state } = useGame();
+  const { state, updateUserCollectibles } = useGame();
   const { address } = useAccount();
   const [backendSignature, setBackendSignature] = useState<
     `0x${string}` | null
@@ -120,10 +121,29 @@ export default function MintCollectibleModal({
     setImageDescriptionLoading: setPfpDescriptionLoading,
   });
 
+  function handleUpdateStateCollectibles(
+    userHasCollectibles: DbUserHasCollectible
+  ) {
+    const collectible = state.collectibles.find(
+      (collectible) => collectible.id === userHasCollectibles.collectibleId
+    );
+    if (collectible) {
+      const updatedCollectible = {
+        ...collectible,
+        userHasCollectibles,
+      };
+      const updatedCollectibles = state.collectibles.map((c) =>
+        c.id === collectible.id ? updatedCollectible : c
+      );
+      updateUserCollectibles(updatedCollectibles);
+    }
+  }
+
   // Step 2: Generate midjourney image
   const { mutate: generateMidjourneyImage } = useGenerateMidjourneyImage({
     setMidjourneyTaskId,
     setIsLoading,
+    handleUpdateStateCollectibles,
   });
 
   // Step 3: Get midjourney image
@@ -131,12 +151,14 @@ export default function MintCollectibleModal({
     setMidjourneyImageUrl,
     setMidjourneyImageUrls,
     setIsLoading,
+    handleUpdateStateCollectibles,
   });
 
   // Step 4: On confirm selection, upload to pinata
   const { mutate: uploadPinata } = usePinata({
     setMetadataCID: setPinataMetadataCID,
     setConfirmedSelection,
+    handleUpdateStateCollectibles,
   });
 
   // Step 5: Once pinata has uploaded, get backend signature to mint
@@ -146,7 +168,9 @@ export default function MintCollectibleModal({
   });
 
   // Step 6: Update mint pfp user with tx hash
-  const { mutate: updateMintPfpUser } = useUpdateMintPfpUser();
+  const { mutate: updateMintPfpUser } = useUpdateMintPfpUser({
+    handleUpdateStateCollectibles,
+  });
 
   // needed for Step 5. Construct mint tx calldata once the backend signature is ready
   const txCalldata = useMemo(() => {
@@ -466,6 +490,10 @@ export default function MintCollectibleModal({
     );
     await sdk.actions.openUrl(castUrl);
   };
+
+  console.log({
+    globalState: state,
+  });
 
   return (
     <>

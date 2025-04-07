@@ -22,7 +22,12 @@ import { useSellItem } from "@/hooks/game-actions/use-sell-item";
 import { UserItem } from "@/hooks/use-user-items";
 import { GridBulkRequest } from "@/app/api/grid-bulk/route";
 import { useGridBulkOperations } from "@/hooks/game-actions/use-grid-bulk-operations";
-import { DbGridCell, DbUserHarvestedCrop } from "@/supabase/types";
+import {
+  DbCollectible,
+  DbGridCell,
+  DbUserHarvestedCrop,
+  DbUserHasCollectible,
+} from "@/supabase/types";
 import { GridBulkResult } from "@/app/api/grid-bulk/utils";
 import toast from "react-hot-toast";
 import { useClaimReward } from "@/hooks/game-actions/use-claim-reward";
@@ -125,6 +130,11 @@ interface GameContextType {
     lastScore?: number;
     league?: number;
   }) => void;
+  updateUserCollectibles: (
+    updatedCollectibles: (DbCollectible & {
+      userHasCollectibles: DbUserHasCollectible | null;
+    })[]
+  ) => void;
 }
 
 export const GameContext = createContext<GameContextType | null>(null);
@@ -158,6 +168,7 @@ export function GameProvider({
     updateUser,
     updateUserHarvestedCrops,
     updateUserWeeklyStats,
+    updateUserCollectibles,
   } = useGameState();
   const [selectedSeed, setSelectedSeed] = useState<SeedType | null>(null);
   const [selectedPerk, setSelectedPerk] = useState<UserItem | null>(null);
@@ -562,6 +573,7 @@ export function GameProvider({
         newGoldCropsFound,
         setNewGoldCropsFound,
         updateUserWeeklyStats,
+        updateUserCollectibles,
       }}
     >
       {children}

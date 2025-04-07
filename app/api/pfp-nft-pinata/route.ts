@@ -68,6 +68,7 @@ export async function POST(request: Request) {
           imageCID,
           metadataUrl,
           metadataCID,
+          userHasCollectible: res,
         },
       },
       { status: 200 }

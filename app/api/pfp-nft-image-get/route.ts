@@ -46,6 +46,7 @@ export async function POST(request: Request) {
         status: data.data.status,
         imageUrl: data.data.output.image_url,
         imageUrls: data.data.output.temporary_image_urls,
+        userHasCollectible: res,
       });
     } else {
       return NextResponse.json({

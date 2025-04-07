@@ -1,7 +1,14 @@
 import { useGame } from "@/context/GameContext";
 import { useApiMutation } from "./use-api-mutation";
+import { DbUserHasCollectible } from "@/supabase/types";
 
-export const useUpdateMintPfpUser = () => {
+export const useUpdateMintPfpUser = ({
+  handleUpdateStateCollectibles,
+}: {
+  handleUpdateStateCollectibles: (
+    userHasCollectibles: DbUserHasCollectible
+  ) => void;
+}) => {
   const { updateUser } = useGame();
 
   return useApiMutation({
@@ -17,9 +24,10 @@ export const useUpdateMintPfpUser = () => {
       collectibleId,
       txHash,
     }),
-    onSuccess: () => {
+    onSuccess: (data: { userHasCollectible: DbUserHasCollectible }) => {
       // update the user mintedPfp to true
       updateUser({ mintedOG: true });
+      handleUpdateStateCollectibles(data.userHasCollectible);
     },
   });
 };

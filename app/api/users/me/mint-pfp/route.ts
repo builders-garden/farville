@@ -40,20 +40,25 @@ export const POST = async (req: NextRequest) => {
     });
 
     if (nftMinted) {
-      await updateUserCollectible(Number(fid), collectibleId, {
+      const res = await updateUserCollectible(Number(fid), collectibleId, {
         txHash,
         status: CollectibleStatus.Minted,
       });
 
       return NextResponse.json({
         success: true,
-        user: { fid, savedTxHash: txHash },
+        data: {
+          userHasCollectible: res,
+        },
       });
     }
-    return NextResponse.json({
-      success: false,
-      error: "User has not minted his nft",
-    });
+    return NextResponse.json(
+      {
+        success: false,
+        error: "User has not minted his nft",
+      },
+      { status: 500 }
+    );
   } catch (error) {
     if (error instanceof Error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
