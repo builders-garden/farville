@@ -15,7 +15,6 @@ export async function POST(request: Request) {
     if (!prompt || !fid || !collectibleId) {
       return NextResponse.json({ error: "Invalid arguments" }, { status: 400 });
     }
-    console.log("generating image", prompt);
 
     const response = await fetch(MIDJOURNEY_API_URL, {
       method: "POST",
@@ -26,17 +25,21 @@ export async function POST(request: Request) {
       body: JSON.stringify({
         model: "midjourney",
         task_type: "imagine",
+        config: {
+          service_mode: "private",
+        },
         input: {
-          prompt: `${PFP_NFT_IMAGE_SYSTEM_PROMPT_1} ${prompt} ${PFP_NFT_IMAGE_SYSTEM_PROMPT_2}`,
+          prompt: `${PFP_NFT_IMAGE_SYSTEM_PROMPT_1} ${prompt} ${PFP_NFT_IMAGE_SYSTEM_PROMPT_2} --v 6.1 --style raw --stylize 100`,
           aspect_ratio: "1:1",
-          process_mode: "turbo",
+          process_mode: "fast",
+          skip_prompt_check: false,
         },
       }),
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || "Failed to generate image");
+      console.error("Error generating image");
+      throw new Error("Failed to generate image");
     }
 
     const data = await response.json();

@@ -159,6 +159,7 @@ export default function MintCollectibleModal({
     setMidjourneyTaskId,
     setIsLoading,
     handleUpdateStateCollectibles,
+    setErrorMessage,
   });
 
   // Step 3: Get midjourney image
@@ -310,11 +311,9 @@ export default function MintCollectibleModal({
     return (
       selectedCollectible &&
       selectedCollectible.userHasCollectibles &&
-      (status === CollectibleStatus.Uploaded ||
-        status === CollectibleStatus.Generated ||
-        (status === CollectibleStatus.Pending && midjourneyImageUrl))
+      status === CollectibleStatus.Uploaded
     );
-  }, [midjourneyImageUrl, selectedCollectible]);
+  }, [selectedCollectible]);
 
   // Check if generate button should be shown
   const showGenerateButton = useMemo(() => {
@@ -355,7 +354,7 @@ export default function MintCollectibleModal({
   // Check if confirm selection button should be shown
   const showConfirmSelectionButton = useMemo(() => {
     if (!selectedCollectible || !selectedCollectible.userHasCollectibles)
-      return true;
+      return false;
     const status = selectedCollectible.userHasCollectibles.status;
     return (
       address &&
@@ -395,11 +394,18 @@ export default function MintCollectibleModal({
     const loadPfpDescription = async () => {
       if (userPfp) {
         setPfpDescriptionLoading(true);
-        getImageDescription({
-          imageUrl: userPfp,
-          fid: state.user.fid,
-          collectibleId: selectedCollectible?.id ?? 1,
-        });
+        try {
+          getImageDescription({
+            imageUrl: userPfp,
+            fid: state.user.fid,
+            collectibleId: selectedCollectible?.id ?? 1,
+          });
+        } catch (error) {
+          console.error(error);
+          setErrorMessage(
+            "Failed to generate image description. Please try again."
+          );
+        }
       }
     };
     // if no pfp description, and user has a pfp, and farvilleAvatar is not pending, load pfp description
@@ -426,11 +432,16 @@ export default function MintCollectibleModal({
   const handleGenerate = async () => {
     if (canGenerate && pfpDescription && !midjourneyTaskId) {
       setIsLoading(true);
-      generateMidjourneyImage({
-        prompt: pfpDescription,
-        fid: state.user.fid,
-        collectibleId: selectedCollectible?.id ?? 1,
-      });
+      try {
+        generateMidjourneyImage({
+          prompt: pfpDescription,
+          fid: state.user.fid,
+          collectibleId: selectedCollectible?.id ?? 1,
+        });
+      } catch (error) {
+        console.error(error);
+        setErrorMessage("Failed to generate image. Please try again.");
+      }
     }
   };
 
@@ -447,11 +458,16 @@ export default function MintCollectibleModal({
       // periodically check if midjourney image is ready
       const retryInterval = 5000;
       const interval = setInterval(() => {
-        getMidjourneyImage({
-          taskId: midjourneyTaskId,
-          fid: state.user.fid.toString(),
-          collectibleId: selectedCollectible.id.toString(),
-        });
+        try {
+          getMidjourneyImage({
+            taskId: midjourneyTaskId,
+            fid: state.user.fid.toString(),
+            collectibleId: selectedCollectible.id.toString(),
+          });
+        } catch (error) {
+          console.error(error);
+          setErrorMessage("Failed to generate image. Please try again.");
+        }
       }, retryInterval);
       return () => clearInterval(interval);
     }
@@ -467,22 +483,32 @@ export default function MintCollectibleModal({
   const handleConfirmSelection = async () => {
     if (selectedImageUrl) {
       setIsLoading(true);
-      uploadPinata({
-        imageUrl: selectedImageUrl,
-        fid: state.user.fid,
-        collectibleId: selectedCollectible?.id ?? 1,
-      });
+      try {
+        uploadPinata({
+          imageUrl: selectedImageUrl,
+          fid: state.user.fid,
+          collectibleId: selectedCollectible?.id ?? 1,
+        });
+      } catch (error) {
+        console.error(error);
+        setErrorMessage("Failed to upload image. Please try again.");
+      }
     }
   };
 
   // Step 5. handle get backend signature
   useEffect(() => {
     if (pinataMetadataCID && address) {
-      getBackendSignature({
-        address,
-        nftId: state.user.fid,
-        tokenURI: pinataMetadataCID,
-      });
+      try {
+        getBackendSignature({
+          address,
+          nftId: state.user.fid,
+          tokenURI: pinataMetadataCID,
+        });
+      } catch (error) {
+        console.error(error);
+        setErrorMessage("Failed to get backend signature. Please try again.");
+      }
     }
   }, [address, pinataMetadataCID, state.user.fid]);
 
@@ -540,9 +566,14 @@ export default function MintCollectibleModal({
   const handleSetCollectibleAsAvatar = () => {
     if (updatedUserAvatar) return;
     setIsLoading(true);
-    updateUserAvatar({
-      collectibleId: selectedCollectible?.id.toString() ?? "1",
-    });
+    try {
+      updateUserAvatar({
+        collectibleId: selectedCollectible?.id.toString() ?? "1",
+      });
+    } catch (error) {
+      console.error(error);
+      setErrorMessage("Failed to set collectible as avatar. Please try again.");
+    }
   };
 
   return (
@@ -760,9 +791,10 @@ export default function MintCollectibleModal({
                   Generating image...
                 </motion.button>
                 <p className="text-white/70 text-[8px] text-center">
-                  This may take a while.
+                  This may take a while &#126; 2 minutes.
                   <br />
-                  You can close and come back later.
+                  You can close and check it later in Profile page &gt;
+                  Collectibles.
                 </p>
               </div>
             ) : showConfirmSelectionButton ? (

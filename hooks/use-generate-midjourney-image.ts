@@ -5,6 +5,7 @@ import { DbUserHasCollectible } from "@/supabase/types";
 interface UseGenerateMidjourneyImageProps {
   setMidjourneyTaskId: Dispatch<SetStateAction<string | null>>;
   setIsLoading: Dispatch<SetStateAction<boolean>>;
+  setErrorMessage: Dispatch<SetStateAction<string | null>>;
   handleUpdateStateCollectibles: (
     userHasCollectibles: DbUserHasCollectible
   ) => void;
@@ -13,6 +14,7 @@ interface UseGenerateMidjourneyImageProps {
 export const useGenerateMidjourneyImage = ({
   setMidjourneyTaskId,
   setIsLoading,
+  setErrorMessage,
   handleUpdateStateCollectibles,
 }: UseGenerateMidjourneyImageProps) => {
   return useApiMutation({
@@ -42,7 +44,9 @@ export const useGenerateMidjourneyImage = ({
       setIsLoading(false);
       handleUpdateStateCollectibles(data.data.userHasCollectible);
     },
-    onError: () => {
+    onError: (error: Error) => {
+      console.error(error);
+      setErrorMessage(error.message);
       setIsLoading(false);
     },
   });
