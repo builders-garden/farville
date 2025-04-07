@@ -378,10 +378,16 @@ export async function GET(
                   >
                     {topStreaksUsers.slice(0, 5).map(
                       (streakUser, index) =>
-                        streakUser.avatarUrl && (
+                        (streakUser.selectedAvatarUrl ||
+                          streakUser.avatarUrl) && (
                           <img
                             key={index}
-                            src={streakUser.avatarUrl}
+                            src={
+                              streakUser.selectedAvatarUrl ||
+                              streakUser.avatarUrl ||
+                              ""
+                            }
+                            alt={`${streakUser.username}'s avatar`}
                             width="30px"
                             height="30px"
                             style={{

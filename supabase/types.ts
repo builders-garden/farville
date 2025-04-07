@@ -25,6 +25,7 @@ export interface DbUser {
   notificationDetails: string | null;
   createdAt: string;
   mintedOG: boolean;
+  selectedAvatarUrl: string | null;
 }
 
 export interface DbUserHasItem {

@@ -201,7 +201,9 @@ export default function ProfileModal({
                       }}
                     >
                       <LeaderboardUserAvatar
-                        pfpUrl={user?.avatarUrl || ""}
+                        pfpUrl={
+                          user?.selectedAvatarUrl || user?.avatarUrl || ""
+                        }
                         username={user?.username}
                         isOgUser={user?.mintedOG}
                         size={{

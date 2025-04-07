@@ -65,7 +65,7 @@ export async function GET(
         : null,
     ]);
 
-    const profilePic = user.avatarUrl;
+    const profilePic = user.selectedAvatarUrl ?? user.avatarUrl;
 
     const fontData = await loadGoogleFont(
       "Press+Start+2P",

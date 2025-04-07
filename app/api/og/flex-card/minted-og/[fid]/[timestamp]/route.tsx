@@ -311,10 +311,15 @@ export async function GET(
                   >
                     {topLeaderboardUsers.slice(0, 5).map(
                       (streakUser, index) =>
-                        streakUser.avatarUrl && (
+                        (streakUser.selectedAvatarUrl ||
+                          streakUser.avatarUrl) && (
                           <img
                             key={index}
-                            src={streakUser.avatarUrl}
+                            src={
+                              streakUser.selectedAvatarUrl ||
+                              streakUser.avatarUrl ||
+                              ""
+                            }
                             width="30px"
                             height="30px"
                             style={{

@@ -298,9 +298,11 @@ export async function GET(
                           overflow: "hidden",
                         }}
                       >
-                        {entry.avatarUrl ? (
+                        {entry.selectedAvatarUrl || entry.avatarUrl ? (
                           <img
-                            src={entry.avatarUrl}
+                            src={
+                              entry.selectedAvatarUrl || entry.avatarUrl || ""
+                            }
                             width="100%"
                             height="100%"
                             style={{

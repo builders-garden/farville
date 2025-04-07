@@ -407,6 +407,7 @@ export interface ReferralLeaderboardEntry {
   username: string;
   displayName: string;
   avatarUrl: string | null;
+  selectedAvatarUrl: string | null;
   referralCount: number;
   xp: number;
 }
@@ -436,7 +437,7 @@ export async function getReferralLeaderboard(
   // Get user details for top referrers
   const { data: users, error: usersError } = await supabase
     .from("users")
-    .select("fid, username, displayName, avatarUrl, xp")
+    .select("fid, username, displayName, avatarUrl, selectedAvatarUrl, xp")
     .in("fid", topReferrerFids);
 
   if (usersError) throw usersError;
@@ -448,6 +449,7 @@ export async function getReferralLeaderboard(
       username: user.username ?? "",
       displayName: user.displayName ?? "",
       avatarUrl: user.avatarUrl,
+      selectedAvatarUrl: user.selectedAvatarUrl,
       referralCount: referralCounts.get(user.fid) ?? 0,
       xp: user.xp,
     }))
