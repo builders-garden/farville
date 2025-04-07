@@ -4,7 +4,7 @@ import {
   PFP_NFT_IMAGE_SYSTEM_PROMPT_2,
 } from "@/lib/constants";
 import { env } from "@/lib/env";
-import { addUserCollectible } from "@/supabase/queries";
+import { updateUserCollectible } from "@/supabase/queries";
 import { CollectibleStatus } from "@/types/game";
 import { NextResponse } from "next/server";
 
@@ -43,11 +43,13 @@ export async function POST(request: Request) {
 
     // save taskId to db
     console.log("saving taskId to db", data.data.task_id);
-    const res = await addUserCollectible(
+    const res = await updateUserCollectible(
       parseInt(fid),
       parseInt(collectibleId),
-      CollectibleStatus.Pending,
-      data.data.task_id
+      {
+        status: CollectibleStatus.Pending,
+        generatedTaskId: data.data.task_id,
+      }
     );
     console.log("saved to db res", res);
     //Return only the taskId to be used in the image-get route

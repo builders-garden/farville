@@ -127,12 +127,6 @@ export default function MintCollectibleModal({
     return avatarUrl;
   }, [state.user.avatarUrl]);
 
-  // Step 1: Get image description from openai
-  const { mutate: getImageDescription } = useGetImageDescription({
-    setImageDescription: setPfpDescription,
-    setImageDescriptionLoading: setPfpDescriptionLoading,
-  });
-
   function handleUpdateStateCollectibles(
     userHasCollectibles: DbUserHasCollectible
   ) {
@@ -150,6 +144,13 @@ export default function MintCollectibleModal({
       updateUserCollectibles(updatedCollectibles);
     }
   }
+
+  // Step 1: Get image description from openai
+  const { mutate: getImageDescription } = useGetImageDescription({
+    setImageDescription: setPfpDescription,
+    setImageDescriptionLoading: setPfpDescriptionLoading,
+    handleUpdateStateCollectibles,
+  });
 
   // Step 2: Generate midjourney image
   const { mutate: generateMidjourneyImage } = useGenerateMidjourneyImage({
@@ -282,6 +283,12 @@ export default function MintCollectibleModal({
               selectedCollectible.userHasCollectibles.generatedTaskId
             );
           }
+        case CollectibleStatus.Description:
+          if (selectedCollectible.userHasCollectibles.pfpDescription) {
+            setPfpDescription(
+              selectedCollectible.userHasCollectibles.pfpDescription
+            );
+          }
       }
     }
   }, [selectedCollectible]);
@@ -302,26 +309,25 @@ export default function MintCollectibleModal({
 
   // Check if generate button should be shown
   const showGenerateButton = useMemo(() => {
+    const status = selectedCollectible?.userHasCollectibles?.status;
     return (
-      (!midjourneyTaskId &&
-        selectedCollectible &&
-        !selectedCollectible.userHasCollectibles) ||
-      (selectedCollectible &&
-        selectedCollectible.userHasCollectibles &&
-        selectedCollectible.userHasCollectibles.status ===
-          CollectibleStatus.Pending &&
-        !midjourneyTaskId)
+      selectedCollectible &&
+      selectedCollectible.userHasCollectibles &&
+      (status === CollectibleStatus.Pending ||
+        status === CollectibleStatus.Description) &&
+      !midjourneyTaskId
     );
   }, [midjourneyTaskId, selectedCollectible]);
 
   // Check if user can generate image
   const canGenerate = useMemo(() => {
     return (
-      !pfpDescriptionLoading &&
       pfpDescription &&
       address &&
       selectedCollectible &&
-      !selectedCollectible.userHasCollectibles
+      selectedCollectible.userHasCollectibles &&
+      selectedCollectible.userHasCollectibles.status ===
+        CollectibleStatus.Description
     );
   }, [pfpDescriptionLoading, pfpDescription, address, selectedCollectible]);
 
@@ -380,17 +386,20 @@ export default function MintCollectibleModal({
     const loadPfpDescription = async () => {
       if (userPfp) {
         setPfpDescriptionLoading(true);
-        getImageDescription({ imageUrl: userPfp });
+        getImageDescription({
+          imageUrl: userPfp,
+          fid: state.user.fid,
+          collectibleId: selectedCollectible?.id ?? 1,
+        });
       }
     };
     // if no pfp description, and user has a pfp, and farvilleAvatar is not pending, load pfp description
-    const isNullOrPendingStatus =
-      (selectedCollectible && !selectedCollectible.userHasCollectibles) ||
-      (selectedCollectible &&
-        selectedCollectible.userHasCollectibles &&
-        selectedCollectible.userHasCollectibles.status ===
-          CollectibleStatus.Pending);
-    if (!pfpDescription && userPfp && isNullOrPendingStatus) {
+    if (
+      !pfpDescription &&
+      userPfp &&
+      selectedCollectible &&
+      !selectedCollectible.userHasCollectibles
+    ) {
       loadPfpDescription();
     }
   }, [userPfp, selectedCollectible]);
@@ -674,7 +683,7 @@ export default function MintCollectibleModal({
               </button>
             ) : showGenerateButton ? (
               <button
-                disabled={!canGenerate || isLoading}
+                disabled={!canGenerate || isLoading || pfpDescriptionLoading}
                 onClick={handleGenerate}
                 className={`flex-1 py-2 px-4 rounded ${
                   !canGenerate

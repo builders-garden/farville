@@ -20,7 +20,6 @@ import {
   DbUserHarvestedCrop,
   DbCollectible,
   DbUserHasCollectible,
-  DbUserHasCollectibleStatus,
 } from "./types";
 import { CROP_DATA, SPEED_BOOST } from "@/lib/game-constants";
 import { CropType, PerkType, QuestStatus } from "@/types/game";
@@ -1540,32 +1539,6 @@ export const updateUserCollectible = async (
         fid,
         collectibleId,
         ...updatedData,
-      },
-      {
-        onConflict: "fid,collectibleId",
-      }
-    )
-    .select()
-    .single();
-
-  if (error) throw error;
-  return data;
-};
-
-export const addUserCollectible = async (
-  fid: number,
-  collectibleId: number,
-  status: DbUserHasCollectibleStatus,
-  taskId: string
-): Promise<DbUserHasCollectible> => {
-  const { data, error } = await supabase
-    .from("user_has_collectibles")
-    .upsert(
-      {
-        fid,
-        collectibleId,
-        status,
-        generatedTaskId: taskId,
       },
       {
         onConflict: "fid,collectibleId",

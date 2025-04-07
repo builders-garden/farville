@@ -133,6 +133,7 @@ export enum QuestStatus {
 }
 
 export enum CollectibleStatus {
+  Description = "description",
   Pending = "pending",
   Generated = "generated",
   Uploaded = "uploaded",

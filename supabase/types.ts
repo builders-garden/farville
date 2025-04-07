@@ -47,9 +47,10 @@ export interface DbCollectible {
 export type DbUserHasCollectibleStatus = CollectibleStatus;
 
 export interface DbUserHasCollectible {
-  userFid: number;
+  fid: number;
   collectibleId: number;
   status: DbUserHasCollectibleStatus;
+  pfpDescription: string | null;
   generatedTaskId: string | null;
   generatedImageUrls: string[] | null;
   mintedImageUrl: string | null;
