@@ -197,7 +197,10 @@ export default function RequestModal({
 
                   {lastDonation &&
                   lastDonation.times >=
-                    MAX_DAILY_ALLOWED_DONATION_BETWEEN_USERS ? (
+                    MAX_DAILY_ALLOWED_DONATION_BETWEEN_USERS &&
+                  new Date().getTime() -
+                    new Date(lastDonation.lastDonation).getTime() <
+                    24 * 60 * 60 * 1000 ? (
                     <div className="flex flex-col items-center gap-1.5 xs:gap-2 mt-1.5 xs:mt-2">
                       <p className="text-amber-500/90 text-xs xs:text-sm text-center">
                         You can only donate to the same user{" "}
