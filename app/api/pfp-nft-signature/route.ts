@@ -23,8 +23,6 @@ export async function POST(request: Request) {
     // Create an account from the private key
     const account = privateKeyToAccount(privateKey as `0x${string}`);
 
-    console.log(recipient, tokenId, tokenIdURI);
-
     const messageHash = keccak256(
       encodePacked(
         ["address", "uint256", "string"],
@@ -33,6 +31,7 @@ export async function POST(request: Request) {
     );
 
     // Sign the hash directly as a hex string
+    console.log("signing message");
     const signature = await account.signMessage({
       message: { raw: messageHash },
     });
