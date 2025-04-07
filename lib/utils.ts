@@ -465,3 +465,28 @@ export const getGlobalLeaderboard = async (
   }
   return users;
 };
+
+export const getThisWeekMonday = () => {
+  const now = new Date();
+
+  // Get the day of the week (0 is Sunday, 1 is Monday, ..., 6 is Saturday)
+  const day = now.getUTCDay();
+
+  // Calculate how many days to subtract to get to Monday
+  const diffToMonday = (day + 6) % 7; // Converts Sunday (0) to 6, Monday (1) to 0, etc.
+
+  // Get Monday at 00:00 UTC
+  const monday = new Date(
+    Date.UTC(
+      now.getUTCFullYear(),
+      now.getUTCMonth(),
+      now.getUTCDate() - diffToMonday,
+      0,
+      0,
+      0,
+      0
+    )
+  );
+
+  return monday;
+};
