@@ -520,7 +520,7 @@ export default function MintCollectibleModal({
             ease: [0.4, 0, 0.2, 1], // Custom easing for smooth animation
           }}
           className="flex flex-col gap-2 xs:gap-4 bg-gradient-to-br from-[#8B5E3C] to-[#6A4123] p-4 xs:p-6 rounded-lg max-w-sm w-full mx-4 border border-[#8B5E3C]/50 
-          [box-shadow:0_0_50px_rgba(234,179,8,0.3)] relative will-change-transform"
+          [box-shadow:0_0_50px_rgba(234,179,8,0.3)] relative will-change-transform overflow-y-auto max-h-[90vh] no-scrollbar"
         >
           <button
             onClick={onCancel}
