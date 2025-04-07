@@ -14,6 +14,7 @@ import {
   achievementBadgeFlexCardComposeCastUrl,
   calculateHarvestAchievements,
   goldCropFlexCardComposeCastUrl,
+  mintedCollectibleFlexCardComposeCastUrl,
 } from "@/lib/utils";
 import { LeaderboardUserAvatar } from "./LeaderboardUserAvatar";
 import sdk from "@farcaster/frame-sdk";
@@ -21,6 +22,7 @@ import { useOtherUserProfile } from "@/hooks/use-other-user-profile";
 import AchievementBadgeModal from "./modals/AchievementBadgeModal";
 import { ACHIEVEMENTS_THRESHOLDS } from "@/lib/game-constants";
 import { OG_FIDS_LIST } from "@/lib/contracts/constants";
+import { CollectibleStatus } from "@/types/game";
 
 export interface BadgeModalData {
   name: string;
@@ -29,9 +31,12 @@ export interface BadgeModalData {
   description: string;
   badgeUrl: string;
   step?: number;
-  type: "special" | "gold-crop" | "honour";
+  type: "special" | "gold-crop" | "honour" | "collectible";
   shareable?: boolean;
   mintable?: boolean;
+  generated?: boolean;
+  collectibleId?: string;
+  collectibleName?: string;
 }
 
 export default function ProfileModal({
@@ -41,9 +46,18 @@ export default function ProfileModal({
   onClose: () => void;
   userFid?: number;
 }) {
-  const { state, setShowMintOGBadge, newGoldCropsFound, setNewGoldCropsFound } =
-    useGame();
+  const {
+    state,
+    setShowMintOGBadge,
+    showMintCollectible,
+    setShowMintCollectible,
+    newGoldCropsFound,
+    setNewGoldCropsFound,
+  } = useGame();
   const [isWhatIsThisOpen, setIsWhatIsThisOpen] = useState(false);
+  const [isWhatIsThisCollectibleOpen, setIsWhatIsCollectibleThisOpen] =
+    useState(false);
+  const [showMoreCollectibles, setShowMoreCollectibles] = useState(false);
   const [showMoreGoldCropsBadges, setShowMoreGoldCropsBadges] = useState(false);
   const [selectedCrops, setSelectedCrops] = useState<UserItem[]>([]);
   const [badgeModalData, setBadgeModalData] = useState<BadgeModalData | null>(
@@ -96,6 +110,16 @@ export default function ProfileModal({
             badgeModalData.crop,
             badgeModalData.step,
             badgeModalData.title
+          );
+          await sdk.actions.openUrl(castUrl);
+        }
+        break;
+      case "collectible":
+        if (badgeModalData.collectibleId && badgeModalData.collectibleName) {
+          const { castUrl } = mintedCollectibleFlexCardComposeCastUrl(
+            state.user.fid,
+            badgeModalData.collectibleId,
+            badgeModalData.collectibleName
           );
           await sdk.actions.openUrl(castUrl);
         }
@@ -178,7 +202,9 @@ export default function ProfileModal({
                       }}
                     >
                       <LeaderboardUserAvatar
-                        pfpUrl={user?.avatarUrl || ""}
+                        pfpUrl={
+                          user?.selectedAvatarUrl || user?.avatarUrl || ""
+                        }
                         username={user?.username}
                         isOgUser={user?.mintedOG}
                         size={{
@@ -279,6 +305,136 @@ export default function ProfileModal({
 
               {isCurrentUser ? (
                 <>
+                  {/* Collectibles section */}
+                  <div className="w-full flex flex-col gap-3 xs:gap-4">
+                    <div className="flex flex-row items-center justify-between px-2">
+                      <div className="flex flex-row items-center gap-1 xs:gap-2">
+                        <h3
+                          className={`text-white/90 text-sm xs:text-md font-bold ${
+                            showMintCollectible ? "animate-pulse" : ""
+                          }`}
+                          style={{
+                            textShadow: showMintCollectible
+                              ? "0 0 8px rgba(255, 185, 56, 0.8)"
+                              : "none",
+                            color: showMintCollectible ? "#FFB938" : "",
+                          }}
+                        >
+                          Collectibles{" "}
+                          {showMintCollectible && (
+                            <span className="text-[#FFB938]">✨</span>
+                          )}
+                        </h3>
+                        <p className="text-white/70 text-[9px] xs:text-xs">
+                          ({state.collectibles.length || 0}/??)
+                        </p>
+                        <button
+                          className="text-white/70 hover:text-white/90 transition-colors cursor-pointer -mt-1"
+                          onClick={() => setIsWhatIsCollectibleThisOpen(true)}
+                        >
+                          <Info className="w-3.5 h-3.5 xs:w-5 xs:h-5" />
+                        </button>
+                      </div>
+                      {showMoreCollectibles ? (
+                        <button
+                          className="text-white/70 hover:text-white/90 transition-colors cursor-pointer -mt-1"
+                          onClick={() => setShowMoreCollectibles(false)}
+                        >
+                          <ChevronUp className="w-3.5 h-3.5 xs:w-5 xs:h-5" />
+                        </button>
+                      ) : (
+                        <button
+                          className="text-white/70 hover:text-white/90 transition-colors cursor-pointer -mt-1"
+                          onClick={() => setShowMoreCollectibles(true)}
+                        >
+                          <ChevronDown className="w-3.5 h-3.5 xs:w-5 xs:h-5" />
+                        </button>
+                      )}
+                      {isWhatIsThisCollectibleOpen && (
+                        <InfoModal
+                          title="Collectibles"
+                          onCancel={() => setIsWhatIsCollectibleThisOpen(false)}
+                          options={{
+                            titleColor: "text-[#feb938]",
+                          }}
+                        >
+                          <div className="flex flex-col gap-4 my-4 text-white/90 text-[10px]">
+                            <p>
+                              The badges below prove that you have claimed one
+                              or more collectibles.
+                            </p>
+                          </div>
+                        </InfoModal>
+                      )}
+                    </div>
+
+                    <Card
+                      className={`bg-gradient-to-br from-[#6D4C2C] to-[#5B4120] rounded-lg border-none w-full ${
+                        showMintCollectible
+                          ? "shadow-[0_0_20px_rgba(255,185,56,0.5)] transition-shadow duration-700"
+                          : ""
+                      }`}
+                    >
+                      <CardContent className="grid grid-cols-4 gap-3 p-3">
+                        {(showMoreCollectibles
+                          ? state.collectibles
+                          : state.collectibles?.slice(0, 4)
+                        )?.map((collectible, index) => {
+                          const collectibleImage =
+                            collectible.userHasCollectibles
+                              ? collectible.userHasCollectibles.status ===
+                                  CollectibleStatus.Minted &&
+                                collectible.userHasCollectibles.mintedImageUrl
+                                ? collectible.userHasCollectibles.mintedImageUrl
+                                : collectible.userHasCollectibles.status ===
+                                  CollectibleStatus.Generated
+                                ? collectible.userHasCollectibles
+                                    .generatedImageUrls?.[0] ??
+                                  collectible.imageUrl
+                                : collectible.imageUrl
+                              : collectible.imageUrl;
+                          return collectible ? (
+                            <div
+                              key={index}
+                              className={`relative aspect-square w-full rounded-lg bg-gradient-to-br from-[#6D4C2C] to-[#5B4120] border-2 overflow-hidden ${
+                                isCurrentUser ? "cursor-pointer group" : ""
+                              }`}
+                              onClick={() => setShowMintCollectible(true)}
+                            >
+                              {showMintCollectible ? (
+                                <div className="absolute inset-0 bg-gradient-to-b from-yellow/30 to-transparent z-10 animate-pulse pointer-events-none"></div>
+                              ) : null}
+
+                              <Image
+                                src={collectibleImage}
+                                alt={collectible.name}
+                                fill
+                                className={`rounded-lg transition-transform duration-300 group-hover:scale-110 ${
+                                  showMintCollectible ? "filter blur-[3px]" : ""
+                                }`}
+                                sizes="(max-width: 640px) 25vw, 20vw"
+                              />
+                            </div>
+                          ) : (
+                            <div
+                              key={index}
+                              className="relative aspect-square w-full bg-[#7B5B30] rounded-lg flex items-center justify-center opacity-50 overflow-hidden"
+                            >
+                              <div className="absolute inset-0 bg-gradient-to-r from-[#7B5B30] via-[#8a6b38] to-[#7B5B30] opacity-30"></div>
+                              <Image
+                                src={`/images/profile/question-mark-yellow.png`}
+                                alt="Yellow question mark"
+                                width={35}
+                                height={35}
+                                className="w-[35px] h-[35px] xs:w-[44px] xs:h-[44px]"
+                              />
+                            </div>
+                          );
+                        })}
+                      </CardContent>
+                    </Card>
+                  </div>
+
                   {/* Gold crops section */}
                   <div className="w-full flex flex-col gap-3 xs:gap-4">
                     <div className="flex flex-row items-center justify-between px-2">
@@ -681,10 +837,13 @@ export default function ProfileModal({
                     } #${badgeModalData.step}`
                   : badgeModalData.type === "special"
                   ? "Special Badge"
+                  : badgeModalData.type === "collectible"
+                  ? "Collectible"
                   : "Gold Crop Badge"
               }
               icon={
-                badgeModalData.type !== "special"
+                badgeModalData.type !== "special" &&
+                badgeModalData.type !== "collectible"
                   ? `/images/crop/${
                       badgeModalData.type === "gold-crop"
                         ? badgeModalData.name.replace(" ", "-")

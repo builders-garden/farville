@@ -1,3 +1,4 @@
+import { env } from "@/lib/env";
 import {
   createUserNotification,
   getUserNotificationDetails,
@@ -87,7 +88,7 @@ export async function POST(req: NextRequest) {
     notificationId: crypto.randomUUID(),
     title,
     body: text,
-    targetUrl: process.env.NEXT_PUBLIC_URL!,
+    targetUrl: env.NEXT_PUBLIC_URL,
     tokens: [notificationDetails.token],
   };
 

@@ -1,8 +1,9 @@
 import { Metadata } from "next";
 import { getRequestById, getUser } from "@/supabase/queries";
 import App from "@/app/app";
+import { env } from "@/lib/env";
 
-const appUrl = process.env.NEXT_PUBLIC_URL;
+const appUrl = env.NEXT_PUBLIC_URL;
 
 export async function generateMetadata({
   params,
@@ -67,7 +68,5 @@ export default async function RequestsPage({
 }) {
   const requestId = (await params).id;
 
-  return (
-    <App initialOverlay={{ type: "requests", id: Number(requestId) }} />
-  );
+  return <App initialOverlay={{ type: "requests", id: Number(requestId) }} />;
 }

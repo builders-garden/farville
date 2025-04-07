@@ -18,6 +18,8 @@ import {
   InsertDbUserHasQuest,
   DbUserHasQuestStatus,
   DbUserHarvestedCrop,
+  DbCollectible,
+  DbUserHasCollectible,
 } from "./types";
 import { CROP_DATA, SPEED_BOOST } from "@/lib/game-constants";
 import { CropType, PerkType, QuestStatus } from "@/types/game";
@@ -405,6 +407,7 @@ export interface ReferralLeaderboardEntry {
   username: string;
   displayName: string;
   avatarUrl: string | null;
+  selectedAvatarUrl: string | null;
   referralCount: number;
   xp: number;
 }
@@ -434,7 +437,7 @@ export async function getReferralLeaderboard(
   // Get user details for top referrers
   const { data: users, error: usersError } = await supabase
     .from("users")
-    .select("fid, username, displayName, avatarUrl, xp")
+    .select("fid, username, displayName, avatarUrl, selectedAvatarUrl, xp")
     .in("fid", topReferrerFids);
 
   if (usersError) throw usersError;
@@ -446,6 +449,7 @@ export async function getReferralLeaderboard(
       username: user.username ?? "",
       displayName: user.displayName ?? "",
       avatarUrl: user.avatarUrl,
+      selectedAvatarUrl: user.selectedAvatarUrl,
       referralCount: referralCounts.get(user.fid) ?? 0,
       xp: user.xp,
     }))
@@ -1457,4 +1461,144 @@ export const deleteUserHarvestedCrop = async (
     .eq("crop", crop);
 
   if (error) throw error;
+};
+
+export const getCollectibles = async (
+  category?: string
+): Promise<DbCollectible[]> => {
+  const query = supabase
+    .from("collectibles")
+    .select(`*`)
+    .order("createdAt", { ascending: false });
+
+  if (category) {
+    query.eq("category", category);
+  }
+  const { data, error } = await query;
+
+  if (error) throw error;
+  return data;
+};
+
+export const getCollectibleById = async (
+  id: number
+): Promise<DbCollectible | null> => {
+  const { data, error } = await supabase
+    .from("collectibles")
+    .select("*")
+    .eq("id", id)
+    .maybeSingle();
+
+  if (error) throw error;
+  return data;
+};
+
+export const getUserCollectibleByCollectibleId = async (
+  fid: number,
+  collectibleId: number
+): Promise<(DbUserHasCollectible & { collectible: DbCollectible }) | null> => {
+  const { data, error } = await supabase
+    .from("user_has_collectibles")
+    .select("*, collectible:collectibles(*)")
+    .eq("fid", fid)
+    .eq("collectibleId", collectibleId)
+    .maybeSingle();
+
+  if (error) throw error;
+  return data;
+};
+
+// User Items queries
+export const getUserCollectibles = async (
+  fid: number,
+  category?: string
+): Promise<
+  (DbCollectible & { userHasCollectible: DbUserHasCollectible | null })[]
+> => {
+  const query = supabase
+    .from("collectibles")
+    .select(`*,user_has_collectibles!left(*)`)
+    .eq("user_has_collectibles.fid", fid)
+    .order("createdAt", { ascending: false });
+
+  if (category) query.eq("category", category);
+
+  const { data, error } = await query;
+
+  if (error) throw error;
+  return data;
+};
+
+export const updateUserCollectible = async (
+  fid: number,
+  collectibleId: number,
+  updatedData: Partial<DbUserHasCollectible>
+): Promise<DbUserHasCollectible> => {
+  const { data, error } = await supabase
+    .from("user_has_collectibles")
+    .upsert(
+      {
+        fid,
+        collectibleId,
+        ...updatedData,
+      },
+      {
+        onConflict: "fid,collectibleId",
+      }
+    )
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+};
+
+export const removeUserCollectible = async (
+  fid: number,
+  collectibleId: number
+): Promise<void> => {
+  const { data: existing } = await supabase
+    .from("user_has_collectibles")
+    .select("*")
+    .eq("fid", fid)
+    .eq("collectibleId", collectibleId)
+    .maybeSingle();
+
+  if (!existing) return;
+
+  const { error } = await supabase
+    .from("user_has_collectibles")
+    .delete()
+    .eq("fid", fid)
+    .eq("collectibleId", collectibleId);
+
+  if (error) throw error;
+};
+
+export const updateUserCollectibleAsAvatar = async (
+  fid: number,
+  collectibleId: number
+): Promise<DbUser> => {
+  const { data, error } = await supabase
+    .from("user_has_collectibles")
+    .select("*")
+    .eq("fid", fid)
+    .eq("collectibleId", collectibleId)
+    .maybeSingle();
+  console.log("data on update user collectible as avatar", data);
+
+  if (error) throw error;
+  if (!data) throw new Error("Collectible not found");
+
+  const { data: userData, error: updateError } = await supabase
+    .from("users")
+    .update({
+      selectedAvatarUrl: data.mintedImageUrl,
+    })
+    .eq("fid", fid)
+    .select()
+    .single();
+
+  if (updateError) throw updateError;
+  return userData;
 };

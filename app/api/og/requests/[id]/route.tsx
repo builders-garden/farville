@@ -1,5 +1,6 @@
 import { ImageResponse } from "next/og";
 import { getRequestById } from "@/supabase/queries";
+import { env } from "@/lib/env";
 
 export const dynamic = "force-dynamic";
 const size = {
@@ -52,7 +53,7 @@ export async function GET(
     const text = user ? `is looking for` : "FarVille";
     const secondaryText = item && quantity ? `${quantity} ${item.name}` : "";
 
-    const appUrl = process.env.NEXT_PUBLIC_URL;
+    const appUrl = env.NEXT_PUBLIC_URL;
     const [bgImage, itemIcon] = await Promise.all([
       fetch(new URL(`${appUrl}/images/bg-empty.png`, import.meta.url)).then(
         (res) => res.arrayBuffer()
@@ -64,7 +65,7 @@ export async function GET(
         : null,
     ]);
 
-    const profilePic = user.avatarUrl;
+    const profilePic = user.selectedAvatarUrl ?? user.avatarUrl;
 
     const fontData = await loadGoogleFont(
       "Press+Start+2P",

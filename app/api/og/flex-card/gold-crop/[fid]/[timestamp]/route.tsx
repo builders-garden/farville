@@ -1,3 +1,4 @@
+import { env } from "@/lib/env";
 import {
   getActiveStreaksCount,
   getTopStreaks,
@@ -49,7 +50,7 @@ export async function GET(
     const { searchParams } = new URL(request.url);
     const crop = searchParams.get("crop");
 
-    const appUrl = process.env.NEXT_PUBLIC_URL;
+    const appUrl = env.NEXT_PUBLIC_URL;
 
     if (!fid) {
       return new Response("Farmer ID is required", {
@@ -298,10 +299,15 @@ export async function GET(
                   >
                     {topStreaksUsers.slice(0, 5).map(
                       (streakUser, index) =>
-                        streakUser.avatarUrl && (
+                        (streakUser.selectedAvatarUrl ||
+                          streakUser.avatarUrl) && (
                           <img
                             key={index}
-                            src={streakUser.avatarUrl}
+                            src={
+                              streakUser.selectedAvatarUrl ||
+                              streakUser.avatarUrl ||
+                              ""
+                            }
                             width="30px"
                             height="30px"
                             style={{

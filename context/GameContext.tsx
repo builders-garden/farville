@@ -9,7 +9,12 @@ import {
   useRef,
   useState,
 } from "react";
-import { ActionType, type CropType, type SeedType } from "../types/game";
+import {
+  ActionType,
+  CollectibleStatus,
+  type CropType,
+  type SeedType,
+} from "../types/game";
 import { GameState, useGameState } from "@/hooks/use-game-state";
 import { useBuyItem } from "@/hooks/game-actions/use-buy-item";
 import { useExpandGrid } from "@/hooks/game-actions/use-expand-grid";
@@ -17,7 +22,12 @@ import { useSellItem } from "@/hooks/game-actions/use-sell-item";
 import { UserItem } from "@/hooks/use-user-items";
 import { GridBulkRequest } from "@/app/api/grid-bulk/route";
 import { useGridBulkOperations } from "@/hooks/game-actions/use-grid-bulk-operations";
-import { DbGridCell, DbUserHarvestedCrop } from "@/supabase/types";
+import {
+  DbCollectible,
+  DbGridCell,
+  DbUserHarvestedCrop,
+  DbUserHasCollectible,
+} from "@/supabase/types";
 import { GridBulkResult } from "@/app/api/grid-bulk/utils";
 import toast from "react-hot-toast";
 import { useClaimReward } from "@/hooks/game-actions/use-claim-reward";
@@ -44,6 +54,7 @@ export interface FloatingNumberData {
 // Update the context type
 interface GameContextType {
   state: GameState;
+  loading: boolean;
   selectedSeed: SeedType | null;
   setSelectedSeed: (seed: SeedType | null) => void;
   selectedPerk: UserItem | null;
@@ -110,6 +121,8 @@ interface GameContextType {
   setShowAchievedNewBadges: Dispatch<SetStateAction<boolean>>;
   showMintOGBadge: boolean;
   setShowMintOGBadge: Dispatch<SetStateAction<boolean>>;
+  showMintCollectible: boolean;
+  setShowMintCollectible: Dispatch<SetStateAction<boolean>>;
   newGoldCropsFound: string[];
   setNewGoldCropsFound: Dispatch<SetStateAction<string[]>>;
   updateUserWeeklyStats: (weeklyStats: {
@@ -117,6 +130,11 @@ interface GameContextType {
     lastScore?: number;
     league?: number;
   }) => void;
+  updateUserCollectibles: (
+    updatedCollectibles: (DbCollectible & {
+      userHasCollectibles: DbUserHasCollectible | null;
+    })[]
+  ) => void;
 }
 
 export const GameContext = createContext<GameContextType | null>(null);
@@ -139,6 +157,9 @@ export function GameProvider({
   const [showTimeline, setShowTimeline] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
   const [showMintOGBadge, setShowMintOGBadge] = useState(false);
+  const [showMintCollectible, setShowMintCollectible] = useState(false);
+  const [isLoadingMintCollectible, setIsLoadingMintCollectible] =
+    useState(true);
   const {
     state,
     refetch,
@@ -147,6 +168,7 @@ export function GameProvider({
     updateUser,
     updateUserHarvestedCrops,
     updateUserWeeklyStats,
+    updateUserCollectibles,
   } = useGameState();
   const [selectedSeed, setSelectedSeed] = useState<SeedType | null>(null);
   const [selectedPerk, setSelectedPerk] = useState<UserItem | null>(null);
@@ -171,6 +193,21 @@ export function GameProvider({
   >();
   const [toastIds, setToastIds] = useState<Map<string, string>>(new Map());
   const [newGoldCropsFound, setNewGoldCropsFound] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (state.collectibles.length > 0) {
+      const collectible = state.collectibles.find(
+        (collectible) => collectible.id === 1
+      );
+      if (
+        !collectible?.userHasCollectibles ||
+        collectible?.userHasCollectibles?.status !== CollectibleStatus.Minted
+      ) {
+        setShowMintCollectible(true);
+      }
+      setIsLoadingMintCollectible(false);
+    }
+  }, [state.collectibles]);
 
   const { mutate: updateUserStreaks } = useUpdateUserStreaks({
     refetchStreaks: refetch.streaks,
@@ -476,18 +513,13 @@ export function GameProvider({
     <GameContext.Provider
       value={{
         state,
+        loading: isLoadingMintCollectible,
         selectedSeed,
         setSelectedSeed,
         selectedPerk,
         setSelectedPerk,
         addGridOperation,
         gridBulkResult,
-        // fertilize: (params) =>
-        //   applyPerkMutation({
-        //     ...params,
-        //     itemSlug: "fertilizer",
-        //     setIsLoading: params.setIsLoading,
-        //   }),
         buyItem,
         sellItem,
         expandGrid,
@@ -536,9 +568,12 @@ export function GameProvider({
         setShowAchievedNewBadges,
         showMintOGBadge,
         setShowMintOGBadge,
+        showMintCollectible,
+        setShowMintCollectible,
         newGoldCropsFound,
         setNewGoldCropsFound,
         updateUserWeeklyStats,
+        updateUserCollectibles,
       }}
     >
       {children}

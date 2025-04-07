@@ -20,6 +20,7 @@ import {
   getUserLeaderboardEntry,
 } from "@/lib/prisma/queries";
 import { getUserLeague } from "@/lib/utils";
+import { env } from "@/lib/env";
 
 export const POST = async (req: NextRequest) => {
   const { fid, referrerFid, signature, message, userNow } = await req.json();
@@ -105,7 +106,7 @@ export const POST = async (req: NextRequest) => {
   })
     .setProtectedHeader({ alg: "HS256" })
     .setExpirationTime("30 days")
-    .sign(new TextEncoder().encode(process.env.JWT_SECRET));
+    .sign(new TextEncoder().encode(env.JWT_SECRET));
 
   const response = NextResponse.json({ success: true, token: jwtToken });
 

@@ -669,9 +669,14 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
                             ? getCurrentData()?.targetPosition
                             : "N/A"}
                         </div>
-                        {state.user.avatarUrl ? (
+                        {state.user.selectedAvatarUrl ||
+                        state.user.avatarUrl ? (
                           <LeaderboardUserAvatar
-                            pfpUrl={state.user.avatarUrl}
+                            pfpUrl={
+                              state.user.selectedAvatarUrl ||
+                              state.user.avatarUrl ||
+                              ""
+                            }
                             username={state.user.username}
                             isOgUser={state.user.mintedOG}
                           />
@@ -751,9 +756,11 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
                           <div className="flex-none text-center px-1.5 xs:px-2 py-0.5 xs:py-1 bg-[#5c4121] rounded-lg text-white/90 text-[10px] xs:text-xs font-medium">
                             #{index + 1}
                           </div>
-                          {entry.avatarUrl ? (
+                          {entry.selectedAvatarUrl || entry.avatarUrl ? (
                             <LeaderboardUserAvatar
-                              pfpUrl={entry.avatarUrl}
+                              pfpUrl={
+                                entry.selectedAvatarUrl || entry.avatarUrl || ""
+                              }
                               username={entry.username}
                               isOgUser={entry.mintedOG}
                             />

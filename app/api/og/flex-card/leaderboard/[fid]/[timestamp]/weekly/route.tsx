@@ -1,3 +1,4 @@
+import { env } from "@/lib/env";
 import {
   getUserLeaderboardEntry,
   getWeeklyLeaderboardUsersByLeague,
@@ -48,7 +49,7 @@ export async function GET(
 
     const currentWeek = searchParams.get("currentWeek") || "true";
 
-    const appUrl = process.env.NEXT_PUBLIC_URL;
+    const appUrl = env.NEXT_PUBLIC_URL;
 
     if (!fid) {
       return new Response("Farmer ID is required", {
@@ -386,10 +387,15 @@ export async function GET(
                   >
                     {usersWeekSummaries.users.slice(0, 5).map(
                       (user, index) =>
-                        user.user.avatarUrl && (
+                        (user.user.selectedAvatarUrl ||
+                          user.user.avatarUrl) && (
                           <img
                             key={index}
-                            src={user.user.avatarUrl}
+                            src={
+                              user.user.selectedAvatarUrl ||
+                              user.user.avatarUrl ||
+                              ""
+                            }
                             width="30px"
                             height="30px"
                             style={{
@@ -465,9 +471,9 @@ export async function GET(
                       "0 8px 20px rgba(0,0,0,0.7), 0 0 25px rgba(255,215,0,0.6), 0 0 10px #FFD700",
                   }}
                 >
-                  {user?.avatarUrl && (
+                  {(user?.selectedAvatarUrl || user?.avatarUrl) && (
                     <img
-                      src={user.avatarUrl}
+                      src={user?.selectedAvatarUrl || user?.avatarUrl || ""}
                       width="100%"
                       height="100%"
                       style={{
