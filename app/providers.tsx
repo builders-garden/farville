@@ -16,6 +16,8 @@ const WagmiProvider = dynamic(() => import("./../components/WagmiProvider"), {
 if (typeof window !== "undefined") {
   posthog.init(env.NEXT_PUBLIC_POSTHOG_KEY, {
     // api_host: env.NEXT_PUBLIC_POSTHOG_HOST!,
+    capture_pageview: false,
+    capture_pageleave: false,
     autocapture: false,
     api_host: "/ingest",
     ui_host: "https://eu.posthog.com",

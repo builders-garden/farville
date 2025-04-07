@@ -9,7 +9,7 @@ import {
 import { z } from "zod";
 import { QuestStatus } from "@/types/game";
 import { updateUserWeeklyScore, updateUserXP } from "@/lib/prisma/queries";
-import { START_DATE_LEAGUES } from "@/lib/game-constants";
+import { getThisWeekMonday } from "@/lib/utils";
 
 export async function GET(
   request: NextRequest,
@@ -112,9 +112,10 @@ export async function POST(
     }
     if (userQuest.quest.xp) {
       const xp = await updateUserXP(Number(fid), userQuest.quest.xp);
+      const thisWeekMonday = getThisWeekMonday();
       if (
-        userQuest.quest.endAt &&
-        new Date(userQuest.quest.endAt) > START_DATE_LEAGUES
+        userQuest.quest.startAt &&
+        new Date(userQuest.quest.startAt) >= thisWeekMonday
       ) {
         await updateUserWeeklyScore(
           Number(fid),

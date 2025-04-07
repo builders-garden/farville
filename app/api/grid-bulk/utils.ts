@@ -373,7 +373,7 @@ export const perkBulk = async (
       `Speed boost expired! ⚡️`,
       `The speed boost has worn off. Check your crops!`,
       "boost-expired",
-      SPEED_BOOST[itemSlug].duration
+      SPEED_BOOST[itemSlug].duration / 1000
     );
 
     await sendBatchToPostHog(
