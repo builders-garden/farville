@@ -25,7 +25,7 @@ export const GET = async (req: NextRequest) => {
 
   return NextResponse.json(
     {
-      donation,
+      lastDonation: donation,
       donationsLast24h,
     },
     { status: 200 }

@@ -312,6 +312,9 @@ export const getUserDonationByReceiver = async (
       donatorFid: donator,
       receiverFid: receiver,
     },
+    orderBy: {
+      lastDonation: "desc",
+    },
   });
 };
 

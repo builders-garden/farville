@@ -102,11 +102,9 @@ export const POST = async (
   const donationsLast24h = await getUserDonationsLast24h(Number(fid));
 
   if (
-    userLastDonation &&
-    userLastDonation?.times &&
-    userLastDonation.times >= MAX_DAILY_ALLOWED_DONATION_BETWEEN_USERS &&
-    new Date(userLastDonation.lastDonation).toDateString() ===
-      new Date().toDateString() &&
+    (userLastDonation &&
+      userLastDonation?.times &&
+      userLastDonation.times >= MAX_DAILY_ALLOWED_DONATION_BETWEEN_USERS) ||
     donationsLast24h >= MAX_DAILY_ALLOWED_DONATION_TO_USERS
   ) {
     return NextResponse.json(

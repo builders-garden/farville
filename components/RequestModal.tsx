@@ -88,7 +88,11 @@ export default function RequestModal({
     );
   }
 
-  if (!request && isLoading) {
+  if (
+    (!request && isLoading) ||
+    lastDonation === undefined ||
+    donationsLast24h === undefined
+  ) {
     return (
       <div className="bg-white text-emerald-500 rounded-lg text-center p-4 fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
         Loading Request...
@@ -198,9 +202,7 @@ export default function RequestModal({
 
                   {lastDonation &&
                   lastDonation.times >=
-                    MAX_DAILY_ALLOWED_DONATION_BETWEEN_USERS &&
-                  new Date(lastDonation.lastDonation).toDateString() ===
-                    new Date().toDateString() ? (
+                    MAX_DAILY_ALLOWED_DONATION_BETWEEN_USERS ? (
                     <div className="flex flex-col items-center gap-1.5 xs:gap-2 mt-1.5 xs:mt-2">
                       <p className="text-amber-500/90 text-xs xs:text-sm text-center">
                         You can only donate to the same user{" "}
