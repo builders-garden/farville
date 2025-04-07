@@ -46,6 +46,7 @@ import { CustomImage } from "./custom-image";
 import { SelectMintPrice } from "./select-mint-price";
 import { env } from "@/lib/env";
 import { DbUserHasCollectible } from "@/supabase/types";
+import { useUpdateUserAvatar } from "@/hooks/use-update-user-avatar";
 
 interface MintCollectibleModalProps {
   onCancel: () => void;
@@ -54,7 +55,7 @@ interface MintCollectibleModalProps {
 export default function MintCollectibleModal({
   onCancel,
 }: MintCollectibleModalProps) {
-  const { state, updateUserCollectibles } = useGame();
+  const { state, updateUserCollectibles, refetchUser } = useGame();
   const { address } = useAccount();
 
   // Step 1
@@ -91,6 +92,7 @@ export default function MintCollectibleModal({
   const [paymentCompleted, setPaymentCompleted] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [finalTxHash, setFinalTxHash] = useState<string | null>(null);
+  const [updatedUserAvatar, setUpdatedUserAvatar] = useState<boolean>(false);
 
   const [showConfetti, setShowConfetti] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -183,6 +185,13 @@ export default function MintCollectibleModal({
   // Step 6: Update mint pfp user with tx hash
   const { mutate: updateMintPfpUser } = useUpdateMintPfpUser({
     handleUpdateStateCollectibles,
+  });
+
+  // Step 7: Update user with selected collectible as avatar
+  const { mutate: updateUserAvatar } = useUpdateUserAvatar({
+    setIsLoading,
+    setUpdatedUserAvatar,
+    refetchUser,
   });
 
   // needed for Step 5. Construct mint tx calldata once the backend signature is ready
@@ -515,6 +524,27 @@ export default function MintCollectibleModal({
     await sdk.actions.openUrl(castUrl);
   };
 
+  // Check if select collectible should be shown
+  const showSelectCollectibleAsAvatar = useMemo(() => {
+    if (!selectedCollectible || !selectedCollectible.userHasCollectibles)
+      return false;
+    const status = selectedCollectible.userHasCollectibles.status;
+    return (
+      selectedCollectible &&
+      selectedCollectible.userHasCollectibles &&
+      status === CollectibleStatus.Minted &&
+      !!selectedCollectible.userHasCollectibles.mintedImageUrl
+    );
+  }, [selectedCollectible]);
+
+  const handleSetCollectibleAsAvatar = () => {
+    if (updatedUserAvatar) return;
+    setIsLoading(true);
+    updateUserAvatar({
+      collectibleId: selectedCollectible?.id.toString() ?? "1",
+    });
+  };
+
   return (
     <>
       {showConfetti && <Confetti title="MINTED!" />}
@@ -673,6 +703,21 @@ export default function MintCollectibleModal({
               />
             ) : null}
 
+            {/* Set minted collectible as avatar */}
+            {showSelectCollectibleAsAvatar ? (
+              <Button
+                onClick={handleSetCollectibleAsAvatar}
+                className="w-full flex-1 py-2 px-4 rounded-[5px] text-[#5C4121] bg-yellow-500 hover:bg-yellow-500/80 hover:text-[#5C4121]"
+                disabled={isLoading || updatedUserAvatar}
+              >
+                {isLoading
+                  ? "Setting..."
+                  : updatedUserAvatar
+                  ? "New avatar set!"
+                  : "Select as avatar"}
+              </Button>
+            ) : null}
+
             {/* BIG BUTTON Generate/Get Image/Select/Confirm/Mint/Share */}
             {finalTxHash ? (
               <button
@@ -757,8 +802,6 @@ export default function MintCollectibleModal({
                       onClick={() => {
                         if (!confirmedSelection) {
                           handleConfirmSelection();
-                        } else if (paymentCompleted) {
-                          handleShareMint();
                         } else {
                           show();
                         }

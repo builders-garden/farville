@@ -49,6 +49,7 @@ export default function ProfileModal({
   const {
     state,
     setShowMintOGBadge,
+    showMintCollectible,
     setShowMintCollectible,
     newGoldCropsFound,
     setNewGoldCropsFound,
@@ -310,19 +311,17 @@ export default function ProfileModal({
                       <div className="flex flex-row items-center gap-1 xs:gap-2">
                         <h3
                           className={`text-white/90 text-sm xs:text-md font-bold ${
-                            state.collectibles.length > 0 ? "animate-pulse" : ""
+                            showMintCollectible ? "animate-pulse" : ""
                           }`}
                           style={{
-                            textShadow:
-                              state.collectibles.length > 0
-                                ? "0 0 8px rgba(255, 185, 56, 0.8)"
-                                : "none",
-                            color:
-                              state.collectibles.length > 0 ? "#FFB938" : "",
+                            textShadow: showMintCollectible
+                              ? "0 0 8px rgba(255, 185, 56, 0.8)"
+                              : "none",
+                            color: showMintCollectible ? "#FFB938" : "",
                           }}
                         >
                           Collectibles{" "}
-                          {state.collectibles.length > 0 && (
+                          {showMintCollectible && (
                             <span className="text-[#FFB938]">✨</span>
                           )}
                         </h3>
@@ -364,10 +363,6 @@ export default function ProfileModal({
                               The badges below prove that you have claimed one
                               or more collectibles.
                             </p>
-                            <p>
-                              You can mint a new collectible every time you want
-                              from your profile.
-                            </p>
                           </div>
                         </InfoModal>
                       )}
@@ -375,7 +370,7 @@ export default function ProfileModal({
 
                     <Card
                       className={`bg-gradient-to-br from-[#6D4C2C] to-[#5B4120] rounded-lg border-none w-full ${
-                        newGoldCropsFound.length > 0
+                        showMintCollectible
                           ? "shadow-[0_0_20px_rgba(255,185,56,0.5)] transition-shadow duration-700"
                           : ""
                       }`}
@@ -406,18 +401,16 @@ export default function ProfileModal({
                               }`}
                               onClick={() => setShowMintCollectible(true)}
                             >
-                              <div className="absolute inset-0 bg-gradient-to-b from-yellow/30 to-transparent z-10 animate-pulse pointer-events-none"></div>
+                              {showMintCollectible ? (
+                                <div className="absolute inset-0 bg-gradient-to-b from-yellow/30 to-transparent z-10 animate-pulse pointer-events-none"></div>
+                              ) : null}
 
                               <Image
                                 src={collectibleImage}
                                 alt={collectible.name}
                                 fill
                                 className={`rounded-lg transition-transform duration-300 group-hover:scale-110 ${
-                                  !newGoldCropsFound.includes(
-                                    collectible.id.toString()
-                                  )
-                                    ? ""
-                                    : "filter blur-[3px]"
+                                  showMintCollectible ? "filter blur-[3px]" : ""
                                 }`}
                                 sizes="(max-width: 640px) 25vw, 20vw"
                               />

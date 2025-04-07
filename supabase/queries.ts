@@ -1574,3 +1574,31 @@ export const removeUserCollectible = async (
 
   if (error) throw error;
 };
+
+export const updateUserCollectibleAsAvatar = async (
+  fid: number,
+  collectibleId: number
+): Promise<DbUser> => {
+  const { data, error } = await supabase
+    .from("user_has_collectibles")
+    .select("*")
+    .eq("fid", fid)
+    .eq("collectibleId", collectibleId)
+    .maybeSingle();
+  console.log("data on update user collectible as avatar", data);
+
+  if (error) throw error;
+  if (!data) throw new Error("Collectible not found");
+
+  const { data: userData, error: updateError } = await supabase
+    .from("users")
+    .update({
+      selectedAvatarUrl: data.mintedImageUrl,
+    })
+    .eq("fid", fid)
+    .select()
+    .single();
+
+  if (updateError) throw updateError;
+  return userData;
+};
