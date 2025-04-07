@@ -1,13 +1,16 @@
 import { Dispatch, SetStateAction } from "react";
 import { useApiMutation } from "./use-api-mutation";
+import { DbUserHasCollectible } from "@/supabase/types";
+
+interface UseGenerateMidjourneyImageProps {
+  setMidjourneyTaskId: Dispatch<SetStateAction<string | null>>;
+  setIsLoading: Dispatch<SetStateAction<boolean>>;
+}
 
 export const useGenerateMidjourneyImage = ({
   setMidjourneyTaskId,
   setIsLoading,
-}: {
-  setMidjourneyTaskId: Dispatch<SetStateAction<string | null>>;
-  setIsLoading: Dispatch<SetStateAction<boolean>>;
-}) => {
+}: UseGenerateMidjourneyImageProps) => {
   return useApiMutation({
     url: () => `/api/pfp-nft-image-ask`,
     body: ({
@@ -24,7 +27,10 @@ export const useGenerateMidjourneyImage = ({
       collectibleId,
     }),
     method: "POST",
-    onSuccess: (data: { taskId: string }) => {
+    onSuccess: (data: {
+      taskId: string;
+      userHasCollectible: DbUserHasCollectible;
+    }) => {
       setMidjourneyTaskId(data.taskId);
       setIsLoading(false);
     },

@@ -12,7 +12,7 @@ export async function getFarcasterManifest() {
     frameName += " Local";
   } else if (appUrl.includes("ngrok")) {
     frameName += " NGROK";
-  } else if (appUrl.includes("dev.betttr.xyz")) {
+  } else if (appUrl.includes("dev.farville.farm")) {
     frameName += " Dev";
   }
   return {

@@ -50,7 +50,10 @@ export async function POST(request: Request) {
     );
     console.log("res", res);
     //Return only the taskId to be used in the image-get route
-    return NextResponse.json({ taskId: data.data.task_id });
+    return NextResponse.json({
+      taskId: data.data.task_id,
+      userHasCollectible: res,
+    });
   } catch (error) {
     console.error("Error generating image:", error);
     return NextResponse.json(
