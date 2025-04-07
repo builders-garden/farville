@@ -42,7 +42,11 @@ export async function POST(request: Request) {
 
     const description = response.choices[0].message.content;
 
-    return NextResponse.json({ description });
+    console.log("returning description", description);
+    return NextResponse.json({
+      success: true,
+      data: { description },
+    });
   } catch (error) {
     console.error("Error generating image description:", error);
     return NextResponse.json(

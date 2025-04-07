@@ -10,14 +10,12 @@ interface SelectMintPriceProps {
   totalBalanceUSD: number;
   selectedPrice: number;
   setSelectedPrice: Dispatch<SetStateAction<number>>;
-  confirmedSelection: boolean;
 }
 
 export const SelectMintPrice = ({
   totalBalanceUSD,
   selectedPrice,
   setSelectedPrice,
-  confirmedSelection,
 }: SelectMintPriceProps) => {
   return (
     <div className="flex flex-col items-center justify-center gap-2">
@@ -43,12 +41,7 @@ export const SelectMintPrice = ({
             <Button
               key={`mint-price-${price}`}
               variant="ghost"
-              onClick={() => {
-                if (!confirmedSelection) {
-                  setSelectedPrice(price);
-                }
-              }}
-              disabled={confirmedSelection}
+              onClick={() => setSelectedPrice(price)}
               className={cn(
                 "text-md px-3 w-full rounded-md text-white font-semibold",
                 selectedPrice === price

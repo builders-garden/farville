@@ -56,17 +56,16 @@ export default function MintCollectibleModal({
 }: MintCollectibleModalProps) {
   const { state, updateUserCollectibles } = useGame();
   const { address } = useAccount();
-  const [backendSignature, setBackendSignature] = useState<
-    `0x${string}` | null
-  >(null);
-  const [midjourneyTaskId, setMidjourneyTaskId] = useState<string | null>(null);
-  const [midjourneyImageUrl, setMidjourneyImageUrl] = useState<string | null>(
-    null
-  );
-  const [selectedPrice, setSelectedPrice] = useState<number>(3);
+
+  // Step 1
   const [pfpDescription, setPfpDescription] = useState<string | null>(null);
   const [pfpDescriptionLoading, setPfpDescriptionLoading] = useState(false);
-  const [pinataMetadataCID, setPinataMetadataCID] = useState<string | null>(
+
+  // Step 2
+  const [midjourneyTaskId, setMidjourneyTaskId] = useState<string | null>(null);
+
+  // Step 3
+  const [midjourneyImageUrl, setMidjourneyImageUrl] = useState<string | null>(
     null
   );
   const [midjourneyImageUrls, setMidjourneyImageUrls] = useState<
@@ -75,6 +74,19 @@ export default function MintCollectibleModal({
   const [selectedImageUrl, setSelectedImageUrl] = useState<string | null>(null);
   const [confirmedSelection, setConfirmedSelection] = useState(false);
 
+  // Step 4
+  const [pinataMetadataCID, setPinataMetadataCID] = useState<string | null>(
+    null
+  );
+
+  // Step 5
+  const [backendSignature, setBackendSignature] = useState<
+    `0x${string}` | null
+  >(null);
+  const [txCalldata, setTxCalldata] = useState<string>("0x");
+
+  // Step 6
+  const [selectedPrice, setSelectedPrice] = useState<number>(3);
   const [paymentStarted, setPaymentStarted] = useState(false);
   const [paymentCompleted, setPaymentCompleted] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -156,7 +168,7 @@ export default function MintCollectibleModal({
 
   // Step 4: On confirm selection, upload to pinata
   const { mutate: uploadPinata } = usePinata({
-    setMetadataCID: setPinataMetadataCID,
+    setPinataMetadataCID,
     setConfirmedSelection,
     handleUpdateStateCollectibles,
   });
@@ -173,15 +185,16 @@ export default function MintCollectibleModal({
   });
 
   // needed for Step 5. Construct mint tx calldata once the backend signature is ready
-  const txCalldata = useMemo(() => {
-    if (!backendSignature || !pinataMetadataCID || !address) return "0x";
-    return getPfpNftTxCalldata({
+  useEffect(() => {
+    if (!backendSignature || !pinataMetadataCID || !address) return;
+    const newTxCalldata = getPfpNftTxCalldata({
       address,
       fid: BigInt(state.user.fid),
       priceInUSD: selectedPrice,
       pinataMetadataCID: pinataMetadataCID,
       backendSignature: backendSignature,
     });
+    setTxCalldata(newTxCalldata);
   }, [
     address,
     state.user.fid,
@@ -243,7 +256,10 @@ export default function MintCollectibleModal({
               selectedCollectible.userHasCollectibles.mintedMetadataUrl.split(
                 "https://gateway.pinata.cloud/ipfs/"
               )[1];
-            setPinataMetadataCID(metadataCID);
+            if (metadataCID) {
+              setPinataMetadataCID(metadataCID);
+              setConfirmedSelection(true);
+            }
           }
         case CollectibleStatus.Generated:
           if (
@@ -300,40 +316,26 @@ export default function MintCollectibleModal({
 
   // Check if user can generate image
   const canGenerate = useMemo(() => {
-    const isNullOrPendingStatus =
-      (selectedCollectible && !selectedCollectible.userHasCollectibles) ||
-      (selectedCollectible &&
-        selectedCollectible.userHasCollectibles &&
-        selectedCollectible.userHasCollectibles.status ===
-          CollectibleStatus.Pending);
     return (
       !pfpDescriptionLoading &&
       pfpDescription &&
       address &&
-      isNullOrPendingStatus
+      selectedCollectible &&
+      !selectedCollectible.userHasCollectibles
     );
   }, [pfpDescriptionLoading, pfpDescription, address, selectedCollectible]);
 
   // Check if get image button should be shown
   const showGetImageButton = useMemo(() => {
+    if (!selectedCollectible || !selectedCollectible.userHasCollectibles)
+      return false;
     return (
-      (midjourneyTaskId &&
-        !midjourneyImageUrls &&
-        selectedCollectible &&
-        !selectedCollectible.userHasCollectibles) ||
-      (selectedCollectible &&
-        selectedCollectible.userHasCollectibles &&
-        selectedCollectible.userHasCollectibles.status ===
-          CollectibleStatus.Pending &&
-        midjourneyTaskId &&
-        !midjourneyImageUrl)
+      selectedCollectible.userHasCollectibles.status ===
+        CollectibleStatus.Pending &&
+      midjourneyTaskId &&
+      !midjourneyImageUrl
     );
-  }, [
-    midjourneyImageUrl,
-    midjourneyImageUrls,
-    midjourneyTaskId,
-    selectedCollectible,
-  ]);
+  }, [midjourneyImageUrl, midjourneyTaskId, selectedCollectible]);
 
   // Check if confirm selection button should be shown
   const showConfirmSelectionButton = useMemo(() => {
@@ -342,8 +344,7 @@ export default function MintCollectibleModal({
     const status = selectedCollectible.userHasCollectibles.status;
     return (
       address &&
-      (status === CollectibleStatus.Pending ||
-        status === CollectibleStatus.Generated ||
+      (status === CollectibleStatus.Generated ||
         status === CollectibleStatus.Uploaded) &&
       midjourneyImageUrl
     );
@@ -355,16 +356,14 @@ export default function MintCollectibleModal({
       return false;
     const status = selectedCollectible.userHasCollectibles.status;
     return (
-      (address &&
-        (status === CollectibleStatus.Pending ||
-          status === CollectibleStatus.Generated ||
-          status === CollectibleStatus.Uploaded) &&
-        midjourneyImageUrl &&
-        selectedImageUrl &&
-        confirmedSelection &&
-        !finalTxHash &&
-        paymentStarted) ||
-      paymentCompleted
+      address &&
+      (status === CollectibleStatus.Generated ||
+        status === CollectibleStatus.Uploaded) &&
+      midjourneyImageUrl &&
+      selectedImageUrl &&
+      !finalTxHash &&
+      !paymentStarted &&
+      !paymentCompleted
     );
   }, [
     address,
@@ -372,7 +371,6 @@ export default function MintCollectibleModal({
     midjourneyImageUrl,
     finalTxHash,
     selectedImageUrl,
-    confirmedSelection,
     paymentStarted,
     paymentCompleted,
   ]);
@@ -419,16 +417,33 @@ export default function MintCollectibleModal({
   };
 
   // Step 3. handle get image
-  const handleGetImage = async () => {
-    if (midjourneyTaskId && selectedCollectible) {
-      setIsLoading(true);
-      getMidjourneyImage({
-        taskId: midjourneyTaskId,
-        fid: state.user.fid.toString(),
-        collectibleId: selectedCollectible.id.toString() ?? "1",
-      });
+  useEffect(() => {
+    if (!selectedCollectible || !selectedCollectible.userHasCollectibles)
+      return;
+    const status = selectedCollectible.userHasCollectibles.status;
+    if (
+      status === CollectibleStatus.Pending &&
+      midjourneyTaskId &&
+      !midjourneyImageUrl
+    ) {
+      // periodically check if midjourney image is ready
+      const retryInterval = 5000;
+      const interval = setInterval(() => {
+        getMidjourneyImage({
+          taskId: midjourneyTaskId,
+          fid: state.user.fid.toString(),
+          collectibleId: selectedCollectible.id.toString(),
+        });
+      }, retryInterval);
+      return () => clearInterval(interval);
     }
-  };
+  }, [
+    midjourneyTaskId,
+    selectedCollectible,
+    midjourneyImageUrl,
+    getMidjourneyImage,
+    state.user.fid,
+  ]);
 
   // Step 4. handle confirm selection
   const handleConfirmSelection = async () => {
@@ -444,14 +459,14 @@ export default function MintCollectibleModal({
 
   // Step 5. handle get backend signature
   useEffect(() => {
-    if (pinataMetadataCID && address && selectedImageUrl && !finalTxHash) {
+    if (pinataMetadataCID && address) {
       getBackendSignature({
         address,
         nftId: state.user.fid,
         tokenURI: pinataMetadataCID,
       });
     }
-  }, [address, pinataMetadataCID, getBackendSignature, state.user.fid]);
+  }, [address, pinataMetadataCID, state.user.fid]);
 
   // Step 6. mint handle daimo events: PaymentStarted, PaymentCompleted, PaymentBounced
   const handlePaymentStarted = (e: PaymentStartedEvent) => {
@@ -491,10 +506,6 @@ export default function MintCollectibleModal({
     await sdk.actions.openUrl(castUrl);
   };
 
-  console.log({
-    globalState: state,
-  });
-
   return (
     <>
       {showConfetti && <Confetti title="MINTED!" />}
@@ -519,7 +530,7 @@ export default function MintCollectibleModal({
             duration: 0.2,
             ease: [0.4, 0, 0.2, 1], // Custom easing for smooth animation
           }}
-          className="flex flex-col gap-2 xs:gap-4 bg-gradient-to-br from-[#8B5E3C] to-[#6A4123] p-4 xs:p-6 rounded-lg max-w-sm w-full mx-4 border border-[#8B5E3C]/50 
+          className="flex flex-col gap-2 bg-gradient-to-br from-[#8B5E3C] to-[#6A4123] p-4 xs:p-6 rounded-lg max-w-sm w-full mx-4 border border-[#8B5E3C]/50 
           [box-shadow:0_0_50px_rgba(234,179,8,0.3)] relative will-change-transform overflow-y-auto max-h-[90vh] no-scrollbar"
         >
           <button
@@ -531,7 +542,7 @@ export default function MintCollectibleModal({
             <X size={14} />
           </button>
 
-          <div className="flex flex-row items-center gap-2">
+          <div className="flex flex-row items-center">
             <h3 className={`text-white/90 font-bold text-lg m-auto`}>
               Farville Avatar
             </h3>
@@ -553,7 +564,9 @@ export default function MintCollectibleModal({
                   transform: "translateX(-50%) translateY(60%)",
                 }}
               />
-              {finalTxHash ? (
+              {finalTxHash ||
+              selectedCollectible?.userHasCollectibles?.status ===
+                CollectibleStatus.Uploaded ? (
                 <CustomImage
                   key={finalTxHash}
                   imageUrl={
@@ -617,7 +630,7 @@ export default function MintCollectibleModal({
               )}
             </div>
           </div>
-          <div className="flex flex-col gap-2 xs:gap-4 mb-2">
+          <div className="flex flex-col gap-2">
             <span className="text-yellow-300/90 text-[10px] text-center">
               Pick your farmer. Make it yours.
             </span>
@@ -641,14 +654,13 @@ export default function MintCollectibleModal({
                 </span>
               )}
           </div>
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-3 mt-0">
             {/* PAY PRICE */}
             {showSelectMintPrice ? (
               <SelectMintPrice
                 totalBalanceUSD={tokenBalancesData?.totalBalanceUSD ?? 0}
                 selectedPrice={selectedPrice}
                 setSelectedPrice={setSelectedPrice}
-                confirmedSelection={confirmedSelection}
               />
             ) : null}
 
@@ -674,19 +686,33 @@ export default function MintCollectibleModal({
                 {pfpDescriptionLoading
                   ? "Loading..."
                   : isLoading
-                  ? "Generating..."
+                  ? "Starting..."
                   : "Generate"}
               </button>
             ) : showGetImageButton ? (
-              <button
-                disabled={isLoading}
-                onClick={handleGetImage}
-                className={`flex-1 py-2 px-4 rounded bg-[#179ef9]/20 text-[#179ef9] hover:bg-[#179ef9]/30 transition-colors text-sm font-medium border border-[#179ef9]/30 flex items-center justify-center gap-2`}
-              >
-                {isLoading ? "Fetching..." : "Get Image"}
-              </button>
+              <div className="relative flex flex-col gap-2">
+                <motion.button
+                  animate={{
+                    scale: [1, 1.05, 1],
+                  }}
+                  transition={{
+                    duration: 3,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                  }}
+                  disabled
+                  className="flex-1 py-2 px-4 rounded bg-[#179ef9]/20 text-[#179ef9] hover:bg-[#179ef9]/30 transition-colors text-sm font-medium border border-[#179ef9]/30 flex items-center justify-center gap-2"
+                >
+                  Generating image...
+                </motion.button>
+                <p className="text-white/70 text-[8px] text-center">
+                  This may take a while.
+                  <br />
+                  You can close and come back later.
+                </p>
+              </div>
             ) : showConfirmSelectionButton ? (
-              <div className="w-full flex flex-col gap-2 items-center pb-4">
+              <div className="w-full flex flex-col gap-2 items-center">
                 <DaimoPayButton.Custom
                   appId={env.NEXT_PUBLIC_DAIMO_PAY_ID}
                   metadata={{
@@ -729,7 +755,9 @@ export default function MintCollectibleModal({
                         }
                       }}
                       disabled={
-                        confirmedSelection ? !canMint : !selectedImageUrl
+                        confirmedSelection
+                          ? !canMint && txCalldata === "0x"
+                          : !canMint
                       }
                     >
                       {!selectedImageUrl

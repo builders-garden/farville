@@ -14,8 +14,12 @@ export const useGetImageDescription = ({
       imageUrl,
     }),
     method: "POST",
-    onSuccess: (data: { description: string }) => {
-      setImageDescription(data.description);
+    onSuccess: (data: { success: boolean; data: { description: string } }) => {
+      setImageDescription(data.data.description);
+      setImageDescriptionLoading(false);
+    },
+    onError: (error: Error) => {
+      console.error("Error getting image description:", error);
       setImageDescriptionLoading(false);
     },
   });

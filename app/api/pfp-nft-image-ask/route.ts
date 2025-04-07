@@ -15,6 +15,7 @@ export async function POST(request: Request) {
     if (!prompt || !fid || !collectibleId) {
       return NextResponse.json({ error: "Invalid arguments" }, { status: 400 });
     }
+    console.log("generating image", prompt);
 
     const response = await fetch(MIDJOURNEY_API_URL, {
       method: "POST",
@@ -48,11 +49,14 @@ export async function POST(request: Request) {
       CollectibleStatus.Pending,
       data.data.task_id
     );
-    console.log("res", res);
+    console.log("saved to db res", res);
     //Return only the taskId to be used in the image-get route
     return NextResponse.json({
-      taskId: data.data.task_id,
-      userHasCollectible: res,
+      success: true,
+      data: {
+        taskId: data.data.task_id,
+        userHasCollectible: res,
+      },
     });
   } catch (error) {
     console.error("Error generating image:", error);

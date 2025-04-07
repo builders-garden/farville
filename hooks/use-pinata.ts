@@ -3,11 +3,11 @@ import { useApiMutation } from "./use-api-mutation";
 import { DbUserHasCollectible } from "@/supabase/types";
 
 export const usePinata = ({
-  setMetadataCID,
+  setPinataMetadataCID,
   setConfirmedSelection,
   handleUpdateStateCollectibles,
 }: {
-  setMetadataCID: Dispatch<SetStateAction<string | null>>;
+  setPinataMetadataCID: Dispatch<SetStateAction<string | null>>;
   setConfirmedSelection: Dispatch<SetStateAction<boolean>>;
   handleUpdateStateCollectibles: (
     userHasCollectibles: DbUserHasCollectible
@@ -30,16 +30,24 @@ export const usePinata = ({
     }),
     method: "POST",
     onSuccess: (data: {
-      imageUrl: string;
-      imageMetadataUrl: string;
-      imageCID: string;
-      metadataUrl: string;
-      metadataCID: string;
-      userHasCollectible: DbUserHasCollectible;
+      success: boolean;
+      data: {
+        imageUrl: string;
+        imageMetadataUrl: string;
+        imageCID: string;
+        metadataUrl: string;
+        metadataCID: string;
+        userHasCollectible: DbUserHasCollectible;
+      };
     }) => {
-      setMetadataCID(data.metadataCID);
+      console.log("data", data);
+      setPinataMetadataCID(data.data.metadataCID);
       setConfirmedSelection(true);
-      handleUpdateStateCollectibles(data.userHasCollectible);
+      handleUpdateStateCollectibles(data.data.userHasCollectible);
+    },
+    onError: (error: Error) => {
+      console.error("Error uploading to pinata:", error);
+      setConfirmedSelection(false);
     },
   });
 };

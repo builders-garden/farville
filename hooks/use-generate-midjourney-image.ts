@@ -32,12 +32,15 @@ export const useGenerateMidjourneyImage = ({
     }),
     method: "POST",
     onSuccess: (data: {
-      taskId: string;
-      userHasCollectible: DbUserHasCollectible;
+      success: boolean;
+      data: {
+        taskId: string;
+        userHasCollectible: DbUserHasCollectible;
+      };
     }) => {
-      setMidjourneyTaskId(data.taskId);
+      setMidjourneyTaskId(data.data.taskId);
       setIsLoading(false);
-      handleUpdateStateCollectibles(data.userHasCollectible);
+      handleUpdateStateCollectibles(data.data.userHasCollectible);
     },
     onError: () => {
       setIsLoading(false);

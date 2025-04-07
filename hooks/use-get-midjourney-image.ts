@@ -32,16 +32,19 @@ export const useGetMidjourneyImage = ({
     }),
     method: "POST",
     onSuccess: (data: {
-      status: string;
-      imageUrl: string;
-      imageUrls: string[];
-      userHasCollectible?: DbUserHasCollectible;
+      success: boolean;
+      data: {
+        status: string;
+        imageUrl: string;
+        imageUrls: string[];
+        userHasCollectible?: DbUserHasCollectible;
+      };
     }) => {
-      setMidjourneyImageUrl(data.imageUrl);
-      setMidjourneyImageUrls(data.imageUrls);
+      setMidjourneyImageUrl(data.data.imageUrl);
+      setMidjourneyImageUrls(data.data.imageUrls);
       setIsLoading(false);
-      if (data.userHasCollectible) {
-        handleUpdateStateCollectibles(data.userHasCollectible);
+      if (data.data.userHasCollectible) {
+        handleUpdateStateCollectibles(data.data.userHasCollectible);
       }
     },
     onError: () => {

@@ -25,13 +25,17 @@ export const useGetBackendSignature = ({
     }),
     method: "POST",
     onSuccess: (data: {
-      signature: `0x${string}`;
-      signerAddress: `0x${string}`;
+      success: boolean;
+      data: {
+        signature: `0x${string}`;
+        signerAddress: `0x${string}`;
+      };
     }) => {
-      setBackendSignature(data.signature);
+      setBackendSignature(data.data.signature);
       setIsLoading(false);
     },
-    onError: () => {
+    onError: (error: Error) => {
+      console.error("Error getting backend signature:", error);
       setIsLoading(false);
     },
   });

@@ -25,7 +25,10 @@ export const CustomImage = ({
 }) => {
   return (
     <div
-      className="relative flex flex-col gap-2 px-2 py-1 items-center justify-center cursor-pointer"
+      className={cn(
+        "relative flex flex-col gap-2 px-2 py-1 items-center justify-center",
+        confirmedSelection ? "cursor-not-allowed" : "cursor-pointer"
+      )}
       onClick={() => {
         if (!confirmedSelection) {
           onSelect();
@@ -46,8 +49,10 @@ export const CustomImage = ({
           selected && "border-green-400/80"
         )}
       >
-        {selected && (
-          <Check className="absolute -top-3 -right-3 bg-green-400 text-white rounded-full p-1 z-10" />
+        {selected && confirmedSelection && (
+          <div className="absolute -top-3 -right-3 z-10 cursor-pointer">
+            <Check className="bg-green-400 text-white rounded-full p-1" />
+          </div>
         )}
         <Image
           src={imageUrl ?? `/images/badge/og.png`}
@@ -59,7 +64,11 @@ export const CustomImage = ({
         <Dialog>
           <DialogTrigger asChild>
             <div className="absolute right-0 bottom-3 items-center justify-center flex">
-              <div className="w-full h-full flex items-center justify-center size-8 bg-white/70 p-1 rounded-full cursor-zoom-in">
+              <div
+                className={
+                  "w-full h-full flex items-center justify-center size-8 bg-white/70 p-1 rounded-full cursor-zoom-in"
+                }
+              >
                 <ZoomInIcon className="size-4 text-black" />
               </div>
             </div>

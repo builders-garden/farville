@@ -38,9 +38,13 @@ export async function POST(request: Request) {
     });
 
     // Return the signature and the signer's address for verification
+    console.log("returning signature");
     return NextResponse.json({
-      signature: signature,
-      signerAddress: account.address,
+      success: true,
+      data: {
+        signature: signature,
+        signerAddress: account.address,
+      },
     });
   } catch (error) {
     console.error("Error signing message:", error);

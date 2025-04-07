@@ -27,8 +27,8 @@ export async function POST(request: Request) {
 
     const data = await response.json();
 
-    console.log("saving imageUrl to db", data.data.output.image_url);
     if (data.data.output.image_url) {
+      console.log("saving imageUrl to db", data.data.output.image_url);
       const res = await updateUserCollectible(
         parseInt(fid),
         parseInt(collectibleId),
@@ -43,12 +43,16 @@ export async function POST(request: Request) {
       console.log("saved to db res", res);
 
       return NextResponse.json({
-        status: data.data.status,
-        imageUrl: data.data.output.image_url,
-        imageUrls: data.data.output.temporary_image_urls,
-        userHasCollectible: res,
+        success: true,
+        data: {
+          status: data.data.status,
+          imageUrl: data.data.output.image_url,
+          imageUrls: data.data.output.temporary_image_urls,
+          userHasCollectible: res,
+        },
       });
     } else {
+      console.log("still generating image", data.data.status);
       return NextResponse.json({
         status: data.data.status,
         imageUrl: null,
