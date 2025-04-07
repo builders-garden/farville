@@ -40,6 +40,7 @@ export const POST = async (req: NextRequest) => {
       expansions: 1,
       notificationDetails: "",
       mintedOG: false,
+      selectedAvatarUrl: null,
     });
 
     if (referrerFid) {
