@@ -806,12 +806,13 @@ export const getWeeklyUserLeaderboardByLeague = async (
 ) => {
   const filter = {
     where: {
-      league,
+      league: currentWeek ? league : undefined,
       fid: {
         not: {
           in: CREATOR_FIDS,
         },
       },
+      lastLeague: currentWeek ? undefined : league,
     },
     orderBy: currentWeek
       ? { currentScore: "desc" as const }
