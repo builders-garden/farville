@@ -17,7 +17,7 @@ import { useGetBackendSignature } from "@/hooks/use-get-backend-signature";
 import { useUpdateMintPfpUser } from "@/hooks/use-update-mint-pfp-user";
 
 import { motion } from "framer-motion";
-import { X } from "lucide-react";
+import { Download, Share2, X } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import Confetti from "@/components/animations/Confetti";
@@ -266,6 +266,7 @@ export default function MintCollectibleModal({
         case CollectibleStatus.Minted:
           if (selectedCollectible.userHasCollectibles.txHash) {
             setFinalTxHash(selectedCollectible.userHasCollectibles.txHash);
+            setPaymentCompleted(true);
           }
         case CollectibleStatus.Uploaded:
           if (selectedCollectible.userHasCollectibles.mintedMetadataUrl) {
@@ -585,6 +586,25 @@ export default function MintCollectibleModal({
     }
   };
 
+  const handleDownloadImage = async () => {
+    // handle the download of the image from url to user storage
+    if (!selectedCollectible || !selectedCollectible.userHasCollectibles) {
+      setErrorMessage("Failed to download image. Please try again.");
+      return;
+    }
+    const imageUrl = selectedCollectible.userHasCollectibles.mintedImageUrl;
+    if (imageUrl) {
+      try {
+        await sdk.actions.openUrl(imageUrl);
+      } catch (error) {
+        console.error(error);
+        setErrorMessage("Failed to open image URL. Please try again.");
+      }
+    } else {
+      setErrorMessage("Failed to download image. Please try again.");
+    }
+  };
+
   return (
     <>
       {showConfetti && <Confetti title="MINTED!" />}
@@ -760,12 +780,23 @@ export default function MintCollectibleModal({
 
             {/* BIG BUTTON Generate/Get Image/Select/Confirm/Mint/Share */}
             {finalTxHash ? (
-              <button
-                onClick={handleShareMint}
-                className={`flex-1 py-2 px-4 rounded bg-[#179ef9]/20 text-[#179ef9] hover:bg-[#179ef9]/30 transition-colors text-sm font-medium border border-[#179ef9]/30 flex items-center justify-center gap-2`}
-              >
-                Share
-              </button>
+              <div className="flex flex-row w-full gap-2">
+                <Button
+                  onClick={handleShareMint}
+                  className={`w-full flex py-2 px-4 rounded-[5px] bg-[#179ef9]/20 text-[#179ef9] hover:bg-[#179ef9]/30 transition-colors text-sm font-medium border border-[#179ef9]/30 items-center justify-center gap-2`}
+                >
+                  <Share2 size={18} className="w-4 h-4 xs:w-5 xs:h-5" />
+                  Share
+                </Button>
+                <Button
+                  onClick={handleDownloadImage}
+                  variant="outline"
+                  className="w-full flex py-2 px-4 rounded-[5px] bg-transparent hover:bg-[#179ef9]/10 border-2 border-[#179ef9]/20 text-[#179ef9] hover:text-[#179ef9]/80 text-sm font-medium items-center justify-center gap-2"
+                >
+                  <Download size={18} className="w-4 h-4 xs:w-5 xs:h-5" />
+                  Download
+                </Button>
+              </div>
             ) : showGenerateButton ? (
               <button
                 disabled={!canGenerate || isLoading || pfpDescriptionLoading}
@@ -869,24 +900,27 @@ export default function MintCollectibleModal({
                 </DaimoPayButton.Custom>
               </div>
             ) : null}
-            {!address && (
+
+            {!address && !paymentCompleted && !finalTxHash && (
               <span className="text-center text-[9px] text-white/70 border border-white/70 rounded w-fit px-4 py-2 m-auto mt-1 xs:mt-2">
                 Please connect a wallet to mint the badge.
               </span>
             )}
 
-            {paymentCompleted && finalTxHash && (
-              <p
-                className="text-white/70 text-[8px] text-center underline cursor-pointer"
-                onClick={async () => {
-                  await sdk.actions.openUrl(
-                    BASE_SCAN_BASE_URL + `/tx/${finalTxHash}`
-                  );
-                }}
-              >
-                View transaction on BaseScan
-              </p>
-            )}
+            {paymentCompleted && finalTxHash ? (
+              <>
+                <p
+                  className="text-white/70 text-[8px] text-center underline cursor-pointer"
+                  onClick={async () => {
+                    await sdk.actions.openUrl(
+                      BASE_SCAN_BASE_URL + `/tx/${finalTxHash}`
+                    );
+                  }}
+                >
+                  View transaction on BaseScan
+                </p>
+              </>
+            ) : null}
           </div>
 
           <div className="flex w-full justify-center items-center gap-3 mt-2">
