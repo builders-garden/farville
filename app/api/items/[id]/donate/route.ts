@@ -104,7 +104,9 @@ export const POST = async (
   if (
     (userLastDonation &&
       userLastDonation?.times &&
-      userLastDonation.times >= MAX_DAILY_ALLOWED_DONATION_BETWEEN_USERS) ||
+      userLastDonation.times >= MAX_DAILY_ALLOWED_DONATION_BETWEEN_USERS &&
+      new Date().getTime() - new Date(userLastDonation.lastDonation).getTime() <
+        24 * 60 * 60 * 1000) ||
     donationsLast24h >= MAX_DAILY_ALLOWED_DONATION_TO_USERS
   ) {
     return NextResponse.json(

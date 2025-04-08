@@ -805,29 +805,12 @@ export default function MintCollectibleModal({
               />
             ) : null}
 
-            {/* Set minted collectible as avatar */}
-            {showSelectCollectibleAsAvatar ? (
-              <Button
-                onClick={handleSetCollectibleAsAvatar}
-                className="w-full flex-1 py-2 px-4 rounded-[5px] text-[#5C4121] bg-yellow-500 hover:bg-yellow-500/80 hover:text-[#5C4121]"
-                disabled={isLoading || updatedUserAvatar}
-              >
-                {isLoading
-                  ? "Setting..."
-                  : updatedUserAvatar
-                  ? "Done!"
-                  : state.user.selectedAvatarUrl
-                  ? "Use Warpcast PFP"
-                  : "Set as avatar"}
-              </Button>
-            ) : null}
-
             {/* BIG BUTTON Generate/Get Image/Select/Confirm/Mint/Share */}
             {finalTxHash ? (
-              <div className="flex w-full gap-2">
+              <>
                 <Button
                   onClick={handleShareMint}
-                  className={`w-full flex py-1 px-2 xs:py-2 xs:px-4 rounded-[5px] bg-[#179ef9]/20 text-[#179ef9] hover:bg-[#179ef9]/30 transition-colors text-[9px] xs:text-xs font-medium border border-[#179ef9]/30 items-center justify-center gap-2`}
+                  className="w-full flex-1 py-2 px-4 rounded-[5px] text-[#5C4121] bg-yellow-500 hover:bg-yellow-500/80 hover:text-[#5C4121]"
                 >
                   <Share2
                     size={18}
@@ -835,18 +818,35 @@ export default function MintCollectibleModal({
                   />
                   Share
                 </Button>
-                <Button
-                  onClick={handleDownloadImage}
-                  variant="outline"
-                  className="w-full flex py-1 px-2 xs:py-2 xs:px-4 rounded-[5px] bg-transparent hover:bg-[#179ef9]/10 border-2 border-[#179ef9]/20 text-[#179ef9] hover:text-[#179ef9]/80 text-[9px] xs:text-xs font-medium items-center justify-center gap-2"
-                >
-                  <Download
-                    size={18}
-                    className="w-3 h-3 xs:w-4 xs:h-4"
-                  />
-                  Download
-                </Button>
-              </div>
+                <div className="flex w-full gap-2">
+                  {/* Set minted collectible as avatar */}
+                  {showSelectCollectibleAsAvatar ? (
+                    <Button
+                      onClick={handleSetCollectibleAsAvatar}
+                      disabled={isLoading || updatedUserAvatar}
+                      className={`w-full flex py-1 px-2 xs:py-2 xs:px-4 rounded-[5px] bg-[#179ef9]/20 text-[#179ef9] hover:bg-[#179ef9]/30 transition-colors text-[9px] xs:text-xs font-medium border border-[#179ef9]/30 items-center justify-center gap-2`}
+                    >
+                      {isLoading
+                        ? "Setting..."
+                        : updatedUserAvatar
+                        ? "Done!"
+                        : state.user.selectedAvatarUrl
+                        ? "Use Warpcast PFP"
+                        : "Set as avatar"}
+                    </Button>
+                  ) : null}
+                  <Button
+                    onClick={handleDownloadImage}
+                    variant="outline"
+                    className="w-fit flex py-1 px-2 xs:py-2 xs:px-4 rounded-[5px] bg-transparent hover:bg-[#179ef9]/10 border-2 border-[#179ef9]/20 text-[#179ef9] hover:text-[#179ef9]/80 text-[9px] xs:text-xs font-medium items-center justify-center gap-2"
+                  >
+                    <Download
+                      size={18}
+                      className="w-3 h-3 xs:w-4 xs:h-4"
+                    />
+                  </Button>
+                </div>
+              </>
             ) : showGenerateButton ? (
               <div className="relative flex flex-col gap-2">
                 <button
