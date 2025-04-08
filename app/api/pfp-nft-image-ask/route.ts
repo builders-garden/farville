@@ -31,7 +31,7 @@ export async function POST(request: Request) {
         input: {
           prompt: `${PFP_NFT_IMAGE_SYSTEM_PROMPT_1} ${prompt} ${PFP_NFT_IMAGE_SYSTEM_PROMPT_2} --v 6.1 --style raw --stylize 100`,
           aspect_ratio: "1:1",
-          process_mode: "fast",
+          process_mode: "turbo",
           skip_prompt_check: false,
         },
       }),

@@ -327,6 +327,8 @@ export default function MintCollectibleModal({
 
   // Check if generate button should be shown
   const showGenerateButton = useMemo(() => {
+    if (!selectedCollectible || !selectedCollectible.userHasCollectibles)
+      return true;
     const status = selectedCollectible?.userHasCollectibles?.status;
     return (
       selectedCollectible &&
@@ -798,22 +800,29 @@ export default function MintCollectibleModal({
                 </Button>
               </div>
             ) : showGenerateButton ? (
-              <button
-                disabled={!canGenerate || isLoading || pfpDescriptionLoading}
-                onClick={handleGenerate}
-                className={`flex-1 py-2 px-4 rounded ${
-                  !canGenerate
-                    ? "bg-[#179ef9]/10 text-[#179ef9]/50 cursor-not-allowed"
-                    : "bg-[#179ef9]/20 text-[#179ef9] hover:bg-[#179ef9]/30"
-                } 
+              <div className="relative flex flex-col gap-2">
+                <button
+                  disabled={!canGenerate || isLoading || pfpDescriptionLoading}
+                  onClick={handleGenerate}
+                  className={`flex-1 py-2 px-4 rounded ${
+                    !canGenerate
+                      ? "bg-[#179ef9]/10 text-[#179ef9]/50 cursor-not-allowed"
+                      : "bg-[#179ef9]/20 text-[#179ef9] hover:bg-[#179ef9]/30"
+                  } 
                   transition-colors text-sm font-medium border border-[#179ef9]/30 flex items-center justify-center gap-2`}
-              >
-                {pfpDescriptionLoading
-                  ? "Loading..."
-                  : isLoading
-                  ? "Starting..."
-                  : "Generate"}
-              </button>
+                >
+                  {pfpDescriptionLoading
+                    ? "Loading..."
+                    : isLoading
+                    ? "Starting..."
+                    : "Generate"}
+                </button>
+                {!pfpDescriptionLoading && isLoading ? (
+                  <p className="text-white/70 text-[8px] text-center">
+                    Wait, do not close this page.
+                  </p>
+                ) : null}
+              </div>
             ) : showGetImageButton ? (
               <div className="relative flex flex-col gap-2">
                 <motion.button
