@@ -632,6 +632,8 @@ export default function MintCollectibleModal({
     selectedCollectible?.userHasCollectibles?.status ===
       CollectibleStatus.Uploaded;
 
+  const blockModal = true;
+
   return (
     <>
       {showConfetti && <Confetti title="MINTED!" />}
@@ -773,10 +775,12 @@ export default function MintCollectibleModal({
                   Pick your farmer. Make it yours.
                 </span>
                 <Separator className="w-[80%] m-auto bg-yellow-500/50" />
-                <span className="text-white/70 text-[8px] text-center">
-                  Choose a custom avatar to represent you and climb the
-                  leaderboards in style.
-                </span>
+                {(!blockModal || !showGenerateButton) && (
+                  <span className="text-white/70 text-[8px] text-center">
+                    Choose a custom avatar to represent you and climb the
+                    leaderboards in style.
+                  </span>
+                )}
               </>
             )}
             {errorMessage && (
@@ -784,7 +788,8 @@ export default function MintCollectibleModal({
                 {errorMessage}
               </span>
             )}
-            {!isFinalState &&
+            {!blockModal &&
+              !isFinalState &&
               address !== undefined &&
               !!tokenBalancesData &&
               (!hasEnoughEthBalance || !hasEnoughUSDBalance) && (
@@ -795,6 +800,7 @@ export default function MintCollectibleModal({
                 </span>
               )}
           </div>
+
           <div className="flex flex-col gap-3 mt-0">
             {/* PAY PRICE */}
             {showSelectMintPrice ? (
@@ -812,10 +818,7 @@ export default function MintCollectibleModal({
                   onClick={handleShareMint}
                   className="w-full flex-1 py-2 px-4 rounded-[5px] text-[#5C4121] bg-yellow-500 hover:bg-yellow-500/80 hover:text-[#5C4121]"
                 >
-                  <Share2
-                    size={18}
-                    className="w-3 h-3 xs:w-4 xs:h-4"
-                  />
+                  <Share2 size={18} className="w-3 h-3 xs:w-4 xs:h-4" />
                   Share
                 </Button>
                 <div className="flex w-full gap-2">
@@ -841,37 +844,46 @@ export default function MintCollectibleModal({
                     variant="outline"
                     className="w-fit flex py-1 px-2 xs:py-2 xs:px-4 rounded-[5px] bg-transparent hover:bg-yellow-500/10 border-2 border-yellow-500/20 text-yellow-500 hover:text-yellow-500/80 text-[9px] xs:text-xs font-medium items-center justify-center gap-2"
                   >
-                    <Download
-                      size={18}
-                      className="w-3 h-3 xs:w-4 xs:h-4"
-                    />
+                    <Download size={18} className="w-3 h-3 xs:w-4 xs:h-4" />
                   </Button>
                 </div>
               </>
             ) : showGenerateButton ? (
-              <div className="relative flex flex-col gap-2">
-                <button
-                  disabled={!canGenerate || isLoading || pfpDescriptionLoading}
-                  onClick={handleGenerate}
-                  className={`flex-1 py-2 px-4 rounded ${
-                    !canGenerate
-                      ? "bg-[#179ef9]/10 text-[#179ef9]/50 cursor-not-allowed"
-                      : "bg-[#179ef9]/20 text-[#179ef9] hover:bg-[#179ef9]/30"
-                  } 
+              blockModal ? (
+                <span className="text-center text-[9px] text-white/70 border border-white/70 rounded w-fit px-4 py-2 m-auto xs:mt-2">
+                  The farmer pfp generation is temporarily disabled due to the
+                  high amount of requests.
+                  <br />
+                  Please check Farville channel to see when it will be available
+                  again.
+                </span>
+              ) : (
+                <div className="relative flex flex-col gap-2">
+                  <button
+                    disabled={
+                      !canGenerate || isLoading || pfpDescriptionLoading
+                    }
+                    onClick={handleGenerate}
+                    className={`flex-1 py-2 px-4 rounded ${
+                      !canGenerate
+                        ? "bg-[#179ef9]/10 text-[#179ef9]/50 cursor-not-allowed"
+                        : "bg-[#179ef9]/20 text-[#179ef9] hover:bg-[#179ef9]/30"
+                    } 
                   transition-colors text-sm font-medium border border-[#179ef9]/30 flex items-center justify-center gap-2`}
-                >
-                  {pfpDescriptionLoading
-                    ? "Loading..."
-                    : isLoading
-                    ? "Starting..."
-                    : "Generate"}
-                </button>
-                {!pfpDescriptionLoading && isLoading ? (
-                  <p className="text-white/70 text-[8px] text-center">
-                    Wait, do not close this page.
-                  </p>
-                ) : null}
-              </div>
+                  >
+                    {pfpDescriptionLoading
+                      ? "Loading..."
+                      : isLoading
+                      ? "Starting..."
+                      : "Generate"}
+                  </button>
+                  {!pfpDescriptionLoading && isLoading ? (
+                    <p className="text-white/70 text-[8px] text-center">
+                      Wait, do not close this page.
+                    </p>
+                  ) : null}
+                </div>
+              )
             ) : showGetImageButton ? (
               <div className="relative flex flex-col gap-2">
                 <motion.button
