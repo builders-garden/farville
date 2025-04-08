@@ -120,8 +120,7 @@ export default function ProfileModal({
         if (badgeModalData.collectibleId && badgeModalData.collectibleName) {
           const { castUrl } = mintedCollectibleFlexCardComposeCastUrl(
             state.user.fid,
-            badgeModalData.collectibleId,
-            badgeModalData.collectibleName
+            badgeModalData.collectibleId
           );
           await sdk.actions.openUrl(castUrl);
         }

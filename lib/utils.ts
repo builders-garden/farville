@@ -146,8 +146,7 @@ export const mintedOgFlexCardComposeCastUrl = (fid: number) => {
 
 export const mintedCollectibleFlexCardComposeCastUrl = (
   fid: number,
-  collectibleId: string,
-  collectibleName: string
+  collectibleId: string
 ) => {
   const timestamp = Date.now();
   const frameUrl = `${env.NEXT_PUBLIC_URL}/flex-card/collectibles/${fid}/${collectibleId}/${timestamp}`;

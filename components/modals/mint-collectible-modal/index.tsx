@@ -562,8 +562,7 @@ export default function MintCollectibleModal({
   const handleShareMint = async () => {
     const { castUrl } = mintedCollectibleFlexCardComposeCastUrl(
       state.user.fid,
-      selectedCollectible?.id.toString() ?? "",
-      selectedCollectible?.name ?? ""
+      selectedCollectible?.id.toString() ?? ""
     );
     await sdk.actions.openUrl(castUrl);
   };
