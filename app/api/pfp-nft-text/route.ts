@@ -51,7 +51,6 @@ export async function POST(request: Request) {
       status: CollectibleStatus.Description,
       pfpDescription: description,
     });
-    console.log("saved to db res", res);
 
     return NextResponse.json({
       success: true,

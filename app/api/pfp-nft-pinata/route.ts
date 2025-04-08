@@ -57,7 +57,6 @@ export async function POST(request: Request) {
       mintedImageUrl: imageMetadataUrl,
       status: CollectibleStatus.Uploaded,
     });
-    console.log("saved to db res", res);
 
     return NextResponse.json(
       {

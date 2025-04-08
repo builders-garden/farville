@@ -54,7 +54,6 @@ export async function POST(request: Request) {
         generatedTaskId: data.data.task_id,
       }
     );
-    console.log("saved to db res", res);
     //Return only the taskId to be used in the image-get route
     return NextResponse.json({
       success: true,

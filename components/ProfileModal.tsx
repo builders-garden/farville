@@ -399,7 +399,7 @@ export default function ProfileModal({
                           return collectible ? (
                             <div
                               key={index}
-                              className={`relative aspect-square w-full rounded-lg bg-gradient-to-br from-[#6D4C2C] to-[#5B4120] border-2 overflow-hidden ${
+                              className={`relative aspect-square w-full rounded-lg bg-gradient-to-br from-[#6D4C2C] to-[#5B4120] border-2 border-[#f2a311] overflow-hidden ${
                                 isCurrentUser ? "cursor-pointer group" : ""
                               }`}
                               onClick={() => setShowMintCollectible(true)}
@@ -612,20 +612,21 @@ export default function ProfileModal({
               ) : (
                 <>
                   {/* Collectibles section */}
-                  <div className="w-full flex flex-col gap-2">
-                    <h3 className="text-white/90 text-xs xs:text-sm font-bold">
-                      Achievements (
-                      {harvestHonours.totalAchievementsCompleted +
-                        (userData.specialCrops?.length || 0) +
-                        (userData.user?.mintedOG ? 1 : 0) +
-                        (userData.collectibles?.length || 0)}
-                      /
-                      {harvestHonours.totalAchievements +
-                        goldCropsData.length +
-                        collectiblesData.length +
-                        1}
-                      )
-                    </h3>
+                  <div className="w-full flex flex-col gap-4">
+                    <div className="flex w-full justify-between text-white/90 text-xs xs:text-sm font-bold">
+                      <h3>Achievements</h3>
+                      <span>
+                        {harvestHonours.totalAchievementsCompleted +
+                          (userData.specialCrops?.length || 0) +
+                          (userData.user?.mintedOG ? 1 : 0) +
+                          (userData.collectibles?.length || 0)}
+                        /
+                        {harvestHonours.totalAchievements +
+                          goldCropsData.length +
+                          collectiblesData.length +
+                          1}
+                      </span>
+                    </div>
                     <Card className="bg-gradient-to-br from-[#6D4C2C] to-[#5B4120] rounded-lg border-none">
                       <CardContent className="p-3 xs:p-4 space-y-4 xs:space-y-6">
                         {/* Special Badges */}
@@ -689,11 +690,10 @@ export default function ProfileModal({
                               Collectibles
                             </h4>
                             <p className="text-white/70 text-[9px] xs:text-xs">
-                              (
                               {userData?.collectibles?.[0].userHasCollectibles
                                 ? 1
                                 : 0}
-                              /{collectiblesData.length})
+                              /{collectiblesData.length}
                             </p>
                           </div>
                           <div className="grid grid-cols-8 gap-[0.2rem] xs:gap-1">
@@ -720,7 +720,7 @@ export default function ProfileModal({
                                   status === CollectibleStatus.Minted ? (
                                   <div
                                     key={index}
-                                    className={`relative aspect-square w-full rounded-lg bg-gradient-to-br from-[#6D4C2C] to-[#5B4120] border overflow-hidden cursor-pointer`}
+                                    className={`relative aspect-square w-full rounded-lg bg-gradient-to-br from-[#6D4C2C] to-[#5B4120] border border-[#f2a311] overflow-hidden cursor-pointer`}
                                     onClick={() => {
                                       setBadgeModalData({
                                         name: "Farville Avatar",
@@ -767,7 +767,7 @@ export default function ProfileModal({
                               Gold Crops
                             </h4>
                             <p className="text-white/70 text-[9px] xs:text-xs">
-                              ({selectedCrops.length}/{goldCropsData.length})
+                              {selectedCrops.length}/{goldCropsData.length}
                             </p>
                           </div>
                           <div className="grid grid-cols-8 gap-[0.2rem] xs:gap-1">

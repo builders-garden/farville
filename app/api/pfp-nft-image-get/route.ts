@@ -40,7 +40,6 @@ export async function POST(request: Request) {
           ],
         }
       );
-      console.log("saved to db res", res);
 
       return NextResponse.json({
         success: true,

@@ -49,7 +49,7 @@ export const CustomImage = ({
         className={cn(
           "relative rounded-2xl border-8 border-yellow-400/20 size-28 xs:size-32",
           selected && "border-green-400/80",
-          isAlone && "xs:size-40"
+          isAlone && "size-32 xs:size-44"
         )}
       >
         {selected && confirmedSelection && (

@@ -651,7 +651,7 @@ export default function MintCollectibleModal({
             duration: 0.2,
             ease: [0.4, 0, 0.2, 1], // Custom easing for smooth animation
           }}
-          className="flex flex-col gap-2 xs:gap-6 bg-gradient-to-br from-[#8B5E3C] to-[#6A4123] p-4 xs:p-6 rounded-lg max-w-sm w-full mx-4 border border-[#8B5E3C]/50 
+          className="flex flex-col gap-4 xs:gap-6 bg-gradient-to-br from-[#8B5E3C] to-[#6A4123] p-4 xs:p-6 rounded-lg max-w-sm w-full mx-4 border border-[#8B5E3C]/50 
           [box-shadow:0_0_50px_rgba(234,179,8,0.3)] relative will-change-transform overflow-y-auto max-h-[90vh] no-scrollbar"
         >
           <button
@@ -668,7 +668,7 @@ export default function MintCollectibleModal({
               Farville Avatar
             </h3>
           </div>
-          <div className="flex flex-col gap-4 my-4">
+          <div className="flex flex-col gap-4">
             <div className="relative mx-auto">
               <motion.div
                 animate={{
@@ -692,7 +692,7 @@ export default function MintCollectibleModal({
                     selectedImageUrl ?? "/images/badge/farville-avatar.png"
                   }
                   alt={`Selected Pfp Generation`}
-                  selected={true}
+                  selected={false}
                   onSelect={() => {}}
                   confirmedSelection={confirmedSelection}
                   isAlone={true}
@@ -819,7 +819,7 @@ export default function MintCollectibleModal({
 
             {/* BIG BUTTON Generate/Get Image/Select/Confirm/Mint/Share */}
             {finalTxHash ? (
-              <div className="flex flex-row w-full gap-2">
+              <div className="flex w-full gap-2">
                 <Button
                   onClick={handleShareMint}
                   className={`w-full flex py-1 px-2 xs:py-2 xs:px-4 rounded-[5px] bg-[#179ef9]/20 text-[#179ef9] hover:bg-[#179ef9]/30 transition-colors text-[9px] xs:text-xs font-medium border border-[#179ef9]/30 items-center justify-center gap-2`}
@@ -880,7 +880,7 @@ export default function MintCollectibleModal({
                   disabled
                   className="flex-1 py-2 px-4 rounded bg-[#179ef9]/20 text-[#179ef9] hover:bg-[#179ef9]/30 transition-colors text-sm font-medium border border-[#179ef9]/30 flex items-center justify-center gap-2"
                 >
-                  Generating image...
+                  Generating...
                 </motion.button>
                 <p className="text-white/70 text-[8px] text-center">
                   This may take a while &#126; 2 minutes.
@@ -931,9 +931,10 @@ export default function MintCollectibleModal({
                         }
                       }}
                       disabled={
-                        confirmedSelection
+                        isLoading ||
+                        (confirmedSelection
                           ? !canMint && txCalldata === "0x"
-                          : !canMint
+                          : !canMint)
                       }
                     >
                       {!selectedImageUrl
