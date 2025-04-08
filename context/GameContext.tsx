@@ -32,6 +32,7 @@ import { GridBulkResult } from "@/app/api/grid-bulk/utils";
 import toast from "react-hot-toast";
 import { useClaimReward } from "@/hooks/game-actions/use-claim-reward";
 import { useUpdateUserStreaks } from "@/hooks/use-user-streaks";
+import { useLocalStorage } from "usehooks-ts";
 
 // Update the OverlayType to be more flexible with parameters
 export type OverlayConfig =
@@ -194,14 +195,21 @@ export function GameProvider({
   const [toastIds, setToastIds] = useState<Map<string, string>>(new Map());
   const [newGoldCropsFound, setNewGoldCropsFound] = useState<string[]>([]);
 
+  const [dontShowAgain] = useLocalStorage(
+    `dontShowAgainModalCollectible-${1}`, // TODO: change to the collectible id
+    false
+  );
   useEffect(() => {
     if (state.collectibles.length > 0) {
       const collectible = state.collectibles.find(
         (collectible) => collectible.id === 1
       );
+      // show only if collectible is not minted
       if (
-        !collectible?.userHasCollectibles ||
-        collectible?.userHasCollectibles?.status !== CollectibleStatus.Minted
+        (!collectible?.userHasCollectibles ||
+          collectible?.userHasCollectibles?.status !==
+            CollectibleStatus.Minted) &&
+        !dontShowAgain
       ) {
         setShowMintCollectible(true);
       }

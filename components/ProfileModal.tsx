@@ -380,14 +380,15 @@ export default function ProfileModal({
                           ? state.collectibles
                           : state.collectibles?.slice(0, 4)
                         )?.map((collectible, index) => {
+                          const status =
+                            collectible.userHasCollectibles?.status;
                           const collectibleImage =
                             collectible.userHasCollectibles
-                              ? collectible.userHasCollectibles.status ===
-                                  CollectibleStatus.Minted &&
+                              ? (status === CollectibleStatus.Minted ||
+                                  status === CollectibleStatus.Uploaded) &&
                                 collectible.userHasCollectibles.mintedImageUrl
                                 ? collectible.userHasCollectibles.mintedImageUrl
-                                : collectible.userHasCollectibles.status ===
-                                  CollectibleStatus.Generated
+                                : status === CollectibleStatus.Generated
                                 ? collectible.userHasCollectibles
                                     .generatedImageUrls?.[0] ??
                                   collectible.imageUrl
@@ -409,7 +410,7 @@ export default function ProfileModal({
                                 src={collectibleImage}
                                 alt={collectible.name}
                                 fill
-                                className={`rounded-lg transition-transform duration-300 group-hover:scale-110 ${
+                                className={`rounded-md transition-transform duration-300 group-hover:scale-110 ${
                                   showMintCollectible ? "filter blur-[3px]" : ""
                                 }`}
                                 sizes="(max-width: 640px) 25vw, 20vw"
