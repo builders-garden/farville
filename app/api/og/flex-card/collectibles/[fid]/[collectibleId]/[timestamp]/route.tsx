@@ -72,8 +72,6 @@ export async function GET(
       });
     }
 
-    const user = await getUser(Number(fid));
-
     const userCollectible = await getUserCollectibleByCollectibleId(
       Number(fid),
       Number(collectibleId)
@@ -112,8 +110,6 @@ export async function GET(
 
     const badgeImage = await fetch(new URL(userCollectible.mintedImageUrl));
     const badgeImageBuffer = await badgeImage.arrayBuffer();
-
-    const username = user?.username || "Farmer";
 
     const fontData = await loadGoogleFont(
       "Press+Start+2P",
@@ -292,7 +288,7 @@ export async function GET(
                     lineHeight: "1.8",
                   }}
                 >
-                  {username} minted his custom Farville Farmer.
+                  I&apos;ve just minted my Farville Farmer!
                 </span>
                 {/* Top Leaderboard Users */}
                 <div
