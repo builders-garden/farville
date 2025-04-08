@@ -147,10 +147,15 @@ export default function RequestModal({
               request?.item && (
                 <>
                   {/* Profile Picture - Keep original size */}
-                  {request?.user?.avatarUrl && (
+                  {(request?.user?.selectedAvatarUrl ||
+                    request?.user?.avatarUrl) && (
                     <div className="relative w-16 h-16 xs:w-20 xs:h-20 mb-2 xs:mb-4">
                       <Image
-                        src={request?.user?.avatarUrl}
+                        src={
+                          request?.user?.selectedAvatarUrl ||
+                          request?.user?.avatarUrl ||
+                          ""
+                        }
                         alt={request?.user?.username || "User"}
                         fill
                         className="rounded-full object-cover"

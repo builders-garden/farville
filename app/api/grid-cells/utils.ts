@@ -1,3 +1,4 @@
+import { env } from "@/lib/env";
 import { qstashPublishJSON } from "@/lib/qstash";
 
 // export const fertilize = async (fid: number, x: number, y: number) => {
@@ -30,7 +31,7 @@ export async function sendQuestsCalculation(
   itemId?: number,
   itemAmount?: number
 ) {
-  if (process.env.NEXT_PUBLIC_URL === "http://localhost:3000") {
+  if (env.NEXT_PUBLIC_URL === "http://localhost:3000") {
     return;
   }
 
@@ -42,7 +43,7 @@ export async function sendQuestsCalculation(
   };
 
   const res = await qstashPublishJSON({
-    url: `${process.env.NEXT_PUBLIC_URL}/api/qstash/quest`,
+    url: `${env.NEXT_PUBLIC_URL}/api/qstash/quest`,
     body: questBody,
   });
 

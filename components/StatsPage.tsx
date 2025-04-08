@@ -119,7 +119,11 @@ export default function StatsPage({
                       <div className="flex items-center gap-2">
                         <div className="w-[1.6rem] h-[1.6rem] rounded-full overflow-hidden">
                           <Image
-                            src={entry.avatarUrl || "/images/avatar.png"}
+                            src={
+                              entry.selectedAvatarUrl ||
+                              entry.avatarUrl ||
+                              "/images/avatar.png"
+                            }
                             alt={entry.username}
                             width={32}
                             height={32}

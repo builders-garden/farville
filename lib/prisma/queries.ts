@@ -12,7 +12,7 @@ import {
   DbUserFrost,
   DbUserLeaderboard,
 } from "@/supabase/types";
-import { UserHasItem } from "@prisma/client";
+import { Collectibles, UserHasCollectibles, UserHasItem } from "@prisma/client";
 import { getCurrentDayStreak } from "../utils";
 
 export async function getQuestLeaderboard({
@@ -916,4 +916,25 @@ export const updateUserWeeklyScore = async (
       currentScore: 0,
     };
   }
+};
+
+export const getUserCollectibles = async (
+  fid: number
+): Promise<
+  (Collectibles & { userHasCollectibles: UserHasCollectibles | null })[]
+> => {
+  const collectibles = await prisma.collectibles.findMany({
+    include: {
+      userHasCollectibles: {
+        where: {
+          fid: fid,
+        },
+      },
+    },
+  });
+
+  return collectibles.map((collectible) => ({
+    ...collectible,
+    userHasCollectibles: collectible.userHasCollectibles[0] || null,
+  }));
 };

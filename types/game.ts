@@ -132,6 +132,15 @@ export enum QuestStatus {
   Claimed = "claimed",
 }
 
+export enum CollectibleStatus {
+  Description = "description",
+  Pending = "pending",
+  Generated = "generated",
+  Uploaded = "uploaded",
+  Minted = "minted",
+  Error = "error",
+}
+
 export enum ItemCategory {
   Crop = "crop",
   Seed = "seed",

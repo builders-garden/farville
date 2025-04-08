@@ -1,7 +1,9 @@
 "use client";
-import { FrameContext, SafeAreaInsets } from "@farcaster/frame-node";
-import sdk from "@farcaster/frame-sdk";
+
 import { useEffect, useState } from "react";
+import sdk from "@farcaster/frame-sdk";
+import { FrameContext, SafeAreaInsets } from "@farcaster/frame-node";
+import { env } from "@/lib/env";
 
 export const useFrameContext = () => {
   const [context, setContext] = useState<FrameContext | null>(null);
@@ -42,7 +44,7 @@ export const useFrameContext = () => {
         setIsSDKLoaded(true);
         if (
           !context?.client.added &&
-          !process.env.NEXT_PUBLIC_URL?.includes("localhost")
+          !env.NEXT_PUBLIC_URL.includes("localhost")
         ) {
           try {
             sdk.actions.addFrame();

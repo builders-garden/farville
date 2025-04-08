@@ -1,3 +1,5 @@
+import { env } from "@/lib/env";
+
 export interface NeynarUser {
   fid: string;
   username: string;
@@ -12,7 +14,7 @@ export const fetchUser = async (fid: string): Promise<NeynarUser> => {
     `https://api.neynar.com/v2/farcaster/user/bulk?fids=${fid}`,
     {
       headers: {
-        "x-api-key": process.env.NEYNAR_API_KEY!,
+        "x-api-key": env.NEYNAR_API_KEY,
       },
     }
   );
@@ -38,7 +40,7 @@ export const fetchUsersFollowedBy = async (
       }&sort_type=${sortType}`,
       {
         headers: {
-          "x-api-key": process.env.NEYNAR_API_KEY!,
+          "x-api-key": env.NEYNAR_API_KEY,
         },
       }
     );

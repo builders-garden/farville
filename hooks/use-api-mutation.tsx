@@ -36,6 +36,7 @@ export const useApiMutation = <TData, TVariables = unknown>(
       });
 
       if (!response.ok) {
+        console.error("API Error", response);
         throw new Error(`API Error: ${response.status}`);
       }
 

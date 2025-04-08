@@ -20,13 +20,35 @@ import {
   getUserPosition,
   getUsersByXp,
 } from "./prisma/queries";
+import { encodeFunctionData, Address, Hex } from "viem";
+import { PFP_NFT_ABI } from "./contracts/pfp-nft/abi";
+import { env } from "@/lib/env";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+export const formatNumberWithSuffix = (value: number, decimals = 2): string => {
+  if (value === null || value === undefined || isNaN(value)) {
+    return "0";
+  }
+
+  // For values less than 1000, just return the number with fixed decimals
+  if (Math.abs(value) < 1000) {
+    return value.toFixed(decimals);
+  }
+
+  // For thousands (k)
+  if (Math.abs(value) < 1000000) {
+    return (value / 1000).toFixed(decimals) + "k";
+  }
+
+  // For millions (M)
+  return (value / 1000000).toFixed(decimals) + "M";
+};
+
 export const warpcastComposeCastUrl = () => {
-  const frameUrl = `${process.env.NEXT_PUBLIC_URL}`;
+  const frameUrl = env.NEXT_PUBLIC_URL;
   const text = `I'm tired of touching grass IRL, and I can't wait to touch PIXEL grass in /farville...\n\nBuild my dream farm and grow quirky crops. It's honest work, but way more fun than real farming!🧑‍🌾`;
   const urlFriendlyText = encodeURIComponent(text);
   return `https://warpcast.com/~/compose?text=${urlFriendlyText}&embeds[]=${encodeURIComponent(
@@ -39,7 +61,7 @@ export const requestItemComposeCastUrl = (
   item: DbItem,
   quantity: number
 ) => {
-  const frameUrl = `${process.env.NEXT_PUBLIC_URL}/requests/${requestId}`;
+  const frameUrl = `${env.NEXT_PUBLIC_URL}/requests/${requestId}`;
   const text = `I'm looking for ${quantity} ${item.name} on /farville 🧑‍🌾`;
   const urlFriendlyText = encodeURIComponent(text);
   return {
@@ -55,7 +77,7 @@ export const shareWelcomeLeaguesComposeCastUrl = (
   league: number
 ) => {
   const timestamp = Date.now();
-  const frameUrl = `${process.env.NEXT_PUBLIC_URL}/flex-card/welcome-leagues/${fid}/${timestamp}`;
+  const frameUrl = `${env.NEXT_PUBLIC_URL}/flex-card/welcome-leagues/${fid}/${timestamp}`;
 
   const text = `Who knew running a farm could be this competitive? 🤯\n\nSee you in the ${
     league === 1 ? "Wood" : league === 2 ? "Iron" : "Gold"
@@ -76,7 +98,7 @@ export const shareWeeklyLeaderboardPositionComposeCastUrl = (
   currentWeek: boolean
 ) => {
   const timestamp = Date.now();
-  const frameUrl = `${process.env.NEXT_PUBLIC_URL}/flex-card/leaderboard/${fid}/${timestamp}/weekly?currentWeek=${currentWeek}`;
+  const frameUrl = `${env.NEXT_PUBLIC_URL}/flex-card/leaderboard/${fid}/${timestamp}/weekly?currentWeek=${currentWeek}`;
 
   const text = `Yo farmers! Check my ${
     currentWeek ? "current" : "last"
@@ -98,7 +120,7 @@ export const streakFlexCardComposeCastUrl = (
   streakNumber: number
 ) => {
   const timestamp = Date.now();
-  const frameUrl = `${process.env.NEXT_PUBLIC_URL}/flex-card/streak/${fid}/${timestamp}`;
+  const frameUrl = `${env.NEXT_PUBLIC_URL}/flex-card/streak/${fid}/${timestamp}`;
   const text = `yo farmers, look here! my /farville streak is ${streakNumber} 🔥 LFF 🚜💨🚜💨`;
   const urlFriendlyText = encodeURIComponent(text);
   return {
@@ -111,8 +133,24 @@ export const streakFlexCardComposeCastUrl = (
 
 export const mintedOgFlexCardComposeCastUrl = (fid: number) => {
   const timestamp = Date.now();
-  const frameUrl = `${process.env.NEXT_PUBLIC_URL}/flex-card/minted-og/${fid}/${timestamp}`;
+  const frameUrl = `${env.NEXT_PUBLIC_URL}/flex-card/minted-og/${fid}/${timestamp}`;
   const text = `I just minted my Farville OG NFT!\n\nbrum brum 🚜💨`;
+  const urlFriendlyText = encodeURIComponent(text);
+  return {
+    frameUrl,
+    castUrl: `https://warpcast.com/~/compose?text=${urlFriendlyText}&embeds[]=${encodeURIComponent(
+      frameUrl
+    )}&channelKey=farville`,
+  };
+};
+
+export const mintedCollectibleFlexCardComposeCastUrl = (
+  fid: number,
+  collectibleId: string
+) => {
+  const timestamp = Date.now();
+  const frameUrl = `${env.NEXT_PUBLIC_URL}/flex-card/collectibles/${fid}/${collectibleId}/${timestamp}`;
+  const text = `mama, look — i’m a /farville farmer now!\n\nbrum brum 🚜💨`;
   const urlFriendlyText = encodeURIComponent(text);
   return {
     frameUrl,
@@ -124,7 +162,7 @@ export const mintedOgFlexCardComposeCastUrl = (fid: number) => {
 
 export const goldCropFlexCardComposeCastUrl = (fid: number, crop: string) => {
   const timestamp = Date.now();
-  const frameUrl = `${process.env.NEXT_PUBLIC_URL}/flex-card/gold-crop/${fid}/${timestamp}?crop=${crop}`;
+  const frameUrl = `${env.NEXT_PUBLIC_URL}/flex-card/gold-crop/${fid}/${timestamp}?crop=${crop}`;
   const text = `I just harvested a new gold crop!\n\nbrum brum 🚜💨`;
   const urlFriendlyText = encodeURIComponent(text);
   return {
@@ -142,7 +180,7 @@ export const achievementBadgeFlexCardComposeCastUrl = (
   badgeTitle: string
 ) => {
   const timestamp = Date.now();
-  const frameUrl = `${process.env.NEXT_PUBLIC_URL}/flex-card/achievement/${fid}/${timestamp}?crop=${crop}&step=${step}`;
+  const frameUrl = `${env.NEXT_PUBLIC_URL}/flex-card/achievement/${fid}/${timestamp}?crop=${crop}&step=${step}`;
   const text = `I've reached the ${badgeTitle} level for the ${crop} crop!\n\nbrum brum 🚜💨`;
   const urlFriendlyText = encodeURIComponent(text);
   return {
@@ -160,7 +198,7 @@ export const leaderboardFlexCardComposeCastUrl = (
 ) => {
   const timestamp = Date.now();
   const frameUrl = `${
-    process.env.NEXT_PUBLIC_URL
+    env.NEXT_PUBLIC_URL
   }/flex-card/leaderboard/${fid}/${timestamp}${
     isFriends ? "" : "/short"
   }?friends=${isFriends}&quests=${type === "quests"}`;
@@ -489,4 +527,25 @@ export const getThisWeekMonday = () => {
   );
 
   return monday;
+};
+
+export const getPfpNftTxCalldata = (params: {
+  address: Address;
+  fid: bigint;
+  priceInUSD: number;
+  pinataMetadataCID: string;
+  backendSignature: Hex;
+}) => {
+  const priceInUSDCbigint = BigInt(params.priceInUSD * 10 ** 6);
+  return encodeFunctionData({
+    abi: PFP_NFT_ABI,
+    functionName: "mint",
+    args: [
+      params.address,
+      params.fid,
+      priceInUSDCbigint,
+      params.pinataMetadataCID,
+      params.backendSignature,
+    ],
+  });
 };

@@ -186,12 +186,16 @@ export default function Toolbar({
             )}
             <div className="relative w-6 h-6 xs:w-10 xs:h-10">
               <Image
-                src={state.user?.avatarUrl || "/images/icons/farmer.png"}
+                src={
+                  state.user?.selectedAvatarUrl ||
+                  state.user?.avatarUrl ||
+                  "/images/icons/farmer.png"
+                }
                 alt="Profile"
                 fill
                 sizes="48"
                 className={
-                  state.user?.avatarUrl
+                  state.user?.selectedAvatarUrl || state.user?.avatarUrl
                     ? "rounded-full w-[36px] h-[36px] object-cover"
                     : "rounded-md"
                 }
