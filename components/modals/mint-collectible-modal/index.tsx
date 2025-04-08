@@ -192,9 +192,17 @@ export default function MintCollectibleModal({
     setIsLoading,
   });
 
+  const handleSuccessMint = (hash: string | null) => {
+    setFinalTxHash(hash);
+    if (hash) {
+      setShowConfetti(true);
+    }
+  };
+
   // Step 6: Update mint pfp user with tx hash
   const { mutate: updateMintPfpUser } = useUpdateMintPfpUser({
     handleUpdateStateCollectibles,
+    handleSuccessMint,
   });
 
   // Step 7: Update user with selected collectible as avatar
@@ -538,8 +546,6 @@ export default function MintCollectibleModal({
       collectibleId: selectedCollectible?.id ?? 1,
       txHash: e.txHash,
     });
-    setFinalTxHash(e.txHash);
-    setShowConfetti(true);
   };
   const handlePaymentBounced = (e: PaymentBouncedEvent) => {
     console.error("Payment bounced", e);

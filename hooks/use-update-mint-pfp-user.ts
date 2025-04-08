@@ -1,16 +1,15 @@
-import { useGame } from "@/context/GameContext";
 import { useApiMutation } from "./use-api-mutation";
 import { DbUserHasCollectible } from "@/supabase/types";
 
 export const useUpdateMintPfpUser = ({
   handleUpdateStateCollectibles,
+  handleSuccessMint,
 }: {
   handleUpdateStateCollectibles: (
     userHasCollectibles: DbUserHasCollectible
   ) => void;
+  handleSuccessMint: (hash: string | null) => void;
 }) => {
-  const { updateUser } = useGame();
-
   return useApiMutation({
     url: () => `/api/users/me/mint-pfp`,
     method: "POST",
@@ -24,10 +23,11 @@ export const useUpdateMintPfpUser = ({
       collectibleId,
       txHash,
     }),
-    onSuccess: (data: { userHasCollectible: DbUserHasCollectible }) => {
-      // update the user mintedPfp to true
-      updateUser({ mintedOG: true });
-      handleUpdateStateCollectibles(data.userHasCollectible);
+    onSuccess: (data: {
+      data: { userHasCollectible: DbUserHasCollectible };
+    }) => {
+      handleUpdateStateCollectibles(data.data.userHasCollectible);
+      handleSuccessMint(data.data.userHasCollectible.txHash);
     },
   });
 };
