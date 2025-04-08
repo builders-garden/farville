@@ -80,6 +80,8 @@ export default function ProfileModal({
     (item) => item.category === "special-crop"
   );
 
+  const collectiblesData = state.collectibles;
+
   useEffect(() => {
     if (isCurrentUser) {
       setSelectedCrops(
@@ -612,13 +614,15 @@ export default function ProfileModal({
                   {/* Collectibles section */}
                   <div className="w-full flex flex-col gap-2">
                     <h3 className="text-white/90 text-xs xs:text-sm font-bold">
-                      Collectibles (
+                      Achievements (
                       {harvestHonours.totalAchievementsCompleted +
                         (userData.specialCrops?.length || 0) +
-                        (userData.user?.mintedOG ? 1 : 0)}
+                        (userData.user?.mintedOG ? 1 : 0) +
+                        (userData.collectibles?.length || 0)}
                       /
                       {harvestHonours.totalAchievements +
                         goldCropsData.length +
+                        collectiblesData.length +
                         1}
                       )
                     </h3>
@@ -675,6 +679,84 @@ export default function ProfileModal({
                                 </div>
                               )}
                             </div>
+                          </div>
+                        </div>
+
+                        {/* Collectibles */}
+                        <div className="flex flex-col gap-1 xs:gap-2">
+                          <div className="flex flex-row justify-between items-center">
+                            <h4 className="text-white/90 text-[9px] xs:text-xs font-bold">
+                              Collectibles
+                            </h4>
+                            <p className="text-white/70 text-[9px] xs:text-xs">
+                              (
+                              {userData?.collectibles?.[0].userHasCollectibles
+                                ? 1
+                                : 0}
+                              /{collectiblesData.length})
+                            </p>
+                          </div>
+                          <div className="grid grid-cols-8 gap-[0.2rem] xs:gap-1">
+                            {userData.collectibles?.map(
+                              (collectible, index) => {
+                                const status =
+                                  collectible.userHasCollectibles?.status;
+                                const collectibleImage =
+                                  collectible.userHasCollectibles
+                                    ? (status === CollectibleStatus.Minted ||
+                                        status ===
+                                          CollectibleStatus.Uploaded) &&
+                                      collectible.userHasCollectibles
+                                        .mintedImageUrl
+                                      ? collectible.userHasCollectibles
+                                          .mintedImageUrl
+                                      : status === CollectibleStatus.Generated
+                                      ? collectible.userHasCollectibles
+                                          .generatedImageUrls?.[0] ??
+                                        collectible.imageUrl
+                                      : collectible.imageUrl
+                                    : collectible.imageUrl;
+                                return status &&
+                                  status === CollectibleStatus.Minted ? (
+                                  <div
+                                    key={index}
+                                    className={`relative aspect-square w-full rounded-lg bg-gradient-to-br from-[#6D4C2C] to-[#5B4120] border overflow-hidden cursor-pointer`}
+                                    onClick={() => {
+                                      setBadgeModalData({
+                                        name: "Farville Avatar",
+                                        title: `Farville Farmer #${userData.user?.fid}`,
+                                        description: `This is the custom Farville avatar of ${userData.user?.username}.`,
+                                        badgeUrl: collectibleImage,
+                                        type: "collectible",
+                                      });
+                                    }}
+                                  >
+                                    <Image
+                                      src={collectibleImage}
+                                      alt={collectible.name}
+                                      fill
+                                      className={`rounded-md transition-transform duration-300 ${
+                                        isCurrentUser ? "group" : ""
+                                      }`}
+                                      sizes="(max-width: 640px) 25vw, 20vw"
+                                    />
+                                  </div>
+                                ) : (
+                                  <div
+                                    key={index}
+                                    className="relative aspect-square w-full bg-[#7E4E31] rounded-lg flex items-center justify-center opacity-50"
+                                  >
+                                    <Image
+                                      src={`/images/profile/question-mark-yellow.png`}
+                                      alt="Yellow question mark"
+                                      width={14}
+                                      height={14}
+                                      className="w-[14px] h-[14px] xs:w-[18px] xs:h-[18px]"
+                                    />
+                                  </div>
+                                );
+                              }
+                            )}
                           </div>
                         </div>
 
@@ -888,7 +970,7 @@ export default function ProfileModal({
                   initial={{ y: 10, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
                   transition={{ delay: 0.3, duration: 0.5 }}
-                  className="text-white/90 text-[10px] xs:text-xs mt-2 xs:mt-4 mb-6 xs:mb-12 text-center px-2"
+                  className="text-white/90 text-[10px] xs:text-xs mt-2 xs:mt-4 mb-4 xs:mb-12 text-center px-2"
                 >
                   {badgeModalData.description}
                 </motion.p>

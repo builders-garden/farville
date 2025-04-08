@@ -61,6 +61,10 @@ export interface DbUserHasCollectible {
   updatedAt: string;
 }
 
+export type UserCompleteCollectible = DbCollectible & {
+  userHasCollectibles: DbUserHasCollectible | null;
+};
+
 export interface DbReferrals {
   id: number;
   fid: number;
