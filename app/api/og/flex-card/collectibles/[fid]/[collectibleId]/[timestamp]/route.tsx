@@ -94,8 +94,8 @@ export async function GET(
     );
     const bgImage = await bgImageRes.arrayBuffer();
 
-    // const badgeImage = await fetch(new URL(userCollectible.mintedImageUrl));
-    // const badgeImageBuffer = await badgeImage.arrayBuffer();
+    const badgeImage = await fetch(new URL(userCollectible.mintedImageUrl));
+    const badgeImageBuffer = await badgeImage.arrayBuffer();
 
     const fontData = await loadGoogleFont(
       "Press+Start+2P",
@@ -212,7 +212,7 @@ export async function GET(
                   {
                     <img
                       src={`data:image/png;base64,${Buffer.from(
-                        userCollectible.mintedImageUrl
+                        badgeImageBuffer
                       ).toString("base64")}`}
                       width="100%"
                       height="100%"

@@ -824,7 +824,8 @@ export default function MintCollectibleModal({
                     <Button
                       onClick={handleSetCollectibleAsAvatar}
                       disabled={isLoading || updatedUserAvatar}
-                      className={`w-full flex py-1 px-2 xs:py-2 xs:px-4 rounded-[5px] bg-[#179ef9]/20 text-[#179ef9] hover:bg-[#179ef9]/30 transition-colors text-[9px] xs:text-xs font-medium border border-[#179ef9]/30 items-center justify-center gap-2`}
+                      variant="outline"
+                      className={`w-full flex py-1 px-2 xs:py-2 xs:px-4 rounded-[5px] bg-transparent text-yellow-500 hover:bg-yellow-500/10 transition-colors text-[9px] xs:text-xs font-medium border border-yellow-500/30 items-center justify-center gap-2 hover:text-yellow-500/80`}
                     >
                       {isLoading
                         ? "Setting..."
@@ -838,7 +839,7 @@ export default function MintCollectibleModal({
                   <Button
                     onClick={handleDownloadImage}
                     variant="outline"
-                    className="w-fit flex py-1 px-2 xs:py-2 xs:px-4 rounded-[5px] bg-transparent hover:bg-[#179ef9]/10 border-2 border-[#179ef9]/20 text-[#179ef9] hover:text-[#179ef9]/80 text-[9px] xs:text-xs font-medium items-center justify-center gap-2"
+                    className="w-fit flex py-1 px-2 xs:py-2 xs:px-4 rounded-[5px] bg-transparent hover:bg-yellow-500/10 border-2 border-yellow-500/20 text-yellow-500 hover:text-yellow-500/80 text-[9px] xs:text-xs font-medium items-center justify-center gap-2"
                   >
                     <Download
                       size={18}
