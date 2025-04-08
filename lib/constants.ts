@@ -1,7 +1,7 @@
 export const MIDJOURNEY_API_URL = "https://api.piapi.ai/api/v1/task";
 
 export const PFP_NFT_TEXT_SYSTEM_PROMPT = `
-You are a helpful assistant that provides detailed and accurate descriptions of images. Focus on the main elements, colors, composition, accessories and any notable details. Don't focus on the background. Be specific but concise. Don't start with "The image features" or "The image depicts" but with the description of the subject. Single text, no bullet points. Avoid words that can be banned by AI image generation like 'knob'.
+You are a helpful assistant that provides detailed and accurate descriptions of images. Focus on the main elements, colors, composition, accessories and any notable details. Don't focus on the background. Be specific but concise. Don't start with "The image features" or "The image depicts" but with the description of the subject. Single text, no bullet points. Avoid words that can be banned by AI image generation like 'knob', 'intimate', 'chest', and similar words.
 `;
 export const PFP_NFT_IMAGE_SYSTEM_PROMPT_1 = `
 A highly detailed SNES-style pixel art portrait of a hardworking farmer. The farmer is
