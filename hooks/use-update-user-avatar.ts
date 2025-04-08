@@ -18,6 +18,7 @@ export const useUpdateUserAvatar = ({
     }),
     method: "POST",
     onSuccess: (data: { success: boolean; data: { user: DbUser } }) => {
+      console.log("data on update user avatar", data);
       setUpdatedUserAvatar(true);
       setIsLoading(false);
       refetchUser();

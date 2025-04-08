@@ -1590,10 +1590,21 @@ export const updateUserCollectibleAsAvatar = async (
   if (error) throw error;
   if (!data) throw new Error("Collectible not found");
 
+  if (!data.mintedImageUrl) throw new Error("User minted image not found");
+  // change image url from https://gateway.pinata.cloud/ipfs/<CID> to https://<CID>.ipfs.dweb.link
+  let imageUrl = data.mintedImageUrl;
+  if (imageUrl.startsWith("https://gateway.pinata.cloud/ipfs/")) {
+    imageUrl = imageUrl.replace(
+      "https://gateway.pinata.cloud/ipfs/",
+      "https://"
+    );
+    imageUrl += ".ipfs.dweb.link";
+  }
+
   const { data: userData, error: updateError } = await supabase
     .from("users")
     .update({
-      selectedAvatarUrl: data.mintedImageUrl,
+      selectedAvatarUrl: imageUrl,
     })
     .eq("fid", fid)
     .select()
