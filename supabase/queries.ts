@@ -1613,3 +1613,17 @@ export const updateUserCollectibleAsAvatar = async (
   if (updateError) throw updateError;
   return userData;
 };
+
+export const resetUserAvatar = async (fid: number): Promise<DbUser> => {
+  const { data, error } = await supabase
+    .from("users")
+    .update({
+      selectedAvatarUrl: null,
+    })
+    .eq("fid", fid)
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+};

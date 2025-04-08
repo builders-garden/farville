@@ -1,6 +1,5 @@
 import { Dispatch, SetStateAction } from "react";
 import { useApiMutation } from "./use-api-mutation";
-import { DbUser } from "@/supabase/types";
 
 export const useUpdateUserAvatar = ({
   setIsLoading,
@@ -13,12 +12,18 @@ export const useUpdateUserAvatar = ({
 }) => {
   return useApiMutation({
     url: () => `/api/users/me/collectibles/avatar`,
-    body: ({ collectibleId }: { collectibleId: string }) => ({
+    body: ({
       collectibleId,
+      reset,
+    }: {
+      collectibleId?: string;
+      reset?: boolean;
+    }) => ({
+      collectibleId,
+      reset,
     }),
     method: "POST",
-    onSuccess: (data: { success: boolean; data: { user: DbUser } }) => {
-      console.log("data on update user avatar", data);
+    onSuccess: () => {
       setUpdatedUserAvatar(true);
       setIsLoading(false);
       refetchUser();

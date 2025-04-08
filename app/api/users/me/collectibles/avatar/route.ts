@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { updateUserCollectibleAsAvatar } from "@/supabase/queries";
+import {
+  resetUserAvatar,
+  updateUserCollectibleAsAvatar,
+} from "@/supabase/queries";
 
 export async function POST(req: NextRequest) {
   try {
@@ -8,7 +11,19 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { collectibleId } = await req.json();
+    const { collectibleId, reset } = await req.json();
+
+    // reset is optional, and deletes the field in the user record
+    if (reset) {
+      const newUser = await resetUserAvatar(Number(fid));
+      return NextResponse.json({
+        success: true,
+        data: {
+          user: newUser,
+        },
+      });
+    }
+
     if (isNaN(Number(collectibleId))) {
       return NextResponse.json(
         { error: "Invalid parameters" },

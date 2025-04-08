@@ -16,12 +16,14 @@ export const CustomImage = ({
   selected,
   onSelect,
   confirmedSelection,
+  isAlone,
 }: {
   imageUrl: string;
   alt: string;
   selected: boolean;
   onSelect: () => void;
   confirmedSelection: boolean;
+  isAlone: boolean;
 }) => {
   return (
     <div
@@ -46,7 +48,8 @@ export const CustomImage = ({
         }}
         className={cn(
           "relative rounded-2xl border-8 border-yellow-400/20 size-28 xs:size-32",
-          selected && "border-green-400/80"
+          selected && "border-green-400/80",
+          isAlone && "xs:size-40"
         )}
       >
         {selected && confirmedSelection && (

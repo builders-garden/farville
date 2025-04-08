@@ -578,13 +578,28 @@ export default function MintCollectibleModal({
   const handleSetCollectibleAsAvatar = () => {
     if (updatedUserAvatar) return;
     setIsLoading(true);
-    try {
-      updateUserAvatar({
-        collectibleId: selectedCollectible?.id.toString() ?? "1",
-      });
-    } catch (error) {
-      console.error(error);
-      setErrorMessage("Failed to set collectible as avatar. Please try again.");
+    if (!state.user.selectedAvatarUrl) {
+      try {
+        updateUserAvatar({
+          collectibleId: selectedCollectible?.id.toString() ?? "1",
+        });
+      } catch (error) {
+        console.error(error);
+        setErrorMessage(
+          "Failed to set collectible as avatar. Please try again."
+        );
+      }
+    } else {
+      try {
+        updateUserAvatar({
+          reset: true,
+        });
+      } catch (error) {
+        console.error(error);
+        setErrorMessage(
+          "Failed to reset collectible as avatar. Please try again."
+        );
+      }
     }
   };
 
@@ -606,6 +621,11 @@ export default function MintCollectibleModal({
       setErrorMessage("Failed to download image. Please try again.");
     }
   };
+
+  const isFinalState =
+    finalTxHash ||
+    selectedCollectible?.userHasCollectibles?.status ===
+      CollectibleStatus.Uploaded;
 
   return (
     <>
@@ -631,7 +651,7 @@ export default function MintCollectibleModal({
             duration: 0.2,
             ease: [0.4, 0, 0.2, 1], // Custom easing for smooth animation
           }}
-          className="flex flex-col gap-2 bg-gradient-to-br from-[#8B5E3C] to-[#6A4123] p-4 xs:p-6 rounded-lg max-w-sm w-full mx-4 border border-[#8B5E3C]/50 
+          className="flex flex-col gap-2 xs:gap-6 bg-gradient-to-br from-[#8B5E3C] to-[#6A4123] p-4 xs:p-6 rounded-lg max-w-sm w-full mx-4 border border-[#8B5E3C]/50 
           [box-shadow:0_0_50px_rgba(234,179,8,0.3)] relative will-change-transform overflow-y-auto max-h-[90vh] no-scrollbar"
         >
           <button
@@ -644,7 +664,7 @@ export default function MintCollectibleModal({
           </button>
 
           <div className="flex flex-row items-center">
-            <h3 className={`text-white/90 font-bold text-lg m-auto`}>
+            <h3 className={`text-white/90 font-bold text-md xs:text-lg m-auto`}>
               Farville Avatar
             </h3>
           </div>
@@ -665,9 +685,7 @@ export default function MintCollectibleModal({
                   transform: "translateX(-50%) translateY(60%)",
                 }}
               />
-              {finalTxHash ||
-              selectedCollectible?.userHasCollectibles?.status ===
-                CollectibleStatus.Uploaded ? (
+              {isFinalState ? (
                 <CustomImage
                   key={finalTxHash}
                   imageUrl={
@@ -677,6 +695,7 @@ export default function MintCollectibleModal({
                   selected={true}
                   onSelect={() => {}}
                   confirmedSelection={confirmedSelection}
+                  isAlone={true}
                 />
               ) : midjourneyImageUrls ? (
                 <div className="grid grid-cols-2 gap-x-4 gap-y-2">
@@ -688,6 +707,7 @@ export default function MintCollectibleModal({
                       selected={selectedImageUrl === imageUrl}
                       onSelect={() => setSelectedImageUrl(imageUrl)}
                       confirmedSelection={confirmedSelection}
+                      isAlone={false}
                     />
                   ))}
                 </div>
@@ -732,20 +752,35 @@ export default function MintCollectibleModal({
             </div>
           </div>
           <div className="flex flex-col gap-2">
-            <span className="text-yellow-300/90 text-[10px] text-center">
-              Pick your farmer. Make it yours.
-            </span>
-            <Separator className="w-[80%] m-auto bg-yellow-500/50" />
-            <span className="text-white/70 text-[8px] text-center">
-              Choose a custom avatar to represent you and climb the leaderboards
-              in style.
-            </span>
+            {isFinalState ? (
+              <>
+                <span className="text-yellow-300/90 text-[10px] text-center">
+                  Mama I&apos;m a Farmer!
+                </span>
+                <Separator className="w-[80%] m-auto bg-yellow-500/50" />
+                <span className="text-white/70 text-[8px] text-center">
+                  Show the world your Farville avatar!
+                </span>
+              </>
+            ) : (
+              <>
+                <span className="text-yellow-300/90 text-[10px] text-center">
+                  Pick your farmer. Make it yours.
+                </span>
+                <Separator className="w-[80%] m-auto bg-yellow-500/50" />
+                <span className="text-white/70 text-[8px] text-center">
+                  Choose a custom avatar to represent you and climb the
+                  leaderboards in style.
+                </span>
+              </>
+            )}
             {errorMessage && (
               <span className="bg-red-500 text-red-200 text-[8px] p-2 rounded">
                 {errorMessage}
               </span>
             )}
-            {address !== undefined &&
+            {!isFinalState &&
+              address !== undefined &&
               !!tokenBalancesData &&
               (!hasEnoughEthBalance || !hasEnoughUSDBalance) && (
                 <span className="bg-red-500 text-red-200 text-[8px] p-2 rounded">
@@ -775,8 +810,10 @@ export default function MintCollectibleModal({
                 {isLoading
                   ? "Setting..."
                   : updatedUserAvatar
-                  ? "New avatar set!"
-                  : "Select as avatar"}
+                  ? "Done!"
+                  : state.user.selectedAvatarUrl
+                  ? "Use Warpcast PFP"
+                  : "Set as avatar"}
               </Button>
             ) : null}
 
@@ -785,17 +822,23 @@ export default function MintCollectibleModal({
               <div className="flex flex-row w-full gap-2">
                 <Button
                   onClick={handleShareMint}
-                  className={`w-full flex py-2 px-4 rounded-[5px] bg-[#179ef9]/20 text-[#179ef9] hover:bg-[#179ef9]/30 transition-colors text-sm font-medium border border-[#179ef9]/30 items-center justify-center gap-2`}
+                  className={`w-full flex py-1 px-2 xs:py-2 xs:px-4 rounded-[5px] bg-[#179ef9]/20 text-[#179ef9] hover:bg-[#179ef9]/30 transition-colors text-[9px] xs:text-xs font-medium border border-[#179ef9]/30 items-center justify-center gap-2`}
                 >
-                  <Share2 size={18} className="w-4 h-4 xs:w-5 xs:h-5" />
+                  <Share2
+                    size={18}
+                    className="w-3 h-3 xs:w-4 xs:h-4"
+                  />
                   Share
                 </Button>
                 <Button
                   onClick={handleDownloadImage}
                   variant="outline"
-                  className="w-full flex py-2 px-4 rounded-[5px] bg-transparent hover:bg-[#179ef9]/10 border-2 border-[#179ef9]/20 text-[#179ef9] hover:text-[#179ef9]/80 text-sm font-medium items-center justify-center gap-2"
+                  className="w-full flex py-1 px-2 xs:py-2 xs:px-4 rounded-[5px] bg-transparent hover:bg-[#179ef9]/10 border-2 border-[#179ef9]/20 text-[#179ef9] hover:text-[#179ef9]/80 text-[9px] xs:text-xs font-medium items-center justify-center gap-2"
                 >
-                  <Download size={18} className="w-4 h-4 xs:w-5 xs:h-5" />
+                  <Download
+                    size={18}
+                    className="w-3 h-3 xs:w-4 xs:h-4"
+                  />
                   Download
                 </Button>
               </div>
