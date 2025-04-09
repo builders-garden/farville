@@ -1,19 +1,19 @@
 
-//import { StandardMerkleTree } from "@openzeppelin/merkle-tree";
-//import { merkleValues } from "../../../lib/contracts/og-nft/merkle-root/merkleValues";
+import { StandardMerkleTree } from "@openzeppelin/merkle-tree";
+import { merkleValues } from "../../../lib/contracts/og-nft/merkle-root/merkleValues";
 import { NextResponse } from "next/server";
-//import fs from "fs";
-//import path from "path";
+import fs from "fs";
+import path from "path";
 
 export async function GET() {
-  
+  /*
   return NextResponse.json({
     success: true,
     message: "Merkle tree generated successfully",
   });
-}
+}*/
   
-  /*
+  
   try {
     // Generate the Merkle tree
     const tree = StandardMerkleTree.of(merkleValues, ["address", "uint256"]);
@@ -42,4 +42,3 @@ export async function GET() {
     );
   }
 }
-*/
