@@ -8,12 +8,31 @@ import { updateUserCollectible } from "@/supabase/queries";
 import { CollectibleStatus } from "@/types/game";
 import { NextResponse } from "next/server";
 
+const replacements = {
+  wound: "scar",
+  chest: "upper torso",
+  blood: "red pigment",
+  kill: "defeat",
+  bare: "uncovered",
+  barefoot: "unshod",
+  intimate: "affectionate",
+  bleed: "leak",
+  unclothed: "uncovered",
+};
+
 export async function POST(request: Request) {
   try {
     const { prompt, fid, collectibleId } = await request.json();
 
     if (!prompt || !fid || !collectibleId) {
       return NextResponse.json({ error: "Invalid arguments" }, { status: 400 });
+    }
+
+    let cleanedPrompt = prompt;
+
+    for (const [bannedWord, replacement] of Object.entries(replacements)) {
+      const regex = new RegExp(`\\b${bannedWord}\\b`, "gi");
+      cleanedPrompt = cleanedPrompt.replace(regex, replacement);
     }
 
     const response = await fetch(MIDJOURNEY_API_URL, {
@@ -29,7 +48,7 @@ export async function POST(request: Request) {
           service_mode: "private",
         },
         input: {
-          prompt: `${PFP_NFT_IMAGE_SYSTEM_PROMPT_1} ${prompt} ${PFP_NFT_IMAGE_SYSTEM_PROMPT_2} --v 6.1 --style raw --stylize 100`,
+          prompt: `${PFP_NFT_IMAGE_SYSTEM_PROMPT_1} ${cleanedPrompt} ${PFP_NFT_IMAGE_SYSTEM_PROMPT_2} --v 6.1 --style raw --stylize 100`,
           aspect_ratio: "1:1",
           process_mode: "turbo",
           skip_prompt_check: false,
