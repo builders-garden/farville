@@ -806,9 +806,9 @@ export default function MintCollectibleModal({
                     collectibleId: selectedCollectible?.id ?? 1,
                   });
                 }}
-                className="w-full py-1 px-2 text-[10px] bg-red-500/10 text-red-400 hover:bg-red-500/20 border border-red-400/30"
+                className="w-full py-1 px-2 text-sm bg-red-500/10 text-red-400 hover:bg-red-500/20 border border-red-400/30"
               >
-                Retry generating description
+                Retry
               </Button>
             ) : null}
             {!isFinalState &&
