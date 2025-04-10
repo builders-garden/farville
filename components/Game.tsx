@@ -20,10 +20,10 @@ export default function Game({
 
   if (!context && isSDKLoaded && !isLoading) {
     return (
-      <main className="h-screen w-screen overflow-hidden bg-[#1E3320] bg-[conic-gradient(#265B3B_90deg,_#396549_90deg_180deg,_#265B3B_180deg_270deg,_#396549_270deg)] bg-[length:144px_144px]">
-        <div className="flex items-center justify-center min-h-screen">
-          <div className="flex flex-row items-center gap-16 p-8">
-            <div className="relative w-[300px] h-[600px] rounded-[40px] bg-black border-2 border-zinc-900 shadow-2xl transition-transform duration-300 hover:scale-105">
+      <main className="min-h-screen w-screen overflow-y-auto lg:overflow-hidden bg-[#1E3320] bg-[conic-gradient(#265B3B_90deg,_#396549_90deg_180deg,_#265B3B_180deg_270deg,_#396549_270deg)] bg-[length:144px_144px]">
+        <div className="flex items-center justify-center min-h-screen py-8">
+          <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-16 p-4 lg:p-8 max-w-7xl mx-auto">
+            <div className="lg:block hidden relative w-[300px] h-[600px] rounded-[40px] bg-black border-2 border-zinc-900 shadow-2xl transition-transform duration-300 hover:scale-105">
               <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/3 h-[30px] bg-black rounded-b-[20px] border-x-2 border-b-2 border-zinc-900" />
               <div className="absolute inset-3 rounded-[32px] overflow-hidden bg-gray-800">
                 <video
@@ -35,9 +35,23 @@ export default function Game({
                 />
               </div>
             </div>
-            <div className="flex flex-col gap-4">
-              <div className="flex flex-col justify-between gap-8 bg-white rounded-3xl p-8 shadow-lg w-[500px] h-[500px]">
-                <div className="flex flex-col gap-4 just">
+            <div className="flex flex-col gap-4 w-full lg:w-auto px-4 lg:px-0">
+              <div className="flex flex-col justify-between gap-8 bg-white rounded-3xl p-4 lg:p-8 shadow-lg w-full lg:w-[500px] h-auto lg:h-[500px]">
+                <div className="flex flex-col gap-4">
+                  <div className="block lg:hidden w-[280px] mx-auto aspect-[9/16] rounded-[40px] bg-black border-2 border-zinc-900 shadow-2xl relative mb-4">
+                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/3 h-[30px] bg-black rounded-b-[20px] border-x-2 border-b-2 border-zinc-900" />
+                    <div className="absolute inset-3 rounded-[32px] overflow-hidden bg-gray-800">
+                      <div className="relative w-full h-full">
+                        <video
+                          src="https://i.imgur.com/eCBtpU9.mp4"
+                          autoPlay
+                          muted
+                          loop
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    </div>
+                  </div>
                   <div className="flex flex-row gap-4 items-center">
                     <Image
                       src="/images/splash.png"
@@ -68,11 +82,11 @@ export default function Game({
                   </p>
                 </div>
 
-                <div className="flex flex-row gap-4 items-center">
-                  <div className="rounded-xl p-2 border-2 border-zinc-300 w-fit h-full flex items-center justify-center">
+                <div className="flex flex-col lg:flex-row gap-4 items-center">
+                  <div className="hidden lg:block rounded-xl p-2 border-2 border-zinc-300 w-fit h-full flex items-center justify-center">
                     <QRCodeSVG value="https://warpcast.com/~/frames/launch?domain=farville.farm" />
                   </div>
-                  <div className="flex flex-col w-full gap-4">
+                  <div className="flex flex-col md:flex-row lg:flex-col w-full gap-4">
                     <a
                       href="https://warpcast.com/~/frames/launch?domain=farville.farm"
                       target="_blank"
