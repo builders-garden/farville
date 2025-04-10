@@ -159,6 +159,7 @@ export default function MintCollectibleModal({
   // Step 1: Get image description from openai
   const { mutate: getImageDescription } = useGetImageDescription({
     setImageDescription: setPfpDescription,
+    setIsLoading,
     setImageDescriptionLoading: setPfpDescriptionLoading,
     handleUpdateStateCollectibles,
   });
@@ -333,7 +334,12 @@ export default function MintCollectibleModal({
     );
   }, [selectedCollectible]);
 
-  // Check if generate button should be shown
+  const errorOnDescription =
+    errorMessage === "API Error: 500" &&
+    selectedCollectible?.userHasCollectibles?.status ===
+      CollectibleStatus.Description;
+
+  // Update the showGenerateButton logic to also check for API error state
   const showGenerateButton = useMemo(() => {
     if (!selectedCollectible || !selectedCollectible.userHasCollectibles)
       return true;
@@ -343,9 +349,11 @@ export default function MintCollectibleModal({
       selectedCollectible.userHasCollectibles &&
       (status === CollectibleStatus.Pending ||
         status === CollectibleStatus.Description) &&
-      !midjourneyTaskId
+      !midjourneyTaskId &&
+      // hide when showing retry button
+      !errorOnDescription
     );
-  }, [midjourneyTaskId, selectedCollectible]);
+  }, [midjourneyTaskId, selectedCollectible, errorOnDescription]);
 
   // Check if user can generate image
   const canGenerate = useMemo(() => {
@@ -357,7 +365,7 @@ export default function MintCollectibleModal({
       selectedCollectible.userHasCollectibles.status ===
         CollectibleStatus.Description
     );
-  }, [pfpDescriptionLoading, pfpDescription, address, selectedCollectible]);
+  }, [pfpDescription, address, selectedCollectible]);
 
   // Check if get image button should be shown
   const showGetImageButton = useMemo(() => {
@@ -784,6 +792,25 @@ export default function MintCollectibleModal({
                 {errorMessage}
               </span>
             )}
+            {errorMessage === "API Error: 500" &&
+            selectedCollectible?.userHasCollectibles?.status ===
+              CollectibleStatus.Description ? (
+              <Button
+                onClick={() => {
+                  setErrorMessage(null);
+                  setPfpDescription(null);
+                  setIsLoading(true);
+                  getImageDescription({
+                    imageUrl: userPfp || "",
+                    fid: state.user.fid,
+                    collectibleId: selectedCollectible?.id ?? 1,
+                  });
+                }}
+                className="w-full py-1 px-2 text-[10px] bg-red-500/10 text-red-400 hover:bg-red-500/20 border border-red-400/30"
+              >
+                Retry generating description
+              </Button>
+            ) : null}
             {!isFinalState &&
               address !== undefined &&
               !!tokenBalancesData &&
@@ -795,192 +822,196 @@ export default function MintCollectibleModal({
                 </span>
               )}
           </div>
-          <div className="flex flex-col gap-3 mt-0">
-            {/* PAY PRICE */}
-            {showSelectMintPrice ? (
-              <SelectMintPrice
-                totalBalanceUSD={tokenBalancesData?.totalBalanceUSD ?? 0}
-                selectedPrice={selectedPrice}
-                setSelectedPrice={setSelectedPrice}
-              />
-            ) : null}
+          {!errorOnDescription && (
+            <div className="flex flex-col gap-3 mt-0">
+              {/* PAY PRICE */}
+              {showSelectMintPrice ? (
+                <SelectMintPrice
+                  totalBalanceUSD={tokenBalancesData?.totalBalanceUSD ?? 0}
+                  selectedPrice={selectedPrice}
+                  setSelectedPrice={setSelectedPrice}
+                />
+              ) : null}
 
-            {/* BIG BUTTON Generate/Get Image/Select/Confirm/Mint/Share */}
-            {finalTxHash ? (
-              <>
-                <Button
-                  onClick={handleShareMint}
-                  className="w-full flex-1 py-2 px-4 rounded-[5px] text-[#5C4121] bg-yellow-500 hover:bg-yellow-500/80 hover:text-[#5C4121]"
-                >
-                  <Share2
-                    size={18}
-                    className="w-3 h-3 xs:w-4 xs:h-4"
-                  />
-                  Share
-                </Button>
-                <div className="flex w-full gap-2">
-                  {/* Set minted collectible as avatar */}
-                  {showSelectCollectibleAsAvatar ? (
-                    <Button
-                      onClick={handleSetCollectibleAsAvatar}
-                      disabled={isLoading || updatedUserAvatar}
-                      variant="outline"
-                      className={`w-full flex py-1 px-2 xs:py-2 xs:px-4 rounded-[5px] bg-transparent text-yellow-500 hover:bg-yellow-500/10 transition-colors text-[9px] xs:text-xs font-medium border border-yellow-500/30 items-center justify-center gap-2 hover:text-yellow-500/80`}
-                    >
-                      {isLoading
-                        ? "Setting..."
-                        : updatedUserAvatar
-                        ? "Done!"
-                        : state.user.selectedAvatarUrl
-                        ? "Use Warpcast PFP"
-                        : "Set as avatar"}
-                    </Button>
-                  ) : null}
+              {/* BIG BUTTON Generate/Get Image/Select/Confirm/Mint/Share */}
+              {finalTxHash ? (
+                <>
                   <Button
-                    onClick={handleDownloadImage}
-                    variant="outline"
-                    className="w-fit flex py-1 px-2 xs:py-2 xs:px-4 rounded-[5px] bg-transparent hover:bg-yellow-500/10 border-2 border-yellow-500/20 text-yellow-500 hover:text-yellow-500/80 text-[9px] xs:text-xs font-medium items-center justify-center gap-2"
+                    onClick={handleShareMint}
+                    className="w-full flex-1 py-2 px-4 rounded-[5px] text-[#5C4121] bg-yellow-500 hover:bg-yellow-500/80 hover:text-[#5C4121]"
                   >
-                    <Download
+                    <Share2
                       size={18}
                       className="w-3 h-3 xs:w-4 xs:h-4"
                     />
+                    Share
                   </Button>
-                </div>
-              </>
-            ) : showGenerateButton ? (
-              <div className="relative flex flex-col gap-2">
-                <button
-                  disabled={!canGenerate || isLoading || pfpDescriptionLoading}
-                  onClick={handleGenerate}
-                  className={`flex-1 py-2 px-4 rounded ${
-                    !canGenerate
-                      ? "bg-[#179ef9]/10 text-[#179ef9]/50 cursor-not-allowed"
-                      : "bg-[#179ef9]/20 text-[#179ef9] hover:bg-[#179ef9]/30"
-                  } 
-                  transition-colors text-sm font-medium border border-[#179ef9]/30 flex items-center justify-center gap-2`}
-                >
-                  {pfpDescriptionLoading
-                    ? "Loading..."
-                    : isLoading
-                    ? "Starting..."
-                    : "Generate"}
-                </button>
-                {!pfpDescriptionLoading && isLoading ? (
-                  <p className="text-white/70 text-[8px] text-center">
-                    Wait, do not close this page.
-                  </p>
-                ) : null}
-              </div>
-            ) : showGetImageButton ? (
-              <div className="relative flex flex-col gap-2">
-                <motion.button
-                  animate={{
-                    scale: [1, 1.05, 1],
-                  }}
-                  transition={{
-                    duration: 3,
-                    repeat: Infinity,
-                    ease: "easeInOut",
-                  }}
-                  disabled
-                  className="flex-1 py-2 px-4 rounded bg-[#179ef9]/20 text-[#179ef9] hover:bg-[#179ef9]/30 transition-colors text-sm font-medium border border-[#179ef9]/30 flex items-center justify-center gap-2"
-                >
-                  Generating...
-                </motion.button>
-                <p className="text-white/70 text-[8px] text-center">
-                  This may take a while &#126; 2 minutes.
-                  <br />
-                  You can close and check it later in Profile page &gt;
-                  Collectibles.
-                </p>
-              </div>
-            ) : showConfirmSelectionButton ? (
-              <div className="w-full flex flex-col gap-2 items-center">
-                <DaimoPayButton.Custom
-                  appId={env.NEXT_PUBLIC_DAIMO_PAY_ID}
-                  metadata={{
-                    userId: state.user.fid.toString(),
-                    pinataMetadataCID: pinataMetadataCID ?? "",
-                  }}
-                  preferredChains={[base.id, mainnet.id]}
-                  preferredTokens={[
-                    { chain: base.id, address: BASE_USDC_ADDRESS },
-                    { chain: base.id, address: BASE_DEGEN_ADDRESS },
-                  ]}
-                  toAddress={PFP_NFT_BASE_ADDRESS}
-                  toChain={base.id}
-                  toUnits={selectedPrice.toString()}
-                  toToken={BASE_USDC_ADDRESS}
-                  toCallData={txCalldata as `0x${string}`}
-                  closeOnSuccess
-                  onPaymentStarted={handlePaymentStarted}
-                  onPaymentCompleted={handlePaymentCompleted}
-                  onPaymentBounced={handlePaymentBounced}
-                >
-                  {({ show }) => (
+                  <div className="flex w-full gap-2">
+                    {/* Set minted collectible as avatar */}
+                    {showSelectCollectibleAsAvatar ? (
+                      <Button
+                        onClick={handleSetCollectibleAsAvatar}
+                        disabled={isLoading || updatedUserAvatar}
+                        variant="outline"
+                        className={`w-full flex py-1 px-2 xs:py-2 xs:px-4 rounded-[5px] bg-transparent text-yellow-500 hover:bg-yellow-500/10 transition-colors text-[9px] xs:text-xs font-medium border border-yellow-500/30 items-center justify-center gap-2 hover:text-yellow-500/80`}
+                      >
+                        {isLoading
+                          ? "Setting..."
+                          : updatedUserAvatar
+                          ? "Done!"
+                          : state.user.selectedAvatarUrl
+                          ? "Use Warpcast PFP"
+                          : "Set as avatar"}
+                      </Button>
+                    ) : null}
                     <Button
-                      variant="default"
-                      className={cn(
-                        "w-full flex-1 py-2 px-4 rounded-[5px]",
-                        !canMint
-                          ? "text-yellow-400/50 cursor-not-allowed bg-yellow-500/10"
-                          : "text-[#5C4121] bg-yellow-500 hover:bg-yellow-500/80 hover:text-[#5C4121]",
-                        paymentCompleted &&
-                          "bg-green-500 text-green-200 cursor-not-allowed"
-                      )}
-                      onClick={() => {
-                        if (!confirmedSelection) {
-                          handleConfirmSelection();
-                        } else {
-                          show();
-                        }
-                      }}
-                      disabled={
-                        isLoading ||
-                        (confirmedSelection
-                          ? !canMint && txCalldata === "0x"
-                          : !canMint)
-                      }
+                      onClick={handleDownloadImage}
+                      variant="outline"
+                      className="w-fit flex py-1 px-2 xs:py-2 xs:px-4 rounded-[5px] bg-transparent hover:bg-yellow-500/10 border-2 border-yellow-500/20 text-yellow-500 hover:text-yellow-500/80 text-[9px] xs:text-xs font-medium items-center justify-center gap-2"
                     >
-                      {!selectedImageUrl
-                        ? "Select an image"
-                        : !confirmedSelection
-                        ? isLoading
-                          ? "Confirming..."
-                          : "Confirm selection"
-                        : paymentStarted
-                        ? "Minting..."
-                        : paymentCompleted
-                        ? "Minted Successfully!"
-                        : "Mint"}
+                      <Download
+                        size={18}
+                        className="w-3 h-3 xs:w-4 xs:h-4"
+                      />
                     </Button>
-                  )}
-                </DaimoPayButton.Custom>
-              </div>
-            ) : null}
+                  </div>
+                </>
+              ) : showGenerateButton ? (
+                <div className="relative flex flex-col gap-2">
+                  <button
+                    disabled={
+                      !canGenerate || isLoading || pfpDescriptionLoading
+                    }
+                    onClick={handleGenerate}
+                    className={`flex-1 py-2 px-4 rounded ${
+                      !canGenerate || isLoading || pfpDescriptionLoading
+                        ? "bg-[#179ef9]/10 text-[#179ef9]/50 cursor-not-allowed"
+                        : "bg-[#179ef9]/20 text-[#179ef9] hover:bg-[#179ef9]/30"
+                    } 
+                  transition-colors text-sm font-medium border border-[#179ef9]/30 flex items-center justify-center gap-2`}
+                  >
+                    {pfpDescriptionLoading
+                      ? "Loading..."
+                      : isLoading
+                      ? "Please Wait..."
+                      : "Generate"}
+                  </button>
+                  {!pfpDescriptionLoading && isLoading ? (
+                    <p className="text-white/70 text-[8px] text-center">
+                      Wait, do not close this page.
+                    </p>
+                  ) : null}
+                </div>
+              ) : showGetImageButton ? (
+                <div className="relative flex flex-col gap-2">
+                  <motion.button
+                    animate={{
+                      scale: [1, 1.05, 1],
+                    }}
+                    transition={{
+                      duration: 3,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                    }}
+                    disabled
+                    className="flex-1 py-2 px-4 rounded bg-[#179ef9]/20 text-[#179ef9] hover:bg-[#179ef9]/30 transition-colors text-sm font-medium border border-[#179ef9]/30 flex items-center justify-center gap-2 disabled:cursor-not-allowed disabled:hover:bg-[#179ef9]/20"
+                  >
+                    Generating...
+                  </motion.button>
+                  <p className="text-white/70 text-[8px] text-center">
+                    This may take a while &#126; 2 minutes.
+                    <br />
+                    You can close and check it later in Profile page &gt;
+                    Collectibles.
+                  </p>
+                </div>
+              ) : showConfirmSelectionButton ? (
+                <div className="w-full flex flex-col gap-2 items-center">
+                  <DaimoPayButton.Custom
+                    appId={env.NEXT_PUBLIC_DAIMO_PAY_ID}
+                    metadata={{
+                      userId: state.user.fid.toString(),
+                      pinataMetadataCID: pinataMetadataCID ?? "",
+                    }}
+                    preferredChains={[base.id, mainnet.id]}
+                    preferredTokens={[
+                      { chain: base.id, address: BASE_USDC_ADDRESS },
+                      { chain: base.id, address: BASE_DEGEN_ADDRESS },
+                    ]}
+                    toAddress={PFP_NFT_BASE_ADDRESS}
+                    toChain={base.id}
+                    toUnits={selectedPrice.toString()}
+                    toToken={BASE_USDC_ADDRESS}
+                    toCallData={txCalldata as `0x${string}`}
+                    closeOnSuccess
+                    onPaymentStarted={handlePaymentStarted}
+                    onPaymentCompleted={handlePaymentCompleted}
+                    onPaymentBounced={handlePaymentBounced}
+                  >
+                    {({ show }) => (
+                      <Button
+                        variant="default"
+                        className={cn(
+                          "w-full flex-1 py-2 px-4 rounded-[5px]",
+                          !canMint
+                            ? "text-yellow-400/50 cursor-not-allowed bg-yellow-500/10"
+                            : "text-[#5C4121] bg-yellow-500 hover:bg-yellow-500/80 hover:text-[#5C4121]",
+                          paymentCompleted &&
+                            "bg-green-500 text-green-200 cursor-not-allowed"
+                        )}
+                        onClick={() => {
+                          if (!confirmedSelection) {
+                            handleConfirmSelection();
+                          } else {
+                            show();
+                          }
+                        }}
+                        disabled={
+                          isLoading ||
+                          (confirmedSelection
+                            ? !canMint && txCalldata === "0x"
+                            : !canMint)
+                        }
+                      >
+                        {!selectedImageUrl
+                          ? "Select an image"
+                          : !confirmedSelection
+                          ? isLoading
+                            ? "Confirming..."
+                            : "Confirm selection"
+                          : paymentStarted
+                          ? "Minting..."
+                          : paymentCompleted
+                          ? "Minted Successfully!"
+                          : "Mint"}
+                      </Button>
+                    )}
+                  </DaimoPayButton.Custom>
+                </div>
+              ) : null}
 
-            {!address && !paymentCompleted && !finalTxHash && (
-              <span className="text-center text-[9px] text-white/70 border border-white/70 rounded w-fit px-4 py-2 m-auto mt-1 xs:mt-2">
-                Please connect a wallet to mint the badge.
-              </span>
-            )}
+              {!address && !paymentCompleted && !finalTxHash && (
+                <span className="text-center text-[9px] text-white/70 border border-white/70 rounded w-fit px-4 py-2 m-auto mt-1 xs:mt-2">
+                  Please connect a wallet to mint the badge.
+                </span>
+              )}
 
-            {paymentCompleted && finalTxHash ? (
-              <>
-                <p
-                  className="text-white/70 text-[8px] text-center underline cursor-pointer"
-                  onClick={async () => {
-                    await sdk.actions.openUrl(
-                      BASE_SCAN_BASE_URL + `/tx/${finalTxHash}`
-                    );
-                  }}
-                >
-                  View transaction on BaseScan
-                </p>
-              </>
-            ) : null}
-          </div>
+              {paymentCompleted && finalTxHash ? (
+                <>
+                  <p
+                    className="text-white/70 text-[8px] text-center underline cursor-pointer"
+                    onClick={async () => {
+                      await sdk.actions.openUrl(
+                        BASE_SCAN_BASE_URL + `/tx/${finalTxHash}`
+                      );
+                    }}
+                  >
+                    View transaction on BaseScan
+                  </p>
+                </>
+              ) : null}
+            </div>
+          )}
 
           <div className="flex w-full justify-center items-center gap-3 mt-2">
             <Checkbox

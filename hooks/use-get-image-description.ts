@@ -5,10 +5,12 @@ import { DbUserHasCollectible } from "@/supabase/types";
 export const useGetImageDescription = ({
   setImageDescription,
   setImageDescriptionLoading,
+  setIsLoading,
   handleUpdateStateCollectibles,
 }: {
   setImageDescription: Dispatch<SetStateAction<string | null>>;
   setImageDescriptionLoading: Dispatch<SetStateAction<boolean>>;
+  setIsLoading: Dispatch<SetStateAction<boolean>>;
   handleUpdateStateCollectibles: (
     userHasCollectibles: DbUserHasCollectible
   ) => void;
@@ -39,6 +41,7 @@ export const useGetImageDescription = ({
       setImageDescription(data.data.description);
       setImageDescriptionLoading(false);
       handleUpdateStateCollectibles(data.data.userHasCollectible);
+      setIsLoading(false);
     },
     onError: (error: Error) => {
       console.error("Error getting image description:", error);
