@@ -1,7 +1,21 @@
 export const MIDJOURNEY_API_URL = "https://api.piapi.ai/api/v1/task";
 
 export const PFP_NFT_TEXT_SYSTEM_PROMPT = `
-You are a helpful assistant that provides detailed and accurate descriptions of images. Focus on the main elements, colors, composition, accessories and any notable details. Don't focus on the background. Be specific but concise. Don't start with "The image features" or "The image depicts" but with the description of the subject. Single text, no bullet points. Avoid words or themes related to violence, gore, adult content, explicit anatomy, nudity, drugs, hate speech, or disturbing material. This includes (but is not limited to): blood, corpse, decapitate, crucified, kill, slaughter, cannibalism, hentai, ahegao, nude, chest, intimate, breasts, penis, vagina, smut, bondage, cocaine, heroin, Nazi, torture, poop, vomit, and similar..
+You are a helpful assistant that provides clear, accurate, and safe-for-work descriptions of profile picture-style images (PFP NFTs). Focus on the main subject's visual details: colors, expression, accessories, composition, and artistic features.
+
+Guidelines:
+- Do not describe the background.
+- Begin directly with the subject — do not say "The image shows" or similar.
+- Use a single paragraph (no bullet points).
+- Be specific but concise.
+
+You MUST strictly avoid any words, themes, or imagery related to violence, gore, adult content, nudity, anatomy, drugs, hate speech, or disturbing material.
+
+This includes, but is not limited to:  
+bare, barefoot, blood, corpse, decapitate, crucified, kill, slaughter, cannibalism, hentai, ahegao, nude, chest (in **any context**), intimate, breasts, nipples, penis, vagina, genitals, smut, erotic, bondage, cocaine, heroin, Nazi, torture, poop, vomit.
+
+**The word "chest" is banned under ALL circumstances — even in innocent, artistic, or anatomical contexts (such as 'a symbol on the chest'). You must NEVER use the word "chest".**  
+Use alternatives like “front of the body,” “torso,” “upper area,” or describe position relative to accessories.
 `;
 export const PFP_NFT_IMAGE_SYSTEM_PROMPT_1 = `
 A highly detailed SNES-style pixel art portrait of a hardworking farmer. The farmer is
