@@ -1,15 +1,16 @@
 "use client";
 
-import React from "react";
-import { GameProvider } from "./../context/GameContext";
-import { useSignIn } from "@/hooks/use-sign-in";
-import Image from "next/image";
 import { useFrameContext } from "@/context/FrameContext";
 import { OverlayConfig } from "@/context/GameContext";
+import { useSignIn } from "@/hooks/use-sign-in";
+import Image from "next/image";
+import { QRCodeSVG } from "qrcode.react";
+import React from "react";
+import { GameProvider } from "./../context/GameContext";
 
 export default function Game({
   children,
-  initialOverlay
+  initialOverlay,
 }: {
   children?: React.ReactNode;
   initialOverlay?: OverlayConfig;
@@ -19,32 +20,117 @@ export default function Game({
 
   if (!context && isSDKLoaded && !isLoading) {
     return (
-      <main className="h-screen w-screen overflow-hidden">
-        <div className="fixed inset-0">
-          <Image
-            src="/images/welcome.png"
-            alt="Background"
-            fill
-            className="object-contain"
-            priority
-            sizes="100vw"
-            quality={100}
-          />
-        </div>
-        <div className="relative z-10 flex flex-col items-center justify-center min-h-screen p-8 text-center max-w-md mx-auto">
-          <h1 className="text-3xl font-bold text-white mb-4 [text-shadow:_2px_2px_4px_rgb(0_0_0_/_50%)]">
-            FarVille
-          </h1>
-          <p className="text-lg text-white mb-6 px-4 [text-shadow:_1px_1px_2px_rgb(0_0_0_/_50%)]">
-            Plant, grow, and harvest crops on Farcaster.
-          </p>
-          <div className="flex gap-4 mb-8">
-            <a
-              href="https://warpcast.com/~/channel/farville"
-              className="px-8 py-3 bg-[#794BC4] hover:bg-[#6a42ab] text-white rounded-lg font-medium transition-colors flex items-center gap-2"
-            >
-              <span>Play on Warpcast</span>
-            </a>
+      <main className="h-screen w-screen overflow-hidden bg-[#1E3320] bg-[conic-gradient(#265B3B_90deg,_#396549_90deg_180deg,_#265B3B_180deg_270deg,_#396549_270deg)] bg-[length:144px_144px]">
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="flex flex-row items-center gap-16 p-8">
+            <div className="relative w-[300px] h-[600px] rounded-[40px] bg-black border-2 border-zinc-900 shadow-2xl transition-transform duration-300 hover:scale-105">
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/3 h-[30px] bg-black rounded-b-[20px] border-x-2 border-b-2 border-zinc-900" />
+              <div className="absolute inset-3 rounded-[32px] overflow-hidden bg-gray-800">
+                <video
+                  src="https://i.imgur.com/eCBtpU9.mp4"
+                  autoPlay
+                  muted
+                  loop
+                  className="w-full h-full object-cover opacity-90"
+                />
+              </div>
+            </div>
+            <div className="flex flex-col gap-4">
+              <div className="flex flex-col justify-between gap-8 bg-white rounded-3xl p-8 shadow-lg w-[500px] h-[500px]">
+                <div className="flex flex-col gap-4 just">
+                  <div className="flex flex-row gap-4 items-center">
+                    <Image
+                      src="/images/splash.png"
+                      alt="Farville Logo"
+                      className="h-16 w-auto object-contain"
+                      width={96}
+                      height={96}
+                    />
+                    <div className="flex flex-col gap-2">
+                      <h1 className="text-xl font-bold text-zinc-900">
+                        Farville
+                      </h1>
+                      <p className="text-zinc-500 text-xs">
+                        Built by{" "}
+                        <a
+                          href="https://builders.garden"
+                          target="_blank"
+                          className="text-zinc-600 underline text-xs hover:text-zinc-900 transition-colors"
+                        >
+                          Builders Garden
+                        </a>{" "}
+                        team
+                      </p>
+                    </div>
+                  </div>
+                  <p className="text-zinc-500 text-sm">
+                    Plant, grow, and harvest crops with friends.
+                  </p>
+                </div>
+
+                <div className="flex flex-row gap-4 items-center">
+                  <div className="rounded-xl p-2 border-2 border-zinc-300 w-fit h-full flex items-center justify-center">
+                    <QRCodeSVG value="https://warpcast.com/~/frames/launch?domain=farville.farm" />
+                  </div>
+                  <div className="flex flex-col w-full gap-4">
+                    <a
+                      href="https://warpcast.com/~/frames/launch?domain=farville.farm"
+                      target="_blank"
+                      className="w-full py-1 bg-[#8A63D2] text-white rounded-xl flex flex-row gap-2 items-center justify-start transition-all duration-300 hover:scale-105 cursor-pointer"
+                    >
+                      <Image
+                        src="/images/fc-logo.png"
+                        alt="Farcaster Logo"
+                        width={64}
+                        height={64}
+                      />
+                      <div className="flex flex-col">
+                        <span className="text-xs text-white/70">Play on</span>
+                        <span className="text-lg white">Farcaster</span>
+                      </div>
+                    </a>
+
+                    <a
+                      href="https://docs.farville.farm/gameplay"
+                      target="_blank"
+                      className="w-full p-2 border-2 border-[#8A63D2] text-[#8A63D2] rounded-xl flex flex-row gap-2 items-center justify-start transition-all duration-300 hover:scale-105 cursor-pointer"
+                    >
+                      <Image
+                        src="/images/docs.png"
+                        alt="Docs Logo"
+                        width={48}
+                        height={48}
+                      />
+                      <div className="flex flex-col">
+                        <span className="text-sm">How it works</span>
+                        <span className="text-xs text-purple-200">
+                          Game Docs
+                        </span>
+                      </div>
+                    </a>
+                  </div>
+                </div>
+              </div>
+              <a
+                href="https://warpcast.com/~/frames/launch?domain=farville.farm"
+                className="flex flex-row w-full gap-2 bg-white rounded-xl p-2 transition-all duration-300 hover:scale-105"
+              >
+                <Image
+                  src="/images/channel.png"
+                  alt="Farcaster Logo"
+                  width={36}
+                  height={36}
+                />
+                <div className="flex flex-col">
+                  <p className="w-full flex flex-row gap-2 items-center justify-start cursor-pointer text-zinc-600">
+                    Follow our channel
+                  </p>
+                  <p className="text-xs text-zinc-400">
+                    Get the latest news and updates
+                  </p>
+                </div>
+              </a>
+            </div>
           </div>
         </div>
       </main>
