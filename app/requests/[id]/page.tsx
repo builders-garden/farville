@@ -32,12 +32,16 @@ export async function generateMetadata({
       },
     };
   }
+  const buttonTitle =
+    `Donate to ${user.username} 🧑‍🌾`.length > 32
+      ? "Donate 🧑‍🌾"
+      : `Donate to ${user.username} 🧑‍🌾`;
 
   const frame = {
     version: "next",
     imageUrl: imageUrl.toString(),
     button: {
-      title: `Donate to ${user.username} 🧑‍🌾`,
+      title: buttonTitle,
       action: {
         type: "launch_frame",
         name: "FarVille",

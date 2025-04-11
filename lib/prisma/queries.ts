@@ -12,6 +12,7 @@ import {
   DbUserFrost,
   DbUserLeaderboard,
 } from "@/supabase/types";
+import { DbUserDonation as DbUserDonationPrisma } from "@/prisma/types";
 import { Collectibles, UserHasCollectibles, UserHasItem } from "@prisma/client";
 import { getCurrentDayStreak } from "../utils";
 
@@ -318,21 +319,55 @@ export const getUserDonationByReceiver = async (
   });
 };
 
-export const getUserDonationsLast24h = async (donatorFid: number) => {
-  const last24h = new Date(Date.now() - 24 * 60 * 60 * 1000);
-  return (
-    await prisma.userDonationHistory.findMany({
-      where: {
-        donatorFid,
-        lastDonation: {
-          gte: last24h,
-        },
+export interface DbUserDonationWithUsers extends DbUserDonationPrisma {
+  donator: DbUser;
+  receiver: DbUser;
+}
+
+export const getUserDonationsOfToday = async (
+  donatorFid: number
+): Promise<DbUserDonationWithUsers[]> => {
+  const today = new Date();
+  const startOfDay = new Date(
+    today.getFullYear(),
+    today.getMonth(),
+    today.getDate()
+  );
+  const donations = await prisma.userDonationHistory.findMany({
+    where: {
+      donatorFid,
+      lastDonation: {
+        gte: startOfDay,
       },
-      orderBy: {
-        lastDonation: "desc",
+    },
+    orderBy: {
+      lastDonation: "desc",
+    },
+    include: {
+      users_user_donations_history_donatorFidTousers: true,
+      users_user_donations_history_receiverFidTousers: true,
+    },
+  });
+
+  return donations.map(
+    ({
+      users_user_donations_history_donatorFidTousers,
+      users_user_donations_history_receiverFidTousers,
+      ...donation
+    }) => ({
+      ...donation,
+      donator: {
+        ...users_user_donations_history_donatorFidTousers,
+        createdAt:
+          users_user_donations_history_donatorFidTousers.createdAt.toISOString(),
+      },
+      receiver: {
+        ...users_user_donations_history_receiverFidTousers,
+        createdAt:
+          users_user_donations_history_receiverFidTousers.createdAt.toISOString(),
       },
     })
-  ).length;
+  );
 };
 
 export const updateUserDonationHistory = async (

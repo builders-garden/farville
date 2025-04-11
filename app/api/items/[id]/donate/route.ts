@@ -1,17 +1,13 @@
 import { sendQuestsCalculation } from "@/app/api/grid-cells/utils";
-import {
-  MAX_DAILY_ALLOWED_DONATION_BETWEEN_USERS,
-  MAX_DAILY_ALLOWED_DONATION_TO_USERS,
-  XP_PER_DONATED_ITEM,
-} from "@/lib/game-constants";
+import { XP_PER_DONATED_ITEM } from "@/lib/game-constants";
 import { sendDelayedNotification } from "@/lib/game-notifications";
 import {
-  getUserDonationByReceiver,
-  getUserDonationsLast24h,
+  getUserDonationsOfToday,
   updateUserDonationHistory,
   updateUserWeeklyScore,
   updateUserXP,
 } from "@/lib/prisma/queries";
+import { userCanDonate } from "@/lib/utils";
 import {
   getItemById,
   getUserItemByItemId,
@@ -94,21 +90,15 @@ export const POST = async (
     );
   }
 
-  const userLastDonation = await getUserDonationByReceiver(
-    Number(fid),
-    Number(toFid)
-  );
+  const todayDonations = await getUserDonationsOfToday(Number(fid));
 
-  const donationsLast24h = await getUserDonationsLast24h(Number(fid));
+  const {
+    canDonateToReceiver,
+    canDonateToAnotherUser,
+    lastDonationToReceiver,
+  } = userCanDonate(todayDonations, Number(toFid));
 
-  if (
-    (userLastDonation &&
-      userLastDonation?.times &&
-      userLastDonation.times >= MAX_DAILY_ALLOWED_DONATION_BETWEEN_USERS &&
-      new Date().getTime() - new Date(userLastDonation.lastDonation).getTime() <
-        24 * 60 * 60 * 1000) ||
-    donationsLast24h >= MAX_DAILY_ALLOWED_DONATION_TO_USERS
-  ) {
+  if (!canDonateToReceiver && !canDonateToAnotherUser) {
     return NextResponse.json(
       {
         message: `You have reached the maximum daily donation limits.`,
@@ -141,11 +131,11 @@ export const POST = async (
     donatorFid: Number(fid),
     receiverFid: Number(toFid),
     times:
-      !userLastDonation ||
-      new Date(userLastDonation.lastDonation).toDateString() !==
+      !lastDonationToReceiver ||
+      new Date(lastDonationToReceiver.lastDonation).toDateString() !==
         new Date().toDateString()
         ? 1
-        : (userLastDonation?.times ?? 0) + 1,
+        : (lastDonationToReceiver?.times ?? 0) + 1,
     lastDonation: new Date().toISOString(),
   });
 

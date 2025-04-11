@@ -6,6 +6,8 @@ import {
   ACHIEVEMENTS_THRESHOLDS,
   BASE_GOLD_CROP_PERCENTAGE,
   LEVEL_XP_THRESHOLDS,
+  MAX_DAILY_ALLOWED_DONATION_BETWEEN_USERS,
+  MAX_DAILY_ALLOWED_DONATION_TO_USERS,
   SPEED_BOOST,
 } from "./game-constants";
 import { CropType, PerkType } from "@/types/game";
@@ -23,6 +25,7 @@ import {
 import { encodeFunctionData, Address, Hex } from "viem";
 import { PFP_NFT_ABI } from "./contracts/pfp-nft/abi";
 import { env } from "@/lib/env";
+import { DbUserDonation } from "@/prisma/types";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -548,4 +551,25 @@ export const getPfpNftTxCalldata = (params: {
       params.backendSignature,
     ],
   });
+};
+
+export const userCanDonate = (
+  donationsLast24h: DbUserDonation[],
+  receiver: number
+) => {
+  const lastDonationToReceiver = donationsLast24h.find(
+    (d) => d.receiverFid === receiver
+  );
+  const canDonateToReceiver =
+    !lastDonationToReceiver ||
+    (lastDonationToReceiver &&
+      lastDonationToReceiver?.times !== null &&
+      lastDonationToReceiver.times < MAX_DAILY_ALLOWED_DONATION_BETWEEN_USERS);
+  const canDonateToAnotherUser =
+    donationsLast24h.length < MAX_DAILY_ALLOWED_DONATION_TO_USERS;
+  return {
+    canDonateToReceiver,
+    canDonateToAnotherUser,
+    lastDonationToReceiver,
+  };
 };

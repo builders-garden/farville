@@ -63,7 +63,7 @@ model UserHasItem {
   quantity  Int
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   item      Item     @relation(fields: [itemId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  user      User     @relation(fields: [userFid], references: [fid], onDelete: NoAction, onUpdate: NoAction)
+  user      User     @relation(fields: [userFid], references: [fid], onDelete: Cascade, onUpdate: NoAction)
 
   @@id([userFid, itemId])
   @@map("user_has_items")
@@ -94,7 +94,6 @@ model GridCell {
   user             User      @relation(fields: [fid], references: [fid], onDelete: NoAction, onUpdate: NoAction)
 
   @@id([fid, x, y])
-  @@index([fid], map: "cells_by_fid")
   @@map("user_grid_cells")
 }
 
@@ -103,7 +102,7 @@ model UserNotification {
   fid        Int
   created_at DateTime @default(now()) @db.Timestamptz(6)
   category   String   @db.VarChar
-  user       User     @relation(fields: [fid], references: [fid], onDelete: NoAction, onUpdate: NoAction)
+  user       User     @relation(fields: [fid], references: [fid], onDelete: Cascade, onUpdate: NoAction)
 
   @@map("user_notification")
 }
@@ -115,7 +114,7 @@ model Request {
   quantity       Int?
   filledQuantity Int
   createdAt      DateTime @default(now()) @db.Timestamptz(6)
-  user           User     @relation(fields: [fid], references: [fid], onDelete: NoAction, onUpdate: NoAction)
+  user           User     @relation(fields: [fid], references: [fid], onDelete: Cascade, onUpdate: NoAction)
   item           Item?    @relation(fields: [itemId], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@map("requests")
@@ -155,7 +154,6 @@ model UserHasQuest {
   @@index([questId], map: "idx_user_has_quests_quest_id")
   @@index([fid])
   @@index([questId], map: "user_has_quests_quest_id_idx")
-  @@index([fid, status], map: "quests_by_fid_status")
   @@map("user_has_quests")
 }
 
@@ -219,7 +217,7 @@ model UserLeaderboards {
   createdAt    DateTime @default(now()) @db.Timestamptz(6)
   updatedAt    DateTime @default(now()) @db.Timestamptz(6)
   lastLeague   Int      @default(0)
-  user         User     @relation(fields: [fid], references: [fid], onDelete: NoAction, onUpdate: NoAction)
+  user         User     @relation(fields: [fid], references: [fid], onDelete: Cascade, onUpdate: NoAction)
 
   @@map("user_leaderboards")
 }

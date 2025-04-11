@@ -1,7 +1,5 @@
-import {
-  getUserDonationByReceiver,
-  getUserDonationsLast24h,
-} from "@/lib/prisma/queries";
+import { getUserDonationsOfToday } from "@/lib/prisma/queries";
+import { userCanDonate } from "@/lib/utils";
 import { NextRequest, NextResponse } from "next/server";
 
 export const GET = async (req: NextRequest) => {
@@ -16,17 +14,18 @@ export const GET = async (req: NextRequest) => {
     );
   }
 
-  const donation = await getUserDonationByReceiver(
-    Number(donator),
+  const todayDonations = await getUserDonationsOfToday(Number(donator));
+
+  const { canDonateToReceiver, canDonateToAnotherUser } = userCanDonate(
+    todayDonations,
     Number(receiver)
   );
 
-  const donationsLast24h = await getUserDonationsLast24h(Number(donator));
-
   return NextResponse.json(
     {
-      lastDonation: donation,
-      donationsLast24h,
+      todayDonations,
+      canDonateToReceiver,
+      canDonateToAnotherUser,
     },
     { status: 200 }
   );
