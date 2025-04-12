@@ -17,7 +17,7 @@ export default function Game({
 }) {
   const { isSDKLoaded, context } = useFrameContext();
 
-  const isInMaintenance = true;
+  const isInMaintenance = false;
 
   const { isSignedIn, isLoading, error } = useSignIn(isInMaintenance);
 
