@@ -1,6 +1,6 @@
+import { env } from "@/lib/env";
 import { Metadata } from "next";
 import App from "./app";
-import { env } from "@/lib/env";
 
 const appUrl = env.NEXT_PUBLIC_URL;
 
@@ -25,6 +25,13 @@ export async function generateMetadata(): Promise<Metadata> {
     openGraph: {
       title: "FarVille",
       description: "Plant, grow, and harvest crops with your friends.",
+      images: [
+        {
+          url: `${appUrl}/images/og-preview.png`,
+          width: 1200,
+          height: 630,
+        },
+      ],
     },
     other: {
       "fc:frame": JSON.stringify(frame),
