@@ -5,7 +5,7 @@ import { OverlayConfig } from "@/context/GameContext";
 import { useSignIn } from "@/hooks/use-sign-in";
 import Image from "next/image";
 import { QRCodeSVG } from "qrcode.react";
-import React, { useRef, useState } from "react";
+import React, { useState } from "react";
 import { GameProvider } from "./../context/GameContext";
 
 export default function Game({
