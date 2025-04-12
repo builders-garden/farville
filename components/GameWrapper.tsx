@@ -212,7 +212,6 @@ export default function GameWrapper() {
 
   useEffect(() => {
     if (!toastShownRef.current) {
-      console.log("Creating toast notification");
       toastShownRef.current = true;
       toast(
         (t) => (
