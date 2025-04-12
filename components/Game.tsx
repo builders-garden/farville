@@ -17,7 +17,6 @@ export default function Game({
 }) {
   const { isSDKLoaded, context } = useFrameContext();
   const [isMuted, setIsMuted] = useState(true);
-  const videoRef = useRef<HTMLVideoElement>(null);
 
   const isInMaintenance = false;
 
@@ -37,7 +36,6 @@ export default function Game({
               <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/3 h-[16px] sm:h-[30px] bg-black rounded-b-[16px] sm:rounded-b-[20px] border-x border-b sm:border-x-2 sm:border-b-2 border-zinc-900" />
               <div className="absolute inset-2 sm:inset-3 rounded-[28px] sm:rounded-[32px] overflow-hidden bg-gray-800">
                 <video
-                  ref={videoRef}
                   src="https://i.imgur.com/eCBtpU9.mp4"
                   autoPlay
                   loop
