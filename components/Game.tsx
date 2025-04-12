@@ -17,41 +17,9 @@ export default function Game({
 }) {
   const { isSDKLoaded, context } = useFrameContext();
 
-  const isInMaintenance = false;
+  const isInMaintenance = true;
 
   const { isSignedIn, isLoading, error } = useSignIn(isInMaintenance);
-
-  if (isInMaintenance) {
-    return (
-      <main className="h-screen w-screen overflow-hidden">
-        <div className="fixed inset-0">
-          <Image
-            src="/images/welcome.png"
-            alt="Background"
-            fill
-            className="object-cover"
-            priority
-            sizes="100vw"
-            quality={100}
-          />
-        </div>
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-8">
-          <div className="absolute inset-0 bg-black/70" />
-          <div className="flex flex-col relative z-10 p-4 py-6 bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-2xl max-w-md gap-6">
-            <h2 className="text-xl font-bold text-center text-green-400">
-              Ongoing Maintenance
-            </h2>
-            <p className="text-white/90 text-md text-center leading-relaxed">
-              We&apos;re working to fix an issue with the weekly leaderboard.
-            </p>
-            <p className="text-white/90 text-md text-center leading-relaxed">
-              Thank you for your patience!
-            </p>
-          </div>
-        </div>
-      </main>
-    );
-  }
 
   if (!context && isSDKLoaded && !isLoading) {
     return (
@@ -150,6 +118,38 @@ export default function Game({
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
+  if (isInMaintenance) {
+    return (
+      <main className="h-screen w-screen overflow-hidden">
+        <div className="fixed inset-0">
+          <Image
+            src="/images/welcome.png"
+            alt="Background"
+            fill
+            className="object-cover"
+            priority
+            sizes="100vw"
+            quality={100}
+          />
+        </div>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-8">
+          <div className="absolute inset-0 bg-black/70" />
+          <div className="flex flex-col relative z-10 p-4 py-6 bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-2xl max-w-md gap-6">
+            <h2 className="text-xl font-bold text-center text-green-400">
+              Ongoing Maintenance
+            </h2>
+            <p className="text-white/90 text-md text-center leading-relaxed">
+              We&apos;re working to fix an issue with the weekly leaderboard.
+            </p>
+            <p className="text-white/90 text-md text-center leading-relaxed">
+              Thank you for your patience!
+            </p>
           </div>
         </div>
       </main>
