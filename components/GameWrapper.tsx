@@ -1,27 +1,29 @@
 "use client";
 
+import { useAudio } from "@/context/AudioContext";
+import { useUserQuests } from "@/hooks/use-quests";
+import { AnimatePresence } from "framer-motion";
 import dynamic from "next/dynamic";
+import { useNextStep } from "nextstepjs";
+import { useEffect, useRef, useState } from "react";
+import toast from "react-hot-toast";
+import { useFrameContext } from "../context/FrameContext";
 import { useGame } from "../context/GameContext";
 import Header from "./Header";
-import Toolbar from "./Toolbar";
-import { AnimatePresence } from "framer-motion";
 import InventoryModal from "./InventoryModal";
-import StreaksModal from "./StreaksModal";
-import MarketplaceModal from "./MarketplaceModal";
-import SettingsModal from "./SettingsModal";
 import LeaderboardModal from "./LeaderboardModal";
+import MarketplaceModal from "./MarketplaceModal";
+import PatchNotesModal from "./PatchNotesModal";
 import PerkIndicator from "./PerkIndicator";
-import { useFrameContext } from "../context/FrameContext";
-import SeedMenu from "./SeedMenu";
 import PlantingIndicator from "./PlantingIndicator";
-import QuestsModal from "./QuestsModal";
-import { useAudio } from "@/context/AudioContext";
-import RequestModal from "./RequestModal";
-import { useEffect } from "react";
-import TimelineModal from "./TimelineModal";
 import ProfileModal from "./ProfileModal";
-import { useUserQuests } from "@/hooks/use-quests";
-import { useNextStep } from "nextstepjs";
+import QuestsModal from "./QuestsModal";
+import RequestModal from "./RequestModal";
+import SeedMenu from "./SeedMenu";
+import SettingsModal from "./SettingsModal";
+import StreaksModal from "./StreaksModal";
+import TimelineModal from "./TimelineModal";
+import Toolbar from "./Toolbar";
 
 // const WelcomeOverlay = dynamic(() => import("./../components/WelcomeOverlay"), {
 //   ssr: false,
@@ -187,6 +189,8 @@ export default function GameWrapper() {
     loading,
   } = useGame();
   const { safeAreaInsets } = useFrameContext();
+  const [showPatchNotes, setShowPatchNotes] = useState(false);
+  const toastShownRef = useRef(false);
 
   const handleOverlayComplete = () => {
     setActiveOverlay(null);
@@ -206,6 +210,35 @@ export default function GameWrapper() {
     state.showGridCellsTutorial,
   ]);
 
+  useEffect(() => {
+    if (!toastShownRef.current) {
+      console.log("Creating toast notification");
+      toastShownRef.current = true;
+      toast(
+        (t) => (
+          <span
+            onClick={() => {
+              toast.dismiss(t.id);
+              setShowPatchNotes(true);
+            }}
+            className="cursor-pointer"
+          >
+            Important announcement, click to learn more
+          </span>
+        ),
+        {
+          duration: 5000,
+          icon: "⚠️",
+          style: {
+            backgroundColor: "white",
+            color: "black",
+          },
+          position: "top-center",
+        }
+      );
+    }
+  }, []);
+
   return (
     <div className="relative z-10">
       {/* <ClickEffect /> */}
@@ -214,6 +247,10 @@ export default function GameWrapper() {
         <AnimatePresence>
           <RequestModal onClose={handleOverlayComplete} id={activeOverlay.id} />
         </AnimatePresence>
+      )}
+
+      {showPatchNotes && (
+        <PatchNotesModal onClose={() => setShowPatchNotes(false)} />
       )}
 
       {/* Main game content */}
