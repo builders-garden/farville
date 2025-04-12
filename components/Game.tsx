@@ -55,12 +55,13 @@ export default function Game({
 
   if (!context && isSDKLoaded && !isLoading) {
     return (
-      <main className="min-h-screen w-screen overflow-y-auto lg:overflow-hidden bg-[#1E3320] bg-[conic-gradient(#265B3B_90deg,_#396549_90deg_180deg,_#265B3B_180deg_270deg,_#396549_270deg)] bg-[length:144px_144px]">
-        <div className="flex items-center justify-center min-h-screen py-8">
-          <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-16 p-4 lg:p-8 max-w-7xl mx-auto">
-            <div className="lg:block hidden relative w-[300px] h-[600px] rounded-[40px] bg-black border-2 border-zinc-900 shadow-2xl transition-transform duration-300 hover:scale-105">
-              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/3 h-[30px] bg-black rounded-b-[20px] border-x-2 border-b-2 border-zinc-900" />
-              <div className="absolute inset-3 rounded-[32px] overflow-hidden bg-gray-800">
+      <main className="h-screen w-full flex flex-col sm:flex-row gap-4 sm:gap-24 items-center justify-start sm:justify-center bg-[#1E3320] bg-[conic-gradient(#265B3B_90deg,_#396549_90deg_180deg,_#265B3B_180deg_270deg,_#396549_270deg)] bg-[length:144px_144px] p-4 sm:p-0 overflow-hidden">
+        <div className="h-full w-full overflow-y-auto">
+          <div className="flex flex-col sm:flex-row gap-4 sm:gap-24 items-center justify-center min-h-full py-4 sm:py-12">
+            {/* Phone Preview */}
+            <div className="relative w-[200px] sm:w-[320px] h-[400px] sm:h-[640px] rounded-[32px] sm:rounded-[40px] bg-black border border-zinc-900 sm:border-2 shadow-2xl">
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/3 h-[16px] sm:h-[30px] bg-black rounded-b-[16px] sm:rounded-b-[20px] border-x border-b sm:border-x-2 sm:border-b-2 border-zinc-900" />
+              <div className="absolute inset-2 sm:inset-3 rounded-[28px] sm:rounded-[32px] overflow-hidden bg-gray-800">
                 <video
                   src="https://i.imgur.com/eCBtpU9.mp4"
                   autoPlay
@@ -70,115 +71,84 @@ export default function Game({
                 />
               </div>
             </div>
-            <div className="flex flex-col gap-4 w-full lg:w-auto px-4 lg:px-0">
-              <div className="flex flex-col justify-between gap-8 bg-white rounded-3xl p-4 lg:p-8 shadow-lg w-full lg:w-[500px] h-auto lg:h-[500px]">
-                <div className="flex flex-col gap-4">
-                  <div className="block lg:hidden w-[280px] mx-auto aspect-[9/16] rounded-[40px] bg-black border-2 border-zinc-900 shadow-2xl relative mb-4">
-                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/3 h-[30px] bg-black rounded-b-[20px] border-x-2 border-b-2 border-zinc-900" />
-                    <div className="absolute inset-3 rounded-[32px] overflow-hidden bg-gray-800">
-                      <div className="relative w-full h-full">
-                        <video
-                          src="https://i.imgur.com/eCBtpU9.mp4"
-                          autoPlay
-                          muted
-                          loop
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                    </div>
+
+            {/* Content Section */}
+            <div className="flex flex-col gap-4 sm:gap-12">
+              <div className="flex flex-col gap-6">
+                <div className="flex flex-row gap-6 items-center">
+                  <Image
+                    src="/images/splash.png"
+                    alt="Farville Logo"
+                    className="h-16 sm:h-20 w-16 sm:w-20 object-contain"
+                    width={96}
+                    height={96}
+                  />
+                  <div className="flex flex-col">
+                    <h1 className=" text-lg sm:text-2xl font-bold text-white">
+                      Farville
+                    </h1>
+                    <p className="text-white/70 text-xs sm:text-base">
+                      Built by{" "}
+                      <a
+                        href="https://builders.garden"
+                        target="_blank"
+                        className="text-white/90 underline hover:text-white transition-colors"
+                      >
+                        Builders Garden
+                      </a>{" "}
+                      team
+                    </p>
                   </div>
-                  <div className="flex flex-row gap-4 items-center">
-                    <Image
-                      src="/images/splash.png"
-                      alt="Farville Logo"
-                      className="h-16 w-auto object-contain"
-                      width={96}
-                      height={96}
+                </div>
+                <p className="text-xs sm:text-lg text-white/80">
+                  Plant, grow, and harvest crops with friends.
+                </p>
+              </div>
+
+              <div className="flex flex-row gap-0 sm:gap-4">
+                <div className="flex flex-col gap-0 sm:gap-4">
+                  <div className="hidden sm:block w-fit rounded-xl p-2 bg-white/10 backdrop-blur-sm border-2 border-white/20">
+                    <QRCodeSVG
+                      value="https://warpcast.com/~/frames/launch?domain=farville.farm"
+                      className="w-fit rounded-sm"
                     />
-                    <div className="flex flex-col gap-2">
-                      <h1 className="text-xl font-bold text-zinc-900">
-                        Farville
-                      </h1>
-                      <p className="text-zinc-500 text-xs">
-                        Built by{" "}
-                        <a
-                          href="https://builders.garden"
-                          target="_blank"
-                          className="text-zinc-600 underline text-xs hover:text-zinc-900 transition-colors"
-                        >
-                          Builders Garden
-                        </a>{" "}
-                        team
-                      </p>
-                    </div>
                   </div>
-                  <p className="text-zinc-500 text-sm">
-                    Plant, grow, and harvest crops with friends.
-                  </p>
                 </div>
 
-                <div className="flex flex-col lg:flex-row gap-4 items-center">
-                  <div className="hidden lg:block rounded-xl p-2 border-2 border-zinc-300 w-fit h-full flex items-center justify-center">
-                    <QRCodeSVG value="https://warpcast.com/~/frames/launch?domain=farville.farm" />
-                  </div>
-                  <div className="flex flex-col md:flex-row lg:flex-col w-full gap-4">
-                    <a
-                      href="https://warpcast.com/~/frames/launch?domain=farville.farm"
-                      target="_blank"
-                      className="w-full py-1 bg-[#8A63D2] text-white rounded-xl flex flex-row gap-2 items-center justify-start transition-all duration-300 hover:scale-105 cursor-pointer"
-                    >
-                      <Image
-                        src="/images/fc-logo.png"
-                        alt="Farcaster Logo"
-                        width={64}
-                        height={64}
-                      />
-                      <div className="flex flex-col">
-                        <span className="text-xs text-white/70">Play on</span>
-                        <span className="text-lg white">Farcaster</span>
-                      </div>
-                    </a>
+                <div className="flex flex-col gap-4 w-full sm:w-fit">
+                  <a
+                    href="https://warpcast.com/~/frames/launch?domain=farville.farm"
+                    target="_blank"
+                    className="w-full p-4 bg-[#8A63D2] text-white rounded-xl flex flex-row gap-4 items-center justify-start transition-transform hover:scale-105"
+                  >
+                    <Image
+                      src="/images/fc-logo.png"
+                      alt="Farcaster Logo"
+                      width={32}
+                      height={32}
+                    />
+                    <span className="text-xs sm:text-lg font-medium">
+                      Play on Farcaster
+                    </span>
+                  </a>
 
-                    <a
-                      href="https://docs.farville.farm/gameplay"
-                      target="_blank"
-                      className="w-full p-2 border-2 border-[#8A63D2] text-[#8A63D2] rounded-xl flex flex-row gap-2 items-center justify-start transition-all duration-300 hover:scale-105 cursor-pointer"
-                    >
-                      <Image
-                        src="/images/docs.png"
-                        alt="Docs Logo"
-                        width={48}
-                        height={48}
-                      />
-                      <div className="flex flex-col">
-                        <span className="text-sm">How it works</span>
-                        <span className="text-xs text-purple-200">
-                          Game Docs
-                        </span>
-                      </div>
-                    </a>
-                  </div>
+                  <a
+                    href="https://docs.farville.farm/gameplay"
+                    target="_blank"
+                    className="w-full p-4 border-2 border-white/20 bg-white/10 backdrop-blur-sm text-white text-left rounded-xl flex flex-row gap-4 items-center justify-start transition-transform hover:scale-105"
+                  >
+                    <Image
+                      src="/images/docs.png"
+                      alt="Docs Logo"
+                      width={24}
+                      height={24}
+                    />
+                    <span className="text-xs sm:text-lg font-medium">
+                      How it works
+                    </span>
+                  </a>
                 </div>
               </div>
-              <a
-                href="https://warpcast.com/~/frames/launch?domain=farville.farm"
-                className="flex flex-row w-full gap-2 bg-white rounded-xl p-2 transition-all duration-300 hover:scale-105"
-              >
-                <Image
-                  src="/images/channel.png"
-                  alt="Farcaster Logo"
-                  width={36}
-                  height={36}
-                />
-                <div className="flex flex-col">
-                  <p className="w-full flex flex-row gap-2 items-center justify-start cursor-pointer text-zinc-600">
-                    Follow our channel
-                  </p>
-                  <p className="text-xs text-zinc-400">
-                    Get the latest news and updates
-                  </p>
-                </div>
-              </a>
             </div>
           </div>
         </div>
