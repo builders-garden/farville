@@ -66,6 +66,7 @@ export async function POST(request: NextRequest) {
             expansions: 1,
             notificationDetails: JSON.stringify(event.notificationDetails),
             mintedOG: false,
+            selectedAvatarUrl: null,
           });
           trackEvent(fid, "signup", {
             fid,

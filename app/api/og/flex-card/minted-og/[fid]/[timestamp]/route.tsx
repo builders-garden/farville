@@ -5,6 +5,7 @@ import { DbUser } from "@/supabase/types";
 import { ImageResponse } from "next/og";
 import { fetchUser } from "@/lib/neynar";
 import { merkleValues } from "@/lib/contracts/og-nft/merkle-root/merkleValues";
+import { env } from "@/lib/env";
 
 export const dynamic = "force-dynamic";
 const size = {
@@ -44,7 +45,7 @@ async function loadGoogleFont(font: string, text: string) {
 }
 
 export async function GET(
-  request: Request,
+  _request: Request,
   {
     params,
   }: {
@@ -57,7 +58,7 @@ export async function GET(
   try {
     const { fid } = await params;
 
-    const appUrl = process.env.NEXT_PUBLIC_URL;
+    const appUrl = env.NEXT_PUBLIC_URL;
 
     if (!fid) {
       return new Response("Farmer ID is required", {
@@ -310,10 +311,15 @@ export async function GET(
                   >
                     {topLeaderboardUsers.slice(0, 5).map(
                       (streakUser, index) =>
-                        streakUser.avatarUrl && (
+                        (streakUser.selectedAvatarUrl ||
+                          streakUser.avatarUrl) && (
                           <img
                             key={index}
-                            src={streakUser.avatarUrl}
+                            src={
+                              streakUser.selectedAvatarUrl ||
+                              streakUser.avatarUrl ||
+                              ""
+                            }
                             width="30px"
                             height="30px"
                             style={{

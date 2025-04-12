@@ -12,8 +12,8 @@ export async function GET() {
     message: "Merkle tree generated successfully",
   });
 }
-  
   /*
+  
   try {
     // Generate the Merkle tree
     const tree = StandardMerkleTree.of(merkleValues, ["address", "uint256"]);
@@ -41,5 +41,4 @@ export async function GET() {
       { status: 500 }
     );
   }
-}
-*/
+}*/

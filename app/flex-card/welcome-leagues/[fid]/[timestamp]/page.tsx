@@ -1,8 +1,9 @@
 import { Metadata } from "next";
 import App from "@/app/app";
 import { getUser } from "@/supabase/queries";
+import { env } from "@/lib/env";
 
-const appUrl = process.env.NEXT_PUBLIC_URL;
+const appUrl = env.NEXT_PUBLIC_URL;
 
 export async function generateMetadata({
   params,

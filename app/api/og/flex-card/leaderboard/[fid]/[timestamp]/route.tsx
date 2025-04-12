@@ -5,6 +5,7 @@ import {
 import { ImageResponse } from "next/og";
 import { getActiveStreaksCount } from "@/lib/prisma/queries";
 import { User } from "@prisma/client";
+import { env } from "@/lib/env";
 
 export const dynamic = "force-dynamic";
 const size = {
@@ -53,7 +54,7 @@ export async function GET(
     const friends = searchParams.get("friends") === "true";
     const quests = searchParams.get("quests") === "true";
 
-    const appUrl = process.env.NEXT_PUBLIC_URL;
+    const appUrl = env.NEXT_PUBLIC_URL;
 
     if (!fid) {
       return new Response("Farmer ID, scope and type are required", {
@@ -297,9 +298,11 @@ export async function GET(
                           overflow: "hidden",
                         }}
                       >
-                        {entry.avatarUrl ? (
+                        {entry.selectedAvatarUrl || entry.avatarUrl ? (
                           <img
-                            src={entry.avatarUrl}
+                            src={
+                              entry.selectedAvatarUrl || entry.avatarUrl || ""
+                            }
                             width="100%"
                             height="100%"
                             style={{

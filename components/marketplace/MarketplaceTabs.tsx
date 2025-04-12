@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 
-type Tab = "seeds" | "crops" | "perks" | "expansions";
+export type Tab = "buy" | "sell" | "expansions";
 
 interface MarketplaceTabsProps {
   activeTab: Tab;
@@ -12,17 +12,17 @@ export default function MarketplaceTabs({
   setActiveTab,
 }: MarketplaceTabsProps) {
   const tabs: { id: Tab; label: string; icon: string }[] = [
-    { id: "seeds", label: "Seeds", icon: "🌱" },
-    { id: "crops", label: "Crops", icon: "🌾" },
-    { id: "perks", label: "Perks", icon: "✨" },
+    { id: "buy", label: "Buy", icon: "🌱" },
+    { id: "sell", label: "Sell", icon: "🌾" },
     { id: "expansions", label: "Expand", icon: "🗺️" },
   ];
 
   return (
-    <div className="grid grid-cols-4 gap-3 mb-6 flex-shrink-0">
+    <div className="grid grid-cols-3 gap-3 mb-4 flex-shrink-0">
       {tabs.map((tab, index) => (
         <motion.button
           key={tab.id}
+          id={`market-${tab.id}`}
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: index * 0.1 }}

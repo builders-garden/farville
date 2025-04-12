@@ -1,11 +1,12 @@
-import { DbUserDonation } from "@/supabase/types";
 import { useApiQuery } from "./use-api-query";
+import { DbUserDonationWithUsers } from "@/lib/prisma/queries";
 
 export const useDonationHistory = (donator?: number, receiver?: number) => {
   const { data, isLoading } = useApiQuery<
     {
-      lastDonation: DbUserDonation;
-      donationsLast24h: number;
+      todayDonations: DbUserDonationWithUsers[];
+      canDonateToReceiver: boolean;
+      canDonateToAnotherUser: boolean;
     },
     { donator?: number; receiver?: number }
   >({
@@ -16,7 +17,13 @@ export const useDonationHistory = (donator?: number, receiver?: number) => {
     enabled: !!donator && !!receiver,
   });
 
-  const { lastDonation, donationsLast24h } = data || {};
+  const { todayDonations, canDonateToReceiver, canDonateToAnotherUser } =
+    data || {};
 
-  return { donationsLast24h, lastDonation, isLoading };
+  return {
+    todayDonations,
+    canDonateToReceiver,
+    canDonateToAnotherUser,
+    isLoading,
+  };
 };

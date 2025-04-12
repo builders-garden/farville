@@ -24,10 +24,12 @@ export function LeaderboardUserAvatar({
       <Image
         src={pfpUrl !== "" ? pfpUrl : "/images/profile/default-avatar.png"}
         alt={`${username ?? "user"}'s avatar`}
-        className={`w-${size.width} h-${
-          size.height
-        } rounded-full object-cover border-${borderSize} ${
-          isOgUser ? "border-[#179ef9]" : "border-[#FFB938]"
+        className={`w-${size.width - 2} h-${size.height - 2} xs:w-${
+          size.width
+        } xs:h-${size.height} rounded-full object-cover outline outline-${
+          borderSize - 1
+        } xs:outline-${borderSize} ${
+          isOgUser ? "outline-[#179ef9]" : "outline-[#FFB938]"
         }`}
         width={40}
         height={40}

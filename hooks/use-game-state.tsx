@@ -2,11 +2,13 @@ import { useUserItems, UserItem } from "./use-user-items";
 import { useEffect, useState, useCallback } from "react";
 import { useGridCells } from "./use-grid-cells";
 import {
+  DbCollectible,
   DbGridCell,
   DbItem,
   DbStreak,
   DbUser,
   DbUserHarvestedCrop,
+  DbUserHasCollectible,
   DbUserHasQuestWithQuest,
 } from "@/supabase/types";
 import { useItems } from "./use-items";
@@ -17,6 +19,8 @@ import { useUpdateUserFrosts, useUserStreaks } from "./use-user-streaks";
 import { useUserFrosts } from "./use-user-frosts";
 import { useUserHarvestedCrops } from "./use-user-harvested-crops";
 import { useWeeklyStats } from "./use-weekly-stats";
+import { useUserCollectibles } from "./use-user-collectibles";
+import { CROP_DATA } from "../lib/game-constants";
 
 export interface RefetchType {
   all: () => Promise<void>;
@@ -70,6 +74,11 @@ export interface GameState {
     lastScore: number;
     league: number;
   };
+  collectibles: (DbCollectible & {
+    userHasCollectibles: DbUserHasCollectible | null;
+  })[];
+  showGridCellsTutorial: boolean;
+  showMarketplaceTutorial: boolean;
 }
 
 export const useGameState = () => {
@@ -112,6 +121,9 @@ export const useGameState = () => {
       lastScore: 0,
       league: 0,
     },
+    collectibles: [],
+    showGridCellsTutorial: false,
+    showMarketplaceTutorial: false,
   });
   const {
     userItems,
@@ -158,6 +170,12 @@ export const useGameState = () => {
     isLoading: weeklyStatsLoading,
     refetch: refetchWeeklyStats,
   } = useWeeklyStats(state?.user?.fid);
+
+  const {
+    userCollectibles,
+    isLoading: userCollectiblesLoading,
+    refetch: refetchUserCollectibles,
+  } = useUserCollectibles(state?.user?.fid);
 
   const updateUserState = useCallback(() => {
     if (user) {
@@ -272,6 +290,15 @@ export const useGameState = () => {
     }
   }, [userWeeklyStats]);
 
+  const updateUserCollectiblesState = useCallback(() => {
+    if (userCollectibles) {
+      setState((prevState) => ({
+        ...prevState!,
+        collectibles: userCollectibles,
+      }));
+    }
+  }, [userCollectibles]);
+
   useEffect(() => {
     updateUserState();
   }, [user, updateUserState]);
@@ -354,13 +381,35 @@ export const useGameState = () => {
     if (state.user?.fid) {
       updateUserHarvestedCropsState();
       updateUserWeeklyStatsState();
+      updateUserCollectiblesState();
     }
   }, [
     userHarvestedCrops,
     updateUserHarvestedCropsState,
     state.user?.fid,
     updateUserWeeklyStatsState,
+    updateUserCollectiblesState,
   ]);
+
+  useEffect(() => {
+    if (state.user) {
+      // check if the user should see the grid cells tutorial
+      if (state.user.xp === 0) {
+        setState((prevState) => ({
+          ...prevState!,
+          showGridCellsTutorial: true,
+        }));
+      }
+      const carrotsXp = CROP_DATA["carrot"].rewardXP;
+      // check if the user should see the marketplace tutorial
+      if (state.user.xp <= carrotsXp * 4 && state.coins === 0) {
+        setState((prevState) => ({
+          ...prevState!,
+          showMarketplaceTutorial: true,
+        }));
+      }
+    }
+  }, [state.user.xp]);
 
   const refetchAll = useCallback(async () => {
     await Promise.all([
@@ -372,6 +421,7 @@ export const useGameState = () => {
       refetchStreaks(),
       refetchUserHarvestedCrops(),
       refetchWeeklyStats(),
+      refetchUserCollectibles(),
     ]);
   }, [
     refetchUserItems,
@@ -382,6 +432,7 @@ export const useGameState = () => {
     refetchStreaks,
     refetchUserHarvestedCrops,
     refetchWeeklyStats,
+    refetchUserCollectibles,
   ]);
 
   // Add new method to update grid cells directly
@@ -535,6 +586,24 @@ export const useGameState = () => {
     []
   );
 
+  const updateUserCollectibles = useCallback(
+    (
+      updatedCollectibles: (DbCollectible & {
+        userHasCollectibles: DbUserHasCollectible | null;
+      })[]
+    ) => {
+      setState((prevState) => {
+        if (!prevState) return prevState;
+
+        return {
+          ...prevState,
+          collectibles: updatedCollectibles,
+        };
+      });
+    },
+    []
+  );
+
   const updateUser = useCallback(
     (newParams: {
       xp?: number;
@@ -574,7 +643,8 @@ export const useGameState = () => {
       streaksLoading ||
       frostsLoading ||
       isUserHarvestedCropsLoading ||
-      weeklyStatsLoading,
+      weeklyStatsLoading ||
+      userCollectiblesLoading,
     refetch: {
       all: refetchAll,
       userItems: async () => {
@@ -592,6 +662,9 @@ export const useGameState = () => {
       claimableQuests: async () => {
         await refetchClaimableQuests();
       },
+      collectibles: async () => {
+        await refetchUserCollectibles();
+      },
       streaks: async () => {
         await refetchStreaks();
       },
@@ -604,5 +677,6 @@ export const useGameState = () => {
     updateUser,
     updateUserHarvestedCrops,
     updateUserWeeklyStats,
+    updateUserCollectibles,
   };
 };

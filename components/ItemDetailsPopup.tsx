@@ -13,9 +13,8 @@ interface ItemDetailsPopupProps {
   onUse?: () => void;
   requestQuantity: number;
   onRequestQuantityChange: (quantity: number) => void;
-  onShareRequest?: () => void;
-  onCopyRequest: () => void;
-  urlReady: boolean;
+  onShareRequest: () => void;
+  requestUrl: string | null; // Add this new prop to pass the URL
 }
 
 export default function ItemDetailsPopup({
@@ -27,21 +26,27 @@ export default function ItemDetailsPopup({
   requestQuantity,
   onRequestQuantityChange,
   onShareRequest,
-  onCopyRequest,
-  urlReady,
+  requestUrl, // Destructure the new prop
 }: ItemDetailsPopupProps) {
   const [copied, setCopied] = useState(false);
+  const [errorCopying, setErrorCopying] = useState(false);
   const [isCreatingRequest, setIsCreatingRequest] = useState(false);
 
   const maxRequestAmount = item.category === "perk" ? 1 : 10;
 
-  const handleCopy = () => {
-    if (urlReady) {
-      onCopyRequest();
-      setCopied(true);
-      setTimeout(() => {
-        setCopied(false);
-      }, 2000);
+  const handleCopy = async () => {
+    if (requestUrl) {
+      try {
+        await navigator.clipboard.writeText(requestUrl);
+        setCopied(true);
+        setErrorCopying(false); // Reset error state on successful copy
+        setTimeout(() => {
+          setCopied(false);
+        }, 2000);
+      } catch (error) {
+        setErrorCopying(true);
+        console.error("Error copying request URL:", error);
+      }
     }
   };
 
@@ -51,10 +56,10 @@ export default function ItemDetailsPopup({
   };
 
   useEffect(() => {
-    if (urlReady) {
+    if (requestUrl) {
       setIsCreatingRequest(false);
     }
-  }, [urlReady]);
+  }, [requestUrl]);
 
   return (
     <motion.div
@@ -130,7 +135,7 @@ export default function ItemDetailsPopup({
                 </div>
               </div>
 
-              {!urlReady ? (
+              {!requestUrl ? (
                 <button
                   onClick={handleCreateRequest}
                   disabled={isCreatingRequest}
@@ -149,10 +154,10 @@ export default function ItemDetailsPopup({
               ) : (
                 <div className="flex gap-2">
                   <button
-                    className="flex-1 bg-[#FFB938] text-[#7E4E31] px-4 py-2 rounded-lg font-bold
-                   hover:bg-[#ffc661] transition-colors relative"
+                    className="flex-1 border-2 border-[#FFB938] text-[#FFB938] px-4 py-2 rounded-lg font-bold
+                     hover:bg-[#FFB938]/10 transition-colors relative"
                     onClick={handleCopy}
-                    disabled={!urlReady}
+                    disabled={!requestUrl}
                   >
                     {copied ? "Copied!" : "Copy"}
                     {copied && (
@@ -160,7 +165,7 @@ export default function ItemDetailsPopup({
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0 }}
-                        className="absolute inset-0 bg-green-500 text-white rounded-lg flex items-center justify-center"
+                        className="absolute inset-0 bg-green-500 text-white rounded-md flex items-center justify-center"
                       >
                         Copied!
                       </motion.span>
@@ -173,6 +178,14 @@ export default function ItemDetailsPopup({
                   >
                     Share
                   </button>
+                </div>
+              )}
+              {errorCopying && requestUrl && (
+                <div className="flex flex-col gap-1 mt-2 p-3 bg-[#6d4c2c] rounded text-white/80 text-xs xs:text-sm">
+                  <p>Error copying. Send this URL to your friends:</p>
+                  <p className="mt-1 p-1 bg-[#5A4129] rounded break-all">
+                    {requestUrl}
+                  </p>
                 </div>
               )}
             </>

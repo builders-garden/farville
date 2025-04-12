@@ -20,6 +20,7 @@ model User {
   notificationDetails                                              String?
   createdAt                                                        DateTime              @default(now()) @db.Timestamptz(6)
   mintedOG                                                         Boolean               @default(false)
+  selectedAvatarUrl                                                String?
   referrals                                                        Referral[]
   requests                                                         Request[]
   streaks                                                          Streaks[]
@@ -27,6 +28,7 @@ model User {
   user_donations_history_user_donations_history_receiverFidTousers UserDonationHistory[] @relation("user_donations_history_receiverFidTousers")
   gridCells                                                        GridCell[]
   UserHarvestedCrop                                                UserHarvestedCrop[]
+  userHasCollectibles                                              UserHasCollectibles[]
   items                                                            UserHasItem[]
   quests                                                           UserHasQuest[]
   UserLeaderboards                                                 UserLeaderboards?
@@ -61,7 +63,7 @@ model UserHasItem {
   quantity  Int
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   item      Item     @relation(fields: [itemId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  user      User     @relation(fields: [userFid], references: [fid], onDelete: NoAction, onUpdate: NoAction)
+  user      User     @relation(fields: [userFid], references: [fid], onDelete: Cascade, onUpdate: NoAction)
 
   @@id([userFid, itemId])
   @@map("user_has_items")
@@ -89,9 +91,10 @@ model GridCell {
   speedBoostedAt   DateTime? @db.Timestamptz(6)
   harvestAt        DateTime? @db.Timestamptz(6)
   crop             Item?     @relation(fields: [cropType], references: [slug], onDelete: NoAction, onUpdate: NoAction)
-  user             User      @relation(fields: [fid], references: [fid], onDelete: NoAction, onUpdate: NoAction)
+  user             User      @relation(fields: [fid], references: [fid], onDelete: Cascade, onUpdate: NoAction)
 
   @@id([fid, x, y])
+  @@index([fid], map: "cells_by_fid")
   @@map("user_grid_cells")
 }
 
@@ -100,7 +103,7 @@ model UserNotification {
   fid        Int
   created_at DateTime @default(now()) @db.Timestamptz(6)
   category   String   @db.VarChar
-  user       User     @relation(fields: [fid], references: [fid], onDelete: NoAction, onUpdate: NoAction)
+  user       User     @relation(fields: [fid], references: [fid], onDelete: Cascade, onUpdate: NoAction)
 
   @@map("user_notification")
 }
@@ -112,7 +115,7 @@ model Request {
   quantity       Int?
   filledQuantity Int
   createdAt      DateTime @default(now()) @db.Timestamptz(6)
-  user           User     @relation(fields: [fid], references: [fid], onDelete: NoAction, onUpdate: NoAction)
+  user           User     @relation(fields: [fid], references: [fid], onDelete: Cascade, onUpdate: NoAction)
   item           Item?    @relation(fields: [itemId], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@map("requests")
@@ -152,6 +155,7 @@ model UserHasQuest {
   @@index([questId], map: "idx_user_has_quests_quest_id")
   @@index([fid])
   @@index([questId], map: "user_has_quests_quest_id_idx")
+  @@index([fid, status], map: "quests_by_fid_status")
   @@map("user_has_quests")
 }
 
@@ -161,8 +165,8 @@ model UserDonationHistory {
   receiverFid                                     Int
   times                                           Int?     @default(0)
   lastDonation                                    DateTime @default(now()) @db.Timestamptz(6)
-  users_user_donations_history_donatorFidTousers  User     @relation("user_donations_history_donatorFidTousers", fields: [donatorFid], references: [fid], onDelete: NoAction, onUpdate: NoAction)
-  users_user_donations_history_receiverFidTousers User     @relation("user_donations_history_receiverFidTousers", fields: [receiverFid], references: [fid], onDelete: NoAction, onUpdate: NoAction)
+  users_user_donations_history_donatorFidTousers  User     @relation("user_donations_history_donatorFidTousers", fields: [donatorFid], references: [fid], onDelete: Cascade, onUpdate: NoAction)
+  users_user_donations_history_receiverFidTousers User     @relation("user_donations_history_receiverFidTousers", fields: [receiverFid], references: [fid], onDelete: Cascade, onUpdate: NoAction)
 
   @@id([donatorFid, receiverFid])
   @@map("user_donations_history")
@@ -176,7 +180,7 @@ model Streaks {
   endedAt      DateTime?    @db.Date
   lastActionAt DateTime     @db.Date
   lastClaimed  Int          @default(0)
-  users        User         @relation(fields: [fid], references: [fid], onDelete: NoAction, onUpdate: NoAction)
+  users        User         @relation(fields: [fid], references: [fid], onDelete: Cascade, onUpdate: NoAction)
   user_frosts  UserFrosts[]
 
   @@unique([fid, startedAt], map: "streaks_fid_started_at_unique")
@@ -188,7 +192,7 @@ model UserFrosts {
   id       Int      @id @default(autoincrement())
   streakId Int
   frozenAt DateTime @db.Date
-  streaks  Streaks  @relation(fields: [streakId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  streaks  Streaks  @relation(fields: [streakId], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
   @@unique([streakId, frozenAt], map: "user_frosts_streak_frozen_unique")
   @@map("user_frosts")
@@ -200,7 +204,7 @@ model UserHarvestedCrop {
   quantity  Int      @default(0)
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   cropItem  Item     @relation(fields: [crop], references: [slug], onDelete: NoAction, onUpdate: NoAction)
-  user      User     @relation(fields: [fid], references: [fid], onDelete: NoAction, onUpdate: NoAction)
+  user      User     @relation(fields: [fid], references: [fid], onDelete: Cascade, onUpdate: NoAction)
 
   @@id([fid, crop])
   @@map("user_harvested_crops")
@@ -213,9 +217,44 @@ model UserLeaderboards {
   lastScore    Int      @default(0)
   league       Int      @default(0)
   createdAt    DateTime @default(now()) @db.Timestamptz(6)
-  user         User     @relation(fields: [fid], references: [fid], onDelete: NoAction, onUpdate: NoAction)
+  updatedAt    DateTime @default(now()) @db.Timestamptz(6)
+  lastLeague   Int      @default(0)
+  user         User     @relation(fields: [fid], references: [fid], onDelete: Cascade, onUpdate: NoAction)
 
   @@map("user_leaderboards")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model Collectibles {
+  id                  Int                   @id @default(autoincrement())
+  name                String?
+  description         String?
+  imageUrl            String
+  createdAt           DateTime              @default(now()) @db.Timestamptz(6)
+  category            String?
+  userHasCollectibles UserHasCollectibles[]
+
+  @@map("collectibles")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model UserHasCollectibles {
+  fid                Int
+  collectibleId      Int
+  createdAt          DateTime     @default(now()) @db.Timestamptz(6)
+  mintedImageUrl     String?
+  mintedMetadataUrl  String?
+  txHash             String?
+  status             String       @default("description")
+  generatedImageUrls Json?        @db.Json
+  updatedAt          DateTime     @default(now()) @db.Timestamptz(6)
+  generatedTaskId    String?
+  pfpDescription     String?
+  collectibles       Collectibles @relation(fields: [collectibleId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "user_has_collectibles_collectibleid_fkey")
+  users              User         @relation(fields: [fid], references: [fid], onDelete: Cascade, onUpdate: NoAction)
+
+  @@id([fid, collectibleId])
+  @@map("user_has_collectibles")
 }
 
 enum UserHasQuestStatus {

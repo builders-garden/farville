@@ -73,22 +73,10 @@ export default function InventoryModal({ onClose }: { onClose: () => void }) {
     }
   };
 
-  const handleCopyRequest = async () => {
-    if (!requestUrl) return;
-
-    try {
-      await navigator.clipboard.writeText(requestUrl);
-      console.log("Request URL copied to clipboard:", requestUrl);
-    } catch (error) {
-      console.error("Error copying request URL:", error);
-    }
-  };
-
   const handleShareRequest = async () => {
     if (!castUrl || !requestUrl) return;
 
     try {
-      await navigator.clipboard.writeText(requestUrl);
       await sdk.actions.openUrl(castUrl);
       setSelectedItem(null);
       setRequestQuantity(1);
@@ -212,7 +200,7 @@ export default function InventoryModal({ onClose }: { onClose: () => void }) {
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto no-scrollbar">
           <div className="max-w-4xl mx-auto p-6">
             <div className="space-y-8">
               {renderCategorySection("seed", "🌱", "Seeds")}
@@ -252,9 +240,8 @@ export default function InventoryModal({ onClose }: { onClose: () => void }) {
               ? () => handleUseItem(selectedItem)
               : undefined
           }
-          onCopyRequest={handleCopyRequest}
           onShareRequest={handleShareRequest}
-          urlReady={!!requestUrl}
+          requestUrl={requestUrl}
         />
       )}
     </div>

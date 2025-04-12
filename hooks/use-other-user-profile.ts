@@ -1,4 +1,8 @@
-import { DbUser, DbUserHarvestedCrop } from "@/supabase/types";
+import {
+  DbUser,
+  DbUserHarvestedCrop,
+  UserCompleteCollectible,
+} from "@/supabase/types";
 import { UserItem, useUserItems } from "./use-user-items";
 import { useUser } from "./use-user";
 import { useUserHarvestedCrops } from "./use-user-harvested-crops";
@@ -6,6 +10,7 @@ import { getCurrentDayStreak, getCurrentLevelAndProgress } from "@/lib/utils";
 import { useUserStreaks } from "./use-user-streaks";
 import { useUserFrosts } from "./use-user-frosts";
 import { useEffect, useState } from "react";
+import { useUserCollectibles } from "./use-user-collectibles";
 
 interface OtherUserProfileData {
   user: DbUser | undefined;
@@ -13,6 +18,7 @@ interface OtherUserProfileData {
   harvestedCropsSummary: DbUserHarvestedCrop[] | undefined;
   level: number;
   currentStreakDays: number;
+  collectibles: UserCompleteCollectible[] | undefined;
 }
 
 export function useOtherUserProfile(fid?: number): {
@@ -25,6 +31,8 @@ export function useOtherUserProfile(fid?: number): {
     useUserHarvestedCrops(fid);
   const { userStreaks, isLoading: streaksLoading } = useUserStreaks(fid);
   const { userFrosts, isLoading: frostsLoading } = useUserFrosts(fid);
+  const { userCollectibles, isLoading: userCollectiblesLoading } =
+    useUserCollectibles(fid);
 
   const [userData, setUserData] = useState<OtherUserProfileData>({
     user: undefined,
@@ -32,6 +40,7 @@ export function useOtherUserProfile(fid?: number): {
     harvestedCropsSummary: undefined,
     level: 0,
     currentStreakDays: 0,
+    collectibles: undefined,
   });
 
   const isLoading =
@@ -39,7 +48,8 @@ export function useOtherUserProfile(fid?: number): {
     userItemsLoading ||
     isUserHarvestedCropsLoading ||
     streaksLoading ||
-    frostsLoading;
+    frostsLoading ||
+    userCollectiblesLoading;
 
   useEffect(() => {
     if (user) {
@@ -71,6 +81,15 @@ export function useOtherUserProfile(fid?: number): {
       }));
     }
   }, [userHarvestedCrops]);
+
+  useEffect(() => {
+    if (userCollectibles) {
+      setUserData((prev) => ({
+        ...prev,
+        collectibles: userCollectibles,
+      }));
+    }
+  }, [userCollectibles]);
 
   useEffect(() => {
     if (userStreaks && userStreaks[0]) {

@@ -12,7 +12,8 @@ import {
   DbUserFrost,
   DbUserLeaderboard,
 } from "@/supabase/types";
-import { UserHasItem } from "@prisma/client";
+import { DbUserDonation as DbUserDonationPrisma } from "@/prisma/types";
+import { Collectibles, UserHasCollectibles, UserHasItem } from "@prisma/client";
 import { getCurrentDayStreak } from "../utils";
 
 export async function getQuestLeaderboard({
@@ -182,9 +183,12 @@ export const updateUserXP = async (
       const currentXP = currentUser.xp;
       const newXP = currentXP + xp;
 
-      const currentLevel = LEVEL_XP_THRESHOLDS.findIndex(
+      let currentLevel = LEVEL_XP_THRESHOLDS.findIndex(
         (threshold) => currentXP < threshold
       );
+      if (currentLevel === -1) {
+        currentLevel = LEVEL_XP_THRESHOLDS.length;
+      }
       let newLevel = LEVEL_XP_THRESHOLDS.findIndex(
         (threshold) => newXP < threshold
       );
@@ -309,24 +313,61 @@ export const getUserDonationByReceiver = async (
       donatorFid: donator,
       receiverFid: receiver,
     },
+    orderBy: {
+      lastDonation: "desc",
+    },
   });
 };
 
-export const getUserDonationsLast24h = async (donatorFid: number) => {
-  const last24h = new Date(Date.now() - 24 * 60 * 60 * 1000);
-  return (
-    await prisma.userDonationHistory.findMany({
-      where: {
-        donatorFid,
-        lastDonation: {
-          gte: last24h,
-        },
+export interface DbUserDonationWithUsers extends DbUserDonationPrisma {
+  donator: DbUser;
+  receiver: DbUser;
+}
+
+export const getUserDonationsOfToday = async (
+  donatorFid: number
+): Promise<DbUserDonationWithUsers[]> => {
+  const today = new Date();
+  const startOfDay = new Date(
+    today.getFullYear(),
+    today.getMonth(),
+    today.getDate()
+  );
+  const donations = await prisma.userDonationHistory.findMany({
+    where: {
+      donatorFid,
+      lastDonation: {
+        gte: startOfDay,
       },
-      orderBy: {
-        lastDonation: "desc",
+    },
+    orderBy: {
+      lastDonation: "desc",
+    },
+    include: {
+      users_user_donations_history_donatorFidTousers: true,
+      users_user_donations_history_receiverFidTousers: true,
+    },
+  });
+
+  return donations.map(
+    ({
+      users_user_donations_history_donatorFidTousers,
+      users_user_donations_history_receiverFidTousers,
+      ...donation
+    }) => ({
+      ...donation,
+      donator: {
+        ...users_user_donations_history_donatorFidTousers,
+        createdAt:
+          users_user_donations_history_donatorFidTousers.createdAt.toISOString(),
+      },
+      receiver: {
+        ...users_user_donations_history_receiverFidTousers,
+        createdAt:
+          users_user_donations_history_receiverFidTousers.createdAt.toISOString(),
       },
     })
-  ).length;
+  );
 };
 
 export const updateUserDonationHistory = async (
@@ -584,9 +625,6 @@ export const getUsersByFids = async (
       fid: {
         in: fids.map(Number), // Convert string[] to number[]
       },
-      xp: {
-        gt: 0,
-      },
     },
     orderBy: {
       xp: "desc",
@@ -803,12 +841,13 @@ export const getWeeklyUserLeaderboardByLeague = async (
 ) => {
   const filter = {
     where: {
-      league,
+      league: currentWeek ? league : undefined,
       fid: {
         not: {
           in: CREATOR_FIDS,
         },
       },
+      lastLeague: currentWeek ? undefined : league,
     },
     orderBy: currentWeek
       ? { currentScore: "desc" as const }
@@ -865,13 +904,6 @@ export const updateUserWeeklyScore = async (
 ): Promise<{
   currentScore: number;
 }> => {
-  console.log("params", {
-    fid,
-    score,
-    userLevel,
-    currentUserXp,
-    didLevelUp,
-  });
   const level5 = LEVEL_XP_THRESHOLDS[4];
 
   if (userLevel >= 5) {
@@ -919,4 +951,25 @@ export const updateUserWeeklyScore = async (
       currentScore: 0,
     };
   }
+};
+
+export const getUserCollectibles = async (
+  fid: number
+): Promise<
+  (Collectibles & { userHasCollectibles: UserHasCollectibles | null })[]
+> => {
+  const collectibles = await prisma.collectibles.findMany({
+    include: {
+      userHasCollectibles: {
+        where: {
+          fid: fid,
+        },
+      },
+    },
+  });
+
+  return collectibles.map((collectible) => ({
+    ...collectible,
+    userHasCollectibles: collectible.userHasCollectibles[0] || null,
+  }));
 };

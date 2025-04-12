@@ -1,8 +1,9 @@
 import { Metadata } from "next";
 import { getRequestById, getUser } from "@/supabase/queries";
 import App from "@/app/app";
+import { env } from "@/lib/env";
 
-const appUrl = process.env.NEXT_PUBLIC_URL;
+const appUrl = env.NEXT_PUBLIC_URL;
 
 export async function generateMetadata({
   params,
@@ -12,8 +13,30 @@ export async function generateMetadata({
   const requestId = (await params).id;
   const request = await getRequestById(Number(requestId));
   if (!request) {
+    const frame = {
+      version: "next",
+      imageUrl: `${appUrl}/images/feed.png`,
+      button: {
+        title: "Play FarVille 🧑‍🌾",
+        action: {
+          type: "launch_frame",
+          name: "FarVille",
+          url: appUrl,
+          splashImageUrl: `${appUrl}/images/splash.png`,
+          splashBackgroundColor: "#f7f7f7",
+        },
+      },
+    };
+
     return {
       title: "FarVille",
+      openGraph: {
+        title: "FarVille",
+        description: "Plant, grow, and harvest crops with your friends.",
+      },
+      other: {
+        "fc:frame": JSON.stringify(frame),
+      },
     };
   }
   const fid = request.fid;
@@ -31,12 +54,16 @@ export async function generateMetadata({
       },
     };
   }
+  const buttonTitle =
+    `Donate to ${user.username} 🧑‍🌾`.length > 32
+      ? "Donate 🧑‍🌾"
+      : `Donate to ${user.username} 🧑‍🌾`;
 
   const frame = {
     version: "next",
     imageUrl: imageUrl.toString(),
     button: {
-      title: `Donate to ${user.username} 🧑‍🌾`,
+      title: buttonTitle,
       action: {
         type: "launch_frame",
         name: "FarVille",
@@ -67,7 +94,5 @@ export default async function RequestsPage({
 }) {
   const requestId = (await params).id;
 
-  return (
-    <App initialOverlay={{ type: "requests", id: Number(requestId) }} />
-  );
+  return <App initialOverlay={{ type: "requests", id: Number(requestId) }} />;
 }

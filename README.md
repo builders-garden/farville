@@ -1,5 +1,4 @@
-
-# FarVille 🌾
+# Farville 🌾
 
 A farming simulation game built with Next.js where you can grow crops, expand your land, and unlock perks!
 

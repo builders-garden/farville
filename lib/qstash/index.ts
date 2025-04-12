@@ -1,12 +1,13 @@
 import { Client } from "@upstash/qstash";
 import * as jose from "jose";
+import { env } from "@/lib/env";
 
-if (!process.env.QSTASH_TOKEN) {
+if (!env.QSTASH_TOKEN) {
   throw new Error("QSTASH_TOKEN is required");
 }
 
 const qstashClient = new Client({
-  token: process.env.QSTASH_TOKEN,
+  token: env.QSTASH_TOKEN,
 });
 
 export type QStashPublishJSONRequest = {
@@ -28,7 +29,7 @@ export const qstashPublishJSON = async (req: QStashPublishJSONRequest) => {
       body: req.body,
       headers: {
         ...req.headers,
-        Authorization: `Bearer ${process.env.QSTASH_TOKEN}`,
+        Authorization: `Bearer ${env.QSTASH_TOKEN}`,
       },
       delay: req.delay,
       notBefore: req.notBefore,
@@ -57,10 +58,10 @@ export const validateQstashRequest = async (
 
   const verificationResult = await jose.jwtVerify(
     upstashSignature,
-    new TextEncoder().encode(process.env.QSTASH_CURRENT_SIGNING_KEY),
+    new TextEncoder().encode(env.QSTASH_CURRENT_SIGNING_KEY),
     {
       issuer: "Upstash",
-      subject: `${process.env.NEXT_PUBLIC_URL}${path}`,
+      subject: `${env.NEXT_PUBLIC_URL}${path}`,
     }
   );
 

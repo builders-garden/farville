@@ -8,8 +8,7 @@ import FloatingNumber from "@/components/animations/FloatingNumber";
 import Confetti from "./animations/Confetti";
 import { AllQuests } from "@/hooks/use-game-state";
 
-type Tab = "active" | "claimable" | "expired";
-type SubTab = "daily" | "weekly" | "farmer";
+type Tab = "daily" | "weekly";
 
 export default function QuestsModal({
   onClose,
@@ -29,18 +28,11 @@ export default function QuestsModal({
   refetchUser: () => Promise<void>;
 }) {
   const { safeAreaInsets } = useFrameContext();
-  const [activeTab, setActiveTab] = useState<Tab>("active");
-  const [activeSubTab, setActiveSubTab] = useState<SubTab>("daily");
+  const [activeTab, setActiveTab] = useState<Tab>("daily");
 
-  const tabs: { id: Tab; label: string; icon: string }[] = [
-    { id: "active", label: "Active", icon: "⏰" },
-    { id: "claimable", label: "Claimable", icon: "✅" },
-  ];
-
-  const subTabs = [
-    { id: "daily", label: "daily", icon: "📅" },
-    { id: "weekly", label: "weekly", icon: "📅" },
-    { id: "farmer", label: "farmer", icon: "🌾" },
+  const tabs = [
+    { id: "daily" as Tab, label: "daily", icon: "☀️" },
+    { id: "weekly" as Tab, label: "weekly", icon: "🛤️" },
   ];
 
   const [rewardAnimation, setRewardAnimation] = useState<{
@@ -104,7 +96,7 @@ export default function QuestsModal({
         }}
         className="bg-[#7E4E31] w-full h-full"
       >
-        <div className="w-full h-full p-6 flex flex-col">
+        <div className="w-full h-full p-4 mt-2 flex flex-col">
           {/* Header */}
           <div className="flex-none">
             <div className="flex justify-between items-center mb-6">
@@ -164,33 +156,6 @@ export default function QuestsModal({
                 </motion.button>
               ))}
             </div>
-
-            {/* Subtabs - Only show when active tab is selected */}
-            {activeTab === "active" && (
-              <div className="grid grid-cols-3 gap-2 mb-6 bg-[#573d23] p-2 rounded-lg">
-                {subTabs.map((tab, index) => (
-                  <motion.button
-                    key={tab.id}
-                    initial={{ opacity: 0, y: -20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.1 }}
-                    onClick={() => setActiveSubTab(tab.id as SubTab)}
-                    className={`px-3 py-2 rounded-lg flex items-center justify-center gap-1.5 transition-all duration-200
-                      ${
-                        activeSubTab === tab.id
-                          ? "bg-[#6d4c2c] text-white scale-105 shadow-lg"
-                          : "text-white/70 hover:bg-[#6d4c2c]/50"
-                      }`}
-                    whileHover={{
-                      scale: activeSubTab === tab.id ? 1.05 : 1.02,
-                    }}
-                    whileTap={{ scale: 0.98 }}
-                  >
-                    <span className="text-[8px] font-medium">{tab.label}</span>
-                  </motion.button>
-                ))}
-              </div>
-            )}
           </div>
 
           {/* Content area */}
@@ -207,93 +172,55 @@ export default function QuestsModal({
               </div>
             ) : (
               <div className="space-y-3">
-                {activeTab === "active" && (
-                  <div className="flex flex-col text-white/70 text-sm gap-4">
-                    {activeSubTab === "daily" &&
-                      (incompleteQuests?.daily.length === 0 ? (
-                        <div>No daily quests available.</div>
-                      ) : (
-                        incompleteQuests?.daily.map((quest) => (
+                <div className="flex flex-col text-white/70 text-sm gap-4">
+                  {activeTab === "daily" &&
+                    (incompleteQuests?.daily.length === 0 &&
+                    completedQuests?.daily.length === 0 ? (
+                      <div>No daily quests available.</div>
+                    ) : (
+                      <>
+                        {completedQuests?.daily.map((quest) => (
+                          <Quest
+                            quest={quest}
+                            key={quest.id}
+                            claimable={true}
+                            onClaim={handleQuestClaim}
+                          />
+                        ))}
+                        {incompleteQuests?.daily.map((quest) => (
                           <Quest
                             quest={quest}
                             key={quest.id}
                             claimable={false}
                           />
-                        ))
-                      ))}
-                    {activeSubTab === "weekly" &&
-                      (incompleteQuests?.weekly.length === 0 ? (
-                        <div>No weekly quests available.</div>
-                      ) : (
-                        incompleteQuests?.weekly.map((quest) => (
-                          <Quest
-                            quest={quest}
-                            key={quest.id}
-                            claimable={false}
-                          />
-                        ))
-                      ))}
-                    {activeSubTab === "farmer" && (
-                      <div>
-                        <div className="text-white/70 text-sm">
-                          Hey Farmer, wait for the Beta release to get your
-                          quests!
-                        </div>
-                      </div>
-                    )}
-                    {/*
-                      TODO: Uncomment when farmer quests are available (BETA)
-                    (quests?.farmer.length === 0 ? (
-                        <div>No farmer quests available.</div>
-                      ) : (
-                        quests?.farmer.map((quest) => (
-                          <Quest
-                            quest={quest}
-                            key={quest.id}
-                            claimable={false}
-                          />
-                        ))
-                      ))
-                      */}
-                  </div>
-                )}
+                        ))}
+                      </>
+                    ))}
 
-                {activeTab === "claimable" && (
-                  <div className="flex flex-col gap-4">
-                    {completedQuests?.daily.map((quest) => (
-                      <Quest
-                        quest={quest}
-                        key={quest.id}
-                        claimable={true}
-                        onClaim={handleQuestClaim}
-                      />
+                  {activeTab === "weekly" &&
+                    (incompleteQuests?.weekly.length === 0 &&
+                    completedQuests?.weekly.length === 0 ? (
+                      <div>No weekly quests available.</div>
+                    ) : (
+                      <>
+                        {completedQuests?.weekly.map((quest) => (
+                          <Quest
+                            quest={quest}
+                            key={quest.id}
+                            claimable={true}
+                            onClaim={handleQuestClaim}
+                          />
+                        ))}
+                        {incompleteQuests?.weekly.map((quest) => (
+                          <Quest
+                            quest={quest}
+                            key={quest.id}
+                            claimable={false}
+                          />
+                        ))}
+                      </>
                     ))}
-                    {completedQuests?.weekly.map((quest) => (
-                      <Quest
-                        quest={quest}
-                        key={quest.id}
-                        claimable={true}
-                        onClaim={handleQuestClaim}
-                      />
-                    ))}
-                    {completedQuests?.monthly.map((quest) => (
-                      <Quest
-                        quest={quest}
-                        key={quest.id}
-                        claimable={true}
-                        onClaim={handleQuestClaim}
-                      />
-                    ))}
-                    {completedQuests?.farmer.map((quest) => (
-                      <Quest
-                        quest={quest}
-                        key={quest.id}
-                        claimable={true}
-                        onClaim={handleQuestClaim}
-                      />
-                    ))}
-                  </div>
-                )}
+                </div>
               </div>
             )}
           </div>

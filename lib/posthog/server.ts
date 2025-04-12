@@ -1,7 +1,8 @@
 import axios from "axios";
 import { PostHog } from "posthog-node";
+import { env } from "@/lib/env";
 
-const posthog = new PostHog(process.env.NEXT_PUBLIC_POSTHOG_KEY!, {
+const posthog = new PostHog(env.NEXT_PUBLIC_POSTHOG_KEY, {
   host: "https://eu.i.posthog.com",
 });
 
@@ -10,7 +11,7 @@ export const trackEvent = (
   event: string,
   properties: Record<string, unknown>
 ) => {
-  if (process.env.NEXT_PUBLIC_POSTHOG_DISABLED === "true") {
+  if (env.NEXT_PUBLIC_POSTHOG_DISABLED === "true") {
     return;
   }
   console.log("tracking event", event, properties);
@@ -27,7 +28,7 @@ export const sendBatchToPostHog = async (
   properties: Record<string, unknown>[]
 ) => {
   const API_URL = "https://eu.i.posthog.com/batch/";
-  const API_KEY = process.env.NEXT_PUBLIC_POSTHOG_KEY;
+  const API_KEY = env.NEXT_PUBLIC_POSTHOG_KEY;
 
   if (!API_KEY) {
     console.error("PostHog API key not found");

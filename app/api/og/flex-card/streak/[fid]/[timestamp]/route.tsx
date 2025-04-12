@@ -1,3 +1,4 @@
+import { env } from "@/lib/env";
 import {
   getActiveStreaksCount,
   getTopStreaks,
@@ -66,7 +67,7 @@ export async function GET(
       }
     }
 
-    const appUrl = process.env.NEXT_PUBLIC_URL;
+    const appUrl = env.NEXT_PUBLIC_URL;
 
     const bgImageRes = await fetch(
       new URL(`${appUrl}/images/bg-empty.png`, import.meta.url)
@@ -314,10 +315,15 @@ export async function GET(
                     >
                       {topStreaksUsers.slice(0, 5).map(
                         (streakUser, index) =>
-                          streakUser.avatarUrl && (
+                          (streakUser.selectedAvatarUrl ||
+                            streakUser.avatarUrl) && (
                             <img
                               key={index}
-                              src={streakUser.avatarUrl}
+                              src={
+                                streakUser.selectedAvatarUrl ||
+                                streakUser.avatarUrl ||
+                                ""
+                              }
                               width="30px"
                               height="30px"
                               style={{
@@ -386,9 +392,9 @@ export async function GET(
                       "0 8px 20px rgba(0,0,0,0.7), 0 0 25px rgba(255,215,0,0.6), 0 0 10px #FFD700",
                   }}
                 >
-                  {user?.avatarUrl && (
+                  {(user?.selectedAvatarUrl || user?.avatarUrl) && (
                     <img
-                      src={user.avatarUrl}
+                      src={user?.selectedAvatarUrl || user?.avatarUrl || ""}
                       width="100%"
                       height="100%"
                       style={{
