@@ -226,7 +226,7 @@ export default function GameWrapper() {
           </span>
         ),
         {
-          duration: 5000,
+          duration: 25000,
           icon: "⚠️",
           style: {
             backgroundColor: "white",
