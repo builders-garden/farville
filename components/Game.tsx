@@ -5,7 +5,7 @@ import { OverlayConfig } from "@/context/GameContext";
 import { useSignIn } from "@/hooks/use-sign-in";
 import Image from "next/image";
 import { QRCodeSVG } from "qrcode.react";
-import React from "react";
+import React, { useRef, useState } from "react";
 import { GameProvider } from "./../context/GameContext";
 
 export default function Game({
@@ -16,10 +16,15 @@ export default function Game({
   initialOverlay?: OverlayConfig;
 }) {
   const { isSDKLoaded, context } = useFrameContext();
+  const [isMuted, setIsMuted] = useState(true);
 
   const isInMaintenance = false;
 
   const { isSignedIn, isLoading, error } = useSignIn(isInMaintenance);
+
+  const toggleMute = () => {
+    setIsMuted(!isMuted);
+  };
 
   if (!context && isSDKLoaded && !isLoading) {
     return (
@@ -33,10 +38,16 @@ export default function Game({
                 <video
                   src="https://i.imgur.com/eCBtpU9.mp4"
                   autoPlay
-                  muted
                   loop
+                  muted={isMuted}
                   className="w-full h-full object-cover opacity-90"
                 />
+                <button
+                  onClick={toggleMute}
+                  className="absolute bottom-4 right-4 p-2 sm:p-4 bg-black/70 rounded-full hover:bg-black/95 transition-colors w-8 h-8 sm:w-12 sm:h-12 flex items-center justify-center"
+                >
+                  {isMuted ? "🔇" : "🔊"}
+                </button>
               </div>
             </div>
 
