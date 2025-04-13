@@ -656,7 +656,7 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
                   <>
                     {!(
                       activeTab === "weekly" &&
-                      isShowingCurrentWeek &&
+                      !isShowingCurrentWeek &&
                       state.weeklyStats.lastScore === 0
                     ) &&
                       getCurrentData()?.targetPosition && (

@@ -73,6 +73,16 @@ export const POST = async (req: NextRequest) => {
     // await initializeUserQuest(fid);
   }
 
+  // generate new entry inside the user leaderboard if it doesn't exist
+  let weeklyUserLeaderboard = await getUserLeaderboardEntry(fid);
+
+  if (!weeklyUserLeaderboard) {
+    const userLeague = getUserLeague(user.xp);
+    weeklyUserLeaderboard = await createUserLeaderboardEntry(fid, {
+      league: userLeague,
+    });
+  }
+
   // Check if the user has daily, weekly and monthly quests
   // If not, initialize them
   const dailyQuests = await getUserQuests(fid, {
@@ -88,16 +98,6 @@ export const POST = async (req: NextRequest) => {
   }
   if (!weeklyQuests || weeklyQuests?.length === 0) {
     await initWeeklyUserQuests(Number(fid));
-  }
-
-  // generate new entry inside the user leaderboard if it doesn't exist
-  let weeklyUserLeaderboard = await getUserLeaderboardEntry(fid);
-
-  if (!weeklyUserLeaderboard) {
-    const userLeague = getUserLeague(user.xp);
-    weeklyUserLeaderboard = await createUserLeaderboardEntry(fid, {
-      league: userLeague,
-    });
   }
 
   // Generate a session token using fid and current timestamp
