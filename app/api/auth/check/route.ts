@@ -20,6 +20,21 @@ export async function GET(request: NextRequest) {
   }
   const { searchParams } = new URL(request.url);
   const userLocalDate = searchParams.get("userLocalDate")!;
+
+  // generate new entry inside the user leaderboard if it doesn't exist
+  let weeklyUserLeaderboard = await getUserLeaderboardEntry(Number(fid));
+
+  if (!weeklyUserLeaderboard) {
+    const user = await getUser(Number(fid));
+    if (!user) {
+      return NextResponse.json({ message: "User not found" }, { status: 404 });
+    }
+    const userLeague = getUserLeague(user.xp);
+    weeklyUserLeaderboard = await createUserLeaderboardEntry(Number(fid), {
+      league: userLeague,
+    });
+  }
+
   // Check if the user has daily, weekly and monthly quests
   // If not, initialize them
   const dailyQuests = await getUserQuests(Number(fid), {
@@ -37,20 +52,6 @@ export async function GET(request: NextRequest) {
   }
   if (!weeklyQuests || weeklyQuests?.length === 0) {
     await initWeeklyUserQuests(Number(fid));
-  }
-
-  // generate new entry inside the user leaderboard if it doesn't exist
-  let weeklyUserLeaderboard = await getUserLeaderboardEntry(Number(fid));
-
-  if (!weeklyUserLeaderboard) {
-    const user = await getUser(Number(fid));
-    if (!user) {
-      return NextResponse.json({ message: "User not found" }, { status: 404 });
-    }
-    const userLeague = getUserLeague(user.xp);
-    weeklyUserLeaderboard = await createUserLeaderboardEntry(Number(fid), {
-      league: userLeague,
-    });
   }
 
   trackEvent(Number(fid), "sign_in", {
