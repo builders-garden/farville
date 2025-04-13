@@ -265,6 +265,11 @@ export default function RequestModal({
                         Resets in: {countdown()}
                       </p>
                       <DonationHistoryList donations={todayDonations} />
+                      {remainingQuantity === 0 && (
+                        <p className="text-green-400/90 text-xs xs:text-sm text-center">
+                          This request has been fully filled!
+                        </p>
+                      )}
                     </div>
                   ) : !canDonateToAnotherUser && !receiverIsInTodayDonations ? (
                     <div className="flex flex-col items-center gap-1.5 xs:gap-3 mt-1.5 xs:mt-2">
@@ -276,6 +281,11 @@ export default function RequestModal({
                         Resets in: {countdown()}
                       </p>
                       <DonationHistoryList donations={todayDonations} />
+                      {remainingQuantity === 0 && (
+                        <p className="text-green-400/90 text-xs xs:text-sm text-center">
+                          This request has been fully filled!
+                        </p>
+                      )}
                     </div>
                   ) : (
                     <div className="flex flex-col items-center gap-1.5 xs:gap-2 mt-1.5 xs:mt-2">

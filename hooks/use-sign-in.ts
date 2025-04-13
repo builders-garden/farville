@@ -7,7 +7,7 @@ import * as Sentry from "@sentry/nextjs";
 import { getUserNowDate } from "@/lib/utils";
 import { useAuthCheck } from "./use-auth-check";
 
-export const useSignIn = () => {
+export const useSignIn = (isInMaintenance: boolean) => {
   const { isSDKLoaded, context, error: contextError } = useFrameContext();
   const [isSignedIn, setIsSignedIn] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -15,7 +15,7 @@ export const useSignIn = () => {
   const [token, setToken] = useState<string>(
     localStorage.getItem("token") || ""
   );
-  const { error: authCheckError } = useAuthCheck();
+  const { error: authCheckError } = useAuthCheck(isInMaintenance);
 
   const signIn = useCallback(async () => {
     try {
@@ -106,20 +106,33 @@ export const useSignIn = () => {
   }, [authCheckError, context?.user?.fid, isSignedIn, signIn, token]);
 
   useEffect(() => {
-    if (isSDKLoaded && !isSignedIn && !isLoading && !error) {
+    if (
+      !isInMaintenance &&
+      isSDKLoaded &&
+      !isSignedIn &&
+      !isLoading &&
+      !error
+    ) {
       handleSignIn().catch((err) => {
         console.error("Auto sign-in failed:", err);
       });
     }
-  }, [isSDKLoaded, isSignedIn, isLoading, error, handleSignIn]);
+  }, [
+    isInMaintenance,
+    isSDKLoaded,
+    isSignedIn,
+    isLoading,
+    error,
+    handleSignIn,
+  ]);
 
   useEffect(() => {
-    if (authCheckError) {
+    if (!isInMaintenance && authCheckError) {
       localStorage.removeItem("token");
       setToken("");
       setIsSignedIn(false);
     }
-  }, [authCheckError]);
+  }, [isInMaintenance, authCheckError]);
 
   return { signIn: handleSignIn, isSignedIn, isLoading, error };
 };

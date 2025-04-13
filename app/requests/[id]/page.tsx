@@ -13,8 +13,30 @@ export async function generateMetadata({
   const requestId = (await params).id;
   const request = await getRequestById(Number(requestId));
   if (!request) {
+    const frame = {
+      version: "next",
+      imageUrl: `${appUrl}/images/feed.png`,
+      button: {
+        title: "Play FarVille 🧑‍🌾",
+        action: {
+          type: "launch_frame",
+          name: "FarVille",
+          url: appUrl,
+          splashImageUrl: `${appUrl}/images/splash.png`,
+          splashBackgroundColor: "#f7f7f7",
+        },
+      },
+    };
+
     return {
       title: "FarVille",
+      openGraph: {
+        title: "FarVille",
+        description: "Plant, grow, and harvest crops with your friends.",
+      },
+      other: {
+        "fc:frame": JSON.stringify(frame),
+      },
     };
   }
   const fid = request.fid;
