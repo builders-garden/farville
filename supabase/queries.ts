@@ -23,13 +23,10 @@ import {
 } from "./types";
 import { CROP_DATA, SPEED_BOOST } from "@/lib/game-constants";
 import { CropType, PerkType, QuestStatus } from "@/types/game";
-import { getBoostTime, getCurrentLevelAndProgress } from "@/lib/utils";
-import {
-  generateDailyQuests,
-  generateMonthlyQuests,
-  generateWeeklyQuests,
-} from "./quests";
+import { getBoostTime, getLevelThresholdLeagueByLeague } from "@/lib/utils";
+import { generateDailyQuests, generateWeeklyQuests } from "./quests";
 import { prisma } from "@/lib/prisma/client";
+import { getUserLeaderboardEntry } from "@/lib/prisma/queries";
 
 export const getUsers = async (
   offset: number = 0,
@@ -1195,16 +1192,18 @@ export const initDailyUserQuests = async (fid: number): Promise<void> => {
   if (!user) {
     throw new Error("User not found");
   }
-  const userXp = user.xp;
-  const { currentLevel } = getCurrentLevelAndProgress(userXp);
+
+  const userLeague = (await getUserLeaderboardEntry(fid))?.league || 0;
+
+  const thresholdLevel = getLevelThresholdLeagueByLeague(userLeague);
 
   let dailyQuests: DbQuest[] = await getQuestsByTypeAndLevel(
     "daily",
-    currentLevel
+    thresholdLevel
   );
 
   if (!dailyQuests || dailyQuests.length === 0) {
-    dailyQuests = await generateDailyQuests(currentLevel);
+    dailyQuests = await generateDailyQuests(thresholdLevel);
   }
 
   await Promise.all(
@@ -1226,51 +1225,22 @@ export const initWeeklyUserQuests = async (fid: number): Promise<void> => {
   if (!user) {
     throw new Error("User not found");
   }
-  const userXp = user.xp;
-  const { currentLevel } = getCurrentLevelAndProgress(userXp);
+
+  const userLeague = (await getUserLeaderboardEntry(fid))?.league || 0;
+
+  const thresholdLevel = getLevelThresholdLeagueByLeague(userLeague);
 
   let weeklyQuests: DbQuest[] = await getQuestsByTypeAndLevel(
     "weekly",
-    currentLevel
+    thresholdLevel
   );
 
   if (!weeklyQuests || weeklyQuests.length === 0) {
-    weeklyQuests = await generateWeeklyQuests(currentLevel);
+    weeklyQuests = await generateWeeklyQuests(thresholdLevel);
   }
 
   await Promise.all(
     weeklyQuests.map((quest) =>
-      createUserQuest({
-        fid,
-        questId: quest.id,
-        completedAt: null,
-        status: QuestStatus.Incomplete,
-        progress: 0,
-      })
-    )
-  );
-};
-
-export const initMonthlyUserQuests = async (fid: number): Promise<void> => {
-  // get user level
-  const user = await getUser(fid);
-  if (!user) {
-    throw new Error("User not found");
-  }
-  const userXp = user.xp;
-  const { currentLevel } = getCurrentLevelAndProgress(userXp);
-
-  let monthlyQuests: DbQuest[] = await getQuestsByTypeAndLevel(
-    "monthly",
-    currentLevel
-  );
-
-  if (!monthlyQuests || monthlyQuests.length === 0) {
-    monthlyQuests = await generateMonthlyQuests(currentLevel);
-  }
-
-  await Promise.all(
-    monthlyQuests.map((quest) =>
       createUserQuest({
         fid,
         questId: quest.id,

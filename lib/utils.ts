@@ -259,6 +259,17 @@ export const getUserLeague = (experience: number) => {
   return 3;
 };
 
+export const getLevelThresholdLeagueByLeague = (league: number) => {
+  if (league === 0) {
+    return 1;
+  } else if (league === 1) {
+    return 5;
+  } else if (league === 2) {
+    return 10;
+  }
+  return 15;
+};
+
 export const getUserNowDate = () => {
   // This implementation is incorrect because:
   // 1. toLocaleString() output format is locale-dependent and unreliable
