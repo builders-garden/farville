@@ -5,15 +5,15 @@ import { useUserQuests } from "@/hooks/use-quests";
 import { AnimatePresence } from "framer-motion";
 import dynamic from "next/dynamic";
 import { useNextStep } from "nextstepjs";
-import { useEffect, useRef, useState } from "react";
-import toast from "react-hot-toast";
+import { useEffect } from "react";
 import { useFrameContext } from "../context/FrameContext";
 import { useGame } from "../context/GameContext";
 import Header from "./Header";
 import InventoryModal from "./InventoryModal";
 import LeaderboardModal from "./LeaderboardModal";
 import MarketplaceModal from "./MarketplaceModal";
-import PatchNotesModal from "./PatchNotesModal";
+// import toast from "react-hot-toast";
+// import PatchNotesModal from "./PatchNotesModal";
 import PerkIndicator from "./PerkIndicator";
 import PlantingIndicator from "./PlantingIndicator";
 import ProfileModal from "./ProfileModal";
@@ -189,8 +189,8 @@ export default function GameWrapper() {
     loading,
   } = useGame();
   const { safeAreaInsets } = useFrameContext();
-  const [showPatchNotes, setShowPatchNotes] = useState(false);
-  const toastShownRef = useRef(false);
+  // const [showPatchNotes, setShowPatchNotes] = useState(false);
+  // const toastShownRef = useRef(false);
 
   const handleOverlayComplete = () => {
     setActiveOverlay(null);
@@ -210,47 +210,48 @@ export default function GameWrapper() {
     state.showGridCellsTutorial,
   ]);
 
-  useEffect(() => {
-    if (!toastShownRef.current) {
-      toastShownRef.current = true;
-      toast(
-        (t) => (
-          <span
-            onClick={() => {
-              toast.dismiss(t.id);
-              setShowPatchNotes(true);
-            }}
-            className="cursor-pointer"
-          >
-            Important announcement, click to learn more
-          </span>
-        ),
-        {
-          duration: 5000,
-          icon: "⚠️",
-          style: {
-            backgroundColor: "white",
-            color: "black",
-          },
-          position: "top-center",
-        }
-      );
-    }
-  }, []);
+  // useEffect(() => {
+  //   if (!toastShownRef.current) {
+  //     toastShownRef.current = true;
+  //     toast(
+  //       (t) => (
+  //         <span
+  //           onClick={() => {
+  //             toast.dismiss(t.id);
+  //             setShowPatchNotes(true);
+  //           }}
+  //           className="cursor-pointer"
+  //         >
+  //           Important announcement, click to learn more
+  //         </span>
+  //       ),
+  //       {
+  //         duration: 5000,
+  //         icon: "⚠️",
+  //         style: {
+  //           backgroundColor: "white",
+  //           color: "black",
+  //         },
+  //         position: "top-center",
+  //       }
+  //     );
+  //   }
+  // }, []);
 
   return (
     <div className="relative z-10">
-      {/* <ClickEffect /> */}
-
       {activeOverlay?.type === "requests" && (
         <AnimatePresence>
-          <RequestModal onClose={handleOverlayComplete} id={activeOverlay.id} />
+          <RequestModal
+            onClose={handleOverlayComplete}
+            id={activeOverlay.id}
+          />
         </AnimatePresence>
       )}
 
-      {showPatchNotes && (
+      {/* {showPatchNotes && (
         <PatchNotesModal onClose={() => setShowPatchNotes(false)} />
-      )}
+      )} */}
 
       {/* Main game content */}
       {!activeOverlay && (
@@ -268,7 +269,10 @@ export default function GameWrapper() {
           className="flex flex-col h-[100dvh] w-full overflow-hidden"
         >
           <Header />
-          <div className="flex-1 relative min-h-0" id="game-grid">
+          <div
+            className="flex-1 relative min-h-0"
+            id="game-grid"
+          >
             <GameGrid />
           </div>
           <Toolbar safeAreaInsets={safeAreaInsets} />
