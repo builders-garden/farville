@@ -224,7 +224,10 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
   return (
     <div className="fixed inset-0 bg-black/50 flex items-start z-50">
       {selectedUserFid ? (
-        <ProfileModal onClose={handleCloseProfile} userFid={selectedUserFid} />
+        <ProfileModal
+          onClose={handleCloseProfile}
+          userFid={selectedUserFid}
+        />
       ) : (
         <>
           <motion.div
@@ -642,96 +645,102 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
                       className="bg-[#FFB938] w-full justify-center text-[#5c4121] text-xs xs:text-sm px-4 xs:px-6 py-2 xs:py-3 rounded-lg font-bold
                          flex items-center gap-2 shadow-lg hover:bg-[#ffc65c] transition-colors"
                     >
-                      <Share2 size={18} className="w-4 h-4 xs:w-5 xs:h-5" />
+                      <Share2
+                        size={18}
+                        className="w-4 h-4 xs:w-5 xs:h-5"
+                      />
                       Let them know
                     </motion.button>
                   </div>
                 ) : (
                   <>
-                    {getCurrentData()?.targetPosition && (
-                      <motion.div
-                        key={state.user.fid}
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.02 }}
-                        className="bg-gradient-to-r from-[#8B5E3C] to-[#6d4c2c] px-3 xs:px-4 py-2 xs:py-3 rounded-lg flex items-center gap-2 xs:gap-3
+                    {!(
+                      activeTab === "weekly" &&
+                      isShowingCurrentWeek &&
+                      state.weeklyStats.lastScore === 0
+                    ) &&
+                      getCurrentData()?.targetPosition && (
+                        <motion.div
+                          key={state.user.fid}
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: 0.02 }}
+                          className="bg-gradient-to-r from-[#8B5E3C] to-[#6d4c2c] px-3 xs:px-4 py-2 xs:py-3 rounded-lg flex items-center gap-2 xs:gap-3
                          border-2 border-[#FFB938] shadow-lg mb-3 xs:mb-4 relative overflow-hidden
                          hover:scale-[1.02] transition-transform duration-200 cursor-pointer"
-                        onClick={() => setSelectedUserFid(state.user.fid)}
-                      >
-                        <div
-                          className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent 
+                          onClick={() => setSelectedUserFid(state.user.fid)}
+                        >
+                          <div
+                            className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent 
                           animate-[shine_3s_ease-in-out_infinite] pointer-events-none"
-                        />
-                        <div className="flex-none text-center px-1.5 xs:px-2 py-0.5 xs:py-1 bg-[#5c4121] rounded-lg text-white/90 text-[10px] xs:text-xs font-medium">
-                          #
-                          {getCurrentData()?.targetPosition !== -1
-                            ? getCurrentData()?.targetPosition
-                            : "N/A"}
-                        </div>
-                        {state.user.selectedAvatarUrl ||
-                        state.user.avatarUrl ? (
-                          <LeaderboardUserAvatar
-                            pfpUrl={
-                              state.user.selectedAvatarUrl ||
-                              state.user.avatarUrl ||
-                              ""
-                            }
-                            username={state.user.username}
-                            isOgUser={state.user.mintedOG}
                           />
-                        ) : (
-                          <div className="w-8 h-8 xs:w-10 xs:h-10 rounded-full bg-[#5c4121] flex items-center justify-center text-white/90 flex-none">
-                            👤
+                          <div className="flex-none text-center px-1.5 xs:px-2 py-0.5 xs:py-1 bg-[#5c4121] rounded-lg text-white/90 text-[10px] xs:text-xs font-medium">
+                            #
+                            {getCurrentData()?.targetPosition !== -1
+                              ? getCurrentData()?.targetPosition
+                              : "N/A"}
                           </div>
-                        )}
-                        <div className="min-w-0 flex flex-col gap-0.5 xs:gap-1 w-full">
-                          <p className="text-white/90 font-medium truncate text-xs xs:text-sm">
-                            {state.user.username}
-                          </p>
-                          <div className="flex items-center gap-2 xs:gap-4">
-                            {activeTab === "weekly" ||
-                            leaderboardType === "xp" ? (
-                              <>
-                                {activeTab !== "weekly" && (
-                                  <span className="text-[#FFB938] rounded-full font-medium text-[10px] xs:text-xs">
-                                    Lvl {state.level}
-                                  </span>
-                                )}
-                                <div className="flex justify-between w-full items-center">
-                                  <div className="text-white/60 text-[10px] xs:text-xs">
-                                    {activeTab === "weekly" ? (
-                                      <div className="flex items-center gap-1 xs:gap-2">
-                                        <Image
-                                          src="/images/leagues/clover.png"
-                                          alt="GT"
-                                          width={12}
-                                          height={12}
-                                          className="w-3 h-3 xs:w-[15px] xs:h-[15px]"
-                                        />
-                                        <>
-                                          {isShowingCurrentWeek
-                                            ? "GT " +
-                                              state.weeklyStats.currentScore.toLocaleString()
-                                            : state.weeklyStats.lastScore.toLocaleString()}
-                                        </>
-                                      </div>
-                                    ) : (
-                                      <>XP:{state.user.xp.toLocaleString()}</>
-                                    )}
+                          {state.user.selectedAvatarUrl ||
+                          state.user.avatarUrl ? (
+                            <LeaderboardUserAvatar
+                              pfpUrl={
+                                state.user.selectedAvatarUrl ||
+                                state.user.avatarUrl ||
+                                ""
+                              }
+                              username={state.user.username}
+                              isOgUser={state.user.mintedOG}
+                            />
+                          ) : (
+                            <div className="w-8 h-8 xs:w-10 xs:h-10 rounded-full bg-[#5c4121] flex items-center justify-center text-white/90 flex-none">
+                              👤
+                            </div>
+                          )}
+                          <div className="min-w-0 flex flex-col gap-0.5 xs:gap-1 w-full">
+                            <p className="text-white/90 font-medium truncate text-xs xs:text-sm">
+                              {state.user.username}
+                            </p>
+                            <div className="flex items-center gap-2 xs:gap-4">
+                              {activeTab === "weekly" ||
+                              leaderboardType === "xp" ? (
+                                <>
+                                  {activeTab !== "weekly" && (
+                                    <span className="text-[#FFB938] rounded-full font-medium text-[10px] xs:text-xs">
+                                      Lvl {state.level}
+                                    </span>
+                                  )}
+                                  <div className="flex justify-between w-full items-center">
+                                    <div className="text-white/60 text-[10px] xs:text-xs">
+                                      {activeTab === "weekly" ? (
+                                        <div className="flex items-center gap-1 xs:gap-2">
+                                          <Image
+                                            src="/images/leagues/clover.png"
+                                            alt="GT"
+                                            width={12}
+                                            height={12}
+                                            className="w-3 h-3 xs:w-[15px] xs:h-[15px]"
+                                          />
+                                          {"GT " +
+                                            (isShowingCurrentWeek
+                                              ? state.weeklyStats.currentScore.toLocaleString()
+                                              : state.weeklyStats.lastScore.toLocaleString())}
+                                        </div>
+                                      ) : (
+                                        <>XP:{state.user.xp.toLocaleString()}</>
+                                      )}
+                                    </div>
                                   </div>
-                                </div>
-                              </>
-                            ) : (
-                              <p className="text-white/60 text-[8px] xs:text-[10px]">
-                                Completed Quests:{" "}
-                                {getCurrentData()?.questCount || 0}
-                              </p>
-                            )}
+                                </>
+                              ) : (
+                                <p className="text-white/60 text-[8px] xs:text-[10px]">
+                                  Completed Quests:{" "}
+                                  {getCurrentData()?.questCount || 0}
+                                </p>
+                              )}
+                            </div>
                           </div>
-                        </div>
-                      </motion.div>
-                    )}
+                        </motion.div>
+                      )}
                     <div className="space-y-1.5 xs:space-y-2">
                       {getCurrentData()?.users?.map((entry, index) => (
                         <motion.div
@@ -797,10 +806,10 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
                                             height={12}
                                             className="w-3 h-3 xs:w-[15px] xs:h-[15px]"
                                           />
-                                          {isShowingCurrentWeek
-                                            ? "GT " +
-                                              entry.currentScore?.toLocaleString()
-                                            : entry.lastScore?.toLocaleString()}
+                                          {"GT " +
+                                            (isShowingCurrentWeek
+                                              ? entry.currentScore?.toLocaleString()
+                                              : entry.lastScore?.toLocaleString())}
                                         </div>
                                       ) : (
                                         <>XP:{entry.xp.toLocaleString()}</>
