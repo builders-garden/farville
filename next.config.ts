@@ -8,6 +8,7 @@ const jiti = createJiti(fileURLToPath(import.meta.url));
 jiti("./lib/env");
 
 const nextConfig: NextConfig = {
+  output: "standalone",
   devIndicators: {
     appIsrStatus: false,
   },
