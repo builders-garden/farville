@@ -1,10 +1,11 @@
 import { MONTHLY_REWARDS } from "@/lib/game-constants";
 import {
   getUserCurrentStreakNumber,
+  getUserItems,
   getUserStreaks,
   updateStreakLastClaimed,
 } from "@/lib/prisma/queries";
-import { getUserItems, updateUserItem } from "@/supabase/queries";
+import { updateUserItem } from "@/supabase/queries";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 

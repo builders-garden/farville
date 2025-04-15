@@ -2,9 +2,10 @@
 import {
   getActiveStreaksCount,
   getTopStreaks,
+  getUser,
   TopStreaksResult,
 } from "@/lib/prisma/queries";
-import { getUser, getUserCollectibleByCollectibleId } from "@/supabase/queries";
+import { getUserCollectibleByCollectibleId } from "@/supabase/queries";
 import { DbUser } from "@/supabase/types";
 import { ImageResponse } from "next/og";
 import { CollectibleStatus } from "@/lib/types/game";

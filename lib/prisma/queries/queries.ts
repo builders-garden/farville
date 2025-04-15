@@ -7,14 +7,14 @@ import {
 import {
   DbGridCell,
   DbStreak,
-  DbUser,
   DbUserDonation,
   DbUserFrost,
   DbUserLeaderboard,
 } from "@/supabase/types";
-import { DbUserDonation as DbUserDonationPrisma } from "@/prisma/types";
 import { Collectibles, UserHasCollectibles, UserHasItem } from "@prisma/client";
 import { getCurrentDayStreak } from "../../utils";
+import { DbUser } from "../types";
+import { DbUserDonation as DbUserDonationPrisma } from "../types";
 
 export async function getQuestLeaderboard({
   limit,
@@ -211,7 +211,7 @@ export const updateUserXP = async (
       return {
         user: {
           ...user,
-          createdAt: user.createdAt.toISOString(),
+          createdAt: user.createdAt,
         },
         didLevelUp,
         newXP,
@@ -224,13 +224,6 @@ export const updateUserXP = async (
       timeout: 14000,
     }
   );
-};
-
-export const updateUserCoins = async (fid: number, coins: number) => {
-  return await prisma.user.update({
-    where: { fid },
-    data: { coins: { increment: coins } },
-  });
 };
 
 export const updateGridCellsBulk = async (fid: number, cells: DbGridCell[]) => {
@@ -358,13 +351,11 @@ export const getUserDonationsOfToday = async (
       ...donation,
       donator: {
         ...users_user_donations_history_donatorFidTousers,
-        createdAt:
-          users_user_donations_history_donatorFidTousers.createdAt.toISOString(),
+        createdAt: users_user_donations_history_donatorFidTousers.createdAt,
       },
       receiver: {
         ...users_user_donations_history_receiverFidTousers,
-        createdAt:
-          users_user_donations_history_receiverFidTousers.createdAt.toISOString(),
+        createdAt: users_user_donations_history_receiverFidTousers.createdAt,
       },
     })
   );
@@ -634,7 +625,7 @@ export const getUsersByFids = async (
   return {
     users: users.map((user, index) => ({
       ...user,
-      createdAt: user.createdAt.toISOString(),
+      createdAt: user.createdAt,
       position: index + 1,
     })),
   };
@@ -741,55 +732,6 @@ export const getPlayerCount = async () => {
       },
     },
   });
-};
-
-export const getUsersByXp = async (
-  limit?: number,
-  targetFid?: number
-): Promise<{
-  users: DbUser[];
-  targetPosition?: number;
-}> => {
-  // Get users ordered by XP
-  const users = await prisma.user.findMany({
-    where: {
-      xp: {
-        gt: 0,
-      },
-    },
-    orderBy: {
-      xp: "desc",
-    },
-    ...(limit ? { take: limit } : {}),
-  });
-
-  let targetPosition: number | undefined;
-  if (targetFid) {
-    // Get target user's XP
-    const targetUser = await prisma.user.findUnique({
-      where: { fid: targetFid },
-      select: { xp: true },
-    });
-
-    if (targetUser) {
-      // Count users with higher or equal XP to get position
-      targetPosition = await prisma.user.count({
-        where: {
-          xp: {
-            gte: targetUser.xp,
-          },
-        },
-      });
-    }
-  }
-
-  return {
-    users: users.map((user) => ({
-      ...user,
-      createdAt: user.createdAt.toISOString(),
-    })),
-    targetPosition,
-  };
 };
 
 export const createUserLeaderboardEntry = async (

@@ -3,9 +3,9 @@ import { ACHIEVEMENTS_THRESHOLDS } from "@/lib/game-constants";
 import {
   getActiveStreaksCount,
   getTopStreaks,
+  getUser,
   TopStreaksResult,
 } from "@/lib/prisma/queries";
-import { getUser } from "@/supabase/queries";
 import { DbUser } from "@/supabase/types";
 import { ImageResponse } from "next/og";
 

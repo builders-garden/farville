@@ -25,7 +25,7 @@ import {
 import { encodeFunctionData, Address, Hex } from "viem";
 import { PFP_NFT_ABI } from "./contracts/pfp-nft/abi";
 import { env } from "@/lib/env";
-import { DbUserDonation } from "@/prisma/types";
+import { DbUserDonation } from "@/lib/prisma/types";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));

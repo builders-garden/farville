@@ -3,14 +3,14 @@ import { CollectibleStatus, QuestStatus } from "@/lib/types/game";
 export interface DbItem {
   id: number;
   name: string;
-  description: string;
+  description: string | null;
   icon: string;
   category: string;
   buyPrice: number | null;
   sellPrice: number | null;
   requiredLevel: number;
   slug: string;
-  createdAt: string;
+  createdAt: Date;
 }
 
 export interface DbUser {
@@ -23,7 +23,7 @@ export interface DbUser {
   coins: number;
   expansions: number;
   notificationDetails: string | null;
-  createdAt: string;
+  createdAt: Date;
   mintedOG: boolean;
   selectedAvatarUrl: string | null;
 }
@@ -197,7 +197,7 @@ export interface DbUserLeaderboard {
   currentScore: number;
   lastScore: number;
   league: number;
-  createdAt: string;
+  createdAt: Date;
 }
 
 export type InsertDbUserLeaderboard = Omit<DbUserLeaderboard, "created_at">;

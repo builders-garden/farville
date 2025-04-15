@@ -1,13 +1,12 @@
 import { MAX_FROSTS_QUANTITY } from "@/lib/game-constants";
+import { addUserItem, removeUserItem } from "@/supabase/queries";
+import { PerkType, SpecialItemType } from "@/lib/types/game";
 import {
-  addUserItem,
   getItemById,
   getUser,
   getUserItemByItemId,
-  removeUserItem,
   updateUserCoins,
-} from "@/supabase/queries";
-import { PerkType, SpecialItemType } from "@/lib/types/game";
+} from "@/lib/prisma/queries";
 
 export const buyItem = async (
   fid: number,

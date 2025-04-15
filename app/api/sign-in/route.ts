@@ -4,9 +4,7 @@ import { verifyMessage } from "viem";
 import * as jose from "jose";
 import {
   addReferral,
-  createUser,
   getGridCells,
-  getUser,
   giftStarterPack,
   initializeGrid,
   initDailyUserQuests,
@@ -15,7 +13,9 @@ import {
 } from "@/supabase/queries";
 import { trackEvent } from "@/lib/posthog/server";
 import {
+  createUser,
   createUserLeaderboardEntry,
+  getUser,
   getUserLeaderboardEntry,
 } from "@/lib/prisma/queries";
 import { getUserLeague } from "@/lib/utils";

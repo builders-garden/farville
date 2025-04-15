@@ -47,7 +47,7 @@ model Item {
   sellPrice         Int?
   requiredLevel     Int
   createdAt         DateTime            @default(now()) @db.Timestamptz(6)
-  slug              String?             @unique
+  slug              String              @unique
   quests            Quest[]
   requests          Request[]
   user_grid_cells   GridCell[]
