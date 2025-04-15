@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { z } from "zod";
 import { calculateUserQuestsProgress } from "./utils";
+import Logger from "@/lib/logger";
 
 const requestSchema = z.object({
   fid: z.number().min(1),
@@ -23,6 +24,9 @@ export async function POST(req: NextRequest) {
   const { fid, category, itemId, itemAmount } = requestBody.data;
 
   try {
+    Logger.log(
+      `calculating quests for user ${fid} with data: category="${category}", itemId=${itemId}, amount=${itemAmount}`
+    );
     const updatedQuests = await calculateUserQuestsProgress(
       fid,
       category,
@@ -30,20 +34,29 @@ export async function POST(req: NextRequest) {
       itemAmount
     );
 
-    console.log(
-      `[${new Date().toISOString()}] updated ${
-        updatedQuests?.length
-      } quests for user ${fid}`
-    );
+    if (updatedQuests.length === 0) {
+      Logger.log(
+        `no quests updated for user ${fid} with data: category="${category}", itemId=${itemId}, amount=${itemAmount}`
+      );
+    } else {
+      Logger.log(
+        `qstash call updated ${updatedQuests?.length} quests (${updatedQuests
+          ?.map((q) => q.questId)
+          .join(
+            ", "
+          )}) for user ${fid} with data: category="${category}", itemId=${itemId}, amount=${itemAmount}`
+      );
+    }
 
     return Response.json({
       success: true,
       quests: updatedQuests,
     });
   } catch (error) {
-    console.error(
-      `[${new Date().toISOString()}] error updating quests for user ${fid}`,
-      error
+    Logger.error(
+      `error updating quests for user ${fid} with data: category="${category}", itemId=${itemId}, amount=${itemAmount} - ${
+        error instanceof Error ? error.message : JSON.stringify(error)
+      }`
     );
 
     return Response.json(

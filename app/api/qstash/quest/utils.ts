@@ -1,7 +1,8 @@
-import { getUserQuests, updateUserQuest } from "@/supabase/queries";
+import { updateUserQuest } from "@/supabase/queries";
 
 import { DbUserHasQuestStatus } from "@/supabase/types";
-import { QuestStatus } from "@/types/game";
+import { QuestStatus } from "@/lib/types/game";
+import { getUserHasQuests } from "@/lib/prisma/queries/index";
 
 export const calculateUserQuestsProgress = async (
   fid: number,
@@ -9,12 +10,18 @@ export const calculateUserQuestsProgress = async (
   itemId?: number,
   itemAmount: number = 1
 ) => {
-  // Get all quests that require harvesting this crop
-  const quests = await getUserQuests(fid, {
-    status: QuestStatus.Incomplete,
-    category,
-    itemId,
-  });
+  // Get all quests that are incomplete and match the category and itemId
+  const quests = await getUserHasQuests(
+    fid,
+    {
+      status: QuestStatus.Incomplete,
+      category,
+      itemId,
+    },
+    {
+      quest: true,
+    }
+  );
 
   if (!quests?.length) {
     return [];
@@ -55,16 +62,6 @@ export const calculateUserQuestsProgress = async (
     questUpdates.map(({ fid, questId, updates }) =>
       updateUserQuest(fid, questId, updates)
     )
-  );
-
-  // Single log for all updates
-  console.log(
-    `[${new Date().toISOString()}] Updated ${
-      updatedQuests.length
-    } quests for user ${fid}. ` +
-      `Completed: ${
-        updatedQuests.filter((q) => q.status === "completed").length
-      }`
   );
 
   return updatedQuests;

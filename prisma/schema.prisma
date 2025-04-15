@@ -136,6 +136,8 @@ model Quest {
   items           Item?          @relation(fields: [itemId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   user_has_quests UserHasQuest[]
 
+  // Add this only if necessary
+  // @@index([category, itemId, startAt, endAt], map: "quests_by_category_itemid_startat_endat")
   @@map("quests")
 }
 

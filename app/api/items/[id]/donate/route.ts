@@ -16,7 +16,7 @@ import {
   incrementRequestFilledQuantity,
   getUser,
 } from "@/supabase/queries";
-import { PerkType, SpecialItemType } from "@/types/game";
+import { PerkType, SpecialItemType } from "@/lib/types/game";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 

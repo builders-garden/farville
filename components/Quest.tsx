@@ -6,7 +6,7 @@ import {
   DbQuestWithItem,
   DbUserHasQuestWithQuest,
 } from "@/supabase/types";
-import { QuestStatus } from "@/types/game";
+import { QuestStatus } from "@/lib/types/game";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import { useState } from "react";
@@ -58,10 +58,7 @@ const renderQuestRewards = (
     </div>
 
     {showRequestButton && (
-      <RequestButton
-        variant="secondary"
-        onClick={onRequestClick}
-      />
+      <RequestButton variant="secondary" onClick={onRequestClick} />
     )}
   </div>
 );

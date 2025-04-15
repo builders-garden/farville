@@ -13,7 +13,7 @@ import {
   CropData,
 } from "@/lib/game-constants";
 import { chooseRandomItem, getBoostTime } from "@/lib/utils";
-import { CropType, PerkType } from "@/types/game";
+import { CropType, PerkType } from "@/lib/types/game";
 import { createQuests, getItemsByCategory } from "./queries";
 import { InsertDbQuest, DbItem } from "./types";
 

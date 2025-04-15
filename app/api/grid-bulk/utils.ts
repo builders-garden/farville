@@ -24,7 +24,7 @@ import {
   upsertUserHarvestedCrop,
 } from "@/supabase/queries";
 import { DbGridCell } from "@/supabase/types";
-import { ActionType, CropType, PerkType, SeedType } from "@/types/game";
+import { ActionType, CropType, PerkType, SeedType } from "@/lib/types/game";
 import { NextResponse } from "next/server";
 import { sendQuestsCalculation } from "../grid-cells/utils";
 

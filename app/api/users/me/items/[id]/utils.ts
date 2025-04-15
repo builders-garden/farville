@@ -7,7 +7,7 @@ import {
   removeUserItem,
   updateUserCoins,
 } from "@/supabase/queries";
-import { PerkType, SpecialItemType } from "@/types/game";
+import { PerkType, SpecialItemType } from "@/lib/types/game";
 
 export const buyItem = async (
   fid: number,

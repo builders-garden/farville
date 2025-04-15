@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { useGame } from "../context/GameContext";
-import { ActionType, CropType, PerkType, SeedType } from "../types/game";
+import { ActionType, CropType, PerkType, SeedType } from "../lib/types/game";
 import CropSprite from "./CropSprite";
 import FloatingNumber from "./animations/FloatingNumber";
 import { useState, useRef, useEffect, useMemo, Fragment } from "react";

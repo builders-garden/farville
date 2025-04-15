@@ -1,4 +1,4 @@
-import { SeedType } from "@/types/game";
+import { SeedType } from "@/lib/types/game";
 import { qstashPublishJSON } from "../qstash";
 import { CROP_DATA } from "@/lib/game-constants";
 import { env } from "@/lib/env";

@@ -1,4 +1,4 @@
-import { CollectibleStatus, QuestStatus } from "@/types/game";
+import { CollectibleStatus, QuestStatus } from "@/lib/types/game";
 
 export interface DbItem {
   id: number;

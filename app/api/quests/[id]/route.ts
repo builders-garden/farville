@@ -7,7 +7,7 @@ import {
   updateUserQuest,
 } from "@/supabase/queries";
 import { z } from "zod";
-import { QuestStatus } from "@/types/game";
+import { QuestStatus } from "@/lib/types/game";
 import { updateUserWeeklyScore, updateUserXP } from "@/lib/prisma/queries";
 import { getThisWeekMonday } from "@/lib/utils";
 

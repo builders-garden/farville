@@ -10,7 +10,7 @@ import {
   MAX_DAILY_ALLOWED_DONATION_TO_USERS,
   SPEED_BOOST,
 } from "./game-constants";
-import { CropType, PerkType } from "@/types/game";
+import { CropType, PerkType } from "@/lib/types/game";
 import { fetchUsersFollowedBy } from "./neynar";
 import {
   getPartialLeaderboardFromFids,

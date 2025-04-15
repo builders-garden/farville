@@ -9,7 +9,7 @@ import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { toasterStyle } from "@/app/app";
 import { RefetchType } from "../use-game-state";
-import { ActionType } from "@/types/game";
+import { ActionType } from "@/lib/types/game";
 
 export const useGridBulkOperations = ({
   setGridBulkResult,

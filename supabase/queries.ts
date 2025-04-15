@@ -16,13 +16,12 @@ import {
   DbUserHasQuest,
   DbUserHasQuestWithQuest,
   InsertDbUserHasQuest,
-  DbUserHasQuestStatus,
   DbUserHarvestedCrop,
   DbCollectible,
   DbUserHasCollectible,
 } from "./types";
 import { CROP_DATA, SPEED_BOOST } from "@/lib/game-constants";
-import { CropType, PerkType, QuestStatus } from "@/types/game";
+import { CropType, PerkType, QuestStatus } from "@/lib/types/game";
 import { getBoostTime, getLevelThresholdLeagueByLeague } from "@/lib/utils";
 import { generateDailyQuests, generateWeeklyQuests } from "./quests";
 import { prisma } from "@/lib/prisma/client";
@@ -970,28 +969,6 @@ export const deleteQuest = async (id: number): Promise<void> => {
   if (error) throw error;
 };
 
-// User Quests queries
-// export const getUserQuests = async (
-//   fid: number
-// ): Promise<DbUserHasQuestWithQuest[]> => {
-//   const { data, error } = await supabase
-//     .from("user_has_quests")
-//     .select(
-//       `
-//       *,
-//       quest:quests (
-//         *,
-//         items (*)
-//       )
-//     `
-//     )
-//     .eq("fid", fid)
-//     .order("createdAt", { ascending: false });
-
-//   if (error) throw error;
-//   return data;
-// };
-
 export const getUserQuestById = async (
   fid: number,
   questId: number
@@ -1084,60 +1061,6 @@ export const getQuestsByItemId = async (
   if (active) {
     const now = new Date().toISOString();
     query.lte("startAt", now).gt("endAt", now);
-  }
-
-  const { data, error } = await query;
-
-  if (error) throw error;
-  return data;
-};
-
-export const getUserQuests = async (
-  fid: number,
-  filter?: {
-    category?: string;
-    itemId?: number;
-    type?: ("daily" | "weekly" | "monthly")[];
-    status?: DbUserHasQuestStatus;
-    activeToday?: boolean;
-    timeToCompare?: string;
-  }
-): Promise<DbUserHasQuestWithQuest[]> => {
-  const query = supabase
-    .from("user_has_quests")
-    .select(
-      `
-      *,
-      quest:quests!inner (
-        *,
-        items (*)
-      )
-    `
-    )
-    .eq("fid", fid);
-
-  if (filter?.status === "incomplete" || filter?.activeToday) {
-    query.gte("quest.endAt", filter?.timeToCompare || new Date().toISOString());
-    query.lte(
-      "quest.startAt",
-      filter?.timeToCompare || new Date().toISOString()
-    );
-  }
-
-  if (filter?.itemId) {
-    query.eq("quest.itemId", filter.itemId);
-  }
-
-  if (filter?.category) {
-    query.eq("quest.category", filter.category);
-  }
-
-  if (filter?.type) {
-    query.in("quest.type", filter.type);
-  }
-
-  if (filter?.status) {
-    query.eq("status", filter.status);
   }
 
   const { data, error } = await query;
