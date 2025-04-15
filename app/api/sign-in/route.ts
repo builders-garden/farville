@@ -20,7 +20,7 @@ import {
 } from "@/lib/prisma/queries";
 import { getUserLeague } from "@/lib/utils";
 import { env } from "@/lib/env";
-import { getUserHasQuests } from "@/lib/prisma/queries/quests";
+import { getUserHasQuests } from "@/lib/prisma/queries";
 import { QuestType } from "@/lib/types/game";
 
 export const POST = async (req: NextRequest) => {

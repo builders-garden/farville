@@ -1,4 +1,4 @@
-import { prisma } from "./client";
+import { prisma } from "../client";
 import {
   LEVEL_XP_THRESHOLDS,
   LEVEL_REWARDS,
@@ -14,7 +14,7 @@ import {
 } from "@/supabase/types";
 import { DbUserDonation as DbUserDonationPrisma } from "@/prisma/types";
 import { Collectibles, UserHasCollectibles, UserHasItem } from "@prisma/client";
-import { getCurrentDayStreak } from "../utils";
+import { getCurrentDayStreak } from "../../utils";
 
 export async function getQuestLeaderboard({
   limit,

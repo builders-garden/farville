@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { DbUserHasQuestStatus } from "@/supabase/types";
 import { QuestType } from "@/lib/types/game";
-import { getUserHasQuests } from "@/lib/prisma/queries/quests";
+import { getUserHasQuests } from "@/lib/prisma/queries";
 
 export async function GET(
   request: NextRequest,

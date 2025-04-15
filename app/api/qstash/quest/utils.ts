@@ -2,7 +2,7 @@ import { updateUserQuest } from "@/supabase/queries";
 
 import { DbUserHasQuestStatus } from "@/supabase/types";
 import { QuestStatus } from "@/lib/types/game";
-import { getUserHasQuests } from "@/lib/prisma/queries/index";
+import { getUserHasQuests } from "@/lib/prisma/queries";
 
 export const calculateUserQuestsProgress = async (
   fid: number,

@@ -4,7 +4,7 @@ import {
   getUser,
   getUserLeaderboardEntry,
 } from "@/lib/prisma/queries";
-import { getUserHasQuests } from "@/lib/prisma/queries/index";
+import { getUserHasQuests } from "@/lib/prisma/queries";
 import { QuestType } from "@/lib/types/game";
 import { getUserLeague } from "@/lib/utils";
 import { initDailyUserQuests, initWeeklyUserQuests } from "@/supabase/queries";
