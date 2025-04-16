@@ -19,6 +19,7 @@ export async function GET(
     const category = searchParams.get("category");
     const type = searchParams.get("type");
     const itemId = searchParams.get("itemId");
+    const activeToday = searchParams.get("activeToday");
 
     const quests = await getUserHasQuests(
       fid,
@@ -27,6 +28,7 @@ export async function GET(
         category: category || undefined,
         type: type ? [type as QuestType] : undefined,
         itemId: itemId ? parseInt(itemId) : undefined,
+        activeToday: activeToday === "true",
       },
       {
         quest: true,

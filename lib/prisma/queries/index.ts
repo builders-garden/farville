@@ -1,4 +1,3 @@
-export * from "./quest";
 export * from "./item";
 export * from "./user";
 export * from "./user-has-items";

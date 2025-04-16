@@ -54,8 +54,6 @@ export default function QuestsModal({
     const quest = [
       ...(completedQuests?.daily || []),
       ...(completedQuests?.weekly || []),
-      ...(completedQuests?.monthly || []),
-      ...(completedQuests?.farmer || []),
     ].find((q) => q.questId === questId);
 
     if (quest) {
@@ -80,6 +78,9 @@ export default function QuestsModal({
       refetchUser();
     }
   };
+
+  console.log("completedQuests", completedQuests);
+  console.log("incompleteQuests", incompleteQuests);
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-start z-50">
