@@ -1,11 +1,10 @@
 import { fetchUser } from "@/lib/neynar";
 import { sendFrameNotification } from "@/lib/notifs";
 import { trackEvent } from "@/lib/posthog/server";
+import { createUser, getUser } from "@/lib/prisma/queries";
 import {
   setUserNotificationDetails,
   deleteUserNotificationDetails,
-  getUser,
-  createUser,
 } from "@/supabase/queries";
 import {
   ParseWebhookEvent,

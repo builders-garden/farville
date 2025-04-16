@@ -6,6 +6,7 @@ import {
 } from "@/lib/game-notifications";
 import { sendBatchToPostHog } from "@/lib/posthog/server";
 import {
+  addUserItem,
   getUserItemBySlug,
   removeUserItem,
   updateGridCellsBulk,
@@ -18,13 +19,12 @@ import {
   getBoostTime,
 } from "@/lib/utils";
 import {
-  addUserItem,
   getGridCells,
   getUserHarvestedCrops,
   upsertUserHarvestedCrop,
 } from "@/supabase/queries";
 import { DbGridCell } from "@/supabase/types";
-import { ActionType, CropType, PerkType, SeedType } from "@/types/game";
+import { ActionType, CropType, PerkType, SeedType } from "@/lib/types/game";
 import { NextResponse } from "next/server";
 import { sendQuestsCalculation } from "../grid-cells/utils";
 
@@ -84,10 +84,8 @@ export const plantBulk = async (
     plantableCells.map((cell) => ({
       ...cell,
       cropType,
-      plantedAt: new Date().toISOString(),
-      harvestAt: new Date(
-        Date.now() + CROP_DATA[cropType].growthTime
-      ).toISOString(),
+      plantedAt: new Date(),
+      harvestAt: new Date(Date.now() + CROP_DATA[cropType].growthTime),
     }))
   );
 
@@ -339,17 +337,12 @@ export const perkBulk = async (
         `Harvest time! 🌾`,
         `Your ${gridCell.cropType} are ready to harvest!`,
         "harvest",
-        (new Date(gridCell.harvestAt as string).getTime() -
-          boostTime -
-          Date.now()) /
-          1000
+        (new Date(gridCell.harvestAt).getTime() - boostTime - Date.now()) / 1000
       );
       perkableCells.push({
         ...gridCell,
-        harvestAt: new Date(
-          new Date(gridCell.harvestAt).getTime() - boostTime
-        ).toISOString(),
-        speedBoostedAt: new Date().toISOString(),
+        harvestAt: new Date(new Date(gridCell.harvestAt).getTime() - boostTime),
+        speedBoostedAt: new Date(),
       });
     }
   }
@@ -422,8 +415,8 @@ export const fertilizeBulk = async (
     } else {
       perkableCells.push({
         ...gridCell,
-        harvestAt: new Date().toISOString(),
-        speedBoostedAt: new Date().toISOString(),
+        harvestAt: new Date(),
+        speedBoostedAt: new Date(),
       });
     }
   }

@@ -1,10 +1,10 @@
-import { updateUser } from "@/supabase/queries";
 import { NextRequest, NextResponse } from "next/server";
 import { NFT_OG_BASE_ADDRESS } from "@/lib/contracts/constants";
 import { NFT_OG_BASE_ABI } from "@/lib/contracts/og-nft/abi";
 import { z } from "zod";
 import { fetchUser } from "@/lib/neynar";
 import { publicClient } from "@/lib/viem";
+import { updateUser } from "@/lib/prisma/queries";
 
 const requestSchema = z.object({
   tokenId: z.number().min(1),

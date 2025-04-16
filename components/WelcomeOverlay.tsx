@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 import { useAudio } from "../context/AudioContext";
 import { useState, useEffect } from "react";
-import { GridCell as GridCellType, Crop, CropType } from "../types/game";
+import { GridCell as GridCellType, Crop, CropType } from "../lib/types/game";
 import CropSprite from "./CropSprite";
 import Image from "next/image";
 import sdk from "@farcaster/frame-sdk";

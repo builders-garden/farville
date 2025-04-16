@@ -1,10 +1,10 @@
 import { env } from "@/lib/env";
 import {
+  getUser,
   getUserLeaderboardEntry,
   getWeeklyLeaderboardUsersByLeague,
   getWeeklyUserLeaderboardByLeague,
 } from "@/lib/prisma/queries";
-import { getUser } from "@/supabase/queries";
 import { ImageResponse } from "next/og";
 
 export const dynamic = "force-dynamic";

@@ -2,7 +2,7 @@ import { sendQuestsCalculation } from "@/app/api/grid-cells/utils";
 import { NextRequest, NextResponse } from "next/server";
 import { buyItem, sellItem } from "./utils";
 import { z } from "zod";
-import { MarketActionType } from "@/types/game";
+import { MarketActionType } from "@/lib/types/game";
 
 const requestSchema = z.object({
   action: z.nativeEnum(MarketActionType),

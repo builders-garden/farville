@@ -36,8 +36,6 @@ export interface RefetchType {
 export interface AllQuests {
   daily: DbUserHasQuestWithQuest[];
   weekly: DbUserHasQuestWithQuest[];
-  monthly: DbUserHasQuestWithQuest[];
-  farmer: DbUserHasQuestWithQuest[];
 }
 
 export interface GameState {
@@ -101,8 +99,6 @@ export const useGameState = () => {
     completedQuests: {
       daily: [],
       weekly: [],
-      monthly: [],
-      farmer: [],
     },
     claimableQuests: false,
     streakUpdated: false,
@@ -238,14 +234,10 @@ export const useGameState = () => {
         completedQuests: {
           daily: completedQuests.daily,
           weekly: completedQuests.weekly,
-          monthly: completedQuests.monthly,
-          farmer: completedQuests.farmer,
         },
         claimableQuests:
           (completedQuests.daily?.length ?? 0) > 0 ||
-          (completedQuests.weekly?.length ?? 0) > 0 ||
-          (completedQuests.monthly?.length ?? 0) > 0 ||
-          (completedQuests.farmer?.length ?? 0) > 0,
+          (completedQuests.weekly?.length ?? 0) > 0,
       }));
     }
   }, [completedQuests]);

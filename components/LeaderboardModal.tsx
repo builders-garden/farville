@@ -224,10 +224,7 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
   return (
     <div className="fixed inset-0 bg-black/50 flex items-start z-50">
       {selectedUserFid ? (
-        <ProfileModal
-          onClose={handleCloseProfile}
-          userFid={selectedUserFid}
-        />
+        <ProfileModal onClose={handleCloseProfile} userFid={selectedUserFid} />
       ) : (
         <>
           <motion.div
@@ -645,10 +642,7 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
                       className="bg-[#FFB938] w-full justify-center text-[#5c4121] text-xs xs:text-sm px-4 xs:px-6 py-2 xs:py-3 rounded-lg font-bold
                          flex items-center gap-2 shadow-lg hover:bg-[#ffc65c] transition-colors"
                     >
-                      <Share2
-                        size={18}
-                        className="w-4 h-4 xs:w-5 xs:h-5"
-                      />
+                      <Share2 size={18} className="w-4 h-4 xs:w-5 xs:h-5" />
                       Let them know
                     </motion.button>
                   </div>

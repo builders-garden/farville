@@ -5,7 +5,7 @@ import {
 } from "@/lib/constants";
 import { env } from "@/lib/env";
 import { updateUserCollectible } from "@/supabase/queries";
-import { CollectibleStatus } from "@/types/game";
+import { CollectibleStatus } from "@/lib/types/game";
 import { NextResponse } from "next/server";
 
 const replacements = {

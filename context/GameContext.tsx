@@ -14,7 +14,7 @@ import {
   CollectibleStatus,
   type CropType,
   type SeedType,
-} from "../types/game";
+} from "../lib/types/game";
 import { GameState, useGameState } from "@/hooks/use-game-state";
 import { useBuyItem } from "@/hooks/game-actions/use-buy-item";
 import { useExpandGrid } from "@/hooks/game-actions/use-expand-grid";

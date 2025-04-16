@@ -1,16 +1,16 @@
-import { CollectibleStatus, QuestStatus } from "@/types/game";
+import { CollectibleStatus, QuestStatus } from "@/lib/types/game";
 
 export interface DbItem {
   id: number;
   name: string;
-  description: string;
+  description: string | null;
   icon: string;
   category: string;
   buyPrice: number | null;
   sellPrice: number | null;
   requiredLevel: number;
   slug: string;
-  createdAt: string;
+  createdAt: Date;
 }
 
 export interface DbUser {
@@ -23,7 +23,7 @@ export interface DbUser {
   coins: number;
   expansions: number;
   notificationDetails: string | null;
-  createdAt: string;
+  createdAt: Date;
   mintedOG: boolean;
   selectedAvatarUrl: string | null;
 }
@@ -85,11 +85,11 @@ export interface DbGridCell {
   x: number;
   y: number;
   cropType: string | null;
-  plantedAt: string | null;
+  plantedAt: Date | null;
   isReadyToHarvest: boolean;
-  createdAt: string;
-  harvestAt: string | null;
-  speedBoostedAt: string | null;
+  createdAt: Date;
+  harvestAt: Date | null;
+  speedBoostedAt: Date | null;
   yieldBoost: number | null;
 }
 
@@ -149,8 +149,8 @@ export interface DbUserHasQuest {
   fid: number;
   questId: number;
   status: DbUserHasQuestStatus;
-  completedAt: string | null;
-  createdAt: string;
+  completedAt: Date | null;
+  createdAt: Date;
   progress: number;
 }
 
@@ -197,7 +197,7 @@ export interface DbUserLeaderboard {
   currentScore: number;
   lastScore: number;
   league: number;
-  createdAt: string;
+  createdAt: Date;
 }
 
 export type InsertDbUserLeaderboard = Omit<DbUserLeaderboard, "created_at">;

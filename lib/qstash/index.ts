@@ -1,6 +1,7 @@
 import { Client } from "@upstash/qstash";
 import * as jose from "jose";
 import { env } from "@/lib/env";
+import Logger from "../logger";
 
 if (!env.QSTASH_TOKEN) {
   throw new Error("QSTASH_TOKEN is required");
@@ -49,10 +50,7 @@ export const validateQstashRequest = async (
 ) => {
   // verify the signature
   if (!upstashSignature) {
-    console.error(
-      `[QSTASH-${new Date().toISOString()}]`,
-      "No Upstash signature provided"
-    );
+    Logger.error(`(QSTASH) - no Upstash signature provided`);
     throw new Error("No Upstash signature provided");
   }
 
@@ -67,15 +65,9 @@ export const validateQstashRequest = async (
 
   // if the verification fails, return an error
   if (!verificationResult) {
-    console.error(
-      `[QSTASH-${new Date().toISOString()}]`,
-      "Invalid Upstash signature"
-    );
+    Logger.error(`(QSTASH) - invalid Upstash signature`);
     throw new Error("Invalid Upstash signature");
   }
 
-  console.log(
-    `[QSTASH-${new Date().toISOString()}]`,
-    "Upstash signature verified"
-  );
+  Logger.log(`(QSTASH) - Upstash signature verified successfully`);
 };
