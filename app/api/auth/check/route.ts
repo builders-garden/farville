@@ -37,12 +37,12 @@ export async function GET(request: NextRequest) {
   const dailyQuests = await getUserHasQuests(Number(fid), {
     type: [QuestType.Daily],
     activeToday: true,
-    timeToCompare: userLocalDate,
+    timeToCompare: new Date(userLocalDate),
   });
   const weeklyQuests = await getUserHasQuests(Number(fid), {
     type: [QuestType.Weekly],
     activeToday: true,
-    timeToCompare: userLocalDate,
+    timeToCompare: new Date(userLocalDate),
   });
   if (!dailyQuests || dailyQuests?.length === 0) {
     await initDailyUserQuests(Number(fid));
