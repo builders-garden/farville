@@ -1,7 +1,8 @@
 import { MAX_FROSTS_QUANTITY } from "@/lib/game-constants";
-import { addUserItem, removeUserItem } from "@/supabase/queries";
+import { removeUserItem } from "@/supabase/queries";
 import { PerkType, SpecialItemType } from "@/lib/types/game";
 import {
+  addUserItem,
   getItemById,
   getUser,
   getUserItemByItemId,

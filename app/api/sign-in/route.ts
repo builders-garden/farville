@@ -5,7 +5,6 @@ import * as jose from "jose";
 import {
   addReferral,
   getGridCells,
-  giftStarterPack,
   initializeGrid,
   initDailyUserQuests,
   initWeeklyUserQuests,
@@ -17,6 +16,7 @@ import {
   createUserLeaderboardEntry,
   getUser,
   getUserLeaderboardEntry,
+  giftStarterPack,
 } from "@/lib/prisma/queries";
 import { getUserLeague } from "@/lib/utils";
 import { env } from "@/lib/env";

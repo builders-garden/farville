@@ -2,6 +2,7 @@ import { sendQuestsCalculation } from "@/app/api/grid-cells/utils";
 import { XP_PER_DONATED_ITEM } from "@/lib/game-constants";
 import { sendDelayedNotification } from "@/lib/game-notifications";
 import {
+  addUserItem,
   getItemById,
   getUser,
   getUserDonationsOfToday,
@@ -13,7 +14,6 @@ import {
 import { userCanDonate } from "@/lib/utils";
 import {
   removeUserItem,
-  addUserItem,
   incrementRequestFilledQuantity,
 } from "@/supabase/queries";
 import { PerkType, SpecialItemType } from "@/lib/types/game";
@@ -136,7 +136,7 @@ export const POST = async (
         new Date().toDateString()
         ? 1
         : (lastDonationToReceiver?.times ?? 0) + 1,
-    lastDonation: new Date().toISOString(),
+    lastDonation: new Date(),
   });
 
   await Promise.all([

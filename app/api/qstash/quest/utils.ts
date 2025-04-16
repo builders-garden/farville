@@ -48,7 +48,7 @@ export const calculateUserQuestsProgress = async (
           status: completed
             ? ("completed" as DbUserHasQuestStatus)
             : ("incomplete" as DbUserHasQuestStatus),
-          completedAt: completed ? new Date().toISOString() : null,
+          completedAt: completed ? new Date() : null,
         },
       };
     });

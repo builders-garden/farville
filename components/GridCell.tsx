@@ -253,8 +253,8 @@ export default function GridCell({ cell }: GridCellProps) {
           harvestAt: new Date(
             new Date(cell.harvestAt!).getTime() -
               getBoostTime(boostType as PerkType)
-          ).toISOString(),
-          speedBoostedAt: new Date().toISOString(),
+          ),
+          speedBoostedAt: new Date(),
         },
       ]);
 
@@ -313,8 +313,8 @@ export default function GridCell({ cell }: GridCellProps) {
             y: cell.y,
             harvestAt: new Date(
               new Date(cell.harvestAt!).getTime() - boostTime
-            ).toISOString(),
-            speedBoostedAt: new Date().toISOString(),
+            ),
+            speedBoostedAt: new Date(),
           },
         ]);
 
@@ -352,8 +352,8 @@ export default function GridCell({ cell }: GridCellProps) {
           {
             x: cell.x,
             y: cell.y,
-            harvestAt: new Date().toISOString(),
-            speedBoostedAt: new Date().toISOString(),
+            harvestAt: new Date(),
+            speedBoostedAt: new Date(),
           },
         ]);
 
@@ -441,11 +441,11 @@ export default function GridCell({ cell }: GridCellProps) {
             x: cell.x,
             y: cell.y,
             cropType: selectedSeed.replace("-seeds", "") as CropType,
-            plantedAt: new Date().toISOString(),
+            plantedAt: new Date(),
             harvestAt: new Date(
               Date.now() +
                 CROP_DATA[selectedSeed.replace("-seeds", "")].growthTime
-            ).toISOString(),
+            ),
             isReadyToHarvest: false,
           },
         ]);
@@ -489,8 +489,8 @@ export default function GridCell({ cell }: GridCellProps) {
         {
           x: cell.x,
           y: cell.y,
-          harvestAt: new Date().toISOString(),
-          speedBoostedAt: new Date().toISOString(),
+          harvestAt: new Date(),
+          speedBoostedAt: new Date(),
         },
       ]);
 

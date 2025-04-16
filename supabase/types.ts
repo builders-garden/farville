@@ -85,11 +85,11 @@ export interface DbGridCell {
   x: number;
   y: number;
   cropType: string | null;
-  plantedAt: string | null;
+  plantedAt: Date | null;
   isReadyToHarvest: boolean;
-  createdAt: string;
-  harvestAt: string | null;
-  speedBoostedAt: string | null;
+  createdAt: Date;
+  harvestAt: Date | null;
+  speedBoostedAt: Date | null;
   yieldBoost: number | null;
 }
 
@@ -149,8 +149,8 @@ export interface DbUserHasQuest {
   fid: number;
   questId: number;
   status: DbUserHasQuestStatus;
-  completedAt: string | null;
-  createdAt: string;
+  completedAt: Date | null;
+  createdAt: Date;
   progress: number;
 }
 

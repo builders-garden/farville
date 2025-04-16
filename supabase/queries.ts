@@ -3,7 +3,6 @@ import { supabase } from "./client";
 import {
   DbItem,
   DbUser,
-  DbUserHasItem,
   DbGridCell,
   DbUserNotification,
   InsertDbUserNotification,
@@ -25,56 +24,6 @@ import { getBoostTime, getLevelThresholdLeagueByLeague } from "@/lib/utils";
 import { generateDailyQuests, generateWeeklyQuests } from "./quests";
 import { prisma } from "@/lib/prisma/client";
 import { getUser, getUserLeaderboardEntry } from "@/lib/prisma/queries";
-
-export const updateUserItem = async (
-  userFid: number,
-  itemId: number,
-  quantity: number
-): Promise<DbUserHasItem> => {
-  const { data, error } = await supabase
-    .from("user_has_items")
-    .upsert({
-      userFid,
-      itemId,
-      quantity,
-    })
-    .select()
-    .single();
-
-  if (error) throw error;
-  return data;
-};
-
-export const addUserItem = async (
-  userFid: number,
-  itemId: number,
-  quantity: number
-): Promise<DbUserHasItem> => {
-  const { data: existing } = await supabase
-    .from("user_has_items")
-    .select("*")
-    .eq("userFid", userFid)
-    .eq("itemId", itemId)
-    .single();
-
-  const { data, error } = await supabase
-    .from("user_has_items")
-    .upsert(
-      {
-        userFid,
-        itemId,
-        quantity: existing ? existing.quantity + quantity : quantity,
-      },
-      {
-        onConflict: "userFid,itemId",
-      }
-    )
-    .select()
-    .single();
-
-  if (error) throw error;
-  return data;
-};
 
 export const removeUserItem = async (
   userFid: number,
@@ -107,11 +56,6 @@ export const removeUserItem = async (
 
     if (error) throw error;
   }
-};
-
-export const giftStarterPack = async (userFid: number) => {
-  await addUserItem(userFid, 1, 4);
-  await addUserItem(userFid, 9, 4);
 };
 
 // Notifications queries

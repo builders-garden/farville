@@ -4,8 +4,8 @@ import {
   getUserItems,
   getUserStreaks,
   updateStreakLastClaimed,
+  updateUserItem,
 } from "@/lib/prisma/queries";
-import { updateUserItem } from "@/supabase/queries";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
