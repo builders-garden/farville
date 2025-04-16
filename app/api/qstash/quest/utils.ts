@@ -17,6 +17,7 @@ export const calculateUserQuestsProgress = async (
       status: QuestStatus.Incomplete,
       category,
       itemId,
+      activeToday: true,
     },
     {
       quest: true,

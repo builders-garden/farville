@@ -79,9 +79,6 @@ export default function QuestsModal({
     }
   };
 
-  console.log("completedQuests", completedQuests);
-  console.log("incompleteQuests", incompleteQuests);
-
   return (
     <div className="fixed inset-0 bg-black/50 flex items-start z-50">
       {showLevelUpConfetti && <Confetti title="LEVEL UP!" />}
