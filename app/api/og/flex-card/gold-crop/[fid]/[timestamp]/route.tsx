@@ -2,10 +2,10 @@ import { env } from "@/lib/env";
 import {
   getActiveStreaksCount,
   getTopStreaks,
+  getUser,
   getUserItemBySlug,
   TopStreaksResult,
 } from "@/lib/prisma/queries";
-import { getUser } from "@/supabase/queries";
 import { DbUser } from "@/supabase/types";
 import { ImageResponse } from "next/og";
 

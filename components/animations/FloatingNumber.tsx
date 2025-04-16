@@ -1,6 +1,6 @@
 "use client";
 
-import { CropType } from "@/types/game";
+import { CropType } from "@/lib/types/game";
 import { motion } from "framer-motion";
 import { createPortal } from "react-dom";
 import Image from "next/image";

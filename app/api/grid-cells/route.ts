@@ -1,11 +1,7 @@
 import { EXPANSION_COSTS } from "@/lib/game-constants";
+import { getUser, updateUser } from "@/lib/prisma/queries";
 import { getCurrentLevelAndProgress } from "@/lib/utils";
-import {
-  createGridCell,
-  getGridCells,
-  getUser,
-  updateUser,
-} from "@/supabase/queries";
+import { createGridCell, getGridCells } from "@/supabase/queries";
 import { NextRequest, NextResponse } from "next/server";
 
 export const GET = async (req: NextRequest) => {

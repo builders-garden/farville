@@ -4,13 +4,10 @@ import {
   getUser,
   getUserLeaderboardEntry,
 } from "@/lib/prisma/queries";
+import { getUserHasQuests } from "@/lib/prisma/queries";
+import { QuestType } from "@/lib/types/game";
 import { getUserLeague } from "@/lib/utils";
-import {
-  getUserQuests,
-  initDailyUserQuests,
-  // initMonthlyUserQuests,
-  initWeeklyUserQuests,
-} from "@/supabase/queries";
+import { initDailyUserQuests, initWeeklyUserQuests } from "@/supabase/queries";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
@@ -37,13 +34,13 @@ export async function GET(request: NextRequest) {
 
   // Check if the user has daily, weekly and monthly quests
   // If not, initialize them
-  const dailyQuests = await getUserQuests(Number(fid), {
-    type: ["daily"],
+  const dailyQuests = await getUserHasQuests(Number(fid), {
+    type: [QuestType.Daily],
     activeToday: true,
     timeToCompare: userLocalDate,
   });
-  const weeklyQuests = await getUserQuests(Number(fid), {
-    type: ["weekly"],
+  const weeklyQuests = await getUserHasQuests(Number(fid), {
+    type: [QuestType.Weekly],
     activeToday: true,
     timeToCompare: userLocalDate,
   });

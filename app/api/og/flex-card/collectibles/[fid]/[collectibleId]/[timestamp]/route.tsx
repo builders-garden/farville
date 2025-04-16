@@ -2,12 +2,13 @@
 import {
   getActiveStreaksCount,
   getTopStreaks,
+  getUser,
   TopStreaksResult,
 } from "@/lib/prisma/queries";
-import { getUser, getUserCollectibleByCollectibleId } from "@/supabase/queries";
+import { getUserCollectibleByCollectibleId } from "@/supabase/queries";
 import { DbUser } from "@/supabase/types";
 import { ImageResponse } from "next/og";
-import { CollectibleStatus } from "@/types/game";
+import { CollectibleStatus } from "@/lib/types/game";
 import { env } from "@/lib/env";
 
 export const dynamic = "force-dynamic";

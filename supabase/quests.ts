@@ -13,14 +13,16 @@ import {
   CropData,
 } from "@/lib/game-constants";
 import { chooseRandomItem, getBoostTime } from "@/lib/utils";
-import { CropType, PerkType } from "@/types/game";
-import { createQuests, getItemsByCategory } from "./queries";
+import { CropType, PerkType } from "@/lib/types/game";
+import { createQuests } from "./queries";
 import { InsertDbQuest, DbItem } from "./types";
+import { getItemsByCategory } from "@/lib/prisma/queries";
 
 // - create the quest
 export const generateDailyQuests = async (level: number) => {
   let questCategories = ["sell", "receive", "donate", "plant", "harvest"];
 
+  // TODO: optimize this to not access the database multiple times
   let seedItems = (await getItemsByCategory("seed")).filter(
     (item) => item.requiredLevel <= level
   );

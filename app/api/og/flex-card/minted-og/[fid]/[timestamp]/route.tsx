@@ -1,6 +1,5 @@
-import { getPlayerCount } from "@/lib/prisma/queries";
+import { getPlayerCount, getUser } from "@/lib/prisma/queries";
 import { getGlobalLeaderboard } from "@/lib/utils";
-import { getUser } from "@/supabase/queries";
 import { DbUser } from "@/supabase/types";
 import { ImageResponse } from "next/og";
 import { fetchUser } from "@/lib/neynar";

@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { useGame } from "../context/GameContext";
-import { SeedType } from "../types/game";
+import { SeedType } from "../lib/types/game";
 import { useState, useRef, useEffect, useCallback } from "react";
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/solid";
 import { DbItem } from "@/supabase/types";

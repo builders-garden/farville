@@ -55,11 +55,11 @@ export const useUserQuests = (fid: number | undefined, status: string) => {
   } = useApiQuery<{
     daily: DbUserHasQuestWithQuest[];
     weekly: DbUserHasQuestWithQuest[];
-    monthly: DbUserHasQuestWithQuest[];
-    farmer: DbUserHasQuestWithQuest[];
   }>({
     queryKey: ["users", fid, "quests", status],
-    url: `/api/users/${fid}/quests?status=${status}`,
+    url: `/api/users/${fid}/quests?status=${status}&activeToday=${
+      status === "incomplete" ? "true" : "false"
+    }`,
     isProtected: true,
     enabled: !!fid,
     staleTime: 30000,

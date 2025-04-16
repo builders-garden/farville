@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 import App from "@/app/app";
-import { getUser } from "@/supabase/queries";
 import { env } from "@/lib/env";
+import { getUser } from "@/lib/prisma/queries";
 
 const appUrl = env.NEXT_PUBLIC_URL;
 

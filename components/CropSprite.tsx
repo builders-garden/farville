@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { CropType } from "../types/game";
+import { CropType } from "../lib/types/game";
 import { useGame } from "../context/GameContext";
 import { useEffect, useState } from "react";
 import { formatTime } from "@/lib/utils";
@@ -220,10 +220,7 @@ export default function CropSprite({
   isDemo?: boolean;
 }) {
   return crop ? (
-    <PlantedCropSprite
-      crop={crop}
-      isDemo={isDemo}
-    />
+    <PlantedCropSprite crop={crop} isDemo={isDemo} />
   ) : (
     <EmptyCropSprite />
   );

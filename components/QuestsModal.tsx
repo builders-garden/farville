@@ -54,8 +54,6 @@ export default function QuestsModal({
     const quest = [
       ...(completedQuests?.daily || []),
       ...(completedQuests?.weekly || []),
-      ...(completedQuests?.monthly || []),
-      ...(completedQuests?.farmer || []),
     ].find((q) => q.questId === questId);
 
     if (quest) {

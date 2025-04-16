@@ -26,7 +26,7 @@ type SelectedItemDetails = {
   icon: string;
   buyPrice: number | null;
   harvestXp?: number;
-  description?: string;
+  description: string | null;
   growthTime?: number;
   cropData: DbItem;
 } | null;

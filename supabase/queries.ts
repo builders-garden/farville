@@ -3,8 +3,6 @@ import { supabase } from "./client";
 import {
   DbItem,
   DbUser,
-  DbUserHasItem,
-  InsertDbUser,
   DbGridCell,
   DbUserNotification,
   InsertDbUserNotification,
@@ -16,285 +14,16 @@ import {
   DbUserHasQuest,
   DbUserHasQuestWithQuest,
   InsertDbUserHasQuest,
-  DbUserHasQuestStatus,
   DbUserHarvestedCrop,
   DbCollectible,
   DbUserHasCollectible,
 } from "./types";
 import { CROP_DATA, SPEED_BOOST } from "@/lib/game-constants";
-import { CropType, PerkType, QuestStatus } from "@/types/game";
+import { CropType, PerkType, QuestStatus } from "@/lib/types/game";
 import { getBoostTime, getLevelThresholdLeagueByLeague } from "@/lib/utils";
 import { generateDailyQuests, generateWeeklyQuests } from "./quests";
 import { prisma } from "@/lib/prisma/client";
-import { getUserLeaderboardEntry } from "@/lib/prisma/queries";
-
-export const getUsers = async (
-  offset: number = 0,
-  limit: number = 100
-): Promise<DbUser[]> => {
-  const { data, error } = await supabase
-    .from("users")
-    .select("*")
-    .range(offset, offset + limit);
-  if (error) throw error;
-  return data;
-};
-
-export const getGridCellsBulk = async (
-  offset: number = 0,
-  limit: number = 100
-): Promise<DbGridCell[]> => {
-  const { data, error } = await supabase
-    .from("user_grid_cells")
-    .select("*")
-    .range(offset, offset + limit);
-  if (error) throw error;
-  return data;
-};
-
-// Items queries
-export const getItems = async (category?: string): Promise<DbItem[]> => {
-  const query = supabase.from("items").select("*");
-
-  if (category) {
-    query.eq("category", category);
-  }
-
-  query.order("requiredLevel", { ascending: true });
-  query.order("buyPrice", { ascending: true });
-  query.order("sellPrice", { ascending: true });
-
-  const { data, error } = await query;
-
-  if (error) throw error;
-  return data;
-};
-
-export const getItemById = async (itemId: number): Promise<DbItem | null> => {
-  const { data, error } = await supabase
-    .from("items")
-    .select("*")
-    .eq("id", itemId)
-    .maybeSingle();
-
-  if (error) throw error;
-  return data;
-};
-
-export const getItemsByCategory = async (
-  category: string
-): Promise<DbItem[]> => {
-  const { data, error } = await supabase
-    .from("items")
-    .select("*")
-    .eq("category", category)
-    .order("requiredLevel", { ascending: true });
-
-  if (error) throw error;
-  return data;
-};
-
-// Users queries
-export const getUser = async (fid: number): Promise<DbUser | null> => {
-  const { data, error } = await supabase
-    .from("users")
-    .select("*")
-    .eq("fid", fid)
-    .maybeSingle();
-
-  if (error) throw error;
-  return data;
-};
-
-export const createUser = async (user: InsertDbUser): Promise<DbUser> => {
-  const { data, error } = await supabase
-    .from("users")
-    .insert(user)
-    .select()
-    .single();
-
-  if (error) throw error;
-  return data;
-};
-
-export const updateUser = async (
-  fid: number,
-  updates: Partial<DbUser>
-): Promise<DbUser> => {
-  const { data, error } = await supabase
-    .from("users")
-    .update(updates)
-    .eq("fid", fid)
-    .select()
-    .single();
-
-  if (error) throw error;
-  return data;
-};
-
-export const updateUserCoins = async (
-  fid: number,
-  coins: number
-): Promise<DbUser> => {
-  const { data, error } = await supabase
-    .from("users")
-    .update({ coins })
-    .eq("fid", fid)
-    .select()
-    .single();
-
-  if (error) throw error;
-  return data;
-};
-
-export const getUsersByXp = async (
-  limit?: number,
-  targetFid?: number
-): Promise<{
-  users: DbUser[];
-  targetPosition?: number;
-}> => {
-  const query = supabase
-    .from("users")
-    .select("*")
-    .order("xp", { ascending: false });
-
-  if (limit) {
-    query.limit(limit);
-  }
-
-  const { data, error } = await query;
-
-  if (error) throw error;
-
-  let targetPosition: number | undefined;
-  if (targetFid) {
-    // Get target user's XP
-    const { data: targetUser, error: targetError } = await supabase
-      .from("users")
-      .select("xp")
-      .eq("fid", targetFid)
-      .single();
-
-    if (targetError) throw targetError;
-
-    // Count users with higher or equal XP to get position
-    const { count, error: countError } = await supabase
-      .from("users")
-      .select("*", { count: "exact", head: true })
-      .gte("xp", targetUser.xp);
-
-    if (countError) throw countError;
-    targetPosition = count || 0;
-  }
-
-  return {
-    users: data,
-    targetPosition,
-  };
-};
-
-export const getItemBySlug = async (slug: string): Promise<DbItem | null> => {
-  const { data, error } = await supabase
-    .from("items")
-    .select("*")
-    .eq("slug", slug)
-    .maybeSingle();
-
-  if (error) throw error;
-  return data;
-};
-
-export const getUserItemByItemId = async (
-  userFid: number,
-  itemId: number
-): Promise<(DbUserHasItem & { item: DbItem }) | null> => {
-  const { data, error } = await supabase
-    .from("user_has_items")
-    .select("*, item:items(*)")
-    .eq("userFid", userFid)
-    .eq("itemId", itemId)
-    .gte("quantity", 1)
-    .maybeSingle();
-
-  if (error) throw error;
-  return data;
-};
-
-// User Items queries
-export const getUserItems = async (
-  userFid: number,
-  category?: string
-): Promise<DbUserHasItem[]> => {
-  const query = supabase
-    .from("user_has_items")
-    .select(
-      `
-      *,
-      item:items (*)
-    `
-    )
-    .eq("userFid", userFid);
-
-  if (category) {
-    query.eq("items.category", category);
-  }
-
-  const { data, error } = await query;
-
-  if (error) throw error;
-  return data;
-};
-
-export const updateUserItem = async (
-  userFid: number,
-  itemId: number,
-  quantity: number
-): Promise<DbUserHasItem> => {
-  const { data, error } = await supabase
-    .from("user_has_items")
-    .upsert({
-      userFid,
-      itemId,
-      quantity,
-    })
-    .select()
-    .single();
-
-  if (error) throw error;
-  return data;
-};
-
-export const addUserItem = async (
-  userFid: number,
-  itemId: number,
-  quantity: number
-): Promise<DbUserHasItem> => {
-  const { data: existing } = await supabase
-    .from("user_has_items")
-    .select("*")
-    .eq("userFid", userFid)
-    .eq("itemId", itemId)
-    .single();
-
-  const { data, error } = await supabase
-    .from("user_has_items")
-    .upsert(
-      {
-        userFid,
-        itemId,
-        quantity: existing ? existing.quantity + quantity : quantity,
-      },
-      {
-        onConflict: "userFid,itemId",
-      }
-    )
-    .select()
-    .single();
-
-  if (error) throw error;
-  return data;
-};
+import { getUser, getUserLeaderboardEntry } from "@/lib/prisma/queries";
 
 export const removeUserItem = async (
   userFid: number,
@@ -327,11 +56,6 @@ export const removeUserItem = async (
 
     if (error) throw error;
   }
-};
-
-export const giftStarterPack = async (userFid: number) => {
-  await addUserItem(userFid, 1, 4);
-  await addUserItem(userFid, 9, 4);
 };
 
 // Notifications queries
@@ -970,28 +694,6 @@ export const deleteQuest = async (id: number): Promise<void> => {
   if (error) throw error;
 };
 
-// User Quests queries
-// export const getUserQuests = async (
-//   fid: number
-// ): Promise<DbUserHasQuestWithQuest[]> => {
-//   const { data, error } = await supabase
-//     .from("user_has_quests")
-//     .select(
-//       `
-//       *,
-//       quest:quests (
-//         *,
-//         items (*)
-//       )
-//     `
-//     )
-//     .eq("fid", fid)
-//     .order("createdAt", { ascending: false });
-
-//   if (error) throw error;
-//   return data;
-// };
-
 export const getUserQuestById = async (
   fid: number,
   questId: number
@@ -1084,60 +786,6 @@ export const getQuestsByItemId = async (
   if (active) {
     const now = new Date().toISOString();
     query.lte("startAt", now).gt("endAt", now);
-  }
-
-  const { data, error } = await query;
-
-  if (error) throw error;
-  return data;
-};
-
-export const getUserQuests = async (
-  fid: number,
-  filter?: {
-    category?: string;
-    itemId?: number;
-    type?: ("daily" | "weekly" | "monthly")[];
-    status?: DbUserHasQuestStatus;
-    activeToday?: boolean;
-    timeToCompare?: string;
-  }
-): Promise<DbUserHasQuestWithQuest[]> => {
-  const query = supabase
-    .from("user_has_quests")
-    .select(
-      `
-      *,
-      quest:quests!inner (
-        *,
-        items (*)
-      )
-    `
-    )
-    .eq("fid", fid);
-
-  if (filter?.status === "incomplete" || filter?.activeToday) {
-    query.gte("quest.endAt", filter?.timeToCompare || new Date().toISOString());
-    query.lte(
-      "quest.startAt",
-      filter?.timeToCompare || new Date().toISOString()
-    );
-  }
-
-  if (filter?.itemId) {
-    query.eq("quest.itemId", filter.itemId);
-  }
-
-  if (filter?.category) {
-    query.eq("quest.category", filter.category);
-  }
-
-  if (filter?.type) {
-    query.in("quest.type", filter.type);
-  }
-
-  if (filter?.status) {
-    query.eq("status", filter.status);
   }
 
   const { data, error } = await query;

@@ -2,21 +2,21 @@ import { sendQuestsCalculation } from "@/app/api/grid-cells/utils";
 import { XP_PER_DONATED_ITEM } from "@/lib/game-constants";
 import { sendDelayedNotification } from "@/lib/game-notifications";
 import {
+  addUserItem,
+  getItemById,
+  getUser,
   getUserDonationsOfToday,
+  getUserItemByItemId,
   updateUserDonationHistory,
   updateUserWeeklyScore,
   updateUserXP,
 } from "@/lib/prisma/queries";
 import { userCanDonate } from "@/lib/utils";
 import {
-  getItemById,
-  getUserItemByItemId,
   removeUserItem,
-  addUserItem,
   incrementRequestFilledQuantity,
-  getUser,
 } from "@/supabase/queries";
-import { PerkType, SpecialItemType } from "@/types/game";
+import { PerkType, SpecialItemType } from "@/lib/types/game";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -136,7 +136,7 @@ export const POST = async (
         new Date().toDateString()
         ? 1
         : (lastDonationToReceiver?.times ?? 0) + 1,
-    lastDonation: new Date().toISOString(),
+    lastDonation: new Date(),
   });
 
   await Promise.all([

@@ -1,5 +1,8 @@
-import { getUsersByXp } from "@/supabase/queries";
-import { getQuestLeaderboard, getUsersByFids } from "@/lib/prisma/queries";
+import {
+  getQuestLeaderboard,
+  getUsersByFids,
+  getUsersByXp,
+} from "@/lib/prisma/queries";
 import { NextResponse } from "next/server";
 import { fetchUsersFollowedBy } from "@/lib/neynar";
 
