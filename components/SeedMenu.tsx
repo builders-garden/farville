@@ -135,9 +135,26 @@ export default function SeedMenu() {
               (item) => item.category === "seed" || item.category === "perk"
             )
             .sort((a, b) => {
-              // Sort seeds first, then perks
-              if (a.category === b.category) return 0;
-              return a.category === "seed" ? -1 : 1;
+              const aQuantity =
+                a.category === "seed"
+                  ? state.seeds.find((s) => s.item.id === a.id)?.quantity || 0
+                  : state.perks?.find((p) => p.item.id === a.id)?.quantity || 0;
+              const bQuantity =
+                b.category === "seed"
+                  ? state.seeds.find((s) => s.item.id === b.id)?.quantity || 0
+                  : state.perks?.find((p) => p.item.id === b.id)?.quantity || 0;
+
+              // If both items have quantity > 0 or both have 0 quantity, sort by category
+              if (
+                (aQuantity > 0 && bQuantity > 0) ||
+                (aQuantity === 0 && bQuantity === 0)
+              ) {
+                if (a.category === b.category) return 0;
+                return a.category === "seed" ? -1 : 1;
+              }
+
+              // If one item has 0 quantity, sort by quantity first
+              return bQuantity - aQuantity;
             })
             .map((item) => {
               const seed = state.seeds.find((seed) => seed.item.id === item.id);
