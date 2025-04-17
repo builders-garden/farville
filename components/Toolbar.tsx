@@ -3,6 +3,7 @@
 import { useGame } from "../context/GameContext";
 import Image from "next/image";
 import { motion } from "framer-motion";
+import { Mode } from "@/lib/types/game";
 
 export default function Toolbar({
   safeAreaInsets,
@@ -10,12 +11,13 @@ export default function Toolbar({
   safeAreaInsets: { top: number; bottom: number; left: number; right: number };
 }) {
   const {
-    setShowInventory,
+    // setShowInventory,
     setShowMarket,
     setShowSettings,
     setShowProfile,
     setShowLeaderboard,
     setShowQuests,
+    setMode,
     state,
     newGoldCropsFound,
   } = useGame();
@@ -120,7 +122,7 @@ export default function Toolbar({
           </span>
         </div>
 
-        <div className="flex flex-col items-center w-[48px]">
+        {/* <div className="flex flex-col items-center w-[48px]">
           <motion.button
             onClick={() => {
               setShowInventory(true);
@@ -141,6 +143,34 @@ export default function Toolbar({
           <span className="text-[4px] xs:text-[6px] text-white mt-1">
             Inventory
           </span>
+        </div> */}
+
+        <div
+          className="flex flex-col items-center w-[48px]"
+          id="market-toolbar-btn"
+        >
+          <motion.button
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => {
+              setMode((prev) =>
+                prev === Mode.Classic ? Mode.Farcon : Mode.Classic
+              );
+            }}
+            data-tutorial="marketplace"
+            className="w-9 h-9 xs:w-12 xs:h-12 rounded-lg flex items-center justify-center bg-[#8B5E3C] hover:bg-[#6d4c2c] transition-colors"
+          >
+            <div className="relative w-6 h-6 xs:w-8 xs:h-8">
+              <Image
+                src="/images/icons/market.png"
+                alt="Marketplace"
+                fill
+                sizes="48"
+                className="object-contain"
+              />
+            </div>
+          </motion.button>
+          <span className="text-[4px] xs:text-[6px] text-white mt-1">Mode</span>
         </div>
 
         <div className="flex flex-col items-center w-[48px]">

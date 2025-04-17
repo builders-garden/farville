@@ -152,3 +152,8 @@ export enum ItemCategory {
   Perk = "perk",
   Special = "special",
 }
+
+export enum Mode {
+  Classic = "classic",
+  Farcon = "farcon",
+}

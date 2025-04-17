@@ -12,6 +12,7 @@ import {
 import {
   ActionType,
   CollectibleStatus,
+  Mode,
   type CropType,
   type SeedType,
 } from "../lib/types/game";
@@ -54,6 +55,8 @@ export interface FloatingNumberData {
 
 // Update the context type
 interface GameContextType {
+  mode: Mode;
+  setMode: Dispatch<SetStateAction<Mode>>;
   state: GameState;
   loading: boolean;
   selectedSeed: SeedType | null;
@@ -147,6 +150,7 @@ export function GameProvider({
   children: React.ReactNode;
   initialOverlay?: OverlayConfig;
 }) {
+  const [mode, setMode] = useState<Mode>(Mode.Farcon);
   const [showInventory, setShowInventory] = useState(false);
   const [showMarket, setShowMarket] = useState(false);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
@@ -520,6 +524,8 @@ export function GameProvider({
   return (
     <GameContext.Provider
       value={{
+        mode,
+        setMode,
         state,
         loading: isLoadingMintCollectible,
         selectedSeed,

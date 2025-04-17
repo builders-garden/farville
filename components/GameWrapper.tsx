@@ -24,6 +24,7 @@ import SettingsModal from "./SettingsModal";
 import StreaksModal from "./StreaksModal";
 import TimelineModal from "./TimelineModal";
 import Toolbar from "./Toolbar";
+import { Mode } from "@/lib/types/game";
 
 // const WelcomeOverlay = dynamic(() => import("./../components/WelcomeOverlay"), {
 //   ssr: false,
@@ -116,12 +117,21 @@ function SeedMenuContainer() {
 }
 
 // Add this constant at the top of the file after imports
-const BACKGROUND_PATTERN = `
+const CLASSIC_BACKGROUND_PATTERN = `
   linear-gradient(45deg, #386A48 25%, transparent 25%),
   linear-gradient(-45deg, #386A48 25%, transparent 25%),
   linear-gradient(45deg, transparent 75%, #386A48 75%),
   linear-gradient(-45deg, transparent 75%, #386A48 75%)
 `;
+const CLASSIC_BACKGROUND_COLOR = "#255F37";
+
+const FARCON_BACKGROUND_PATTERN = `
+  linear-gradient(45deg, #3a2150 25%, transparent 25%),
+  linear-gradient(-45deg, #3a2150 25%, transparent 25%),
+  linear-gradient(45deg, transparent 75%, #3a2150 75%),
+  linear-gradient(-45deg, transparent 75%, #3a2150 75%)
+`;
+const FARCON_BACKGROUND_COLOR = "#2a1043";
 
 // Add new container component
 function QuestsModalContainer() {
@@ -182,6 +192,7 @@ function TimelineModalContainer() {
 export default function GameWrapper() {
   const { startBackgroundMusic } = useAudio();
   const {
+    mode,
     state,
     activeOverlay,
     setActiveOverlay,
@@ -238,14 +249,24 @@ export default function GameWrapper() {
   //   }
   // }, []);
 
+  let BACKGROUND_PATTERN: string;
+  let BACKGROUND_COLOR: string;
+  switch (mode) {
+    case Mode.Farcon:
+      BACKGROUND_COLOR = FARCON_BACKGROUND_COLOR;
+      BACKGROUND_PATTERN = FARCON_BACKGROUND_PATTERN;
+      break;
+    default:
+      BACKGROUND_COLOR = CLASSIC_BACKGROUND_COLOR;
+      BACKGROUND_PATTERN = CLASSIC_BACKGROUND_PATTERN;
+      break;
+  }
+
   return (
     <div className="relative z-10">
       {activeOverlay?.type === "requests" && (
         <AnimatePresence>
-          <RequestModal
-            onClose={handleOverlayComplete}
-            id={activeOverlay.id}
-          />
+          <RequestModal onClose={handleOverlayComplete} id={activeOverlay.id} />
         </AnimatePresence>
       )}
 
@@ -257,7 +278,7 @@ export default function GameWrapper() {
       {!activeOverlay && (
         <div
           style={{
-            backgroundColor: "#255F37",
+            backgroundColor: BACKGROUND_COLOR,
             backgroundImage: BACKGROUND_PATTERN,
             backgroundSize: "160px 160px",
             backgroundPosition: "0 0, 0 80px, 80px -80px, -80px 0px",
@@ -269,10 +290,7 @@ export default function GameWrapper() {
           className="flex flex-col h-[100dvh] w-full overflow-hidden"
         >
           <Header />
-          <div
-            className="flex-1 relative min-h-0"
-            id="game-grid"
-          >
+          <div className="flex-1 relative min-h-0" id="game-grid">
             <GameGrid />
           </div>
           <Toolbar safeAreaInsets={safeAreaInsets} />
