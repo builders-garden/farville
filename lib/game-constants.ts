@@ -1,4 +1,4 @@
-import { CropType, ExpansionCost } from "@/types/game";
+import { CropType, ExpansionCost } from "@/lib/types/game";
 
 // Add EXPANSION_COSTS to the context file
 export const EXPANSION_COSTS: ExpansionCost[] = [

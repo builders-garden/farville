@@ -22,7 +22,7 @@ import { useOtherUserProfile } from "@/hooks/use-other-user-profile";
 import AchievementBadgeModal from "./modals/AchievementBadgeModal";
 import { ACHIEVEMENTS_THRESHOLDS } from "@/lib/game-constants";
 import { OG_FIDS_LIST } from "@/lib/contracts/constants";
-import { CollectibleStatus } from "@/types/game";
+import { CollectibleStatus } from "@/lib/types/game";
 
 export interface BadgeModalData {
   name: string;

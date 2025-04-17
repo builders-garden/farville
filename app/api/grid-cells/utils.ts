@@ -1,4 +1,5 @@
 import { env } from "@/lib/env";
+import Logger from "@/lib/logger";
 import { qstashPublishJSON } from "@/lib/qstash";
 
 // export const fertilize = async (fid: number, x: number, y: number) => {
@@ -47,9 +48,7 @@ export async function sendQuestsCalculation(
     body: questBody,
   });
 
-  console.log(
-    `[QSTASH-${new Date().toISOString()}] - sent quest calculation to QStash with id: ${
-      res?.messageId
-    }`
+  Logger.log(
+    `(QSTASH) - sent quest calculation to QStash with id: ${res?.messageId}`
   );
 }

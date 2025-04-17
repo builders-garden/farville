@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { SeedType, PerkType, ActionType } from "@/types/game";
+import { SeedType, PerkType, ActionType } from "@/lib/types/game";
 import { fertilizeBulk, harvestBulk, perkBulk, plantBulk } from "./utils";
 import { z } from "zod";
 import { getUser } from "@/lib/prisma/queries";

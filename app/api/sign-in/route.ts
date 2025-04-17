@@ -4,11 +4,7 @@ import { verifyMessage } from "viem";
 import * as jose from "jose";
 import {
   addReferral,
-  createUser,
   getGridCells,
-  getUser,
-  getUserQuests,
-  giftStarterPack,
   initializeGrid,
   initDailyUserQuests,
   initWeeklyUserQuests,
@@ -16,11 +12,16 @@ import {
 } from "@/supabase/queries";
 import { trackEvent } from "@/lib/posthog/server";
 import {
+  createUser,
   createUserLeaderboardEntry,
+  getUser,
   getUserLeaderboardEntry,
+  giftStarterPack,
 } from "@/lib/prisma/queries";
 import { getUserLeague } from "@/lib/utils";
 import { env } from "@/lib/env";
+import { getUserHasQuests } from "@/lib/prisma/queries";
+import { QuestType } from "@/lib/types/game";
 
 export const POST = async (req: NextRequest) => {
   const { fid, referrerFid, signature, message, userNow } = await req.json();
@@ -85,13 +86,13 @@ export const POST = async (req: NextRequest) => {
 
   // Check if the user has daily, weekly and monthly quests
   // If not, initialize them
-  const dailyQuests = await getUserQuests(fid, {
-    type: ["daily"],
+  const dailyQuests = await getUserHasQuests(fid, {
+    type: [QuestType.Daily],
     activeToday: true,
     timeToCompare: userNow,
   });
-  const weeklyQuests = await getUserQuests(Number(fid), {
-    type: ["weekly"],
+  const weeklyQuests = await getUserHasQuests(Number(fid), {
+    type: [QuestType.Weekly],
   });
   if (!dailyQuests || dailyQuests?.length === 0) {
     await initDailyUserQuests(Number(fid));
