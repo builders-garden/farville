@@ -7,6 +7,7 @@ export const useGetMidjourneyImage = ({
   setMidjourneyImageUrls,
   setIsLoading,
   handleUpdateStateCollectibles,
+  setErrorOnGeneration,
 }: {
   setMidjourneyImageUrl: Dispatch<SetStateAction<string | null>>;
   setMidjourneyImageUrls: Dispatch<SetStateAction<string[] | null>>;
@@ -14,6 +15,7 @@ export const useGetMidjourneyImage = ({
   handleUpdateStateCollectibles: (
     userHasCollectibles: DbUserHasCollectible
   ) => void;
+  setErrorOnGeneration: Dispatch<SetStateAction<boolean>>;
 }) => {
   return useApiMutation({
     url: () => `/api/pfp-nft-image-get`,
@@ -32,23 +34,27 @@ export const useGetMidjourneyImage = ({
     }),
     method: "POST",
     onSuccess: (data: {
-      success: boolean;
-      data: {
-        status: string;
-        imageUrl: string;
-        imageUrls: string[];
-        userHasCollectible?: DbUserHasCollectible;
-      };
+      status: string;
+      imageUrl: string;
+      imageUrls: string[];
+      userHasCollectible?: DbUserHasCollectible;
     }) => {
-      setMidjourneyImageUrl(data.data.imageUrl);
-      setMidjourneyImageUrls(data.data.imageUrls);
+      // set stuff only if it's not still polling
+      console.log("ON SUCCESS", data);
+      if (data.status === "pending") {
+        setIsLoading(true);
+      }
+      setMidjourneyImageUrl(data.imageUrl);
+      setMidjourneyImageUrls(data.imageUrls);
       setIsLoading(false);
-      if (data.data.userHasCollectible) {
-        handleUpdateStateCollectibles(data.data.userHasCollectible);
+      if (data.userHasCollectible) {
+        handleUpdateStateCollectibles(data.userHasCollectible);
       }
     },
-    onError: () => {
+    onError: (error) => {
+      console.error("Error getting Midjourney image:", error);
       setIsLoading(false);
+      setErrorOnGeneration(true);
     },
   });
 };
