@@ -12,7 +12,7 @@ import { wagmiConfig } from "@/lib/wagmi";
 import { getWalletClient, switchChain } from "@wagmi/core";
 
 createConfig({
-  integrator: "FarVille",
+  integrator: "Farville",
   // apiKey: env.LIFI_API_KEY,
   providers: [
     EVM({

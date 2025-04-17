@@ -352,7 +352,7 @@ export async function GET(
                       marginTop: "-3px", // adjust due to font
                     }}
                   >
-                    on FarVille!
+                    on Farville!
                   </span>
                 </div>
                 {/* Top Leaderboard Users */}

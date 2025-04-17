@@ -102,7 +102,7 @@ export async function GET(
         "Streak" +
         "I'm on a " +
         currentStreak +
-        " days streak on FarVille!" +
+        " days streak on Farville!" +
         "+" +
         totActiveStreaks +
         "active streaks" +
@@ -295,7 +295,7 @@ export async function GET(
                       marginBottom: "8px",
                     }}
                   >
-                    on FarVille!
+                    on Farville!
                   </span>
                   {/* Top Streaks Users */}
                   <div

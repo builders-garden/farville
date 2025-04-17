@@ -77,7 +77,7 @@ export async function POST(request: NextRequest) {
         }
         await sendFrameNotification({
           fid,
-          title: "Welcome to FarVille 🧑‍🌾",
+          title: "Welcome to Farville 🧑‍🌾",
           body: "Plant, grow, and harvest your crops to earn rewards!",
         });
       } else {
@@ -92,7 +92,7 @@ export async function POST(request: NextRequest) {
       await sendFrameNotification({
         fid,
         title: "Ding ding ding",
-        body: "Notifications for FarVille are now enabled",
+        body: "Notifications for Farville are now enabled",
       });
       break;
     case "notifications_disabled":

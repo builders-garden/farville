@@ -6,7 +6,7 @@ import { env } from "@/lib/env";
  * @returns The farcaster manifest for the frame
  */
 export async function getFarcasterManifest() {
-  let frameName = "FarVille";
+  let frameName = "Farville";
   const appUrl = env.NEXT_PUBLIC_URL;
   if (appUrl.includes("localhost")) {
     frameName += " Local";
