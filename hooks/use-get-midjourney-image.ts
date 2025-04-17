@@ -40,15 +40,13 @@ export const useGetMidjourneyImage = ({
       userHasCollectible?: DbUserHasCollectible;
     }) => {
       // set stuff only if it's not still polling
-      console.log("ON SUCCESS", data);
-      if (data.status === "pending") {
-        setIsLoading(true);
-      }
-      setMidjourneyImageUrl(data.imageUrl);
-      setMidjourneyImageUrls(data.imageUrls);
-      setIsLoading(false);
-      if (data.userHasCollectible) {
-        handleUpdateStateCollectibles(data.userHasCollectible);
+      if (data.status !== "pending") {
+        setMidjourneyImageUrl(data.imageUrl);
+        setMidjourneyImageUrls(data.imageUrls);
+        setIsLoading(false);
+        if (data.userHasCollectible) {
+          handleUpdateStateCollectibles(data.userHasCollectible);
+        }
       }
     },
     onError: (error) => {

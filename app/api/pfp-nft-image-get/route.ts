@@ -57,7 +57,7 @@ export async function POST(request: Request) {
         }
       );
     } else {
-      console.log("still generating image", data.data.status, data);
+      console.log("still generating image", data.data.status);
       if (data.data.status === "failed") {
         console.error("Image generation failed:", data.data.error);
         return NextResponse.json(
