@@ -1,13 +1,18 @@
 import { prisma } from "../client";
-import { GridCell } from "@prisma/client";
+import { UserGridCell } from "@prisma/client";
 
-export const updateGridCellsBulk = async (fid: number, cells: GridCell[]) => {
+export const updateGridCellsBulk = async (
+  fid: number,
+  cells: UserGridCell[]
+) => {
   return await prisma.$transaction(
     async (tx) => {
-      const updatedCells: GridCell[] = [];
+      const updatedCells: UserGridCell[] = [];
       for (const cell of cells) {
-        const updatedCell = await tx.gridCell.update({
-          where: { fid_x_y: { fid, x: cell.x, y: cell.y } },
+        const updatedCell = await tx.userGridCell.update({
+          where: {
+            fid_x_y_mode: { fid, x: cell.x, y: cell.y, mode: cell.mode },
+          },
           data: cell,
         });
         updatedCells.push({

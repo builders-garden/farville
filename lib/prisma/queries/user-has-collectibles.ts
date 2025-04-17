@@ -1,14 +1,14 @@
 import { prisma } from "../client";
-import { UserHasCollectibles, Collectibles } from "@prisma/client";
+import { UserHasCollectible, Collectible } from "@prisma/client";
 
 export const getUserCollectibles = async (
   fid: number
 ): Promise<
-  (Collectibles & { userHasCollectibles: UserHasCollectibles | null })[]
+  (Collectible & { userHasCollectibles: UserHasCollectible | null })[]
 > => {
-  const collectibles = await prisma.collectibles.findMany({
+  const collectibles = await prisma.collectible.findMany({
     include: {
-      userHasCollectibles: {
+      collectibles: {
         where: {
           fid: fid,
         },
@@ -18,6 +18,6 @@ export const getUserCollectibles = async (
 
   return collectibles.map((collectible) => ({
     ...collectible,
-    userHasCollectibles: collectible.userHasCollectibles[0] || null,
+    userHasCollectibles: collectible.collectibles[0] || null,
   }));
 };

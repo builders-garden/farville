@@ -1,14 +1,13 @@
-import { UserHasItem } from "@prisma/client";
+import { Item, UserHasItem } from "@prisma/client";
 import { prisma } from "../client";
-import { DbItem, DbUserHasItem } from "../types";
 
 export const getUserItemByItemId = async (
-  userFid: number,
+  fid: number,
   itemId: number
-): Promise<(DbUserHasItem & { item: DbItem }) | null> => {
+): Promise<(UserHasItem & { item: Item }) | null> => {
   const userItem = await prisma.userHasItem.findFirst({
     where: {
-      userFid,
+      fid,
       itemId,
       quantity: {
         gte: 1,
@@ -23,12 +22,12 @@ export const getUserItemByItemId = async (
 };
 
 export const getUserItems = async (
-  userFid: number,
+  fid: number,
   category?: string
-): Promise<(DbUserHasItem & { item: DbItem })[]> => {
+): Promise<(UserHasItem & { item: Item })[]> => {
   const userItems = await prisma.userHasItem.findMany({
     where: {
-      userFid,
+      fid,
       ...(category && {
         item: {
           category,
@@ -49,7 +48,7 @@ export const getUserItemBySlug = async (
 ): Promise<UserHasItem | null> => {
   const userItem = await prisma.userHasItem.findFirst({
     where: {
-      userFid: fid,
+      fid,
       item: {
         slug: slug,
       },
@@ -67,24 +66,27 @@ export const getUserItemBySlug = async (
 };
 
 export const updateUserItem = async (
-  userFid: number,
+  fid: number,
   itemId: number,
-  quantity: number
-): Promise<DbUserHasItem> => {
+  quantity: number,
+  mode: string
+): Promise<UserHasItem> => {
   const updatedItem = await prisma.userHasItem.upsert({
     where: {
-      userFid_itemId: {
-        userFid,
+      fid_itemId_mode: {
+        fid,
         itemId,
+        mode,
       },
     },
     update: {
       quantity,
     },
     create: {
-      userFid,
+      fid,
       itemId,
       quantity,
+      mode,
     },
   });
 
@@ -94,35 +96,39 @@ export const updateUserItem = async (
 export const addUserItem = async (
   fid: number,
   itemId: number,
-  quantity: number
+  quantity: number,
+  mode: string
 ) => {
   return await prisma.userHasItem.upsert({
     where: {
-      userFid_itemId: {
-        userFid: fid,
+      fid_itemId_mode: {
+        fid,
         itemId,
+        mode,
       },
     },
     update: {
       quantity: { increment: quantity },
     },
     create: {
-      userFid: fid,
+      fid,
       itemId,
       quantity,
+      mode,
     },
   });
 };
 
-export const giftStarterPack = async (userFid: number) => {
-  await addUserItem(userFid, 1, 4);
-  await addUserItem(userFid, 9, 4);
+export const giftStarterPack = async (fid: number, mode: string) => {
+  await addUserItem(fid, 1, 4, mode);
+  await addUserItem(fid, 9, 4, mode);
 };
 
 export const removeUserItem = async (
   fid: number,
   itemId: number,
-  quantity: number
+  quantity: number,
+  mode: string
 ) => {
   // Use a transaction to prevent race conditions
   return await prisma.$transaction(
@@ -130,9 +136,10 @@ export const removeUserItem = async (
       // Decrement the quantity directly
       const updatedItem = await tx.userHasItem.update({
         where: {
-          userFid_itemId: {
-            userFid: fid,
+          fid_itemId_mode: {
+            fid,
             itemId,
+            mode,
           },
         },
         data: {
@@ -144,9 +151,10 @@ export const removeUserItem = async (
       if (updatedItem.quantity <= 0) {
         await tx.userHasItem.delete({
           where: {
-            userFid_itemId: {
-              userFid: fid,
+            fid_itemId_mode: {
+              fid,
               itemId,
+              mode,
             },
           },
         });

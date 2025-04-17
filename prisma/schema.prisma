@@ -8,65 +8,63 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-model User {
-  fid                                                              Int                   @id
-  username                                                         String
-  displayName                                                      String
-  avatarUrl                                                        String?
-  walletAddress                                                    String?
-  xp                                                               Int
-  coins                                                            Int
-  expansions                                                       Int
-  notificationDetails                                              String?
-  createdAt                                                        DateTime              @default(now()) @db.Timestamptz(6)
-  mintedOG                                                         Boolean               @default(false)
-  selectedAvatarUrl                                                String?
-  referrals                                                        Referral[]
-  requests                                                         Request[]
-  streaks                                                          Streaks[]
-  user_donations_history_user_donations_history_donatorFidTousers  UserDonationHistory[] @relation("user_donations_history_donatorFidTousers")
-  user_donations_history_user_donations_history_receiverFidTousers UserDonationHistory[] @relation("user_donations_history_receiverFidTousers")
-  gridCells                                                        GridCell[]
-  UserHarvestedCrop                                                UserHarvestedCrop[]
-  userHasCollectibles                                              UserHasCollectibles[]
-  items                                                            UserHasItem[]
-  quests                                                           UserHasQuest[]
-  UserLeaderboards                                                 UserLeaderboards?
-  notifications                                                    UserNotification[]
+model Collectible {
+  id           Int                  @id @default(autoincrement())
+  name         String?
+  description  String?
+  imageUrl     String
+  createdAt    DateTime             @default(now()) @db.Timestamptz(6)
+  category     String?
+  collectibles UserHasCollectible[]
 
-  @@map("users")
+  @@map("collectible")
 }
 
 model Item {
-  id                Int                 @id @default(autoincrement())
-  name              String
-  description       String?
-  icon              String
-  category          String
-  buyPrice          Int?
-  sellPrice         Int?
-  requiredLevel     Int
-  createdAt         DateTime            @default(now()) @db.Timestamptz(6)
-  slug              String              @unique
-  quests            Quest[]
-  requests          Request[]
-  user_grid_cells   GridCell[]
-  UserHarvestedCrop UserHarvestedCrop[]
-  userItems         UserHasItem[]
+  id                 Int                 @id @default(autoincrement())
+  name               String
+  description        String?
+  icon               String
+  category           String
+  buyPrice           Int?
+  sellPrice          Int?
+  requiredLevel      Int
+  createdAt          DateTime            @default(now()) @db.Timestamptz(6)
+  slug               String              @unique
+  quests             Quest[]
+  requests           Request[]
+  userGridCells      UserGridCell[]
+  userHarvestedCrops UserHarvestedCrop[]
+  userItems          UserHasItem[]
 
-  @@map("items")
+  @@map("item")
 }
 
-model UserHasItem {
-  userFid   Int
-  itemId    Int
-  quantity  Int
+model LeagueSnapshot {
+  id        Int      @id @default(autoincrement())
+  week      Int
+  snapshot  Json     @db.Json
   createdAt DateTime @default(now()) @db.Timestamptz(6)
-  item      Item     @relation(fields: [itemId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  user      User     @relation(fields: [userFid], references: [fid], onDelete: Cascade, onUpdate: NoAction)
 
-  @@id([userFid, itemId])
-  @@map("user_has_items")
+  @@map("league_snapshot")
+}
+
+model Quest {
+  id         Int            @id @default(autoincrement())
+  category   String
+  itemId     Int?
+  amount     Int            @default(1)
+  xp         Int?
+  coins      Int?
+  startAt    DateTime       @db.Timestamptz(6)
+  endAt      DateTime?      @db.Timestamptz(6)
+  createdAt  DateTime       @default(now()) @db.Timestamptz(6)
+  type       String
+  level      Int
+  item       Item?          @relation(fields: [itemId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "quest_itemid_fkey")
+  userQuests UserHasQuest[]
+
+  @@map("quest")
 }
 
 model Referral {
@@ -74,38 +72,9 @@ model Referral {
   fid         Int
   referredFid Int
   createdAt   DateTime @default(now()) @db.Timestamptz(6)
-  users       User     @relation(fields: [fid], references: [fid], onDelete: NoAction, onUpdate: NoAction)
+  user        User     @relation(fields: [fid], references: [fid], onDelete: NoAction, onUpdate: NoAction)
 
-  @@map("referrals")
-}
-
-model GridCell {
-  fid              Int
-  x                Int
-  y                Int
-  cropType         String?
-  plantedAt        DateTime? @db.Timestamptz(6)
-  createdAt        DateTime  @default(now()) @db.Timestamptz(6)
-  isReadyToHarvest Boolean   @default(false)
-  yieldBoost       Int?
-  speedBoostedAt   DateTime? @db.Timestamptz(6)
-  harvestAt        DateTime? @db.Timestamptz(6)
-  crop             Item?     @relation(fields: [cropType], references: [slug], onDelete: NoAction, onUpdate: NoAction)
-  user             User      @relation(fields: [fid], references: [fid], onDelete: Cascade, onUpdate: NoAction)
-
-  @@id([fid, x, y])
-  @@index([fid], map: "cells_by_fid")
-  @@map("user_grid_cells")
-}
-
-model UserNotification {
-  id         Int      @id @default(autoincrement())
-  fid        Int
-  created_at DateTime @default(now()) @db.Timestamptz(6)
-  category   String   @db.VarChar
-  user       User     @relation(fields: [fid], references: [fid], onDelete: Cascade, onUpdate: NoAction)
-
-  @@map("user_notification")
+  @@map("referral")
 }
 
 model Request {
@@ -115,89 +84,89 @@ model Request {
   quantity       Int?
   filledQuantity Int
   createdAt      DateTime @default(now()) @db.Timestamptz(6)
-  user           User     @relation(fields: [fid], references: [fid], onDelete: Cascade, onUpdate: NoAction)
-  item           Item?    @relation(fields: [itemId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  user           User     @relation(fields: [fid], references: [fid], onDelete: NoAction, onUpdate: NoAction)
+  item           Item?    @relation(fields: [itemId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "request_itemid_fkey")
 
-  @@map("requests")
+  @@map("request")
 }
 
-model Quest {
-  id              Int            @id @default(autoincrement())
-  category        String
-  itemId          Int?
-  amount          Int            @default(1)
-  xp              Int?
-  coins           Int?
-  startAt         DateTime       @db.Timestamptz(6)
-  endAt           DateTime?      @db.Timestamptz(6)
-  createdAt       DateTime       @default(now()) @db.Timestamptz(6)
-  type            String?
-  level           Int?
-  items           Item?          @relation(fields: [itemId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  user_has_quests UserHasQuest[]
+model Streak {
+  id           Int         @id @default(autoincrement())
+  fid          Int
+  startedAt    DateTime    @db.Date
+  endedAt      DateTime?   @db.Date
+  lastActionAt DateTime    @db.Date
+  lastClaimed  Int         @default(0)
+  user         User        @relation(fields: [fid], references: [fid], onDelete: NoAction, onUpdate: NoAction)
+  userFrosts   UserFrost[]
 
-  // Add this only if necessary
-  // @@index([category, itemId, startAt, endAt], map: "quests_by_category_itemid_startat_endat")
-  @@map("quests")
+  @@unique([fid, startedAt], map: "streak_fid_started_at_unique")
+  @@map("streak")
 }
 
-model UserHasQuest {
-  id          Int       @id @default(autoincrement())
-  fid         Int
-  questId     Int
-  completedAt DateTime? @db.Timestamptz(6)
-  createdAt   DateTime  @default(dbgenerated("timezone('utc'::text, now())")) @db.Timestamptz(6)
-  progress    Int
-  status      String    @default("incomplete")
-  user        User      @relation(fields: [fid], references: [fid], onDelete: Cascade, onUpdate: NoAction)
-  quest       Quest     @relation(fields: [questId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+model User {
+  fid                 Int                    @id
+  username            String
+  displayName         String
+  avatarUrl           String?
+  walletAddress       String
+  notificationDetails Json?                  @db.Json
+  mintedOG            Boolean                @default(false)
+  createdAt           DateTime               @default(now()) @db.Timestamptz(6)
+  selectedAvatarUrl   String?
+  referrals           Referral[]
+  requests            Request[]
+  streaks             Streak[]
+  donationsAsDonator  UserDonationHistory[]  @relation("user_donation_history_donatorFidTouser")
+  donationsAsReceiver UserDonationHistory[]  @relation("user_donation_history_receiverFidTouser")
+  gridCells           UserGridCell[]
+  harvestedCrops      UserHarvestedCrop[]
+  collectibles        UserHasCollectible[]
+  items               UserHasItem[]
+  quests              UserHasQuest[]
+  leaderboardEntry    UserLeaderboardEntry[]
+  user_statistic      UserStatistic[]
 
-  @@unique([fid, questId], map: "user_has_quests_fid_quest_id_key")
-  @@index([fid], map: "idx_user_has_quests_fid")
-  @@index([questId], map: "idx_user_has_quests_quest_id")
-  @@index([fid])
-  @@index([questId], map: "user_has_quests_quest_id_idx")
-  @@index([fid, status], map: "quests_by_fid_status")
-  @@map("user_has_quests")
+  @@map("user")
 }
 
-/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model UserDonationHistory {
-  donatorFid                                      Int      @default(autoincrement())
-  receiverFid                                     Int
-  times                                           Int?     @default(0)
-  lastDonation                                    DateTime @default(now()) @db.Timestamptz(6)
-  users_user_donations_history_donatorFidTousers  User     @relation("user_donations_history_donatorFidTousers", fields: [donatorFid], references: [fid], onDelete: Cascade, onUpdate: NoAction)
-  users_user_donations_history_receiverFidTousers User     @relation("user_donations_history_receiverFidTousers", fields: [receiverFid], references: [fid], onDelete: Cascade, onUpdate: NoAction)
+  donatorFid   Int      @default(autoincrement())
+  receiverFid  Int
+  times        Int?     @default(0)
+  lastDonation DateTime @default(now()) @db.Timestamptz(6)
+  donatorUser  User     @relation("user_donation_history_donatorFidTouser", fields: [donatorFid], references: [fid], onDelete: NoAction, onUpdate: NoAction, map: "user_donation_history_donatorfid_fkey")
+  receiverUser User     @relation("user_donation_history_receiverFidTouser", fields: [receiverFid], references: [fid], onDelete: NoAction, onUpdate: NoAction, map: "user_donation_history_receiverfid_fkey")
 
   @@id([donatorFid, receiverFid])
-  @@map("user_donations_history")
+  @@map("user_donation_history")
 }
 
-/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
-model Streaks {
-  id           Int          @id @default(autoincrement())
-  fid          Int
-  startedAt    DateTime     @db.Date
-  endedAt      DateTime?    @db.Date
-  lastActionAt DateTime     @db.Date
-  lastClaimed  Int          @default(0)
-  users        User         @relation(fields: [fid], references: [fid], onDelete: Cascade, onUpdate: NoAction)
-  user_frosts  UserFrosts[]
-
-  @@unique([fid, startedAt], map: "streaks_fid_started_at_unique")
-  @@map("streaks")
-}
-
-/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
-model UserFrosts {
+model UserFrost {
   id       Int      @id @default(autoincrement())
   streakId Int
   frozenAt DateTime @db.Date
-  streaks  Streaks  @relation(fields: [streakId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  streak   Streak   @relation(fields: [streakId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "user_frost_streakid_fkey")
 
-  @@unique([streakId, frozenAt], map: "user_frosts_streak_frozen_unique")
-  @@map("user_frosts")
+  @@unique([streakId, frozenAt], map: "user_frost_streak_frozen_unique")
+  @@map("user_frost")
+}
+
+model UserGridCell {
+  fid            Int
+  x              Int
+  y              Int
+  mode           String
+  cropType       String?
+  plantedAt      DateTime? @db.Timestamptz(6)
+  createdAt      DateTime  @default(now()) @db.Timestamptz(6)
+  speedBoostedAt DateTime? @db.Timestamptz(6)
+  harvestAt      DateTime? @db.Timestamptz(6)
+  item           Item?     @relation(fields: [cropType], references: [slug], onDelete: NoAction, onUpdate: NoAction, map: "user_grid_cell_croptype_fkey")
+  user           User      @relation(fields: [fid], references: [fid], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([fid, x, y, mode])
+  @@map("user_grid_cell")
 }
 
 model UserHarvestedCrop {
@@ -205,62 +174,85 @@ model UserHarvestedCrop {
   crop      String
   quantity  Int      @default(0)
   createdAt DateTime @default(now()) @db.Timestamptz(6)
-  cropItem  Item     @relation(fields: [crop], references: [slug], onDelete: NoAction, onUpdate: NoAction)
-  user      User     @relation(fields: [fid], references: [fid], onDelete: Cascade, onUpdate: NoAction)
+  item      Item     @relation(fields: [crop], references: [slug], onDelete: NoAction, onUpdate: NoAction)
+  user      User     @relation(fields: [fid], references: [fid], onDelete: NoAction, onUpdate: NoAction)
 
   @@id([fid, crop])
-  @@map("user_harvested_crops")
+  @@map("user_harvested_crop")
 }
 
-/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
-model UserLeaderboards {
-  fid          Int      @id
-  currentScore Int      @default(0)
-  lastScore    Int      @default(0)
-  league       Int      @default(0)
-  createdAt    DateTime @default(now()) @db.Timestamptz(6)
-  updatedAt    DateTime @default(now()) @db.Timestamptz(6)
-  lastLeague   Int      @default(0)
-  user         User     @relation(fields: [fid], references: [fid], onDelete: Cascade, onUpdate: NoAction)
-
-  @@map("user_leaderboards")
-}
-
-/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
-model Collectibles {
-  id                  Int                   @id @default(autoincrement())
-  name                String?
-  description         String?
-  imageUrl            String
-  createdAt           DateTime              @default(now()) @db.Timestamptz(6)
-  category            String?
-  userHasCollectibles UserHasCollectibles[]
-
-  @@map("collectibles")
-}
-
-/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
-model UserHasCollectibles {
+model UserHasCollectible {
   fid                Int
   collectibleId      Int
-  createdAt          DateTime     @default(now()) @db.Timestamptz(6)
+  createdAt          DateTime    @default(now()) @db.Timestamptz(6)
   mintedImageUrl     String?
   mintedMetadataUrl  String?
   txHash             String?
-  status             String       @default("description")
-  generatedImageUrls Json?        @db.Json
-  updatedAt          DateTime     @default(now()) @db.Timestamptz(6)
+  status             String      @default("description")
+  generatedImageUrls Json?       @db.Json
+  updatedAt          DateTime    @default(now()) @db.Timestamptz(6)
   generatedTaskId    String?
   pfpDescription     String?
-  collectibles       Collectibles @relation(fields: [collectibleId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "user_has_collectibles_collectibleid_fkey")
-  users              User         @relation(fields: [fid], references: [fid], onDelete: Cascade, onUpdate: NoAction)
+  collectible        Collectible @relation(fields: [collectibleId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "user_has_collectible_collectibleid_fkey")
+  user               User        @relation(fields: [fid], references: [fid], onDelete: NoAction, onUpdate: NoAction)
 
   @@id([fid, collectibleId])
-  @@map("user_has_collectibles")
+  @@map("user_has_collectible")
 }
 
-enum UserHasQuestStatus {
-  incomplete
-  completed
-  claimed
+model UserHasItem {
+  fid       Int
+  itemId    Int
+  mode      String
+  quantity  Int
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  user      User     @relation(fields: [fid], references: [fid], onDelete: NoAction, onUpdate: NoAction)
+  item      Item     @relation(fields: [itemId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "user_has_item_itemid_fkey")
+
+  @@id([fid, itemId, mode])
+  @@map("user_has_item")
+}
+
+model UserHasQuest {
+  id          Int       @id @default(autoincrement())
+  fid         Int
+  questId     Int
+  mode        String
+  completedAt DateTime? @db.Timestamptz(6)
+  createdAt   DateTime  @default(dbgenerated("timezone('utc'::text, now())")) @db.Timestamptz(6)
+  progress    Int
+  status      String    @default("incomplete")
+  user        User      @relation(fields: [fid], references: [fid], onDelete: NoAction, onUpdate: NoAction)
+  quest       Quest     @relation(fields: [questId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "user_has_quest_questid_fkey")
+
+  @@map("user_has_quest")
+}
+
+model UserLeaderboardEntry {
+  fid          Int
+  mode         String
+  currentScore Int      @default(0)
+  lastScore    Int      @default(0)
+  league       Int      @default(0)
+  lastLeague   Int      @default(0)
+  createdAt    DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt    DateTime @default(now()) @db.Timestamptz(6)
+  user         User     @relation(fields: [fid], references: [fid], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([fid, mode])
+  @@map("user_leaderboard_entry")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model UserStatistic {
+  fid        Int
+  mode       Int
+  xp         Int
+  coins      Int
+  expansions Int
+  createdAt  DateTime @default(now()) @db.Timestamptz(6)
+  user       User     @relation(fields: [fid], references: [fid], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([fid, mode])
+  @@map("user_statistic")
 }

@@ -1,14 +1,17 @@
 import { CREATOR_FIDS, LEVEL_XP_THRESHOLDS } from "@/lib/game-constants";
 import { prisma } from "../client";
-import { UserLeaderboards } from "@prisma/client";
+import { UserLeaderboardEntry } from "@prisma/client";
+import { Mode } from "@/lib/types/game";
 
 export const createUserLeaderboardEntry = async (
   fid: number,
-  data: Partial<UserLeaderboards>
+  mode: string,
+  data: Partial<UserLeaderboardEntry>
 ) => {
-  return await prisma.userLeaderboards.create({
+  return await prisma.userLeaderboardEntry.create({
     data: {
       fid,
+      mode,
       ...data,
     },
   });
@@ -16,22 +19,30 @@ export const createUserLeaderboardEntry = async (
 
 export const updateUserLeaderboardEntry = async (
   fid: number,
-  data: Partial<UserLeaderboards>
+  mode: string,
+  data: Partial<UserLeaderboardEntry>
 ) => {
-  return await prisma.userLeaderboards.update({
-    where: { fid },
+  return await prisma.userLeaderboardEntry.update({
+    where: {
+      fid_mode: { fid, mode },
+    },
     data,
   });
 };
 
-export const getUserLeaderboardEntry = async (fid: number) => {
-  return await prisma.userLeaderboards.findUnique({
-    where: { fid },
+export const getUserLeaderboardEntry = async (fid: number, mode: string) => {
+  return await prisma.userLeaderboardEntry.findUnique({
+    where: {
+      fid_mode: {
+        fid,
+        mode,
+      },
+    },
   });
 };
 
 export const getWeeklyLeaderboardUsersByLeague = async (league: number) => {
-  const userCount = await prisma.userLeaderboards.count({
+  const userCount = await prisma.userLeaderboardEntry.count({
     where: {
       league,
       currentScore: {
@@ -68,20 +79,21 @@ export const getWeeklyUserLeaderboardByLeague = async (
     },
   };
 
-  const leaderboard = await prisma.userLeaderboards.findMany(filter);
+  const leaderboard = await prisma.userLeaderboardEntry.findMany(filter);
 
   let targetPosition: number | undefined;
   if (targetFid) {
     if (!CREATOR_FIDS.includes(targetFid)) {
-      const targetEntry = await prisma.userLeaderboards.findUnique({
-        where: { fid: targetFid },
+      // TODO: fix this mode constraint
+      const targetEntry = await prisma.userLeaderboardEntry.findUnique({
+        where: { fid_mode: { fid: targetFid, mode: Mode.Classic } },
       });
 
       if (!targetEntry) {
         throw new Error("Target user not found in leaderboard");
       }
 
-      targetPosition = await prisma.userLeaderboards.count({
+      targetPosition = await prisma.userLeaderboardEntry.count({
         where: {
           league,
           [currentWeek ? "currentScore" : "lastScore"]: {
@@ -127,10 +139,12 @@ export const updateUserWeeklyScore = async (
     return await prisma.$transaction(
       async (tx) => {
         // Get current user data with a lock
-        const currentLeaderboardEntry = await tx.userLeaderboards.findUnique({
-          where: { fid },
-          select: { currentScore: true },
-        });
+        const currentLeaderboardEntry =
+          await tx.userLeaderboardEntry.findUnique({
+            // TODO: fix this mode constraint
+            where: { fid_mode: { fid, mode: Mode.Classic } },
+            select: { currentScore: true },
+          });
 
         if (!currentLeaderboardEntry)
           throw new Error("User leaderboard entry not found");
@@ -139,8 +153,9 @@ export const updateUserWeeklyScore = async (
           currentLeaderboardEntry.currentScore + weeklyScoreToAdd;
 
         // Update user's current score
-        const updatedEntry = await tx.userLeaderboards.update({
-          where: { fid },
+        // TODO: fix this mode constraint
+        const updatedEntry = await tx.userLeaderboardEntry.update({
+          where: { fid_mode: { fid, mode: Mode.Classic } },
           data: {
             currentScore: { increment: weeklyScoreToAdd },
           },

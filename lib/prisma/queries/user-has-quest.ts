@@ -53,7 +53,7 @@ export const getUserHasQuests = async (
   const include: Prisma.UserHasQuestInclude = {};
   if (includes.quest) {
     include.quest = {
-      include: includes.item ? { items: true } : undefined,
+      include: includes.item ? { item: true } : undefined,
     };
   }
 
