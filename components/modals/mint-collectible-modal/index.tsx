@@ -95,6 +95,7 @@ export default function MintCollectibleModal({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [finalTxHash, setFinalTxHash] = useState<string | null>(null);
   const [updatedUserAvatar, setUpdatedUserAvatar] = useState<boolean>(false);
+  const [errorOnGeneration, setErrorOnGeneration] = useState(false);
 
   const [showConfetti, setShowConfetti] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -178,6 +179,7 @@ export default function MintCollectibleModal({
     setMidjourneyImageUrls,
     setIsLoading,
     handleUpdateStateCollectibles,
+    setErrorOnGeneration,
   });
 
   // Step 4: On confirm selection, upload to pinata
@@ -350,10 +352,9 @@ export default function MintCollectibleModal({
       (status === CollectibleStatus.Pending ||
         status === CollectibleStatus.Description) &&
       !midjourneyTaskId &&
-      // hide when showing retry button
-      !errorOnDescription
+      !errorOnGeneration // Add this condition
     );
-  }, [midjourneyTaskId, selectedCollectible, errorOnDescription]);
+  }, [midjourneyTaskId, selectedCollectible, errorOnGeneration]);
 
   // Check if user can generate image
   const canGenerate = useMemo(() => {
@@ -458,8 +459,12 @@ export default function MintCollectibleModal({
 
   // Step 2. handle generate image
   const handleGenerate = async () => {
-    if (canGenerate && pfpDescription && !midjourneyTaskId) {
+    if (
+      (errorOnGeneration && pfpDescription) ||
+      (canGenerate && pfpDescription && !midjourneyTaskId)
+    ) {
       setIsLoading(true);
+      setErrorOnGeneration(false);
       try {
         generateMidjourneyImage({
           prompt: pfpDescription,
@@ -481,7 +486,8 @@ export default function MintCollectibleModal({
     if (
       status === CollectibleStatus.Pending &&
       midjourneyTaskId &&
-      !midjourneyImageUrl
+      !midjourneyImageUrl &&
+      !errorOnGeneration // Added this condition
     ) {
       // periodically check if midjourney image is ready
       const retryInterval = 5000;
@@ -505,6 +511,7 @@ export default function MintCollectibleModal({
     midjourneyImageUrl,
     getMidjourneyImage,
     state.user.fid,
+    errorOnGeneration, // Added to dependencies array
   ]);
 
   // Step 4. handle confirm selection
@@ -840,7 +847,10 @@ export default function MintCollectibleModal({
                     onClick={handleShareMint}
                     className="w-full flex-1 py-2 px-4 rounded-[5px] text-[#5C4121] bg-yellow-500 hover:bg-yellow-500/80 hover:text-[#5C4121]"
                   >
-                    <Share2 size={18} className="w-3 h-3 xs:w-4 xs:h-4" />
+                    <Share2
+                      size={18}
+                      className="w-3 h-3 xs:w-4 xs:h-4"
+                    />
                     Share
                   </Button>
                   <div className="flex w-full gap-2">
@@ -866,7 +876,10 @@ export default function MintCollectibleModal({
                       variant="outline"
                       className="w-fit flex py-1 px-2 xs:py-2 xs:px-4 rounded-[5px] bg-transparent hover:bg-yellow-500/10 border-2 border-yellow-500/20 text-yellow-500 hover:text-yellow-500/80 text-[9px] xs:text-xs font-medium items-center justify-center gap-2"
                     >
-                      <Download size={18} className="w-3 h-3 xs:w-4 xs:h-4" />
+                      <Download
+                        size={18}
+                        className="w-3 h-3 xs:w-4 xs:h-4"
+                      />
                     </Button>
                   </div>
                 </>
@@ -895,6 +908,19 @@ export default function MintCollectibleModal({
                       Wait, do not close this page.
                     </p>
                   ) : null}
+                </div>
+              ) : errorOnGeneration ? (
+                <div className="relative flex flex-col gap-2">
+                  <button
+                    onClick={handleGenerate}
+                    className="flex-1 py-2 px-4 rounded bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors text-sm font-medium border border-red-400/30 flex items-center justify-center gap-2"
+                  >
+                    Retry Generation
+                  </button>
+                  <p className="text-red-400/70 text-[8px] text-center">
+                    There was an error generating your image. Click to try
+                    again.
+                  </p>
                 </div>
               ) : showGetImageButton ? (
                 <div className="relative flex flex-col gap-2">
