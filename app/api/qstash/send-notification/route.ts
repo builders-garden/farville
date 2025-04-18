@@ -1,7 +1,7 @@
 import { env } from "@/lib/env";
+import { getUserNotificationDetails } from "@/lib/prisma/queries";
 import {
   createUserNotification,
-  getUserNotificationDetails,
   getUserNotificationsByCategory,
   getHarvestableCellsCount,
   getExpiredBoostCellsCount,

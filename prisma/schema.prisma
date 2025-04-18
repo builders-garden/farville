@@ -125,7 +125,8 @@ model User {
   items               UserHasItem[]
   quests              UserHasQuest[]
   leaderboardEntry    UserLeaderboardEntry[]
-  user_statistic      UserStatistic[]
+  user_notification   UserNotification[]
+  statistics          UserStatistic[]
 
   @@map("user")
 }
@@ -153,17 +154,18 @@ model UserFrost {
 }
 
 model UserGridCell {
-  fid            Int
-  x              Int
-  y              Int
-  mode           String
-  cropType       String?
-  plantedAt      DateTime? @db.Timestamptz(6)
-  createdAt      DateTime  @default(now()) @db.Timestamptz(6)
-  speedBoostedAt DateTime? @db.Timestamptz(6)
-  harvestAt      DateTime? @db.Timestamptz(6)
-  item           Item?     @relation(fields: [cropType], references: [slug], onDelete: NoAction, onUpdate: NoAction, map: "user_grid_cell_croptype_fkey")
-  user           User      @relation(fields: [fid], references: [fid], onDelete: NoAction, onUpdate: NoAction)
+  fid              Int
+  x                Int
+  y                Int
+  mode             String
+  cropType         String?
+  plantedAt        DateTime? @db.Timestamptz(6)
+  createdAt        DateTime  @default(now()) @db.Timestamptz(6)
+  speedBoostedAt   DateTime? @db.Timestamptz(6)
+  harvestAt        DateTime? @db.Timestamptz(6)
+  isReadyToHarvest Boolean   @default(false)
+  item             Item?     @relation(fields: [cropType], references: [slug], onDelete: NoAction, onUpdate: NoAction, map: "user_grid_cell_croptype_fkey")
+  user             User      @relation(fields: [fid], references: [fid], onDelete: NoAction, onUpdate: NoAction)
 
   @@id([fid, x, y, mode])
   @@map("user_grid_cell")
@@ -214,7 +216,6 @@ model UserHasItem {
 }
 
 model UserHasQuest {
-  id          Int       @id @default(autoincrement())
   fid         Int
   questId     Int
   mode        String
@@ -225,6 +226,7 @@ model UserHasQuest {
   user        User      @relation(fields: [fid], references: [fid], onDelete: NoAction, onUpdate: NoAction)
   quest       Quest     @relation(fields: [questId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "user_has_quest_questid_fkey")
 
+  @@id([fid, questId, mode])
   @@map("user_has_quest")
 }
 
@@ -243,10 +245,9 @@ model UserLeaderboardEntry {
   @@map("user_leaderboard_entry")
 }
 
-/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model UserStatistic {
   fid        Int
-  mode       Int
+  mode       String
   xp         Int
   coins      Int
   expansions Int
@@ -255,4 +256,14 @@ model UserStatistic {
 
   @@id([fid, mode])
   @@map("user_statistic")
+}
+
+model UserNotification {
+  id        Int      @id @default(autoincrement())
+  fid       Int
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  category  String   @db.VarChar
+  user      User     @relation(fields: [fid], references: [fid], onDelete: Cascade, onUpdate: NoAction)
+
+  @@map("user_notification")
 }

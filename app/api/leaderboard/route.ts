@@ -1,6 +1,6 @@
 import {
   getQuestLeaderboard,
-  getUsersByFids,
+  getUsersByFidsAndMode,
   getUsersByXp,
 } from "@/lib/prisma/queries";
 import { NextResponse } from "next/server";
@@ -36,7 +36,7 @@ export async function GET(request: Request) {
         });
         return NextResponse.json({ users }, { headers });
       }
-      const { users } = await getUsersByFids(userFids);
+      const { users } = await getUsersByFidsAndMode(userFids);
       return NextResponse.json({ users }, { headers });
     }
 

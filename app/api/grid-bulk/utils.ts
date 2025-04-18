@@ -7,6 +7,7 @@ import {
 import { sendBatchToPostHog } from "@/lib/posthog/server";
 import {
   addUserItem,
+  getUserGridCells,
   getUserItemBySlug,
   removeUserItem,
   updateGridCellsBulk,
@@ -19,14 +20,20 @@ import {
   getBoostTime,
 } from "@/lib/utils";
 import {
-  getGridCells,
   getUserHarvestedCrops,
   upsertUserHarvestedCrop,
 } from "@/supabase/queries";
 import { DbGridCell } from "@/supabase/types";
-import { ActionType, CropType, PerkType, SeedType } from "@/lib/types/game";
+import {
+  ActionType,
+  CropType,
+  Mode,
+  PerkType,
+  SeedType,
+} from "@/lib/types/game";
 import { NextResponse } from "next/server";
 import { sendQuestsCalculation } from "../grid-cells/utils";
+import { UserGridCell } from "@prisma/client";
 
 export interface GridBulkResult {
   type: ActionType;
@@ -58,17 +65,18 @@ export interface GridBulkResult {
 export const plantBulk = async (
   fid: number,
   cells: { x: number; y: number }[],
-  seedType: SeedType
+  seedType: SeedType,
+  mode: Mode = Mode.Classic
 ) => {
   const userSeeds = await getUserItemBySlug(fid, seedType);
 
   if (!userSeeds || userSeeds.quantity < cells.length) {
     return NextResponse.json({ error: "User does not have enough seeds" });
   }
-  const gridCells = await getGridCells(fid);
+  const gridCells = await getUserGridCells(fid);
 
-  const notPlantedCells: (DbGridCell | undefined)[] = [];
-  const plantableCells: DbGridCell[] = [];
+  const notPlantedCells: (UserGridCell | undefined)[] = [];
+  const plantableCells: UserGridCell[] = [];
   // check if the cells are already planted
   for (const cell of cells) {
     const gridCell = gridCells.find((gc) => gc.x === cell.x && gc.y === cell.y);
@@ -83,6 +91,7 @@ export const plantBulk = async (
     fid,
     plantableCells.map((cell) => ({
       ...cell,
+      mode,
       cropType,
       plantedAt: new Date(),
       harvestAt: new Date(Date.now() + CROP_DATA[cropType].growthTime),
@@ -128,9 +137,10 @@ export const plantBulk = async (
 
 export const harvestBulk = async (
   fid: number,
-  cells: { x: number; y: number }[]
+  cells: { x: number; y: number }[],
+  mode: Mode = Mode.Classic
 ) => {
-  const gridCells = await getGridCells(fid);
+  const gridCells = await getUserGridCells(fid);
   const harvestableCells = [];
   const notHarvestableCells = [];
 
@@ -161,6 +171,7 @@ export const harvestBulk = async (
     fid,
     harvestableCells.map((cell) => ({
       ...cell,
+      mode,
       cropType: null,
       plantedAt: null,
       isReadyToHarvest: false,
@@ -308,7 +319,7 @@ export const perkBulk = async (
     return NextResponse.json({ error: "User does not have enough perks" });
   }
 
-  const gridCells = await getGridCells(fid);
+  const gridCells = await getUserGridCells(fid);
 
   const nonPerkableCells = [];
   const perkableCells = [];
@@ -399,7 +410,7 @@ export const fertilizeBulk = async (
     return NextResponse.json({ error: "User does not have enough perks" });
   }
 
-  const gridCells = await getGridCells(fid);
+  const gridCells = await getUserGridCells(fid);
 
   const nonPerkableCells = [];
   const perkableCells = [];

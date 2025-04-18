@@ -2,46 +2,47 @@ import { fetchUser } from "@/lib/neynar";
 import { NextRequest, NextResponse } from "next/server";
 import { verifyMessage } from "viem";
 import * as jose from "jose";
-import {
-  addReferral,
-  getGridCells,
-  initializeGrid,
-  initDailyUserQuests,
-  initWeeklyUserQuests,
-  // initMonthlyUserQuests,
-} from "@/supabase/queries";
+import { initDailyUserQuests, initWeeklyUserQuests } from "@/supabase/queries";
 import { trackEvent } from "@/lib/posthog/server";
 import {
-  createUser,
+  addReferral,
+  createUserAndMode,
   createUserLeaderboardEntry,
-  getUser,
+  getUserByMode,
+  getUserGridCells,
   getUserLeaderboardEntry,
   giftStarterPack,
+  initializeGrid,
 } from "@/lib/prisma/queries";
 import { getUserLeague } from "@/lib/utils";
 import { env } from "@/lib/env";
 import { getUserHasQuests } from "@/lib/prisma/queries";
-import { QuestType } from "@/lib/types/game";
+import { Mode, QuestType } from "@/lib/types/game";
 
 export const POST = async (req: NextRequest) => {
   const { fid, referrerFid, signature, message, userNow } = await req.json();
 
-  let user = await getUser(fid);
+  let user = await getUserByMode(fid);
 
   if (!user) {
     const newUser = await fetchUser(fid);
-    user = await createUser({
+    user = await createUserAndMode({
       fid: fid,
       username: newUser.username,
       displayName: newUser.display_name,
       avatarUrl: newUser.pfp_url,
       walletAddress: newUser.custody_address,
-      xp: 0,
-      coins: 0,
-      expansions: 1,
-      notificationDetails: "",
-      mintedOG: false,
-      selectedAvatarUrl: null,
+      statistics: {
+        create: {
+          mode: Mode.Classic,
+          xp: 0,
+          coins: 0,
+          expansions: 1,
+        },
+      },
+      // notificationDetails: "",
+      // mintedOG: false,
+      // selectedAvatarUrl: null,
     });
 
     if (referrerFid) {
@@ -66,7 +67,7 @@ export const POST = async (req: NextRequest) => {
 
   // check if the user has already the grid cells
   // if not, initialize the grid
-  const gridCells = await getGridCells(fid);
+  const gridCells = await getUserGridCells(fid);
   if (gridCells.length === 0) {
     await initializeGrid(fid);
     // Give them a starter pack
@@ -86,12 +87,12 @@ export const POST = async (req: NextRequest) => {
 
   // Check if the user has daily, weekly and monthly quests
   // If not, initialize them
-  const dailyQuests = await getUserHasQuests(fid, {
+  const dailyQuests = await getUserHasQuests(fid, Mode.Classic, {
     type: [QuestType.Daily],
     activeToday: true,
     timeToCompare: userNow,
   });
-  const weeklyQuests = await getUserHasQuests(Number(fid), {
+  const weeklyQuests = await getUserHasQuests(Number(fid), Mode.Classic, {
     type: [QuestType.Weekly],
   });
   if (!dailyQuests || dailyQuests?.length === 0) {

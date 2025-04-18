@@ -1,7 +1,7 @@
 import { updateUserQuest } from "@/supabase/queries";
 
 import { DbUserHasQuestStatus } from "@/supabase/types";
-import { QuestStatus } from "@/lib/types/game";
+import { Mode, QuestStatus } from "@/lib/types/game";
 import { getUserHasQuests } from "@/lib/prisma/queries";
 
 export const calculateUserQuestsProgress = async (
@@ -13,6 +13,7 @@ export const calculateUserQuestsProgress = async (
   // Get all quests that are incomplete and match the category and itemId
   const quests = await getUserHasQuests(
     fid,
+    Mode.Classic,
     {
       status: QuestStatus.Incomplete,
       category,

@@ -2,14 +2,14 @@
 import {
   getActiveStreaksCount,
   getTopStreaks,
-  getUser,
+  getUserByMode,
   TopStreaksResult,
 } from "@/lib/prisma/queries";
 import { getUserCollectibleByCollectibleId } from "@/supabase/queries";
-import { DbUser } from "@/supabase/types";
 import { ImageResponse } from "next/og";
 import { CollectibleStatus } from "@/lib/types/game";
 import { env } from "@/lib/env";
+import { UserWithStatistic } from "@/lib/prisma/types";
 
 export const dynamic = "force-dynamic";
 const size = {
@@ -82,9 +82,9 @@ export async function GET(
     const topStreaks: TopStreaksResult[] = await getTopStreaks();
     const totActiveStreaks = await getActiveStreaksCount();
 
-    const topStreaksUsers: DbUser[] = [];
+    const topStreaksUsers: UserWithStatistic[] = [];
     for (const streak of topStreaks) {
-      const user = await getUser(streak.fid);
+      const user = await getUserByMode(streak.fid);
       if (user) {
         topStreaksUsers.push(user);
       }

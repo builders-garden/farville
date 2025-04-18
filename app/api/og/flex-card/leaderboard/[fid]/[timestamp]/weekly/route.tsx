@@ -1,6 +1,6 @@
 import { env } from "@/lib/env";
 import {
-  getUser,
+  getUserByMode,
   getUserLeaderboardEntry,
   getWeeklyLeaderboardUsersByLeague,
   getWeeklyUserLeaderboardByLeague,
@@ -57,7 +57,7 @@ export async function GET(
       });
     }
 
-    const user = await getUser(Number(fid));
+    const user = await getUserByMode(Number(fid));
 
     if (!user) {
       return new Response("User not found", {

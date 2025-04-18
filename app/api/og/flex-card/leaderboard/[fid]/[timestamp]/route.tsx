@@ -4,8 +4,8 @@ import {
 } from "@/lib/utils";
 import { ImageResponse } from "next/og";
 import { getActiveStreaksCount } from "@/lib/prisma/queries";
-import { User } from "@prisma/client";
 import { env } from "@/lib/env";
+import { UserWithStatistic } from "@/lib/prisma/types";
 
 export const dynamic = "force-dynamic";
 const size = {
@@ -13,7 +13,7 @@ const size = {
   height: 400,
 };
 
-interface PartialLeaderboard extends User {
+interface PartialLeaderboard extends UserWithStatistic {
   questCount?: number;
   position: number;
 }

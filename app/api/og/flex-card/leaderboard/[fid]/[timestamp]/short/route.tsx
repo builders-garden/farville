@@ -1,7 +1,7 @@
 import { env } from "@/lib/env";
-import { getActiveStreaksCount, getUser } from "@/lib/prisma/queries";
+import { getActiveStreaksCount, getUserByMode } from "@/lib/prisma/queries";
+import { UserWithStatistic } from "@/lib/prisma/types";
 import { getGlobalLeaderboard } from "@/lib/utils";
-import { DbUser } from "@/supabase/types";
 import { ImageResponse } from "next/og";
 
 export const dynamic = "force-dynamic";
@@ -66,7 +66,7 @@ export async function GET(
       });
     }
 
-    const user = await getUser(Number(fid));
+    const user = await getUserByMode(Number(fid));
     const totActivePlayers = await getActiveStreaksCount();
 
     const leaderboardData = (await getGlobalLeaderboard(
@@ -75,9 +75,9 @@ export async function GET(
       5
     )) as LeaderboardData;
 
-    const topLeaderboardUsers: DbUser[] = [];
+    const topLeaderboardUsers: UserWithStatistic[] = [];
     for (const leaderboardUser of leaderboardData.users) {
-      const user = await getUser(leaderboardUser.fid);
+      const user = await getUserByMode(leaderboardUser.fid);
       if (user) {
         topLeaderboardUsers.push(user);
       }

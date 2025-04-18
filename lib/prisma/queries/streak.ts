@@ -1,7 +1,7 @@
 import { prisma } from "../client";
 import { Streak } from "@prisma/client";
 import { getCurrentDayStreak } from "../../utils";
-import { getUserFrostsByStreakId } from "./user-frosts";
+import { getUserFrostsByStreakId } from "./user-frost";
 
 export const getUserStreaks = async (fid: number) => {
   return await prisma.streak.findMany({

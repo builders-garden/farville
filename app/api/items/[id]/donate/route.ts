@@ -4,7 +4,7 @@ import { sendDelayedNotification } from "@/lib/game-notifications";
 import {
   addUserItem,
   getItemById,
-  getUser,
+  getUserByMode,
   getUserDonationsOfToday,
   getUserItemByItemId,
   updateUserDonationHistory,
@@ -51,7 +51,7 @@ export const POST = async (
 
   const { quantity, toFid, requestId } = requestBody.data;
 
-  const user = await getUser(Number(fid));
+  const user = await getUserByMode(Number(fid));
   if (!user) {
     return NextResponse.json({ message: "User not found" }, { status: 404 });
   }

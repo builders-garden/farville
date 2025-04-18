@@ -1,11 +1,11 @@
 import { MAX_FROSTS_QUANTITY } from "@/lib/game-constants";
-import { removeUserItem } from "@/supabase/queries";
 import { PerkType, SpecialItemType } from "@/lib/types/game";
 import {
   addUserItem,
   getItemById,
-  getUser,
+  getUserByMode,
   getUserItemByItemId,
+  removeUserItem,
   updateUserCoins,
 } from "@/lib/prisma/queries";
 
@@ -14,7 +14,7 @@ export const buyItem = async (
   itemId: number,
   quantity: number
 ) => {
-  const user = await getUser(fid);
+  const user = await getUserByMode(fid);
   if (!user) {
     return {
       success: false,
@@ -74,7 +74,7 @@ export const sellItem = async (
   itemId: number,
   quantity: number
 ) => {
-  const user = await getUser(fid);
+  const user = await getUserByMode(fid);
   if (!user) {
     return { success: false, message: "User not found", status: 404 };
   }

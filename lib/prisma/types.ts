@@ -1,3 +1,6 @@
+import { FrameNotificationDetails } from "@farcaster/frame-sdk";
+import { Mode } from "fs";
+
 export interface DbItem {
   id: number;
   name: string;
@@ -11,19 +14,39 @@ export interface DbItem {
   createdAt: Date;
 }
 
-export interface DbUser {
+export interface UserWithStatistic {
+  fid: number;
+  mode: Mode;
+  username: string;
+  displayName: string;
+  avatarUrl: string | null;
+  walletAddress: string;
+  xp: number;
+  coins: number;
+  expansions: number;
+  notificationDetails: FrameNotificationDetails | null;
+  createdAt: Date;
+  mintedOG: boolean;
+  selectedAvatarUrl: string | null;
+}
+
+export interface UserWithStatistics {
   fid: number;
   username: string;
   displayName: string;
   avatarUrl: string | null;
   walletAddress: string | null;
-  xp: number;
-  coins: number;
-  expansions: number;
-  notificationDetails: string | null;
+  notificationDetails: FrameNotificationDetails | null;
   createdAt: Date;
   mintedOG: boolean;
   selectedAvatarUrl: string | null;
+  statistics: {
+    mode: Mode;
+    xp: number;
+    coins: number;
+    expansions: number;
+    createdAt: Date;
+  }[];
 }
 
 export interface DbUserDonation {

@@ -1,4 +1,4 @@
-import { getUser } from "@/lib/prisma/queries";
+import { getUserByMode } from "@/lib/prisma/queries";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
@@ -7,6 +7,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const user = await getUser(Number(fid));
+  const user = await getUserByMode(Number(fid));
   return NextResponse.json(user);
 }

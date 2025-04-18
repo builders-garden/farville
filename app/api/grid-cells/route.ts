@@ -1,7 +1,11 @@
 import { EXPANSION_COSTS } from "@/lib/game-constants";
-import { getUser, updateUser } from "@/lib/prisma/queries";
+import {
+  createGridCell,
+  getUserByMode,
+  getUserGridCells,
+  updateUserStatistic,
+} from "@/lib/prisma/queries";
 import { getCurrentLevelAndProgress } from "@/lib/utils";
-import { createGridCell, getGridCells } from "@/supabase/queries";
 import { NextRequest, NextResponse } from "next/server";
 
 export const GET = async (req: NextRequest) => {
@@ -9,7 +13,7 @@ export const GET = async (req: NextRequest) => {
   if (!fid) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-  const gridCells = await getGridCells(Number(fid));
+  const gridCells = await getUserGridCells(Number(fid));
   return NextResponse.json(gridCells);
 };
 
@@ -20,7 +24,7 @@ export const POST = async (req: NextRequest) => {
   }
 
   // check if user exists
-  const user = await getUser(Number(fid));
+  const user = await getUserByMode(Number(fid));
   if (!user) {
     return NextResponse.json({ error: "User not found" }, { status: 404 });
   }
@@ -56,11 +60,11 @@ export const POST = async (req: NextRequest) => {
     await createGridCell(Number(fid), nextSize.width, i);
   }
 
-  await updateUser(Number(fid), {
+  await updateUserStatistic(Number(fid), {
     expansions: user.expansions + 1,
     coins: user.coins - nextExpansion.coins,
   });
 
-  const gridCells = await getGridCells(Number(fid));
+  const gridCells = await getUserGridCells(Number(fid));
   return NextResponse.json(gridCells);
 };

@@ -1,11 +1,11 @@
 import { trackEvent } from "@/lib/posthog/server";
 import {
   createUserLeaderboardEntry,
-  getUser,
+  getUserByMode,
   getUserLeaderboardEntry,
 } from "@/lib/prisma/queries";
 import { getUserHasQuests } from "@/lib/prisma/queries";
-import { QuestType } from "@/lib/types/game";
+import { Mode, QuestType } from "@/lib/types/game";
 import { getUserLeague } from "@/lib/utils";
 import { initDailyUserQuests, initWeeklyUserQuests } from "@/supabase/queries";
 import { NextRequest, NextResponse } from "next/server";
@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
   let weeklyUserLeaderboard = await getUserLeaderboardEntry(Number(fid));
 
   if (!weeklyUserLeaderboard) {
-    const user = await getUser(Number(fid));
+    const user = await getUserByMode(Number(fid));
     if (!user) {
       return NextResponse.json({ message: "User not found" }, { status: 404 });
     }
@@ -34,12 +34,12 @@ export async function GET(request: NextRequest) {
 
   // Check if the user has daily, weekly and monthly quests
   // If not, initialize them
-  const dailyQuests = await getUserHasQuests(Number(fid), {
+  const dailyQuests = await getUserHasQuests(Number(fid), Mode.Classic, {
     type: [QuestType.Daily],
     activeToday: true,
     timeToCompare: new Date(userLocalDate),
   });
-  const weeklyQuests = await getUserHasQuests(Number(fid), {
+  const weeklyQuests = await getUserHasQuests(Number(fid), Mode.Classic, {
     type: [QuestType.Weekly],
     activeToday: true,
     timeToCompare: new Date(userLocalDate),

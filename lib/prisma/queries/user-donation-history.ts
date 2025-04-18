@@ -1,7 +1,7 @@
 import { User, UserDonationHistory } from "@prisma/client";
 import { prisma } from "../client";
 import {
-  DbUser,
+  UserWithStatistic,
   DbUserDonation,
   DbUserDonation as DbUserDonationPrisma,
 } from "../types";
@@ -44,8 +44,8 @@ export const getUserDonationByReceiver = async (
 };
 
 export interface DbUserDonationWithUsers extends DbUserDonationPrisma {
-  donator: DbUser;
-  receiver: DbUser;
+  donator: UserWithStatistic;
+  receiver: UserWithStatistic;
 }
 
 export const getUserDonationsOfToday = async (

@@ -2,7 +2,7 @@ import { Metadata } from "next";
 import { getRequestById } from "@/supabase/queries";
 import App from "@/app/app";
 import { env } from "@/lib/env";
-import { getUser } from "@/lib/prisma/queries";
+import { getUserByMode } from "@/lib/prisma/queries";
 
 const appUrl = env.NEXT_PUBLIC_URL;
 
@@ -41,7 +41,7 @@ export async function generateMetadata({
     };
   }
   const fid = request.fid;
-  const user = await getUser(Number(fid));
+  const user = await getUserByMode(Number(fid));
 
   // Construct the dynamic image URL
   const imageUrl = new URL(`${appUrl}/api/og/requests/${requestId}`);

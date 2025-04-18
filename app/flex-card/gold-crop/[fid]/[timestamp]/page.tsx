@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 import App from "@/app/app";
 import { env } from "@/lib/env";
-import { getUser } from "@/lib/prisma/queries";
+import { getUserByMode } from "@/lib/prisma/queries";
 
 const appUrl = env.NEXT_PUBLIC_URL;
 
@@ -16,7 +16,7 @@ export async function generateMetadata({
   const searchParamsObj = await searchParams;
   const crop = searchParamsObj.crop;
 
-  const user = await getUser(Number(fid));
+  const user = await getUserByMode(Number(fid));
 
   if (!user || !timestamp) {
     return {

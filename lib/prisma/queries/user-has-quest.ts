@@ -1,6 +1,6 @@
-import { Prisma } from "@prisma/client";
+import { Prisma, UserHasQuest } from "@prisma/client";
 import { prisma } from "../client";
-import { QuestStatus, QuestType } from "@/lib/types/game";
+import { Mode, QuestStatus, QuestType } from "@/lib/types/game";
 
 interface QuestFilters {
   category?: string;
@@ -18,6 +18,7 @@ interface QuestIncludes {
 
 export const getUserHasQuests = async (
   fid: number,
+  mode: Mode = Mode.Classic,
   filters: QuestFilters = {},
   includes: QuestIncludes = { quest: true }
 ) => {
@@ -26,6 +27,7 @@ export const getUserHasQuests = async (
   const questWhere: Prisma.QuestWhereInput = {};
   const whereClause: Prisma.UserHasQuestWhereInput = {
     fid,
+    mode,
     quest: questWhere,
   };
 
@@ -70,10 +72,12 @@ export async function getQuestLeaderboard({
   limit,
   fids,
   targetFid,
+  mode = Mode.Classic,
 }: {
   limit?: number;
   fids?: string[];
   targetFid?: string;
+  mode?: Mode;
 }) {
   // If no specific fids provided and targetFid exists, we need full leaderboard data
   const needsFullLeaderboard = !fids && targetFid;
@@ -85,6 +89,7 @@ export async function getQuestLeaderboard({
       fid: true,
     },
     where: {
+      mode,
       status: {
         not: "incomplete",
       },
@@ -180,14 +185,17 @@ export async function getQuestPartialLeaderboardFromFids({
   fids,
   targetFid,
   limit = 5,
+  mode = Mode.Classic,
 }: {
   fids: string[];
   targetFid: string;
   limit?: number;
+  mode?: Mode;
 }) {
   const fullLeaderboard = (await getQuestLeaderboard({
     fids,
     targetFid,
+    mode,
   })) as {
     fid: number;
     username: string;
@@ -212,3 +220,83 @@ export async function getQuestPartialLeaderboardFromFids({
     position: start + index + 1,
   }));
 }
+
+export const getUserQuestById = async (
+  fid: number,
+  questId: number
+): Promise<UserHasQuest | null> => {
+  const userQuest = await prisma.userHasQuest.findFirst({
+    where: {
+      fid,
+      questId,
+    },
+    include: {
+      quest: {
+        include: {
+          item: true,
+        },
+      },
+    },
+  });
+
+  return userQuest;
+};
+
+export const createUserQuest = async (
+  userQuest: Prisma.UserHasQuestCreateArgs["data"]
+): Promise<UserHasQuest> => {
+  const data = await prisma.userHasQuest.create({
+    data: {
+      ...userQuest,
+      status: "incomplete",
+      progress: 0,
+    },
+  });
+
+  return data;
+};
+
+export const updateUserQuest = async (
+  fid: number,
+  questId: number,
+  updates: Prisma.UserHasQuestUpdateInput,
+  mode: Mode = Mode.Classic
+): Promise<UserHasQuest> => {
+  const data = await prisma.userHasQuest.update({
+    where: {
+      fid_questId_mode: {
+        fid,
+        questId,
+        mode,
+      },
+    },
+    data: updates,
+  });
+
+  return data;
+};
+
+export const getActiveUserQuests = async (
+  fid: number,
+  mode: Mode = Mode.Classic
+): Promise<UserHasQuest[]> => {
+  const data = await prisma.userHasQuest.findMany({
+    where: {
+      fid,
+      mode,
+      status: "incomplete",
+    },
+    include: {
+      quest: {
+        include: {
+          item: true,
+        },
+      },
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+
+  return data;
+};

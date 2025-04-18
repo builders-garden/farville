@@ -2,11 +2,11 @@ import { env } from "@/lib/env";
 import {
   getActiveStreaksCount,
   getTopStreaks,
-  getUser,
+  getUserByMode,
   getUserItemBySlug,
   TopStreaksResult,
 } from "@/lib/prisma/queries";
-import { DbUser } from "@/supabase/types";
+import { UserWithStatistic } from "@/lib/prisma/types";
 import { ImageResponse } from "next/og";
 
 export const dynamic = "force-dynamic";
@@ -64,7 +64,7 @@ export async function GET(
       });
     }
 
-    const user = await getUser(Number(fid));
+    const user = await getUserByMode(Number(fid));
 
     if (!user) {
       return new Response("User not found", {
@@ -75,9 +75,9 @@ export async function GET(
     const topStreaks: TopStreaksResult[] = await getTopStreaks();
     const totActiveStreaks = await getActiveStreaksCount();
 
-    const topStreaksUsers: DbUser[] = [];
+    const topStreaksUsers: UserWithStatistic[] = [];
     for (const streak of topStreaks) {
-      const user = await getUser(streak.fid);
+      const user = await getUserByMode(streak.fid);
       if (user) {
         topStreaksUsers.push(user);
       }

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { SeedType, PerkType, ActionType } from "@/lib/types/game";
 import { fertilizeBulk, harvestBulk, perkBulk, plantBulk } from "./utils";
 import { z } from "zod";
-import { getUser } from "@/lib/prisma/queries";
+import { getUserByMode } from "@/lib/prisma/queries";
 
 export interface GridBulkRequest {
   action: ActionType;
@@ -33,7 +33,7 @@ export const POST = async (req: NextRequest) => {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const user = await getUser(Number(fid));
+  const user = await getUserByMode(Number(fid));
 
   if (!user) {
     return NextResponse.json({ error: "User not found" }, { status: 404 });

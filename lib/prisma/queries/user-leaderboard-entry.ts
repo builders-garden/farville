@@ -5,8 +5,8 @@ import { Mode } from "@/lib/types/game";
 
 export const createUserLeaderboardEntry = async (
   fid: number,
-  mode: string,
-  data: Partial<UserLeaderboardEntry>
+  data: Partial<UserLeaderboardEntry>,
+  mode: Mode = Mode.Classic
 ) => {
   return await prisma.userLeaderboardEntry.create({
     data: {
@@ -19,7 +19,7 @@ export const createUserLeaderboardEntry = async (
 
 export const updateUserLeaderboardEntry = async (
   fid: number,
-  mode: string,
+  mode: Mode = Mode.Classic,
   data: Partial<UserLeaderboardEntry>
 ) => {
   return await prisma.userLeaderboardEntry.update({
@@ -30,7 +30,10 @@ export const updateUserLeaderboardEntry = async (
   });
 };
 
-export const getUserLeaderboardEntry = async (fid: number, mode: string) => {
+export const getUserLeaderboardEntry = async (
+  fid: number,
+  mode: string = Mode.Classic
+) => {
   return await prisma.userLeaderboardEntry.findUnique({
     where: {
       fid_mode: {
@@ -41,9 +44,13 @@ export const getUserLeaderboardEntry = async (fid: number, mode: string) => {
   });
 };
 
-export const getWeeklyLeaderboardUsersByLeague = async (league: number) => {
+export const getWeeklyLeaderboardUsersByLeague = async (
+  league: number,
+  mode: Mode = Mode.Classic
+) => {
   const userCount = await prisma.userLeaderboardEntry.count({
     where: {
+      mode,
       league,
       currentScore: {
         gt: 0,
@@ -58,10 +65,12 @@ export const getWeeklyUserLeaderboardByLeague = async (
   league: number,
   currentWeek: boolean,
   limit: number = 10,
-  targetFid?: number
+  targetFid?: number,
+  mode: Mode = Mode.Classic
 ) => {
   const filter = {
     where: {
+      mode,
       league: currentWeek ? league : undefined,
       fid: {
         not: {

@@ -1,7 +1,7 @@
 import { Mode } from "@/lib/types/game";
 import { prisma } from "../client";
 import { getUserStreaks } from "./streak";
-import { removeUserItem } from "./user-has-items";
+import { removeUserItem } from "./user-has-item";
 import { UserFrost } from "@prisma/client";
 
 export const getUserFrosts = async (fid: number) => {

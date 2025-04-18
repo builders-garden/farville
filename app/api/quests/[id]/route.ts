@@ -7,7 +7,7 @@ import {
 import { z } from "zod";
 import { QuestStatus } from "@/lib/types/game";
 import {
-  getUser,
+  getUserByMode,
   updateUserCoins,
   updateUserWeeklyScore,
   updateUserXP,
@@ -64,7 +64,7 @@ export async function POST(
 
   const { status } = requestBody.data;
 
-  const user = await getUser(Number(fid));
+  const user = await getUserByMode(Number(fid));
   if (!user) {
     return NextResponse.json({ error: "User not found" }, { status: 404 });
   }

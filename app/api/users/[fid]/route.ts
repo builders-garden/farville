@@ -1,4 +1,4 @@
-import { getUser } from "@/lib/prisma/queries";
+import { getUserByMode } from "@/lib/prisma/queries";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
@@ -6,7 +6,7 @@ export async function GET(
   { params }: { params: Promise<{ fid: string }> }
 ) {
   const fid = (await params).fid;
-  const user = await getUser(Number(fid));
+  const user = await getUserByMode(Number(fid));
   if (!user) {
     return NextResponse.json({ error: "User not found" }, { status: 404 });
   }

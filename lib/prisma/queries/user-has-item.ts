@@ -1,13 +1,16 @@
 import { Item, UserHasItem } from "@prisma/client";
 import { prisma } from "../client";
+import { Mode } from "@/lib/types/game";
 
 export const getUserItemByItemId = async (
   fid: number,
-  itemId: number
+  itemId: number,
+  mode: Mode = Mode.Classic
 ): Promise<(UserHasItem & { item: Item }) | null> => {
   const userItem = await prisma.userHasItem.findFirst({
     where: {
       fid,
+      mode,
       itemId,
       quantity: {
         gte: 1,
@@ -23,11 +26,13 @@ export const getUserItemByItemId = async (
 
 export const getUserItems = async (
   fid: number,
-  category?: string
+  category?: string,
+  mode: Mode = Mode.Classic
 ): Promise<(UserHasItem & { item: Item })[]> => {
   const userItems = await prisma.userHasItem.findMany({
     where: {
       fid,
+      mode,
       ...(category && {
         item: {
           category,
@@ -44,11 +49,13 @@ export const getUserItems = async (
 
 export const getUserItemBySlug = async (
   fid: number,
-  slug: string
+  slug: string,
+  mode: Mode = Mode.Classic
 ): Promise<UserHasItem | null> => {
   const userItem = await prisma.userHasItem.findFirst({
     where: {
       fid,
+      mode,
       item: {
         slug: slug,
       },
@@ -69,7 +76,7 @@ export const updateUserItem = async (
   fid: number,
   itemId: number,
   quantity: number,
-  mode: string
+  mode: string = Mode.Classic
 ): Promise<UserHasItem> => {
   const updatedItem = await prisma.userHasItem.upsert({
     where: {
@@ -97,7 +104,7 @@ export const addUserItem = async (
   fid: number,
   itemId: number,
   quantity: number,
-  mode: string
+  mode: string = Mode.Classic
 ) => {
   return await prisma.userHasItem.upsert({
     where: {
@@ -119,7 +126,10 @@ export const addUserItem = async (
   });
 };
 
-export const giftStarterPack = async (fid: number, mode: string) => {
+export const giftStarterPack = async (
+  fid: number,
+  mode: Mode = Mode.Classic
+) => {
   await addUserItem(fid, 1, 4, mode);
   await addUserItem(fid, 9, 4, mode);
 };
@@ -128,7 +138,7 @@ export const removeUserItem = async (
   fid: number,
   itemId: number,
   quantity: number,
-  mode: string
+  mode: string = Mode.Classic
 ) => {
   // Use a transaction to prevent race conditions
   return await prisma.$transaction(

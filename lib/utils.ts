@@ -13,13 +13,13 @@ import {
 import { CropType, PerkType } from "@/lib/types/game";
 import { fetchUsersFollowedBy } from "./neynar";
 import {
-  getPartialLeaderboardFromFids,
-  getPartialLeaderboardFromUserPosition,
+  getModePartialLeaderboardFromFids,
+  getModePartialLeaderboardFromUserPosition,
   getQuestLeaderboard,
   getQuestPartialLeaderboard,
   getQuestPartialLeaderboardFromFids,
-  getUser,
-  getUserPosition,
+  getUserByMode,
+  getLeaderboardUserPositionByMode,
   getUsersByXp,
 } from "./prisma/queries";
 import { encodeFunctionData, Address, Hex } from "viem";
@@ -446,7 +446,7 @@ export const getPartialLeaderboardBasedOnFid = async (
     limit: number;
   }
 ) => {
-  const user = await getUser(Number(targetFid));
+  const user = await getUserByMode(Number(targetFid));
 
   if (!user) {
     throw new Error("Failed to fetch leaderboard: user not found");
@@ -471,7 +471,7 @@ export const getPartialLeaderboardBasedOnFid = async (
       return users;
     }
 
-    const users = await getPartialLeaderboardFromFids(
+    const users = await getModePartialLeaderboardFromFids(
       userFids,
       targetFid,
       Number(options.limit)
@@ -488,9 +488,9 @@ export const getPartialLeaderboardBasedOnFid = async (
     return users;
   }
 
-  const userPosition = await getUserPosition(user.xp);
+  const userPosition = await getLeaderboardUserPositionByMode(user.xp);
   console.log(`User ${targetFid} position is: ${userPosition}`);
-  const partialLeaderboard = await getPartialLeaderboardFromUserPosition(
+  const partialLeaderboard = await getModePartialLeaderboardFromUserPosition(
     userPosition,
     Number(options.limit)
   );

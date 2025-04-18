@@ -3,10 +3,10 @@ import { ACHIEVEMENTS_THRESHOLDS } from "@/lib/game-constants";
 import {
   getActiveStreaksCount,
   getTopStreaks,
-  getUser,
+  getUserByMode,
   TopStreaksResult,
 } from "@/lib/prisma/queries";
-import { DbUser } from "@/supabase/types";
+import { UserWithStatistic } from "@/lib/prisma/types";
 import { ImageResponse } from "next/og";
 
 export const dynamic = "force-dynamic";
@@ -65,14 +65,14 @@ export async function GET(
       });
     }
 
-    const user = await getUser(Number(fid));
+    const user = await getUserByMode(Number(fid));
 
     const topStreaks: TopStreaksResult[] = await getTopStreaks();
     const totActiveStreaks = await getActiveStreaksCount();
 
-    const topStreaksUsers: DbUser[] = [];
+    const topStreaksUsers: UserWithStatistic[] = [];
     for (const streak of topStreaks) {
-      const user = await getUser(streak.fid);
+      const user = await getUserByMode(streak.fid);
       if (user) {
         topStreaksUsers.push(user);
       }

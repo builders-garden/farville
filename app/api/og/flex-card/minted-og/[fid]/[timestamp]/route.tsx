@@ -1,10 +1,10 @@
-import { getPlayerCount, getUser } from "@/lib/prisma/queries";
+import { getPlayerCountByMode, getUserByMode } from "@/lib/prisma/queries";
 import { getGlobalLeaderboard } from "@/lib/utils";
-import { DbUser } from "@/supabase/types";
 import { ImageResponse } from "next/og";
 import { fetchUser } from "@/lib/neynar";
 import { merkleValues } from "@/lib/contracts/og-nft/merkle-root/merkleValues";
 import { env } from "@/lib/env";
+import { UserWithStatistic } from "@/lib/prisma/types";
 
 export const dynamic = "force-dynamic";
 const size = {
@@ -65,7 +65,7 @@ export async function GET(
       });
     }
 
-    const user = await getUser(Number(fid));
+    const user = await getUserByMode(Number(fid));
     const userData = await fetchUser(fid);
 
     if (!user?.mintedOG) {
@@ -74,7 +74,7 @@ export async function GET(
       });
     }
 
-    const playerCount = await getPlayerCount();
+    const playerCount = await getPlayerCountByMode();
 
     const leaderboardData = (await getGlobalLeaderboard(
       fid,
@@ -82,9 +82,9 @@ export async function GET(
       5
     )) as LeaderboardData;
 
-    const topLeaderboardUsers: DbUser[] = [];
+    const topLeaderboardUsers: UserWithStatistic[] = [];
     for (const leaderboardUser of leaderboardData.users) {
-      const user = await getUser(leaderboardUser.fid);
+      const user = await getUserByMode(leaderboardUser.fid);
       if (user) {
         topLeaderboardUsers.push(user);
       }
