@@ -1,12 +1,13 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useFrameContext } from "../context/FrameContext";
 import Quest from "./Quest";
 import FloatingNumber from "@/components/animations/FloatingNumber";
 import Confetti from "./animations/Confetti";
 import { AllQuests } from "@/hooks/use-game-state";
+import { Clock } from "lucide-react";
 
 type Tab = "daily" | "weekly";
 
@@ -44,6 +45,60 @@ export default function QuestsModal({
   } | null>(null);
 
   const [showLevelUpConfetti, setShowLevelUpConfetti] = useState(false);
+
+  const [timeUntilReset, setTimeUntilReset] = useState({
+    hours: 0,
+    minutes: 0,
+  });
+
+  useEffect(() => {
+    const calculateTimeUntilReset = () => {
+      const now = new Date();
+      const tomorrow = new Date();
+      tomorrow.setUTCHours(24, 0, 0, 0);
+
+      const diff = tomorrow.getTime() - now.getTime();
+
+      return {
+        hours: Math.floor((diff / (1000 * 60 * 60)) % 24),
+        minutes: Math.floor((diff / (1000 * 60)) % 60),
+      };
+    };
+
+    const timer = setInterval(() => {
+      setTimeUntilReset(calculateTimeUntilReset());
+    }, 60000); // Update every minute
+
+    // Initial calculation
+    setTimeUntilReset(calculateTimeUntilReset());
+
+    return () => clearInterval(timer);
+  }, []);
+
+  const NoQuestsMessage = ({ type }: { type: "daily" | "weekly" }) => (
+    <div className="flex flex-col gap-2">
+      <div className="text-xs px-1 py-2">No {type} quests available.</div>
+      <div className="bg-[#6d4c2c]/80 rounded-lg p-2 flex items-center justify-between">
+        <div className="flex items-center gap-1 text-white/80">
+          <Clock
+            size={14}
+            className="text-[#FFB938]"
+          />
+          <span className="text-[8px]">New quests in:</span>
+        </div>
+        <div className="flex gap-1 text-white font-bold">
+          <div className="bg-[#5c4121] px-1 py-0.5 rounded text-[9px] min-w-[20px] text-center">
+            {timeUntilReset.hours.toString().padStart(2, "0")}
+            <span className="text-[#FFB938] ml-0.5">h</span>
+          </div>
+          <div className="bg-[#5c4121] px-1 py-0.5 rounded text-[9px] min-w-[20px] text-center">
+            {timeUntilReset.minutes.toString().padStart(2, "0")}
+            <span className="text-[#FFB938] ml-0.5">m</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 
   const handleQuestClaim = async (
     questId: number,
@@ -174,7 +229,7 @@ export default function QuestsModal({
                   {activeTab === "daily" &&
                     (incompleteQuests?.daily.length === 0 &&
                     completedQuests?.daily.length === 0 ? (
-                      <div>No daily quests available.</div>
+                      <NoQuestsMessage type="daily" />
                     ) : (
                       <>
                         {completedQuests?.daily.map((quest) => (
@@ -198,7 +253,7 @@ export default function QuestsModal({
                   {activeTab === "weekly" &&
                     (incompleteQuests?.weekly.length === 0 &&
                     completedQuests?.weekly.length === 0 ? (
-                      <div>No weekly quests available.</div>
+                      <NoQuestsMessage type="weekly" />
                     ) : (
                       <>
                         {completedQuests?.weekly.map((quest) => (
