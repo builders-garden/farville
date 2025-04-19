@@ -16,13 +16,13 @@ import {
   goldCropFlexCardComposeCastUrl,
   mintedCollectibleFlexCardComposeCastUrl,
 } from "@/lib/utils";
-import { LeaderboardUserAvatar } from "./LeaderboardUserAvatar";
 import sdk from "@farcaster/frame-sdk";
 import { useOtherUserProfile } from "@/hooks/use-other-user-profile";
 import AchievementBadgeModal from "./modals/AchievementBadgeModal";
 import { ACHIEVEMENTS_THRESHOLDS } from "@/lib/game-constants";
 import { OG_FIDS_LIST } from "@/lib/contracts/constants";
 import { CollectibleStatus } from "@/lib/types/game";
+import { LeaderboardUserAvatar } from "./leaderboard/LeaderboardUserAvatar";
 
 export interface BadgeModalData {
   name: string;

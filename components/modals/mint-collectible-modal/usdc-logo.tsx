@@ -1,6 +1,9 @@
-export const UsdcLogo = () => {
+export const UsdcLogo = ({ size = 20 }) => {
   return (
-    <svg className="w-[20px] h-[20px]" viewBox="0 0 2000 2000">
+    <svg
+      className={`w-[${size}px] h-[${size}px]`}
+      viewBox="0 0 2000 2000"
+    >
       <path
         d="M1000 2000c554.17 0 1000-445.83 1000-1000S1554.17 0 1000 0 0 445.83 0 1000s445.83 1000 1000 1000z"
         fill="#2775ca"

@@ -10,8 +10,6 @@ import { useFrameContext } from "../context/FrameContext";
 import { useGame } from "../context/GameContext";
 import Header from "./Header";
 import InventoryModal from "./InventoryModal";
-import LeaderboardModal from "./LeaderboardModal";
-import MarketplaceModal from "./MarketplaceModal";
 // import toast from "react-hot-toast";
 // import PatchNotesModal from "./PatchNotesModal";
 import PerkIndicator from "./PerkIndicator";
@@ -24,6 +22,8 @@ import SettingsModal from "./SettingsModal";
 import StreaksModal from "./StreaksModal";
 import TimelineModal from "./TimelineModal";
 import Toolbar from "./Toolbar";
+import MarketplaceModal from "./marketplace";
+import LeaderboardModal from "./leaderboard";
 
 // const WelcomeOverlay = dynamic(() => import("./../components/WelcomeOverlay"), {
 //   ssr: false,
