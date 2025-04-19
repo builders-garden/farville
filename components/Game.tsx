@@ -76,6 +76,9 @@ export default function Game({
           <div className="absolute inset-0 bg-black/80" />
           <div className="relative z-10 p-6 bg-red-500/20 backdrop-blur-sm rounded-lg border-2 border-red-500 shadow-lg">
             <p className="text-red-100 text-lg font-medium">{error}</p>
+            <p className="text-red-100/80 text-sm mt-2">
+              Please contact @0xcaso, @itsmide.eth or @limone.eth
+            </p>
           </div>
         </div>
       )}

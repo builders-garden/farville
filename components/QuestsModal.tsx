@@ -47,29 +47,45 @@ export default function QuestsModal({
   const [showLevelUpConfetti, setShowLevelUpConfetti] = useState(false);
 
   const [timeUntilReset, setTimeUntilReset] = useState({
-    hours: 0,
-    minutes: 0,
+    daily: { days: 0, hours: 0, minutes: 0 },
+    weekly: { days: 0, hours: 0, minutes: 0 },
   });
 
   useEffect(() => {
     const calculateTimeUntilReset = () => {
       const now = new Date();
+
+      // Daily reset (00:00 UTC)
       const tomorrow = new Date();
       tomorrow.setUTCHours(24, 0, 0, 0);
+      const dailyDiff = tomorrow.getTime() - now.getTime();
 
-      const diff = tomorrow.getTime() - now.getTime();
+      // Weekly reset (Monday 00:00 UTC)
+      const nextMonday = new Date();
+      nextMonday.setUTCHours(0, 0, 0, 0);
+      nextMonday.setDate(
+        nextMonday.getDate() + ((1 + 7 - nextMonday.getDay()) % 7)
+      );
+      const weeklyDiff = nextMonday.getTime() - now.getTime();
 
       return {
-        hours: Math.floor((diff / (1000 * 60 * 60)) % 24),
-        minutes: Math.floor((diff / (1000 * 60)) % 60),
+        daily: {
+          days: Math.floor(dailyDiff / (1000 * 60 * 60 * 24)),
+          hours: Math.floor((dailyDiff / (1000 * 60 * 60)) % 24),
+          minutes: Math.floor((dailyDiff / (1000 * 60)) % 60),
+        },
+        weekly: {
+          days: Math.floor(weeklyDiff / (1000 * 60 * 60 * 24)),
+          hours: Math.floor((weeklyDiff / (1000 * 60 * 60)) % 24),
+          minutes: Math.floor((weeklyDiff / (1000 * 60)) % 60),
+        },
       };
     };
 
     const timer = setInterval(() => {
       setTimeUntilReset(calculateTimeUntilReset());
-    }, 60000); // Update every minute
+    }, 60000);
 
-    // Initial calculation
     setTimeUntilReset(calculateTimeUntilReset());
 
     return () => clearInterval(timer);
@@ -81,18 +97,24 @@ export default function QuestsModal({
       <div className="bg-[#6d4c2c]/80 rounded-lg p-2 flex items-center justify-between">
         <div className="flex items-center gap-1 text-white/80">
           <Clock
-            size={14}
+            size={16}
             className="text-[#FFB938]"
           />
-          <span className="text-[8px]">New quests in:</span>
+          <span className="text-[10px]">New quests in:</span>
         </div>
         <div className="flex gap-1 text-white font-bold">
-          <div className="bg-[#5c4121] px-1 py-0.5 rounded text-[9px] min-w-[20px] text-center">
-            {timeUntilReset.hours.toString().padStart(2, "0")}
+          {timeUntilReset[type].days > 0 && (
+            <div className="bg-[#5c4121] px-1 py-0.5 rounded text-[11px] min-w-[22px] text-center">
+              {timeUntilReset[type].days}
+              <span className="text-[#FFB938] ml-0.5">d</span>
+            </div>
+          )}
+          <div className="bg-[#5c4121] px-1 py-0.5 rounded text-[11px] min-w-[22px] text-center">
+            {timeUntilReset[type].hours.toString().padStart(2, "0")}
             <span className="text-[#FFB938] ml-0.5">h</span>
           </div>
-          <div className="bg-[#5c4121] px-1 py-0.5 rounded text-[9px] min-w-[20px] text-center">
-            {timeUntilReset.minutes.toString().padStart(2, "0")}
+          <div className="bg-[#5c4121] px-1 py-0.5 rounded text-[11px] min-w-[22px] text-center">
+            {timeUntilReset[type].minutes.toString().padStart(2, "0")}
             <span className="text-[#FFB938] ml-0.5">m</span>
           </div>
         </div>
