@@ -10,8 +10,8 @@ export default function Toolbar({
   safeAreaInsets: { top: number; bottom: number; left: number; right: number };
 }) {
   const {
-    setShowInventory,
     setShowMarket,
+    setShowHelp,
     setShowSettings,
     setShowProfile,
     setShowLeaderboard,
@@ -123,7 +123,7 @@ export default function Toolbar({
         <div className="flex flex-col items-center w-[48px]">
           <motion.button
             onClick={() => {
-              setShowInventory(true);
+              setShowHelp(true);
             }}
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.95 }}
@@ -131,16 +131,14 @@ export default function Toolbar({
           >
             <div className="relative w-6 h-6 xs:w-8 xs:h-8">
               <Image
-                src="/images/icons/inventory.png"
-                alt="Inventory"
+                src="/images/icons/help.png"
+                alt="Help"
                 fill
                 sizes="48"
               />
             </div>
           </motion.button>
-          <span className="text-[4px] xs:text-[6px] text-white mt-1">
-            Inventory
-          </span>
+          <span className="text-[4px] xs:text-[6px] text-white mt-1">Help</span>
         </div>
 
         <div className="flex flex-col items-center w-[48px]">

@@ -77,6 +77,7 @@ interface GameContextType {
   showInventory: boolean;
   showMarket: boolean;
   showLeaderboard: boolean;
+  showHelp: boolean;
   showSettings: boolean;
   showSeedsMenu: boolean;
   showQuests: boolean;
@@ -87,6 +88,7 @@ interface GameContextType {
   setShowInventory: (show: boolean) => void;
   setShowMarket: (show: boolean) => void;
   setShowLeaderboard: (show: boolean) => void;
+  setShowHelp: (show: boolean) => void;
   setShowSettings: (show: boolean) => void;
   setShowSeedsMenu: (show: boolean) => void;
   setShowQuests: (show: boolean) => void;
@@ -150,6 +152,7 @@ export function GameProvider({
   const [showInventory, setShowInventory] = useState(false);
   const [showMarket, setShowMarket] = useState(false);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
+  const [showHelp, setShowHelp] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showRequests, setShowRequests] = useState(false);
   const [showSeedsMenu, setShowSeedsMenu] = useState(false);
@@ -538,6 +541,7 @@ export function GameProvider({
         showInventory,
         showMarket,
         showLeaderboard,
+        showHelp,
         showSettings,
         showSeedsMenu,
         showQuests,
@@ -548,6 +552,7 @@ export function GameProvider({
         setShowInventory,
         setShowMarket,
         setShowLeaderboard,
+        setShowHelp,
         setShowSettings,
         setShowSeedsMenu,
         setShowQuests,

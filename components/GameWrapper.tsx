@@ -19,6 +19,7 @@ import QuestsModal from "./QuestsModal";
 import RequestModal from "./RequestModal";
 import SeedMenu from "./SeedMenu";
 import SettingsModal from "./SettingsModal";
+import HelpModal from "./help";
 import StreaksModal from "./StreaksModal";
 import TimelineModal from "./TimelineModal";
 import Toolbar from "./Toolbar";
@@ -71,6 +72,16 @@ function MarketplaceModalContainer() {
           safeAreaInsets={safeAreaInsets}
         />
       )}
+    </AnimatePresence>
+  );
+}
+
+function HelpModalContainer() {
+  const { showHelp, setShowHelp } = useGame();
+
+  return (
+    <AnimatePresence>
+      {showHelp && <HelpModal onClose={() => setShowHelp(false)} />}
     </AnimatePresence>
   );
 }
@@ -281,6 +292,7 @@ export default function GameWrapper() {
           <InventoryModalContainer />
           <StreaksModalContainer />
           <MarketplaceModalContainer />
+          <HelpModalContainer />
           <SettingsModalContainer />
           <ProfileModalContainer />
           <LeaderboardModalContainer />

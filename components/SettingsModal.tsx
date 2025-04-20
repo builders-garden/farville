@@ -3,14 +3,10 @@
 import { motion } from "framer-motion";
 import { useAudio } from "../context/AudioContext";
 import Image from "next/image";
-import sdk from "@farcaster/frame-sdk";
-import { useNextStep } from "nextstepjs";
 
 export default function SettingsModal({ onClose }: { onClose: () => void }) {
   const { toggleMusic, isMusicPlaying, isSoundEnabled, toggleSound } =
     useAudio();
-
-  const { startNextStep } = useNextStep();
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-start z-50">
@@ -48,92 +44,6 @@ export default function SettingsModal({ onClose }: { onClose: () => void }) {
           </div>
 
           <div className="space-y-3 xs:space-y-4 overflow-y-auto h-[calc(100vh-80px)] xs:h-[calc(100vh-100px)] pb-4 pr-2 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-[#6D4B2B] [&::-webkit-scrollbar-thumb]:bg-[#8A5E3B]">
-            {/* Tutorial Reset Button */}
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="bg-[#6d4c2c] p-3 xs:p-5 rounded-xl border border-[#8B5E3C]/50 shadow-lg"
-            >
-              <div className="flex items-center gap-3 xs:gap-5">
-                <div className="aspect-square w-10 h-10 xs:w-14 xs:h-14 flex justify-center items-center bg-[#5c4121] rounded-xl shadow-inner">
-                  <motion.span
-                    className="text-2xl xs:text-3xl"
-                    animate={{ scale: [1, 1.2, 1] }}
-                    transition={{ duration: 1.5, repeat: Infinity }}
-                  >
-                    📖
-                  </motion.span>
-                </div>
-                <div className="flex-1 min-w-0 xs:min-w-[180px]">
-                  <h3 className="text-white/90 text-lg xs:text-xl font-semibold mb-0 xs:mb-1">
-                    Show Tutorial
-                  </h3>
-                  <p className="text-white/60 text-xs xs:text-sm">
-                    Review the game instructions
-                  </p>
-                </div>
-              </div>
-
-              <div className="mt-3 xs:mt-5">
-                <motion.button
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.97 }}
-                  onClick={() => {
-                    onClose();
-                    startNextStep("mainTour");
-                  }}
-                  className="w-full h-9 xs:h-11 bg-[#8B5E3C] text-white/90 rounded-lg hover:bg-[#9b6a44] 
-                           transition-colors text-xs xs:text-sm font-medium border border-white/10 flex items-center justify-center gap-2
-                           shadow-md"
-                >
-                  Show Tutorial 📖
-                </motion.button>
-              </div>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="bg-[#6d4c2c] p-3 xs:p-5 rounded-xl border border-[#8B5E3C]/50 shadow-lg"
-            >
-              <div className="flex items-center gap-3 xs:gap-5">
-                <div className="w-10 h-10 xs:w-14 xs:h-14 flex justify-center items-center bg-[#5c4121] rounded-xl shadow-inner">
-                  <motion.span
-                    className="text-2xl xs:text-3xl"
-                    animate={{ scale: [1, 1.2, 1] }}
-                    transition={{ duration: 1.5, repeat: Infinity }}
-                  >
-                    👨🏻‍🌾
-                  </motion.span>
-                </div>
-                <div className="flex-1 min-w-0 xs:min-w-[180px]">
-                  <h3 className="text-white/90 text-lg xs:text-xl font-semibold mb-0 xs:mb-1">
-                    Farville Wiki
-                  </h3>
-                  <p className="text-white/60 text-xs xs:text-sm">
-                    Read the Farville documentation
-                  </p>
-                </div>
-              </div>
-
-              <div className="mt-3 xs:mt-5">
-                <motion.button
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.97 }}
-                  onClick={async () => {
-                    await sdk.actions.openUrl(
-                      "https://docs.farville.farm/gameplay"
-                    );
-                  }}
-                  className="w-full h-9 xs:h-11 bg-[#8B5E3C] text-white/90 rounded-lg hover:bg-[#9b6a44] 
-                           transition-colors text-xs xs:text-sm font-medium border border-white/10 flex items-center justify-center gap-2
-                           shadow-md"
-                >
-                  Show Docs 👨🏻‍🌾
-                </motion.button>
-              </div>
-            </motion.div>
-
             {/* Sound Effects Controls */}
             <motion.div
               initial={{ opacity: 0, x: -20 }}
