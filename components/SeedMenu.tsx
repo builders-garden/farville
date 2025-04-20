@@ -110,22 +110,18 @@ export default function SeedMenu() {
         className="bg-[#7E4E31]/40 p-1 xs:px-4 xs:py-2 rounded-lg shadow-lg border-2 border-[#8B5E3C]/60 w-full relative"
         whileHover={{ scale: 1.02 }}
       >
-        {showScrollHints.left && (
-          <button
-            onClick={scrollLeft}
-            className="absolute left-0 top-1/2 -translate-y-1/2 bg-[#6d4c2c]/90 hover:bg-[#6d4c2c] rounded-lg p-1 h-12 flex items-center justify-center z-40 transition-colors"
-          >
-            <ChevronLeftIcon className="w-4 h-4 text-white/90" />
-          </button>
-        )}
-        {showScrollHints.right && (
-          <button
-            onClick={scrollRight}
-            className="absolute right-0 top-1/2 -translate-y-1/2 bg-[#6d4c2c]/90 hover:bg-[#6d4c2c] rounded-lg p-1 h-12 flex items-center justify-center z-40 transition-colors"
-          >
-            <ChevronRightIcon className="w-4 h-4 text-white/90" />
-          </button>
-        )}
+        <button
+          onClick={scrollLeft}
+          className="absolute left-0 top-1/2 -translate-y-1/2 bg-[#6d4c2c]/90 hover:bg-[#6d4c2c] rounded-lg p-1 h-12 flex items-center justify-center z-40 transition-colors"
+        >
+          <ChevronLeftIcon className="w-4 h-4 text-white/90" />
+        </button>
+        <button
+          onClick={scrollRight}
+          className="absolute right-0 top-1/2 -translate-y-1/2 bg-[#6d4c2c]/90 hover:bg-[#6d4c2c] rounded-lg p-1 h-12 flex items-center justify-center z-40 transition-colors"
+        >
+          <ChevronRightIcon className="w-4 h-4 text-white/90" />
+        </button>
         <div
           ref={scrollContainerRef}
           className="flex gap-2 overflow-x-auto py-3 px-6 no-scrollbar"
@@ -168,7 +164,11 @@ export default function SeedMenu() {
                   : perk?.quantity || 0;
 
               return (
-                <div key={item.id} id={item.slug} className="py-1 px-1">
+                <div
+                  key={item.id}
+                  id={item.slug}
+                  className="py-1 px-1"
+                >
                   <motion.button
                     onClick={() => handleClick(item)}
                     className={`
