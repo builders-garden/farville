@@ -18,7 +18,6 @@ import ProfileModal from "./ProfileModal";
 import QuestsModal from "./QuestsModal";
 import RequestModal from "./RequestModal";
 import SeedMenu from "./SeedMenu";
-import SettingsModal from "./SettingsModal";
 import HelpModal from "./help";
 import StreaksModal from "./StreaksModal";
 import TimelineModal from "./TimelineModal";
@@ -82,17 +81,6 @@ function HelpModalContainer() {
   return (
     <AnimatePresence>
       {showHelp && <HelpModal onClose={() => setShowHelp(false)} />}
-    </AnimatePresence>
-  );
-}
-
-// New container component for the settings modal
-function SettingsModalContainer() {
-  const { showSettings, setShowSettings } = useGame();
-
-  return (
-    <AnimatePresence>
-      {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
     </AnimatePresence>
   );
 }
@@ -282,7 +270,6 @@ export default function GameWrapper() {
           <StreaksModalContainer />
           <MarketplaceModalContainer />
           <HelpModalContainer />
-          <SettingsModalContainer />
           <ProfileModalContainer />
           <LeaderboardModalContainer />
           <SeedMenuContainer />

@@ -71,7 +71,6 @@ interface GameContextType {
   showMarket: boolean;
   showLeaderboard: boolean;
   showHelp: boolean;
-  showSettings: boolean;
   showSeedsMenu: boolean;
   showQuests: boolean;
   showTimeline: boolean;
@@ -82,7 +81,6 @@ interface GameContextType {
   setShowMarket: (show: boolean) => void;
   setShowLeaderboard: (show: boolean) => void;
   setShowHelp: (show: boolean) => void;
-  setShowSettings: (show: boolean) => void;
   setShowSeedsMenu: (show: boolean) => void;
   setShowQuests: (show: boolean) => void;
   setShowTimeline: (show: boolean) => void;
@@ -146,7 +144,6 @@ export function GameProvider({
   const [showMarket, setShowMarket] = useState(false);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
-  const [showSettings, setShowSettings] = useState(false);
   const [showRequests, setShowRequests] = useState(false);
   const [showSeedsMenu, setShowSeedsMenu] = useState(false);
   const [showQuests, setShowQuests] = useState(false);
@@ -510,7 +507,6 @@ export function GameProvider({
         showMarket,
         showLeaderboard,
         showHelp,
-        showSettings,
         showSeedsMenu,
         showQuests,
         showTimeline,
@@ -521,7 +517,6 @@ export function GameProvider({
         setShowMarket,
         setShowLeaderboard,
         setShowHelp,
-        setShowSettings,
         setShowSeedsMenu,
         setShowQuests,
         setShowTimeline,
