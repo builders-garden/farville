@@ -192,13 +192,7 @@ function TimelineModalContainer() {
 
 export default function GameWrapper() {
   const { startBackgroundMusic } = useAudio();
-  const {
-    state,
-    activeOverlay,
-    setActiveOverlay,
-    showMintCollectible,
-    loading,
-  } = useGame();
+  const { state, activeOverlay, setActiveOverlay } = useGame();
   const { safeAreaInsets } = useFrameContext();
   // const [showPatchNotes, setShowPatchNotes] = useState(false);
   // const toastShownRef = useRef(false);
@@ -211,15 +205,10 @@ export default function GameWrapper() {
   const { startNextStep } = useNextStep();
 
   useEffect(() => {
-    if (state.showGridCellsTutorial && !loading && !showMintCollectible) {
+    if (state.showGridCellsTutorial) {
       startNextStep("mainTour");
     }
-  }, [
-    loading,
-    showMintCollectible,
-    startNextStep,
-    state.showGridCellsTutorial,
-  ]);
+  }, [startNextStep, state.showGridCellsTutorial]);
 
   // useEffect(() => {
   //   if (!toastShownRef.current) {

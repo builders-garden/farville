@@ -9,12 +9,7 @@ import {
   useRef,
   useState,
 } from "react";
-import {
-  ActionType,
-  CollectibleStatus,
-  type CropType,
-  type SeedType,
-} from "../lib/types/game";
+import { ActionType, type CropType, type SeedType } from "../lib/types/game";
 import { GameState, useGameState } from "@/hooks/use-game-state";
 import { useBuyItem } from "@/hooks/game-actions/use-buy-item";
 import { useExpandGrid } from "@/hooks/game-actions/use-expand-grid";
@@ -32,7 +27,6 @@ import { GridBulkResult } from "@/app/api/grid-bulk/utils";
 import toast from "react-hot-toast";
 import { useClaimReward } from "@/hooks/game-actions/use-claim-reward";
 import { useUpdateUserStreaks } from "@/hooks/use-user-streaks";
-import { useLocalStorage } from "usehooks-ts";
 
 // Update the OverlayType to be more flexible with parameters
 export type OverlayConfig =
@@ -55,7 +49,6 @@ export interface FloatingNumberData {
 // Update the context type
 interface GameContextType {
   state: GameState;
-  loading: boolean;
   selectedSeed: SeedType | null;
   setSelectedSeed: (seed: SeedType | null) => void;
   selectedPerk: UserItem | null;
@@ -162,8 +155,6 @@ export function GameProvider({
   const [showProfile, setShowProfile] = useState(false);
   const [showMintOGBadge, setShowMintOGBadge] = useState(false);
   const [showMintCollectible, setShowMintCollectible] = useState(false);
-  const [isLoadingMintCollectible, setIsLoadingMintCollectible] =
-    useState(true);
   const {
     state,
     refetch,
@@ -197,28 +188,6 @@ export function GameProvider({
   >();
   const [toastIds, setToastIds] = useState<Map<string, string>>(new Map());
   const [newGoldCropsFound, setNewGoldCropsFound] = useState<string[]>([]);
-
-  const [dontShowAgain] = useLocalStorage(
-    `dontShowAgainModalCollectible-${1}`, // TODO: change to the collectible id
-    false
-  );
-  useEffect(() => {
-    if (state.collectibles.length > 0) {
-      const collectible = state.collectibles.find(
-        (collectible) => collectible.id === 1
-      );
-      // show only if collectible is not minted
-      if (
-        (!collectible?.userHasCollectibles ||
-          collectible?.userHasCollectibles?.status !==
-            CollectibleStatus.Minted) &&
-        !dontShowAgain
-      ) {
-        setShowMintCollectible(true);
-      }
-      setIsLoadingMintCollectible(false);
-    }
-  }, [state.collectibles]);
 
   const { mutate: updateUserStreaks } = useUpdateUserStreaks({
     refetchStreaks: refetch.streaks,
@@ -524,7 +493,6 @@ export function GameProvider({
     <GameContext.Provider
       value={{
         state,
-        loading: isLoadingMintCollectible,
         selectedSeed,
         setSelectedSeed,
         selectedPerk,
