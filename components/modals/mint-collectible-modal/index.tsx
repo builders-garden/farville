@@ -2,7 +2,6 @@
 
 import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
-import { useLocalStorage } from "usehooks-ts";
 import { useAccount, useBalance, useSwitchChain } from "wagmi";
 import { useQuery } from "@tanstack/react-query";
 import { getWalletBalance } from "@/lib/lifi";
@@ -48,7 +47,6 @@ import { SelectMintPrice } from "./select-mint-price";
 import { env } from "@/lib/env";
 import { DbUserHasCollectible } from "@/supabase/types";
 import { useUpdateUserAvatar } from "@/hooks/use-update-user-avatar";
-import { Checkbox } from "@/components/ui/checkbox";
 
 interface MintCollectibleModalProps {
   onCancel: () => void;
@@ -105,13 +103,6 @@ export default function MintCollectibleModal({
   const selectedCollectible = useMemo(
     () => state.collectibles.find((collectible) => collectible.id === 1),
     [state.collectibles]
-  );
-
-  const [dontShowAgain, setDontShowAgain] = useLocalStorage(
-    `dontShowAgainModalCollectible-${
-      selectedCollectible ? selectedCollectible.id : 1
-    }`,
-    false
   );
 
   const userPfp = useMemo(() => {
@@ -1032,23 +1023,6 @@ export default function MintCollectibleModal({
               ) : null}
             </div>
           )}
-
-          <div className="flex w-full justify-center items-center gap-3 mt-2">
-            <Checkbox
-              id="dontShowAgain"
-              checked={dontShowAgain}
-              onCheckedChange={() => {
-                setDontShowAgain((prev) => !prev);
-              }}
-              className="size-4 border-white/80 data-[state=checked]:bg-white/80 data-[state=checked]:text-[#1D1D1D]/80"
-            />
-            <label
-              htmlFor="dontShowAgain"
-              className="text-[7px] font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-white/80"
-            >
-              Don&apos;t show this again
-            </label>
-          </div>
         </motion.div>
       </motion.div>
     </>

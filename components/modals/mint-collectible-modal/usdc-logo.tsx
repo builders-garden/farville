@@ -1,7 +1,7 @@
-export const UsdcLogo = ({ size = 20 }) => {
+export const UsdcLogo = () => {
   return (
     <svg
-      className={`w-[${size}px] h-[${size}px]`}
+      className={`w-[20px] h-[20px]`}
       viewBox="0 0 2000 2000"
     >
       <path
