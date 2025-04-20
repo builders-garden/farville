@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 import { useGame } from "../context/GameContext";
 import { SeedType } from "../lib/types/game";
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useRef } from "react";
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/solid";
 import { DbItem } from "@/supabase/types";
 
@@ -32,37 +32,6 @@ export default function SeedMenu() {
   } = useGame();
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const [showScrollHints, setShowScrollHints] = useState({
-    left: false,
-    right: false,
-  });
-
-  // Add scroll detection
-  const checkScroll = useCallback(() => {
-    if (!scrollContainerRef.current) return;
-
-    const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
-    setShowScrollHints({
-      left: scrollLeft > 0,
-      right: scrollLeft < scrollWidth - clientWidth - 1, // -1 for potential rounding
-    });
-  }, []);
-
-  useEffect(() => {
-    const scrollContainer = scrollContainerRef.current;
-    if (scrollContainer) {
-      checkScroll();
-      scrollContainer.addEventListener("scroll", checkScroll);
-      window.addEventListener("resize", checkScroll);
-    }
-
-    return () => {
-      if (scrollContainer) {
-        scrollContainer.removeEventListener("scroll", checkScroll);
-        window.removeEventListener("resize", checkScroll);
-      }
-    };
-  }, [checkScroll]);
 
   // Add these scroll functions
   const scrollLeft = () => {
