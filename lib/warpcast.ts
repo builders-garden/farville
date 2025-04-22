@@ -33,12 +33,12 @@ export async function getFarcasterManifest() {
       webhookUrl: `${appUrl}/api/webhook`,
       // Metadata https://github.com/farcasterxyz/miniapps/discussions/191
       subtitle: "Farm daily, earn weekly", // 30 characters, no emojis or special characters, short description under app name
-      description: "Plant, harvest, compete & earn", // 170 characters, no emojis or special characters, promotional message displayed on Mini App Page
+      description: "Plant, harvest, compete and earn", // 170 characters, no emojis or special characters, promotional message displayed on Mini App Page
       primaryCategory: "games",
       tags: ["farm", "potato", "game"], // up to 5 tags, filtering/search tags
-      tagline: "Farm daily, earn weekly 🚜", // 30 characters, marketing tagline should be punchy and descriptive
-      ogTitle: `Play ${frameName} 👨‍🌾`, // 30 characters, app name + short tag, Title case, no emojis
-      ogDescription: "Plant, harvest, compete & earn", // 100 characters, summarize core benefits in 1-2 lines
+      tagline: "Farm daily, earn weekly", // 30 characters, marketing tagline should be punchy and descriptive
+      ogTitle: `Play ${frameName}`, // 30 characters, app name + short tag, Title case, no emojis
+      ogDescription: "Plant, harvest, compete and earn", // 100 characters, summarize core benefits in 1-2 lines
       screenshotUrls: [
         // 1284 x 2778, visual previews of the app, max 3 screenshots
         `${env.NEXT_PUBLIC_URL}/images/screenshots/1.png`,
