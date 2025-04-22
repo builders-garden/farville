@@ -11,7 +11,6 @@ import {
 } from "react";
 import {
   ActionType,
-  CollectibleStatus,
   Mode,
   type CropType,
   type SeedType,
@@ -33,7 +32,6 @@ import { GridBulkResult } from "@/app/api/grid-bulk/utils";
 import toast from "react-hot-toast";
 import { useClaimReward } from "@/hooks/game-actions/use-claim-reward";
 import { useUpdateUserStreaks } from "@/hooks/use-user-streaks";
-import { useLocalStorage } from "usehooks-ts";
 
 // Update the OverlayType to be more flexible with parameters
 export type OverlayConfig =
@@ -58,7 +56,6 @@ interface GameContextType {
   mode: Mode;
   setMode: Dispatch<SetStateAction<Mode>>;
   state: GameState;
-  loading: boolean;
   selectedSeed: SeedType | null;
   setSelectedSeed: (seed: SeedType | null) => void;
   selectedPerk: UserItem | null;
@@ -80,7 +77,7 @@ interface GameContextType {
   showInventory: boolean;
   showMarket: boolean;
   showLeaderboard: boolean;
-  showSettings: boolean;
+  showHelp: boolean;
   showSeedsMenu: boolean;
   showQuests: boolean;
   showTimeline: boolean;
@@ -90,7 +87,7 @@ interface GameContextType {
   setShowInventory: (show: boolean) => void;
   setShowMarket: (show: boolean) => void;
   setShowLeaderboard: (show: boolean) => void;
-  setShowSettings: (show: boolean) => void;
+  setShowHelp: (show: boolean) => void;
   setShowSeedsMenu: (show: boolean) => void;
   setShowQuests: (show: boolean) => void;
   setShowTimeline: (show: boolean) => void;
@@ -154,7 +151,7 @@ export function GameProvider({
   const [showInventory, setShowInventory] = useState(false);
   const [showMarket, setShowMarket] = useState(false);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
-  const [showSettings, setShowSettings] = useState(false);
+  const [showHelp, setShowHelp] = useState(false);
   const [showRequests, setShowRequests] = useState(false);
   const [showSeedsMenu, setShowSeedsMenu] = useState(false);
   const [showQuests, setShowQuests] = useState(false);
@@ -163,8 +160,6 @@ export function GameProvider({
   const [showProfile, setShowProfile] = useState(false);
   const [showMintOGBadge, setShowMintOGBadge] = useState(false);
   const [showMintCollectible, setShowMintCollectible] = useState(false);
-  const [isLoadingMintCollectible, setIsLoadingMintCollectible] =
-    useState(true);
   const {
     state,
     refetch,
@@ -198,28 +193,6 @@ export function GameProvider({
   >();
   const [toastIds, setToastIds] = useState<Map<string, string>>(new Map());
   const [newGoldCropsFound, setNewGoldCropsFound] = useState<string[]>([]);
-
-  const [dontShowAgain] = useLocalStorage(
-    `dontShowAgainModalCollectible-${1}`, // TODO: change to the collectible id
-    false
-  );
-  useEffect(() => {
-    if (state.collectibles.length > 0) {
-      const collectible = state.collectibles.find(
-        (collectible) => collectible.id === 1
-      );
-      // show only if collectible is not minted
-      if (
-        (!collectible?.userHasCollectibles ||
-          collectible?.userHasCollectibles?.status !==
-            CollectibleStatus.Minted) &&
-        !dontShowAgain
-      ) {
-        setShowMintCollectible(true);
-      }
-      setIsLoadingMintCollectible(false);
-    }
-  }, [state.collectibles]);
 
   const { mutate: updateUserStreaks } = useUpdateUserStreaks({
     refetchStreaks: refetch.streaks,
@@ -527,7 +500,6 @@ export function GameProvider({
         mode,
         setMode,
         state,
-        loading: isLoadingMintCollectible,
         selectedSeed,
         setSelectedSeed,
         selectedPerk,
@@ -544,7 +516,7 @@ export function GameProvider({
         showInventory,
         showMarket,
         showLeaderboard,
-        showSettings,
+        showHelp,
         showSeedsMenu,
         showQuests,
         showTimeline,
@@ -554,7 +526,7 @@ export function GameProvider({
         setShowInventory,
         setShowMarket,
         setShowLeaderboard,
-        setShowSettings,
+        setShowHelp,
         setShowSeedsMenu,
         setShowQuests,
         setShowTimeline,

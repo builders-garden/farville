@@ -140,19 +140,31 @@ export async function GET(
               display: "flex",
               width: "90%",
               height: "auto",
-              background:
-                "linear-gradient(135deg, #8B5A38 0%, #5D3A1F 50%, #4E2E16 100%)",
+              background: "rgba(44, 25, 15, 0.6)",
+              backdropFilter: "blur(16px)",
               borderRadius: "16px",
-              border: "3px solid #6D4626",
+              border: "1px solid rgba(255, 255, 255, 0.2)",
               overflow: "hidden",
-              boxShadow:
-                "0 8px 20px rgba(0, 0, 0, 0.6), 0 0 12px rgba(255, 215, 0, 0.3)",
+              boxShadow: "0 8px 32px rgba(44, 25, 15, 0.6)",
               position: "relative",
               flexDirection: "column",
               padding: "12px",
               justifyContent: "space-between",
             }}
           >
+            {/* Additional inner shadow for better text contrast */}
+            <div
+              style={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                background:
+                  "linear-gradient(180deg, rgba(44, 25, 15, 0.2) 0%, rgba(44, 25, 15, 0.3) 100%)",
+                pointerEvents: "none",
+              }}
+            />
             {/* Achievement Info */}
             <div
               style={{

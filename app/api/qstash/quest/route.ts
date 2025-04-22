@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
     } else {
       Logger.log(
         `qstash call updated ${updatedQuests?.length} quests (${updatedQuests
-          ?.map((q) => q.id)
+          ?.map((q) => `${q.id}[progress: ${q.progress}, status: ${q.status}]`)
           .join(
             ", "
           )}) for user ${fid} with data: category="${category}", itemId=${itemId}, amount=${itemAmount}`

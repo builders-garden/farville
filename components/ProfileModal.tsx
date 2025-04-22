@@ -16,13 +16,13 @@ import {
   goldCropFlexCardComposeCastUrl,
   mintedCollectibleFlexCardComposeCastUrl,
 } from "@/lib/utils";
-import { LeaderboardUserAvatar } from "./LeaderboardUserAvatar";
 import sdk from "@farcaster/frame-sdk";
 import { useOtherUserProfile } from "@/hooks/use-other-user-profile";
 import AchievementBadgeModal from "./modals/AchievementBadgeModal";
 import { ACHIEVEMENTS_THRESHOLDS } from "@/lib/game-constants";
 import { OG_FIDS_LIST } from "@/lib/contracts/constants";
 import { CollectibleStatus } from "@/lib/types/game";
+import { LeaderboardUserAvatar } from "./leaderboard/LeaderboardUserAvatar";
 
 export interface BadgeModalData {
   name: string;
@@ -403,8 +403,23 @@ export default function ProfileModal({
                               }`}
                               onClick={() => setShowMintCollectible(true)}
                             >
+                              {status !== CollectibleStatus.Minted && (
+                                <motion.div
+                                  className="absolute -inset-1 bg-[#FFB938]/60 rounded-lg z-10"
+                                  animate={{
+                                    scale: [1, 1.1, 1],
+                                    opacity: [0.5, 1, 0.5],
+                                  }}
+                                  transition={{
+                                    duration: 2,
+                                    repeat: Infinity,
+                                    ease: "easeInOut",
+                                  }}
+                                />
+                              )}
+
                               {showMintCollectible ? (
-                                <div className="absolute inset-0 bg-gradient-to-b from-yellow/30 to-transparent z-10 animate-pulse pointer-events-none"></div>
+                                <div className="absolute inset-0 bg-gradient-to-b from-yellow/30 to-transparent z-20 animate-pulse pointer-events-none"></div>
                               ) : null}
 
                               <Image

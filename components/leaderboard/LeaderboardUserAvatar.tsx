@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { OgBadge } from "./OgBadge";
+import { OgBadge } from "../OgBadge";
 
 interface LeaderboardUserAvatarProps {
   pfpUrl: string;

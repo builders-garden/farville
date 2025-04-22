@@ -20,9 +20,9 @@ export async function generateMetadata({
 
   if (!user || !timestamp) {
     return {
-      title: "FarVille",
+      title: "Farville",
       openGraph: {
-        title: "FarVille",
+        title: "Farville",
         description: "Plant, grow, and harvest crops with your friends.",
       },
     };
@@ -36,10 +36,10 @@ export async function generateMetadata({
     version: "next",
     imageUrl: imageUrl.toString(),
     button: {
-      title: "Play FarVille 🧑‍🌾",
+      title: "Play Farville 🧑‍🌾",
       action: {
         type: "launch_frame",
-        name: "FarVille",
+        name: "Farville",
         url: appUrl,
         splashImageUrl: `${appUrl}/images/splash.png`,
         splashBackgroundColor: "#f7f7f7",
@@ -48,9 +48,9 @@ export async function generateMetadata({
   };
 
   return {
-    title: "Play FarVille 🧑‍🌾",
+    title: "Play Farville 🧑‍🌾",
     openGraph: {
-      title: "Play FarVille 🧑‍🌾",
+      title: "Play Farville 🧑‍🌾",
       description: "Plant, grow, and harvest crops with your friends.",
       images: [{ url: imageUrl.toString() }],
     },

@@ -2,22 +2,22 @@
 
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
-import { useGame } from "../context/GameContext";
-import { CROP_DATA } from "../lib/game-constants";
+import { useGame } from "@/context/GameContext";
+import { CROP_DATA } from "@/lib/game-constants";
 import Image from "next/image";
-import ConfirmationModal from "./modals/ConfirmationModal";
-import { Item } from "@/supabase/types";
-import ItemDetailsPopup from "./ItemDetailsPopup";
+import ConfirmationModal from "@/components/modals/ConfirmationModal";
+import ItemDetailsPopup from "@/components/ItemDetailsPopup";
 import { useFrameContext } from "@/context/FrameContext";
 import { useCreateRequest } from "@/hooks/game-actions/use-create-request";
 import sdk from "@farcaster/frame-sdk";
 import { requestItemComposeCastUrl } from "@/lib/utils";
-import MarketplaceTabs, { Tab } from "./marketplace/MarketplaceTabs";
-import MarketplaceItem from "./marketplace/MarketplaceItem";
-import PerkItem from "./marketplace/PerkItem";
-import ExpansionPanel from "./marketplace/ExpansionPanel";
-import ItemDetailsModal from "./marketplace/ItemDetailsModal";
+import MarketplaceTabs, { Tab } from "./MarketplaceTabs";
+import MarketplaceItem from "./MarketplaceItem";
+import PerkItem from "./PerkItem";
+import ExpansionPanel from "./ExpansionPanel";
+import ItemDetailsModal from "./ItemDetailsModal";
 import { useNextStep } from "nextstepjs";
+import { Item } from "@/lib/prisma/types";
 
 // Add new type for selected item details
 type SelectedItemDetails = {
@@ -238,7 +238,36 @@ export default function MarketplaceModal({
           </div>
 
           {/* Tabs */}
-          <MarketplaceTabs activeTab={activeTab} setActiveTab={setActiveTab} />
+          <MarketplaceTabs
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
+          />
+
+          {/* Sub tabs */}
+          {activeTab === "buy" && (
+            <div className="grid grid-cols-2 gap-2 mb-3">
+              <button
+                className={`px-4 py-1.5 rounded-lg text-[10px] transition-colors ${
+                  buySubTab === "seeds"
+                    ? "bg-[#9E6B49] text-white"
+                    : "bg-black/20 text-white/70 hover:bg-black/30"
+                }`}
+                onClick={() => setBuySubTab("seeds")}
+              >
+                🌱 Seeds
+              </button>
+              <button
+                className={`px-4 py-1.5 rounded-lg text-[10px] transition-colors ${
+                  buySubTab === "perks"
+                    ? "bg-[#9E6B49] text-white"
+                    : "bg-black/20 text-white/70 hover:bg-black/30"
+                }`}
+                onClick={() => setBuySubTab("perks")}
+              >
+                ✨ Perks
+              </button>
+            </div>
+          )}
 
           {/* Content area */}
           <div className="overflow-y-auto flex-1 -mr-2 pr-2 no-scrollbar">
@@ -250,30 +279,6 @@ export default function MarketplaceModal({
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 20 }}
               >
-                {/* Sub tabs */}
-                <div className="grid grid-cols-2 gap-2 mb-2">
-                  <button
-                    className={`px-4 py-1.5 rounded-lg text-[10px] transition-colors ${
-                      buySubTab === "seeds"
-                        ? "bg-[#9E6B49] text-white"
-                        : "bg-black/20 text-white/70 hover:bg-black/30"
-                    }`}
-                    onClick={() => setBuySubTab("seeds")}
-                  >
-                    🌱 Seeds
-                  </button>
-                  <button
-                    className={`px-4 py-1.5 rounded-lg text-[10px] transition-colors ${
-                      buySubTab === "perks"
-                        ? "bg-[#9E6B49] text-white"
-                        : "bg-black/20 text-white/70 hover:bg-black/30"
-                    }`}
-                    onClick={() => setBuySubTab("perks")}
-                  >
-                    ✨ Perks
-                  </button>
-                </div>
-
                 {buySubTab === "seeds" && (
                   <>
                     <div className="text-white/60 text-[10px] text-center mb-1 italic">

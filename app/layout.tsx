@@ -14,7 +14,7 @@ const pixelFont = Press_Start_2P({
 });
 
 export const metadata: Metadata = {
-  title: "FarVille",
+  title: "Farville",
   description: "A farming simulation game",
 };
 
@@ -24,7 +24,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html
+      lang="en"
+      suppressHydrationWarning
+    >
       <body className={`${pixelFont.className} antialiased`}>
         <Providers>{children}</Providers>
       </body>

@@ -18,10 +18,10 @@ export async function generateMetadata({
       version: "next",
       imageUrl: `${appUrl}/images/feed.png`,
       button: {
-        title: "Play FarVille 🧑‍🌾",
+        title: "Play Farville 🧑‍🌾",
         action: {
           type: "launch_frame",
-          name: "FarVille",
+          name: "Farville",
           url: appUrl,
           splashImageUrl: `${appUrl}/images/splash.png`,
           splashBackgroundColor: "#f7f7f7",
@@ -30,9 +30,9 @@ export async function generateMetadata({
     };
 
     return {
-      title: "FarVille",
+      title: "Farville",
       openGraph: {
-        title: "FarVille",
+        title: "Farville",
         description: "Plant, grow, and harvest crops with your friends.",
       },
       other: {
@@ -48,9 +48,9 @@ export async function generateMetadata({
 
   if (!user) {
     return {
-      title: "FarVille",
+      title: "Farville",
       openGraph: {
-        title: "FarVille",
+        title: "Farville",
         description: "Plant, grow, and harvest crops with your friends.",
       },
     };
@@ -67,7 +67,7 @@ export async function generateMetadata({
       title: buttonTitle,
       action: {
         type: "launch_frame",
-        name: "FarVille",
+        name: "Farville",
         url: `${appUrl}/requests/${requestId}`,
         splashImageUrl: `${appUrl}/images/splash.png`,
         splashBackgroundColor: "#f7f7f7",
@@ -76,9 +76,9 @@ export async function generateMetadata({
   };
 
   return {
-    title: `FarVille - Donate to ${user.username} 🧑‍🌾`,
+    title: `Farville - Donate to ${user.username} 🧑‍🌾`,
     openGraph: {
-      title: `FarVille - Donate to ${user.username} 🧑‍🌾`,
+      title: `Farville - Donate to ${user.username} 🧑‍🌾`,
       description: "Plant, grow, and harvest crops with your friends.",
       images: [{ url: imageUrl.toString() }],
     },

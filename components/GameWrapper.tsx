@@ -10,8 +10,6 @@ import { useFrameContext } from "../context/FrameContext";
 import { useGame } from "../context/GameContext";
 import Header from "./Header";
 import InventoryModal from "./InventoryModal";
-import LeaderboardModal from "./LeaderboardModal";
-import MarketplaceModal from "./MarketplaceModal";
 // import toast from "react-hot-toast";
 // import PatchNotesModal from "./PatchNotesModal";
 import PerkIndicator from "./PerkIndicator";
@@ -20,11 +18,13 @@ import ProfileModal from "./ProfileModal";
 import QuestsModal from "./QuestsModal";
 import RequestModal from "./RequestModal";
 import SeedMenu from "./SeedMenu";
-import SettingsModal from "./SettingsModal";
+import HelpModal from "./help";
 import StreaksModal from "./StreaksModal";
 import TimelineModal from "./TimelineModal";
 import Toolbar from "./Toolbar";
 import { Mode } from "@/lib/types/game";
+import MarketplaceModal from "./marketplace";
+import LeaderboardModal from "./leaderboard";
 
 // const WelcomeOverlay = dynamic(() => import("./../components/WelcomeOverlay"), {
 //   ssr: false,
@@ -76,13 +76,12 @@ function MarketplaceModalContainer() {
   );
 }
 
-// New container component for the settings modal
-function SettingsModalContainer() {
-  const { showSettings, setShowSettings } = useGame();
+function HelpModalContainer() {
+  const { showHelp, setShowHelp } = useGame();
 
   return (
     <AnimatePresence>
-      {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
+      {showHelp && <HelpModal onClose={() => setShowHelp(false)} />}
     </AnimatePresence>
   );
 }
@@ -191,14 +190,8 @@ function TimelineModalContainer() {
 
 export default function GameWrapper() {
   const { startBackgroundMusic } = useAudio();
-  const {
-    mode,
-    state,
-    activeOverlay,
-    setActiveOverlay,
-    showMintCollectible,
-    loading,
-  } = useGame();
+  const { mode, state, activeOverlay, setActiveOverlay } = useGame();
+
   const { safeAreaInsets } = useFrameContext();
   // const [showPatchNotes, setShowPatchNotes] = useState(false);
   // const toastShownRef = useRef(false);
@@ -211,15 +204,10 @@ export default function GameWrapper() {
   const { startNextStep } = useNextStep();
 
   useEffect(() => {
-    if (state.showGridCellsTutorial && !loading && !showMintCollectible) {
+    if (state.showGridCellsTutorial) {
       startNextStep("mainTour");
     }
-  }, [
-    loading,
-    showMintCollectible,
-    startNextStep,
-    state.showGridCellsTutorial,
-  ]);
+  }, [startNextStep, state.showGridCellsTutorial]);
 
   // useEffect(() => {
   //   if (!toastShownRef.current) {
@@ -266,7 +254,10 @@ export default function GameWrapper() {
     <div className="relative z-10">
       {activeOverlay?.type === "requests" && (
         <AnimatePresence>
-          <RequestModal onClose={handleOverlayComplete} id={activeOverlay.id} />
+          <RequestModal
+            onClose={handleOverlayComplete}
+            id={activeOverlay.id}
+          />
         </AnimatePresence>
       )}
 
@@ -290,7 +281,10 @@ export default function GameWrapper() {
           className="flex flex-col h-[100dvh] w-full overflow-hidden"
         >
           <Header />
-          <div className="flex-1 relative min-h-0" id="game-grid">
+          <div
+            className="flex-1 relative min-h-0"
+            id="game-grid"
+          >
             <GameGrid />
           </div>
           <Toolbar safeAreaInsets={safeAreaInsets} />
@@ -299,7 +293,7 @@ export default function GameWrapper() {
           <InventoryModalContainer />
           <StreaksModalContainer />
           <MarketplaceModalContainer />
-          <SettingsModalContainer />
+          <HelpModalContainer />
           <ProfileModalContainer />
           <LeaderboardModalContainer />
           <SeedMenuContainer />

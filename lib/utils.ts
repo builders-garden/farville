@@ -75,26 +75,6 @@ export const requestItemComposeCastUrl = (
   };
 };
 
-export const shareWelcomeLeaguesComposeCastUrl = (
-  fid: number,
-  league: number
-) => {
-  const timestamp = Date.now();
-  const frameUrl = `${env.NEXT_PUBLIC_URL}/flex-card/welcome-leagues/${fid}/${timestamp}`;
-
-  const text = `Who knew running a farm could be this competitive? 🤯\n\nSee you in the ${
-    league === 1 ? "Wood" : league === 2 ? "Iron" : "Gold"
-  } League ⚔️`;
-
-  const urlFriendlyText = encodeURIComponent(text);
-  return {
-    frameUrl,
-    castUrl: `https://warpcast.com/~/compose?text=${urlFriendlyText}&embeds[]=${encodeURIComponent(
-      frameUrl
-    )}&channelKey=farville`,
-  };
-};
-
 export const shareWeeklyLeaderboardPositionComposeCastUrl = (
   fid: number,
   league: number,

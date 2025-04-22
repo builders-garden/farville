@@ -1,5 +1,6 @@
 import { Mode, QuestStatus } from "@/lib/types/game";
-import { getUserHasQuests, updateUserQuest } from "@/lib/prisma/queries";
+import { getUserHasQuests } from "@/lib/prisma/queries";
+import { prisma } from "@/lib/prisma/client";
 
 export const calculateUserQuestsProgress = async (
   fid: number,
@@ -26,40 +27,50 @@ export const calculateUserQuestsProgress = async (
     return [];
   }
 
-  // Filter eligible quests and prepare updates
-  const questUpdates = quests
-    .filter(
-      (quest) =>
-        quest.quest && (!quest.quest.itemId || quest.quest.itemId === itemId)
-    )
-    .map((quest) => {
-      const newProgress = Math.min(
-        quest.progress + itemAmount,
-        quest.quest!.amount || 1
-      );
-      const completed = newProgress >= (quest.quest!.amount || 1);
+  // Filter eligible quests and process updates
+  const questUpdates = await Promise.all(
+    quests
+      .filter(
+        (quest) =>
+          quest.quest && (!quest.quest.itemId || quest.quest.itemId === itemId)
+      )
+      .map(async (quest) => {
+        return prisma.$transaction(async (tx) => {
+          // Get current progress and increment it atomically
+          const updated = await tx.userHasQuest.update({
+            where: {
+              fid_questId: {
+                fid,
+                questId: quest.questId,
+              },
+            },
+            data: {
+              progress: {
+                increment: itemAmount,
+              },
+            },
+          });
 
-      return {
-        fid,
-        questId: quest.questId,
-        updates: {
-          progress: newProgress,
-          status: completed ? QuestStatus.Completed : QuestStatus.Incomplete,
-          completedAt: completed ? new Date() : null,
-        },
-      };
-    });
+          // If completed, update the status in the same transaction
+          if (updated.progress >= (quest.quest!.amount || 1)) {
+            return tx.userHasQuest.update({
+              where: {
+                fid_questId: {
+                  fid,
+                  questId: quest.questId,
+                },
+              },
+              data: {
+                status: QuestStatus.Completed,
+                completedAt: new Date(),
+              },
+            });
+          }
 
-  if (!questUpdates.length) {
-    return [];
-  }
-
-  // Batch update all quests at once
-  const updatedQuests = await Promise.all(
-    questUpdates.map(({ fid, questId, updates }) =>
-      updateUserQuest(fid, questId, updates)
-    )
+          return updated;
+        });
+      })
   );
 
-  return updatedQuests;
+  return questUpdates;
 };

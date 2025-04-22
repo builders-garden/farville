@@ -18,7 +18,7 @@ export default function MarketplaceTabs({
   ];
 
   return (
-    <div className="grid grid-cols-3 gap-3 mb-4 flex-shrink-0">
+    <div className="grid grid-cols-3 gap-3 mb-2 flex-shrink-0">
       {tabs.map((tab, index) => (
         <motion.button
           key={tab.id}

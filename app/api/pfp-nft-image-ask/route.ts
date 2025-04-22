@@ -57,8 +57,11 @@ export async function POST(request: Request) {
     });
 
     if (!response.ok) {
-      console.error("Error generating image");
-      throw new Error("Failed to generate image");
+      console.error("Error generating image", response);
+      return NextResponse.json(
+        { error: "Failed to generate image" },
+        { status: 500 }
+      );
     }
 
     const data = await response.json();

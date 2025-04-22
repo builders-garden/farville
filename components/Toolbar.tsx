@@ -13,7 +13,7 @@ export default function Toolbar({
   const {
     // setShowInventory,
     setShowMarket,
-    setShowSettings,
+    setShowHelp,
     setShowProfile,
     setShowLeaderboard,
     setShowQuests,
@@ -122,29 +122,6 @@ export default function Toolbar({
           </span>
         </div>
 
-        {/* <div className="flex flex-col items-center w-[48px]">
-          <motion.button
-            onClick={() => {
-              setShowInventory(true);
-            }}
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.95 }}
-            className="relative w-9 h-9 xs:w-12 xs:h-12 rounded-lg flex items-center justify-center bg-[#8B5E3C] hover:bg-[#6d4c2c] transition-colors"
-          >
-            <div className="relative w-6 h-6 xs:w-8 xs:h-8">
-              <Image
-                src="/images/icons/inventory.png"
-                alt="Inventory"
-                fill
-                sizes="48"
-              />
-            </div>
-          </motion.button>
-          <span className="text-[4px] xs:text-[6px] text-white mt-1">
-            Inventory
-          </span>
-        </div> */}
-
         <div
           className="flex flex-col items-center w-[48px]"
           id="market-toolbar-btn"
@@ -175,25 +152,23 @@ export default function Toolbar({
 
         <div className="flex flex-col items-center w-[48px]">
           <motion.button
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.98 }}
             onClick={() => {
-              setShowSettings(true);
+              setShowHelp(true);
             }}
-            className="w-9 h-9 xs:w-12 xs:h-12 rounded-lg flex items-center justify-center bg-[#8B5E3C] hover:bg-[#6d4c2c] transition-colors"
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
+            className="relative w-9 h-9 xs:w-12 xs:h-12 rounded-lg flex items-center justify-center bg-[#8B5E3C] hover:bg-[#6d4c2c] transition-colors"
           >
             <div className="relative w-6 h-6 xs:w-8 xs:h-8">
               <Image
-                src="/images/icons/settings.png"
-                alt="Settings"
+                src="/images/icons/help.png"
+                alt="Help"
                 fill
                 sizes="48"
               />
             </div>
           </motion.button>
-          <span className="text-[4px] xs:text-[6px] text-white mt-1">
-            Settings
-          </span>
+          <span className="text-[4px] xs:text-[6px] text-white mt-1">Help</span>
         </div>
 
         <div className="flex flex-col items-center w-[48px]">

@@ -8,10 +8,10 @@ const frame = {
   version: "next",
   imageUrl: `${appUrl}/images/feed.png`,
   button: {
-    title: "Play FarVille 🧑‍🌾",
+    title: "Play Farville 🧑‍🌾",
     action: {
       type: "launch_frame",
-      name: "FarVille",
+      name: "Farville",
       url: appUrl,
       splashImageUrl: `${appUrl}/images/splash.png`,
       splashBackgroundColor: "#f7f7f7",
@@ -21,9 +21,9 @@ const frame = {
 
 export async function generateMetadata(): Promise<Metadata> {
   return {
-    title: "FarVille",
+    title: "Farville",
     openGraph: {
-      title: "FarVille",
+      title: "Farville",
       description: "Plant, grow, and harvest crops with your friends.",
       images: [
         {
