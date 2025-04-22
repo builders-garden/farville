@@ -1,4 +1,4 @@
-import { Item } from "@/supabase/types";
+import { Item } from "@/lib/prisma/types";
 import { useApiQuery } from "./use-api-query";
 
 export const useItem = (itemId: number) => {

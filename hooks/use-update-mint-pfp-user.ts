@@ -1,12 +1,12 @@
+import { UserHasCollectible } from "@prisma/client";
 import { useApiMutation } from "./use-api-mutation";
-import { DbUserHasCollectible } from "@/supabase/types";
 
 export const useUpdateMintPfpUser = ({
   handleUpdateStateCollectibles,
   handleSuccessMint,
 }: {
   handleUpdateStateCollectibles: (
-    userHasCollectibles: DbUserHasCollectible
+    userHasCollectibles: UserHasCollectible
   ) => void;
   handleSuccessMint: (hash: string | null) => void;
 }) => {
@@ -23,9 +23,7 @@ export const useUpdateMintPfpUser = ({
       collectibleId,
       txHash,
     }),
-    onSuccess: (data: {
-      data: { userHasCollectible: DbUserHasCollectible };
-    }) => {
+    onSuccess: (data: { data: { userHasCollectible: UserHasCollectible } }) => {
       handleUpdateStateCollectibles(data.data.userHasCollectible);
       handleSuccessMint(data.data.userHasCollectible.txHash);
     },

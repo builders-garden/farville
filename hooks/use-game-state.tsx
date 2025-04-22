@@ -1,16 +1,6 @@
 import { useUserItems, UserItem } from "./use-user-items";
 import { useEffect, useState, useCallback } from "react";
 import { useGridCells } from "./use-grid-cells";
-import {
-  DbCollectible,
-  UserGridCell,
-  Item,
-  Streak,
-  DbUser,
-  DbUserHarvestedCrop,
-  DbUserHasCollectible,
-  DbUserHasQuestWithQuest,
-} from "@/supabase/types";
 import { useItems } from "./use-items";
 import { getCurrentDayStreak, getCurrentLevelAndProgress } from "@/lib/utils";
 import { useUserMe } from "./use-user-me";
@@ -21,6 +11,15 @@ import { useUserHarvestedCrops } from "./use-user-harvested-crops";
 import { useWeeklyStats } from "./use-weekly-stats";
 import { useUserCollectibles } from "./use-user-collectibles";
 import { CROP_DATA } from "../lib/game-constants";
+import { DbUserHasQuestWithQuest, Item } from "@/lib/prisma/types";
+import {
+  Collectible,
+  UserGridCell,
+  Streak,
+  User,
+  UserHarvestedCrop,
+  UserHasCollectible,
+} from "@prisma/client";
 
 export interface RefetchType {
   all: () => Promise<void>;
@@ -53,7 +52,7 @@ export interface GameState {
   expansionLevel: number;
   items: Item[];
   inventory: UserItem[];
-  user: DbUser;
+  user: User;
   completedQuests: AllQuests;
   claimableQuests: boolean;
   streakUpdated: boolean;
@@ -66,14 +65,14 @@ export interface GameState {
     lastStreakDates: Date[];
   };
   claimableStreakReward: boolean;
-  harvestedCropsSummary: DbUserHarvestedCrop[];
+  harvestedCropsSummary: UserHarvestedCrop[];
   weeklyStats: {
     currentScore: number;
     lastScore: number;
     league: number;
   };
-  collectibles: (DbCollectible & {
-    userHasCollectibles: DbUserHasCollectible | null;
+  collectibles: (Collectible & {
+    userHasCollectibles: UserHasCollectible | null;
   })[];
   showGridCellsTutorial: boolean;
   showMarketplaceTutorial: boolean;
@@ -95,7 +94,7 @@ export const useGameState = () => {
     expansionLevel: 0,
     items: [],
     inventory: [],
-    user: {} as DbUser,
+    user: {} as User,
     completedQuests: {
       daily: [],
       weekly: [],
@@ -533,7 +532,7 @@ export const useGameState = () => {
   }, []);
 
   const updateUserHarvestedCrops = useCallback(
-    (updatedUserHarvestedCrops: DbUserHarvestedCrop[]) => {
+    (updatedUserHarvestedCrops: UserHarvestedCrop[]) => {
       setState((prevState) => {
         if (!prevState) return prevState;
 
@@ -583,8 +582,8 @@ export const useGameState = () => {
 
   const updateUserCollectibles = useCallback(
     (
-      updatedCollectibles: (DbCollectible & {
-        userHasCollectibles: DbUserHasCollectible | null;
+      updatedCollectibles: (Collectible & {
+        userHasCollectibles: UserHasCollectible | null;
       })[]
     ) => {
       setState((prevState) => {

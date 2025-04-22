@@ -1,8 +1,3 @@
-import {
-  DbUser,
-  DbUserHarvestedCrop,
-  UserCompleteCollectible,
-} from "@/supabase/types";
 import { UserItem, useUserItems } from "./use-user-items";
 import { useUser } from "./use-user";
 import { useUserHarvestedCrops } from "./use-user-harvested-crops";
@@ -11,11 +6,13 @@ import { useUserStreaks } from "./use-user-streaks";
 import { useUserFrosts } from "./use-user-frosts";
 import { useEffect, useState } from "react";
 import { useUserCollectibles } from "./use-user-collectibles";
+import { User, UserHarvestedCrop } from "@prisma/client";
+import { UserCompleteCollectible } from "@/lib/prisma/types";
 
 interface OtherUserProfileData {
-  user: DbUser | undefined;
+  user: User | undefined;
   specialCrops: UserItem[] | undefined;
-  harvestedCropsSummary: DbUserHarvestedCrop[] | undefined;
+  harvestedCropsSummary: UserHarvestedCrop[] | undefined;
   level: number;
   currentStreakDays: number;
   collectibles: UserCompleteCollectible[] | undefined;

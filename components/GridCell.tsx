@@ -6,13 +6,13 @@ import { ActionType, CropType, PerkType, SeedType } from "../lib/types/game";
 import CropSprite from "./CropSprite";
 import FloatingNumber from "./animations/FloatingNumber";
 import { useState, useRef, useEffect, useMemo, Fragment } from "react";
-import { UserGridCell } from "@/supabase/types";
 import { CROP_DATA, SPEED_BOOST } from "@/lib/game-constants";
 import Confetti from "./animations/Confetti";
 import { createPortal } from "react-dom";
 import { formatTime, getBoostTime } from "@/lib/utils";
 import { useAudio } from "@/context/AudioContext";
 import { useUserXp } from "@/hooks/use-user-xp";
+import { UserGridCell } from "@prisma/client";
 
 interface GridCellProps {
   cell: UserGridCell;
@@ -260,7 +260,7 @@ export default function GridCell({ cell }: GridCellProps) {
 
       updateUserItems([
         {
-          itemId: boostItem.id,
+          itemId: boostItem.item.id,
           quantity: remainingUses - 1,
           item: {
             ...boostItem.item,
@@ -452,7 +452,7 @@ export default function GridCell({ cell }: GridCellProps) {
 
         updateUserItems([
           {
-            itemId: item.id,
+            itemId: item.item.id,
             quantity: item.quantity - 1,
             item: {
               ...item.item,
@@ -496,7 +496,7 @@ export default function GridCell({ cell }: GridCellProps) {
 
       updateUserItems([
         {
-          itemId: fertilizerItem.id,
+          itemId: fertilizerItem.item.id,
           quantity: remainingUses - 1,
           item: {
             ...fertilizerItem.item,
@@ -591,7 +591,6 @@ export default function GridCell({ cell }: GridCellProps) {
                   speedBoostedAt: cell.speedBoostedAt
                     ? new Date(cell.speedBoostedAt).getTime()
                     : 0,
-                  yieldBoost: cell.yieldBoost || 0,
                 }
               : undefined
           }

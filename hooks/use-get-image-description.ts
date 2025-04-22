@@ -1,6 +1,6 @@
 import { Dispatch, SetStateAction } from "react";
 import { useApiMutation } from "./use-api-mutation";
-import { DbUserHasCollectible } from "@/supabase/types";
+import { UserHasCollectible } from "@prisma/client";
 
 export const useGetImageDescription = ({
   setImageDescription,
@@ -12,7 +12,7 @@ export const useGetImageDescription = ({
   setImageDescriptionLoading: Dispatch<SetStateAction<boolean>>;
   setIsLoading: Dispatch<SetStateAction<boolean>>;
   handleUpdateStateCollectibles: (
-    userHasCollectibles: DbUserHasCollectible
+    userHasCollectibles: UserHasCollectible
   ) => void;
 }) => {
   return useApiMutation({
@@ -35,7 +35,7 @@ export const useGetImageDescription = ({
       success: boolean;
       data: {
         description: string;
-        userHasCollectible: DbUserHasCollectible;
+        userHasCollectible: UserHasCollectible;
       };
     }) => {
       setImageDescription(data.data.description);

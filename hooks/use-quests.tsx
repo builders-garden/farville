@@ -1,4 +1,4 @@
-import { DbQuestWithItem, DbUserHasQuestWithQuest } from "@/supabase/types";
+import { DbQuestWithItem, DbUserHasQuestWithQuest } from "@/lib/prisma/types";
 import { useApiQuery } from "./use-api-query";
 
 export const useQuests = () => {

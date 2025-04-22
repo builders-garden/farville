@@ -1,4 +1,10 @@
 import { FrameNotificationDetails } from "@farcaster/frame-sdk";
+import {
+  Collectible,
+  Quest,
+  UserHasCollectible,
+  UserHasQuest,
+} from "@prisma/client";
 import { Mode } from "fs";
 
 export interface Item {
@@ -62,3 +68,13 @@ export interface DbUserHasItem {
   quantity: number;
   createdAt: Date;
 }
+
+export type DbQuestWithItem = Quest & { items: Item | null };
+
+export type DbUserHasQuestWithQuest = UserHasQuest & {
+  quest: DbQuestWithItem;
+};
+
+export type UserCompleteCollectible = Collectible & {
+  userHasCollectibles: UserHasCollectible | null;
+};

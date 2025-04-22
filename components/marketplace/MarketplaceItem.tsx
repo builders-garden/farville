@@ -1,4 +1,3 @@
-import { Item } from "@/supabase/types";
 import { motion } from "framer-motion";
 import RequestButton from "../ui/request-button";
 import { useState } from "react";
@@ -9,6 +8,7 @@ import {
   AccordionTrigger,
 } from "../ui/accordion";
 import { Input } from "../ui/input";
+import { Item } from "@/lib/prisma/types";
 
 interface MarketplaceItemProps {
   item: Item;
@@ -178,7 +178,11 @@ export default function MarketplaceItem({
             </div>
           </div>
 
-          <Accordion type="single" collapsible className="w-full">
+          <Accordion
+            type="single"
+            collapsible
+            className="w-full"
+          >
             <AccordionItem
               value="custom-quantity"
               className="border-0 pb-0 pt-1 xs:pt-2"

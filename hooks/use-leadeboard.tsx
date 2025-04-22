@@ -1,8 +1,8 @@
-import { DbUser } from "@/supabase/types";
+import { User } from "@prisma/client";
 import { useApiQuery } from "./use-api-query";
 
 export interface LeaderboardResponse {
-  users: (DbUser & { questCount?: number })[];
+  users: (User & { questCount?: number })[];
   targetPosition?: number;
   questCount?: number;
 }
@@ -22,7 +22,7 @@ export const useLeaderboard = (
   }`;
 
   return useApiQuery<{
-    users: (DbUser & { questCount?: number })[];
+    users: (User & { questCount?: number })[];
     targetPosition?: number;
     questCount?: number;
   }>({

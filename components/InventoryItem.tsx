@@ -1,5 +1,5 @@
+import { Item } from "@/lib/prisma/types";
 import { motion } from "framer-motion";
-import { Item } from "@/supabase/types";
 
 interface InventoryItemProps {
   item: Item;

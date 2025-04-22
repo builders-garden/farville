@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from "next/server";
 import {
   resetUserAvatar,
   updateUserCollectibleAsAvatar,
-} from "@/supabase/queries";
+} from "@/lib/prisma/queries";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
   try {

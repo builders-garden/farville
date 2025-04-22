@@ -1,4 +1,4 @@
-import { UserGridCell } from "@/supabase/types";
+import { UserGridCell } from "@prisma/client";
 import { useApiQuery } from "./use-api-query";
 
 export const useGridCells = () => {

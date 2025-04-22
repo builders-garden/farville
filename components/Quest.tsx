@@ -1,11 +1,6 @@
 import { useGame } from "@/context/GameContext";
 import { useUpdateUserQuest } from "@/hooks/game-actions/use-update-user-quest";
 import { getUserNowDate, requestItemComposeCastUrl } from "@/lib/utils";
-import {
-  DbQuest,
-  DbQuestWithItem,
-  DbUserHasQuestWithQuest,
-} from "@/supabase/types";
 import { QuestStatus } from "@/lib/types/game";
 import { motion } from "framer-motion";
 import Image from "next/image";
@@ -15,6 +10,8 @@ import { useFrameContext } from "@/context/FrameContext";
 import { useCreateRequest } from "@/hooks/game-actions/use-create-request";
 import sdk from "@farcaster/frame-sdk";
 import RequestButton from "./ui/request-button";
+import { DbQuestWithItem, DbUserHasQuestWithQuest } from "@/lib/prisma/types";
+import { type Quest } from "@prisma/client";
 
 interface QuestProps {
   quest: DbUserHasQuestWithQuest;
@@ -28,7 +25,7 @@ interface QuestProps {
 }
 
 const renderQuestRewards = (
-  quest: DbQuest,
+  quest: Quest,
   showRequestButton = false,
   onRequestClick: () => void
 ) => (
@@ -58,7 +55,10 @@ const renderQuestRewards = (
     </div>
 
     {showRequestButton && (
-      <RequestButton variant="secondary" onClick={onRequestClick} />
+      <RequestButton
+        variant="secondary"
+        onClick={onRequestClick}
+      />
     )}
   </div>
 );
@@ -206,7 +206,7 @@ export default function Quest({
 
   return (
     <motion.div
-      key={quest.id}
+      key={quest.quest.id}
       initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}
       className={`bg-[#6d4c2c] px-4 py-3 rounded-lg flex flex-col gap-2

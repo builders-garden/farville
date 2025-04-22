@@ -1,6 +1,6 @@
-import { Streak } from "@/supabase/types";
 import { useApiQuery } from "./use-api-query";
 import { useApiMutation } from "./use-api-mutation";
+import { Streak } from "@prisma/client";
 
 export const useUserStreaks = (fid?: number) => {
   const { data, isLoading, refetch } = useApiQuery<Streak[]>({

@@ -1,7 +1,7 @@
-import { Item, DbUserHasItem } from "@/supabase/types";
 import { useApiQuery } from "./use-api-query";
+import { Item, UserHasItem } from "@prisma/client";
 
-export interface UserItem extends DbUserHasItem {
+export interface UserItem extends UserHasItem {
   item: Item;
 }
 

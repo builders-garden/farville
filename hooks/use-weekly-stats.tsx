@@ -1,10 +1,10 @@
-import { DbUserLeaderboard } from "@/supabase/types";
+import { UserLeaderboardEntry } from "@prisma/client";
 import { useApiQuery } from "./use-api-query";
 
 export const useWeeklyStats = (targetFid?: number) => {
   const url = `/api/weekly-leaderboard/${targetFid}`;
 
-  const { data, isLoading, refetch } = useApiQuery<DbUserLeaderboard>({
+  const { data, isLoading, refetch } = useApiQuery<UserLeaderboardEntry>({
     url,
     queryKey: ["weekly-leaderboard", targetFid],
     isProtected: true,

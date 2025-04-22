@@ -1,11 +1,11 @@
-import { DbCollectible, DbUserHasCollectible } from "@/supabase/types";
+import { Collectible, UserHasCollectible } from "@prisma/client";
 import { useApiQuery } from "./use-api-query";
 
 export const useUserCollectibles = (targetFid?: number) => {
   const url = `/api/users/${targetFid}/collectibles`;
 
   const { data, isLoading, refetch } = useApiQuery<
-    (DbCollectible & { userHasCollectibles: DbUserHasCollectible | null })[]
+    (Collectible & { userHasCollectibles: UserHasCollectible | null })[]
   >({
     url,
     queryKey: ["collectibles", targetFid],

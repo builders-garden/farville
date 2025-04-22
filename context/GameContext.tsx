@@ -22,16 +22,16 @@ import { useSellItem } from "@/hooks/game-actions/use-sell-item";
 import { UserItem } from "@/hooks/use-user-items";
 import { GridBulkRequest } from "@/app/api/grid-bulk/route";
 import { useGridBulkOperations } from "@/hooks/game-actions/use-grid-bulk-operations";
-import {
-  DbCollectible,
-  UserGridCell,
-  DbUserHarvestedCrop,
-  DbUserHasCollectible,
-} from "@/supabase/types";
 import { GridBulkResult } from "@/app/api/grid-bulk/utils";
 import toast from "react-hot-toast";
 import { useClaimReward } from "@/hooks/game-actions/use-claim-reward";
 import { useUpdateUserStreaks } from "@/hooks/use-user-streaks";
+import {
+  Collectible,
+  UserGridCell,
+  UserHarvestedCrop,
+  UserHasCollectible,
+} from "@prisma/client";
 
 // Update the OverlayType to be more flexible with parameters
 export type OverlayConfig =
@@ -114,7 +114,7 @@ interface GameContextType {
   }) => void;
   claimRewards: (variables: { streakId: number }) => void;
   updateUserHarvestedCrops: (
-    updatedUserHarvestedCrops: DbUserHarvestedCrop[]
+    updatedUserHarvestedCrops: UserHarvestedCrop[]
   ) => void;
   showHarvestedNewGoldCrops: boolean;
   setShowHarvestedNewGoldCrops: Dispatch<SetStateAction<boolean>>;
@@ -132,8 +132,8 @@ interface GameContextType {
     league?: number;
   }) => void;
   updateUserCollectibles: (
-    updatedCollectibles: (DbCollectible & {
-      userHasCollectibles: DbUserHasCollectible | null;
+    updatedCollectibles: (Collectible & {
+      userHasCollectibles: UserHasCollectible | null;
     })[]
   ) => void;
 }
@@ -281,10 +281,10 @@ export function GameProvider({
           crop = {
             item: cropItem,
             quantity: 0,
-            id: cropItem.id,
-            userFid: state.user.fid,
+            fid: state.user.fid,
+            mode,
             itemId: cropItem.id,
-            createdAt: new Date().toISOString(),
+            createdAt: new Date(),
           };
         } else {
           console.error("Crop item not found", reward.crop);
@@ -299,13 +299,13 @@ export function GameProvider({
       } else {
         updatedItems.push({
           item: {
-            ...crop.item,
+            ...crop?.item,
             category: "crop",
           },
-          quantity: crop?.quantity + reward.amount,
-          itemId: crop.item.id,
-          userFid: state.user.fid,
-          createdAt: new Date().toISOString(),
+          quantity: (crop?.quantity ?? 0) + reward.amount,
+          itemId: crop?.item.id,
+          fid: state.user.fid,
+          createdAt: new Date(),
         });
       }
     }
@@ -319,7 +319,7 @@ export function GameProvider({
     }[],
     state: GameState
   ) => {
-    const updatedUserHarvestedCrops: DbUserHarvestedCrop[] = [];
+    const updatedUserHarvestedCrops: UserHarvestedCrop[] = [];
     for (const reward of rewards) {
       let userHarvestedCropSummary = state.harvestedCropsSummary.find(
         (item) => item.crop === reward.crop
@@ -329,7 +329,7 @@ export function GameProvider({
           fid: state.user.fid,
           crop: reward.crop,
           quantity: 0,
-          createdAt: new Date().toISOString(),
+          createdAt: new Date(),
         };
       }
       const updatedUserHarvestedCrop = updatedUserHarvestedCrops.findIndex(
@@ -368,10 +368,10 @@ export function GameProvider({
           specialCrop = {
             item: cropItem,
             quantity: 0,
-            id: cropItem.id,
-            userFid: state.user.fid,
+            fid: state.user.fid,
             itemId: cropItem.id,
-            createdAt: new Date().toISOString(),
+            mode,
+            createdAt: new Date(),
           };
         } else {
           console.error("Special crop item not found", newGoldCrop.crop);
@@ -386,13 +386,13 @@ export function GameProvider({
       } else {
         updatedSpecialCrops.push({
           item: {
-            ...specialCrop.item,
+            ...specialCrop?.item,
             category: "special-crop",
           },
-          quantity: specialCrop?.quantity + newGoldCrop.amount,
-          itemId: specialCrop.item.id,
-          userFid: state.user.fid,
-          createdAt: new Date().toISOString(),
+          quantity: (specialCrop?.quantity ?? 0) + newGoldCrop.amount,
+          itemId: specialCrop?.item.id,
+          fid: state.user.fid,
+          createdAt: new Date(),
         });
       }
     }

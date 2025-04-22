@@ -1,8 +1,7 @@
 import { Metadata } from "next";
-import { getRequestById } from "@/supabase/queries";
 import App from "@/app/app";
 import { env } from "@/lib/env";
-import { getUserByMode } from "@/lib/prisma/queries";
+import { getRequestById, getUserByMode } from "@/lib/prisma/queries";
 
 const appUrl = env.NEXT_PUBLIC_URL;
 

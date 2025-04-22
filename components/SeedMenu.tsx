@@ -5,7 +5,7 @@ import { useGame } from "../context/GameContext";
 import { SeedType } from "../lib/types/game";
 import { useRef } from "react";
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/solid";
-import { Item } from "@/supabase/types";
+import { Item } from "@/lib/prisma/types";
 
 const CROP_COLORS: Record<SeedType, string> = {
   "carrot-seeds": "border-orange-400",

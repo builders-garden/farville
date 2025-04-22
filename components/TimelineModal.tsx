@@ -10,7 +10,6 @@ import {
   TimelineItem,
   TimelineSeparator,
 } from "@/components/ui/timeline";
-import { Item } from "@/supabase/types";
 import {
   EXPANSION_COSTS,
   LEVEL_REWARDS,
@@ -22,6 +21,7 @@ import { Card, CardContent } from "./ui/card";
 import { useUserMe } from "@/hooks/use-user-me";
 import { getCurrentLevelAndProgress } from "@/lib/utils";
 import { useGame } from "@/context/GameContext";
+import { Item } from "@/lib/prisma/types";
 
 interface TimelineData {
   level: number;

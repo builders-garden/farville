@@ -45,8 +45,8 @@ import { CollectibleStatus } from "@/lib/types/game";
 import { CustomImage } from "./custom-image";
 import { SelectMintPrice } from "./select-mint-price";
 import { env } from "@/lib/env";
-import { DbUserHasCollectible } from "@/supabase/types";
 import { useUpdateUserAvatar } from "@/hooks/use-update-user-avatar";
+import { UserHasCollectible } from "@prisma/client";
 
 interface MintCollectibleModalProps {
   onCancel: () => void;
@@ -133,7 +133,7 @@ export default function MintCollectibleModal({
   }, [state.user.avatarUrl]);
 
   function handleUpdateStateCollectibles(
-    userHasCollectibles: DbUserHasCollectible
+    userHasCollectibles: UserHasCollectible
   ) {
     const collectible = state.collectibles.find(
       (collectible) => collectible.id === userHasCollectibles.collectibleId
@@ -287,19 +287,12 @@ export default function MintCollectibleModal({
             }
           }
         case CollectibleStatus.Generated:
-          if (
-            selectedCollectible.userHasCollectibles.generatedImageUrls &&
-            selectedCollectible.userHasCollectibles.generatedImageUrls.length >
-              0
-          ) {
-            setMidjourneyImageUrl(
-              selectedCollectible.userHasCollectibles.generatedImageUrls[0]
-            );
-            setMidjourneyImageUrls(
-              selectedCollectible.userHasCollectibles.generatedImageUrls.slice(
-                1
-              )
-            );
+          const generatedImageUrls = JSON.parse(
+            selectedCollectible.userHasCollectibles.generatedImageUrls as string
+          ) as string[];
+          if (generatedImageUrls && generatedImageUrls.length > 0) {
+            setMidjourneyImageUrl(generatedImageUrls[0]);
+            setMidjourneyImageUrls(generatedImageUrls.slice(1));
           }
         case CollectibleStatus.Pending:
           if (selectedCollectible.userHasCollectibles.generatedTaskId) {

@@ -4,8 +4,7 @@ import {
   getUserFrostsByStreakId,
   updateUserStreak,
 } from "@/lib/prisma/queries";
-import { Streak } from "@/supabase/types";
-import { UserHasItem } from "@prisma/client";
+import { Streak, UserHasItem } from "@prisma/client";
 
 /**
  * Check user activity and apply frost

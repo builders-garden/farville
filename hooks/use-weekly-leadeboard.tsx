@@ -1,4 +1,4 @@
-import { DbUser, DbUserLeaderboard } from "@/supabase/types";
+import { User, UserLeaderboardEntry } from "@prisma/client";
 import { useApiQuery } from "./use-api-query";
 
 export const useWeeklyLeaderboard = (
@@ -19,8 +19,8 @@ export const useWeeklyLeaderboard = (
   }`;
 
   const { data, isLoading, refetch } = useApiQuery<{
-    users: (DbUserLeaderboard & {
-      user: DbUser;
+    users: (UserLeaderboardEntry & {
+      user: User;
     })[];
     targetPosition?: number;
   }>({

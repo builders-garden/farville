@@ -17,10 +17,10 @@ import { LeaderboardUserAvatar } from "./LeaderboardUserAvatar";
 import ProfileModal from "../ProfileModal";
 import { Card, CardContent } from "@/components/ui/card";
 import { useWeeklyLeaderboard } from "@/hooks/use-weekly-leadeboard";
-import { DbUser } from "@/supabase/types";
 import InfoModal from "@/components/modals/InfoModal";
 import { FloatingShareButton } from "@/components/FloatingShareButton";
 import { LeaderboardPrizeCard } from "./LeaderboardPrizeCard";
+import { User } from "@prisma/client";
 
 export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
   const { state } = useGame();
@@ -156,7 +156,7 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
 
   type LeaderboardData = {
     targetPosition?: number;
-    users?: (DbUser & {
+    users?: (User & {
       currentScore?: number;
       lastScore?: number;
       league?: number;

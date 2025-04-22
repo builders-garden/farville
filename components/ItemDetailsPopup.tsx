@@ -1,9 +1,9 @@
 import { UserItem } from "@/hooks/use-user-items";
 import { motion } from "framer-motion";
 import Image from "next/image";
-import { Item } from "@/supabase/types";
 import { Slider } from "@/components/ui/slider";
 import { useEffect, useState } from "react";
+import { Item } from "@/lib/prisma/types";
 
 interface ItemDetailsPopupProps {
   item: Item;

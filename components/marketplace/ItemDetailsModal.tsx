@@ -1,6 +1,6 @@
+import { Item } from "@/lib/prisma/types";
 import { motion } from "framer-motion";
 import Image from "next/image";
-import { Item } from "@/supabase/types";
 
 type SelectedItemDetails = {
   id: number;
