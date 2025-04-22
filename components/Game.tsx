@@ -9,6 +9,7 @@ import { GameProvider } from "./../context/GameContext";
 import { getThisWeekMonday } from "@/lib/utils";
 import { Maintenance } from "./home/maintenance";
 import { Website } from "./home/website";
+import sdk from "@farcaster/frame-sdk";
 
 export default function Game({
   children,
@@ -72,13 +73,25 @@ export default function Game({
         </div>
       )}
       {error && context && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-8">
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-black/80" />
-          <div className="relative z-10 p-6 bg-red-500/20 backdrop-blur-sm rounded-lg border-2 border-red-500 shadow-lg">
-            <p className="text-red-100 text-lg font-medium">{error}</p>
-            <p className="text-red-100/80 text-sm mt-2">
-              Please contact @0xcaso, @itsmide.eth or @limone.eth
-            </p>
+          <div className="relative z-10 flex flex-col items-center gap-8 max-w-md px-4 w-fit">
+            <div className="p-6 bg-red-500/20 backdrop-blur-sm rounded-lg border-2 border-red-500 shadow-lg">
+              <p className="text-red-100 text-lg font-medium text-center">
+                {error}
+              </p>
+            </div>
+            <button
+              className="bg-[#FFB938] text-[#7E4E31] px-4 py-2 rounded-lg font-bold 
+                 hover:bg-[#ffc661] transition-colors"
+              onClick={() => {
+                sdk.actions.openUrl(
+                  "https://warpcast.com/~/inbox/create/5698?text=Hey%21%20I%20have%20this%20issue%20on%20Farville%3A"
+                );
+              }}
+            >
+              Contact Support
+            </button>
           </div>
         </div>
       )}
