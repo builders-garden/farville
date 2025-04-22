@@ -6,7 +6,7 @@ import { useGame } from "../context/GameContext";
 import { CROP_DATA } from "../lib/game-constants";
 import Image from "next/image";
 import ConfirmationModal from "./modals/ConfirmationModal";
-import { DbItem } from "@/supabase/types";
+import { Item } from "@/supabase/types";
 import ItemDetailsPopup from "./ItemDetailsPopup";
 import { useFrameContext } from "@/context/FrameContext";
 import { useCreateRequest } from "@/hooks/game-actions/use-create-request";
@@ -28,7 +28,7 @@ type SelectedItemDetails = {
   harvestXp?: number;
   description: string | null;
   growthTime?: number;
-  cropData: DbItem;
+  cropData: Item;
 } | null;
 
 export default function MarketplaceModal({
@@ -53,7 +53,7 @@ export default function MarketplaceModal({
   } | null>(null);
   const [selectedItem, setSelectedItem] = useState<SelectedItemDetails>(null);
   const [selectedItemForRequest, setSelectedItemForRequest] =
-    useState<DbItem | null>(null);
+    useState<Item | null>(null);
   const [requestQuantity, setRequestQuantity] = useState(1);
   const [castUrl, setCastUrl] = useState<string | null>(null);
   const [requestUrl, setRequestUrl] = useState<string | null>(null);
@@ -125,7 +125,7 @@ export default function MarketplaceModal({
   };
 
   // Handle item selection for viewing details
-  const handleItemSelect = (item: DbItem) => {
+  const handleItemSelect = (item: Item) => {
     if (item.category === "seed") {
       const crop = state.items.find(
         (i) => i.slug === item.slug.replace("-seeds", "")

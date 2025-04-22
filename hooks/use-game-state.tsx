@@ -3,9 +3,9 @@ import { useEffect, useState, useCallback } from "react";
 import { useGridCells } from "./use-grid-cells";
 import {
   DbCollectible,
-  DbGridCell,
-  DbItem,
-  DbStreak,
+  UserGridCell,
+  Item,
+  Streak,
   DbUser,
   DbUserHarvestedCrop,
   DbUserHasCollectible,
@@ -44,20 +44,20 @@ export interface GameState {
   experience: number;
   seeds: UserItem[];
   crops: UserItem[];
-  grid: DbGridCell[];
+  grid: UserGridCell[];
   gridSize: {
     width: number;
     height: number;
   };
   perks: UserItem[];
   expansionLevel: number;
-  items: DbItem[];
+  items: Item[];
   inventory: UserItem[];
   user: DbUser;
   completedQuests: AllQuests;
   claimableQuests: boolean;
   streakUpdated: boolean;
-  streaks: DbStreak[];
+  streaks: Streak[];
   currentStreakDays: number;
   specialItems: UserItem[];
   specialCrops: UserItem[];
@@ -428,27 +428,30 @@ export const useGameState = () => {
   ]);
 
   // Add new method to update grid cells directly
-  const updateGridCells = useCallback((updatedCells: Partial<DbGridCell>[]) => {
-    setState((prevState) => {
-      if (!prevState) return prevState;
+  const updateGridCells = useCallback(
+    (updatedCells: Partial<UserGridCell>[]) => {
+      setState((prevState) => {
+        if (!prevState) return prevState;
 
-      const newGrid = [...prevState.grid];
+        const newGrid = [...prevState.grid];
 
-      updatedCells.forEach((updatedCell) => {
-        const index = newGrid.findIndex(
-          (cell) => cell.x === updatedCell.x && cell.y === updatedCell.y
-        );
-        if (index !== -1) {
-          newGrid[index] = { ...newGrid[index], ...updatedCell };
-        }
+        updatedCells.forEach((updatedCell) => {
+          const index = newGrid.findIndex(
+            (cell) => cell.x === updatedCell.x && cell.y === updatedCell.y
+          );
+          if (index !== -1) {
+            newGrid[index] = { ...newGrid[index], ...updatedCell };
+          }
+        });
+
+        return {
+          ...prevState,
+          grid: newGrid,
+        };
       });
-
-      return {
-        ...prevState,
-        grid: newGrid,
-      };
-    });
-  }, []);
+    },
+    []
+  );
 
   // Add new method to update user items directly
   const updateUserItems = useCallback((updatedItems: Partial<UserItem>[]) => {
@@ -601,7 +604,7 @@ export const useGameState = () => {
       xp?: number;
       level?: number;
       coins?: number;
-      streaks?: DbStreak[];
+      streaks?: Streak[];
       streakUpdated?: boolean;
       mintedOG?: boolean;
     }) => {

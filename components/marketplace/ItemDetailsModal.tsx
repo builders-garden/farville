@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import Image from "next/image";
-import { DbItem } from "@/supabase/types";
+import { Item } from "@/supabase/types";
 
 type SelectedItemDetails = {
   id: number;
@@ -10,7 +10,7 @@ type SelectedItemDetails = {
   harvestXp?: number;
   description: string | null;
   growthTime?: number;
-  cropData: DbItem;
+  cropData: Item;
 };
 
 interface ItemDetailsModalProps {

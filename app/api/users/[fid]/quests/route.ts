@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { DbUserHasQuestStatus } from "@/supabase/types";
-import { Mode, QuestType } from "@/lib/types/game";
+import { Mode, QuestStatus, QuestType } from "@/lib/types/game";
 import { getUserHasQuests } from "@/lib/prisma/queries";
 
 export async function GET(
@@ -25,7 +24,7 @@ export async function GET(
       fid,
       Mode.Classic,
       {
-        status: status as DbUserHasQuestStatus,
+        status: status as QuestStatus,
         category: category || undefined,
         type: type ? [type as QuestType] : undefined,
         itemId: itemId ? parseInt(itemId) : undefined,

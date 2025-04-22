@@ -1,11 +1,11 @@
 import { env } from "@/lib/env";
-import { getUserNotificationDetails } from "@/lib/prisma/queries";
 import {
   createUserNotification,
-  getUserNotificationsByCategory,
-  getHarvestableCellsCount,
   getExpiredBoostCellsCount,
-} from "@/supabase/queries";
+  getHarvestableCellsCount,
+  getUserNotificationDetails,
+  getUserNotificationsByCategory,
+} from "@/lib/prisma/queries";
 import {
   SendNotificationRequest,
   sendNotificationResponseSchema,

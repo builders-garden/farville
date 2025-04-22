@@ -7,15 +7,13 @@ import {
   getUserByMode,
   getUserDonationsOfToday,
   getUserItemByItemId,
+  removeUserItem,
   updateUserDonationHistory,
   updateUserWeeklyScore,
   updateUserXP,
+  incrementRequestFilledQuantity,
 } from "@/lib/prisma/queries";
 import { userCanDonate } from "@/lib/utils";
-import {
-  removeUserItem,
-  incrementRequestFilledQuantity,
-} from "@/supabase/queries";
 import { PerkType, SpecialItemType } from "@/lib/types/game";
 import { NextResponse } from "next/server";
 import { z } from "zod";

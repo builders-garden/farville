@@ -10,7 +10,7 @@ import {
   TimelineItem,
   TimelineSeparator,
 } from "@/components/ui/timeline";
-import { DbItem } from "@/supabase/types";
+import { Item } from "@/supabase/types";
 import {
   EXPANSION_COSTS,
   LEVEL_REWARDS,
@@ -33,7 +33,7 @@ interface TimelineData {
   };
 }
 
-function extractTimelineData(items: DbItem[]): TimelineData[] {
+function extractTimelineData(items: Item[]): TimelineData[] {
   // build here the timeline data using items, EXPANSION_COSTS, LEVEL_REWARDS, LEVEL_XP_THRESHOLDS
   const itemsOnlyCrops = items.filter(
     (item) => item.category !== "perk" && item.category !== "seed"

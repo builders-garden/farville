@@ -3,11 +3,12 @@ import {
   createUserLeaderboardEntry,
   getUserByMode,
   getUserLeaderboardEntry,
+  initDailyUserQuests,
+  initWeeklyUserQuests,
 } from "@/lib/prisma/queries";
 import { getUserHasQuests } from "@/lib/prisma/queries";
 import { Mode, QuestType } from "@/lib/types/game";
 import { getUserLeague } from "@/lib/utils";
-import { initDailyUserQuests, initWeeklyUserQuests } from "@/supabase/queries";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {

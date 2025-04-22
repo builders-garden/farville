@@ -1,12 +1,12 @@
 import { UserItem } from "@/hooks/use-user-items";
 import { motion } from "framer-motion";
 import Image from "next/image";
-import { DbItem } from "@/supabase/types";
+import { Item } from "@/supabase/types";
 import { Slider } from "@/components/ui/slider";
 import { useEffect, useState } from "react";
 
 interface ItemDetailsPopupProps {
-  item: DbItem;
+  item: Item;
   userItem?: UserItem;
   onClose: () => void;
   onRequest: () => void;

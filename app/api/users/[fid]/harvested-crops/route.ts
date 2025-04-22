@@ -1,7 +1,7 @@
 import {
   getUserHarvestedCrops,
   upsertUserHarvestedCrop,
-} from "@/supabase/queries";
+} from "@/lib/prisma/queries";
 import { CropType } from "@/lib/types/game";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";

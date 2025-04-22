@@ -1,8 +1,8 @@
 import { motion } from "framer-motion";
-import { DbItem } from "@/supabase/types";
+import { Item } from "@/supabase/types";
 
 interface InventoryItemProps {
-  item: DbItem;
+  item: Item;
   quantity: number;
   onClick: () => void;
 }

@@ -1,8 +1,5 @@
-import { updateUserQuest } from "@/supabase/queries";
-
-import { DbUserHasQuestStatus } from "@/supabase/types";
 import { Mode, QuestStatus } from "@/lib/types/game";
-import { getUserHasQuests } from "@/lib/prisma/queries";
+import { getUserHasQuests, updateUserQuest } from "@/lib/prisma/queries";
 
 export const calculateUserQuestsProgress = async (
   fid: number,
@@ -47,9 +44,7 @@ export const calculateUserQuestsProgress = async (
         questId: quest.questId,
         updates: {
           progress: newProgress,
-          status: completed
-            ? ("completed" as DbUserHasQuestStatus)
-            : ("incomplete" as DbUserHasQuestStatus),
+          status: completed ? QuestStatus.Completed : QuestStatus.Incomplete,
           completedAt: completed ? new Date() : null,
         },
       };

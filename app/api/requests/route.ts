@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createRequest } from "@/supabase/queries";
 import { z } from "zod";
 import { GAME_ITEMS } from "@/lib/game-constants";
-import { getItemById } from "@/lib/prisma/queries";
+import { createRequest, getItemById } from "@/lib/prisma/queries";
 
 const requestSchema = z.object({
   itemId: z.number().min(1),
@@ -51,9 +50,9 @@ export const POST = async (request: NextRequest) => {
 
   try {
     const newRequest = await createRequest({
-      fid: Number(fid),
-      itemId,
       quantity,
+      itemId,
+      fid: parseInt(fid),
     });
     return NextResponse.json(newRequest);
   } catch (error) {

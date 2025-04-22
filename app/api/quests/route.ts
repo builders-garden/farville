@@ -1,5 +1,5 @@
+import { getQuests } from "@/lib/prisma/queries";
 import { NextResponse } from "next/server";
-import { getQuests } from "@/supabase/queries";
 
 export async function GET() {
   try {

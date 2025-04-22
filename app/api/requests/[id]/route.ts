@@ -1,4 +1,4 @@
-import { getRequestById } from "@/supabase/queries";
+import { getRequestById } from "@/lib/prisma/queries";
 import { NextResponse, NextRequest } from "next/server";
 
 export const GET = async (

@@ -103,3 +103,49 @@ export const createGridCell = async (
     },
   });
 };
+
+export const getHarvestableCellsCount = async (
+  fid: number,
+  mode: Mode = Mode.Classic,
+  withinMinutes: number = 3
+): Promise<number> => {
+  const threeMinutesFromNow = new Date(Date.now() + withinMinutes * 60 * 1000);
+
+  const count = await prisma.userGridCell.count({
+    where: {
+      fid,
+      mode,
+      harvestAt: {
+        not: null,
+        lte: threeMinutesFromNow,
+      },
+    },
+  });
+
+  return count;
+};
+
+export const getExpiredBoostCellsCount = async (
+  fid: number,
+  mode: Mode = Mode.Classic,
+  withinMinutes: number = 3
+): Promise<number> => {
+  const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000);
+  const twoHoursPlusMinutesAgo = new Date(
+    Date.now() - (2 * 60 * 60 * 1000 + withinMinutes * 60 * 1000)
+  );
+
+  const count = await prisma.userGridCell.count({
+    where: {
+      fid,
+      mode,
+      speedBoostedAt: {
+        not: null,
+        gte: twoHoursPlusMinutesAgo,
+        lt: twoHoursAgo,
+      },
+    },
+  });
+
+  return count;
+};

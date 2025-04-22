@@ -25,7 +25,7 @@ import { GridBulkRequest } from "@/app/api/grid-bulk/route";
 import { useGridBulkOperations } from "@/hooks/game-actions/use-grid-bulk-operations";
 import {
   DbCollectible,
-  DbGridCell,
+  UserGridCell,
   DbUserHarvestedCrop,
   DbUserHasCollectible,
 } from "@/supabase/types";
@@ -107,7 +107,7 @@ interface GameContextType {
   setFloatingNumbers: Dispatch<SetStateAction<FloatingNumberData[]>>;
   remainingUses: number;
   setRemainingUses: (uses: number) => void;
-  updateGridCells: (updatedCells: Partial<DbGridCell>[]) => void;
+  updateGridCells: (updatedCells: Partial<UserGridCell>[]) => void;
   updateUserItems: (updatedItems: Partial<UserItem>[]) => void;
   updateUser: (newParams: {
     xp?: number;

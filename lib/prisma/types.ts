@@ -1,7 +1,7 @@
 import { FrameNotificationDetails } from "@farcaster/frame-sdk";
 import { Mode } from "fs";
 
-export interface DbItem {
+export interface Item {
   id: number;
   name: string;
   description: string | null;

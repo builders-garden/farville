@@ -1,4 +1,3 @@
-import { DbItem, DbStreak, DbUserHarvestedCrop } from "@/supabase/types";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import {
@@ -26,6 +25,7 @@ import { encodeFunctionData, Address, Hex } from "viem";
 import { PFP_NFT_ABI } from "./contracts/pfp-nft/abi";
 import { env } from "@/lib/env";
 import { DbUserDonation } from "@/lib/prisma/types";
+import { Item, Streak, UserHarvestedCrop } from "@prisma/client";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -61,7 +61,7 @@ export const warpcastComposeCastUrl = () => {
 
 export const requestItemComposeCastUrl = (
   requestId: number,
-  item: DbItem,
+  item: Item,
   quantity: number
 ) => {
   const frameUrl = `${env.NEXT_PUBLIC_URL}/requests/${requestId}`;
@@ -304,7 +304,7 @@ export const getBoostTime = (perkSlug: PerkType) => {
   return SPEED_BOOST[perkSlug].duration * (1 - 1 / SPEED_BOOST[perkSlug].boost);
 };
 
-export const getStreakDates = (streaks: DbStreak[]) => {
+export const getStreakDates = (streaks: Streak[]) => {
   const dates: Date[] = [];
 
   streaks.forEach((streak) => {
@@ -326,7 +326,7 @@ export const getStreakDates = (streaks: DbStreak[]) => {
   return dates;
 };
 
-export const getCurrentDayStreak = (streak?: DbStreak, frostsDays?: Date[]) => {
+export const getCurrentDayStreak = (streak?: Streak, frostsDays?: Date[]) => {
   if (!streak || streak.endedAt) {
     return 0;
   }
@@ -347,7 +347,7 @@ export const getCurrentDayStreak = (streak?: DbStreak, frostsDays?: Date[]) => {
 };
 
 export const calculateHarvestAchievements = (
-  userHarvestedCrops: DbUserHarvestedCrop[]
+  userHarvestedCrops: UserHarvestedCrop[]
 ) => {
   let totalAchievements = 0;
   let totalAchievementsCompleted = 0;
@@ -383,7 +383,7 @@ export const calculateHarvestAchievements = (
 };
 
 export const getAchievementProgressByCrop = (
-  userHarvestedCrops: DbUserHarvestedCrop[],
+  userHarvestedCrops: UserHarvestedCrop[],
   crop: CropType
 ) => {
   const cropAchievement = ACHIEVEMENTS_THRESHOLDS.find(

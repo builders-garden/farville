@@ -1,8 +1,8 @@
-import { DbItem } from "@/supabase/types";
+import { Item } from "@/supabase/types";
 import { motion } from "framer-motion";
 
 interface PerkItemProps {
-  perk: DbItem;
+  perk: Item;
   ownedQuantity: number;
   onBuyClick: (itemId: number, quantity: number) => void;
   gridSize: number;

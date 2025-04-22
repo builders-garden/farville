@@ -1,14 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import {
-  getQuestById,
-  getUserQuestById,
-  updateUserQuest,
-} from "@/supabase/queries";
 import { z } from "zod";
 import { QuestStatus } from "@/lib/types/game";
 import {
+  getQuestById,
   getUserByMode,
+  getUserQuestById,
   updateUserCoins,
+  updateUserQuest,
   updateUserWeeklyScore,
   updateUserXP,
 } from "@/lib/prisma/queries";

@@ -1,5 +1,5 @@
+import { getCollectibles } from "@/lib/prisma/queries";
 import { NextRequest, NextResponse } from "next/server";
-import { getCollectibles } from "@/supabase/queries";
 
 export async function GET(request: NextRequest) {
   try {

@@ -8,22 +8,19 @@ import { sendBatchToPostHog } from "@/lib/posthog/server";
 import {
   addUserItem,
   getUserGridCells,
+  getUserHarvestedCrops,
   getUserItemBySlug,
   removeUserItem,
   updateGridCellsBulk,
   updateUserWeeklyScore,
   updateUserXP,
+  upsertUserHarvestedCrop,
 } from "@/lib/prisma/queries";
 import {
   calculateGoldCropsInBatch,
   getAchievementProgressByCrop,
   getBoostTime,
 } from "@/lib/utils";
-import {
-  getUserHarvestedCrops,
-  upsertUserHarvestedCrop,
-} from "@/supabase/queries";
-import { DbGridCell } from "@/supabase/types";
 import {
   ActionType,
   CropType,
@@ -38,8 +35,8 @@ import { UserGridCell } from "@prisma/client";
 export interface GridBulkResult {
   type: ActionType;
   cells: {
-    ok: DbGridCell[];
-    nok: (DbGridCell | undefined)[];
+    ok: UserGridCell[];
+    nok: (UserGridCell | undefined)[];
   };
   // harvest only
   rewards?: {

@@ -12,3 +12,7 @@ export * from "./user-statistic";
 export * from "./referral";
 export * from "./quest";
 export * from "./user-notification";
+export * from "./collectible";
+export * from "./user-has-collectible";
+export * from "./user-harvested-crop";
+export * from "./request";

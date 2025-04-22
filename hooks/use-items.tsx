@@ -1,8 +1,8 @@
-import { DbItem } from "@/supabase/types";
+import { Item } from "@/supabase/types";
 import { useApiQuery } from "./use-api-query";
 
 export const useItems = () => {
-  const { data, isLoading, refetch } = useApiQuery<DbItem[]>({
+  const { data, isLoading, refetch } = useApiQuery<Item[]>({
     queryKey: ["items"],
     url: "/api/items",
     isProtected: true,

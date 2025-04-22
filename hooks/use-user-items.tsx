@@ -1,8 +1,8 @@
-import { DbItem, DbUserHasItem } from "@/supabase/types";
+import { Item, DbUserHasItem } from "@/supabase/types";
 import { useApiQuery } from "./use-api-query";
 
 export interface UserItem extends DbUserHasItem {
-  item: DbItem;
+  item: Item;
 }
 
 export const useUserItems = (fid?: number) => {

@@ -1,9 +1,9 @@
-import { DbItem } from "@/supabase/types";
+import { Item } from "@/supabase/types";
 import { DbRequest } from "@/supabase/types";
 import { DbUser } from "@/supabase/types";
 import { useApiQuery } from "./use-api-query";
 
-type Request = DbRequest & { item: DbItem; user: DbUser };
+type Request = DbRequest & { item: Item; user: DbUser };
 
 export const useRequest = (id: number) => {
   const { data: request, isLoading } = useApiQuery<Request>({

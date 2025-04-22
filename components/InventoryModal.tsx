@@ -7,7 +7,7 @@ import { UserItem } from "@/hooks/use-user-items";
 import Image from "next/image";
 import ItemDetailsPopup from "./ItemDetailsPopup";
 import { useState } from "react";
-import { DbItem } from "@/supabase/types";
+import { Item } from "@/supabase/types";
 import { requestItemComposeCastUrl } from "@/lib/utils";
 import sdk from "@farcaster/frame-sdk";
 import { useCreateRequest } from "@/hooks/game-actions/use-create-request";
@@ -16,7 +16,7 @@ import InventoryItem from "./InventoryItem";
 export default function InventoryModal({ onClose }: { onClose: () => void }) {
   const { state, setSelectedSeed, setSelectedPerk } = useGame();
   const { safeAreaInsets, context } = useFrameContext();
-  const [selectedItem, setSelectedItem] = useState<DbItem | null>(null);
+  const [selectedItem, setSelectedItem] = useState<Item | null>(null);
   const [requestQuantity, setRequestQuantity] = useState(1);
   const { mutate: createRequest } = useCreateRequest();
   const [castUrl, setCastUrl] = useState<string | null>(null);
@@ -30,11 +30,11 @@ export default function InventoryModal({ onClose }: { onClose: () => void }) {
     }
   };
 
-  const handleItemClick = (item: DbItem) => {
+  const handleItemClick = (item: Item) => {
     setSelectedItem(item);
   };
 
-  const handleUseItem = (item: DbItem) => {
+  const handleUseItem = (item: Item) => {
     if (item.category === "perk") {
       const userPerk = state.perks.find((p) => p.item.slug === item.slug);
       if (userPerk) {
@@ -44,7 +44,7 @@ export default function InventoryModal({ onClose }: { onClose: () => void }) {
     setSelectedItem(null);
   };
 
-  const handleRequestItem = async (item: DbItem) => {
+  const handleRequestItem = async (item: Item) => {
     if (!context?.user.fid) return;
 
     try {
@@ -115,12 +115,7 @@ export default function InventoryModal({ onClose }: { onClose: () => void }) {
           animate={{ x: 0, opacity: 1 }}
         >
           {isImageUrl ? (
-            <Image
-              src={icon}
-              alt={title}
-              width={28}
-              height={28}
-            />
+            <Image src={icon} alt={title} width={28} height={28} />
           ) : (
             <span className="text-2xl">{icon}</span>
           )}

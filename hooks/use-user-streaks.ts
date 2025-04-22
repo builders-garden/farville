@@ -1,9 +1,9 @@
-import { DbStreak } from "@/supabase/types";
+import { Streak } from "@/supabase/types";
 import { useApiQuery } from "./use-api-query";
 import { useApiMutation } from "./use-api-mutation";
 
 export const useUserStreaks = (fid?: number) => {
-  const { data, isLoading, refetch } = useApiQuery<DbStreak[]>({
+  const { data, isLoading, refetch } = useApiQuery<Streak[]>({
     queryKey: ["user-streaks", fid],
     url: !fid ? "/api/users/me/streaks" : `/api/users/${fid}/streaks`,
     isProtected: true,

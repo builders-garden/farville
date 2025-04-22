@@ -1,6 +1,6 @@
 import { PFP_NFT_TEXT_SYSTEM_PROMPT } from "@/lib/constants";
 import { env } from "@/lib/env";
-import { updateUserCollectible } from "@/supabase/queries";
+import { updateUserCollectible } from "@/lib/prisma/queries";
 import { CollectibleStatus } from "@/lib/types/game";
 import { NextResponse } from "next/server";
 import OpenAI from "openai";

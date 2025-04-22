@@ -1,9 +1,11 @@
-import { Item, Prisma, Request, User } from "@prisma/client";
+import { Item, Request, User } from "@prisma/client";
 import { prisma } from "../client";
 
-export const createRequest = async (
-  request: Prisma.RequestCreateInput
-): Promise<Request> => {
+export const createRequest = async (request: {
+  fid: number;
+  itemId: number;
+  quantity: number;
+}): Promise<Request> => {
   const data = await prisma.request.create({
     data: {
       ...request,

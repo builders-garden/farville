@@ -5,7 +5,7 @@ import { useGame } from "../context/GameContext";
 import { SeedType } from "../lib/types/game";
 import { useState, useRef, useEffect, useCallback } from "react";
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/solid";
-import { DbItem } from "@/supabase/types";
+import { Item } from "@/supabase/types";
 
 const CROP_COLORS: Record<SeedType, string> = {
   "carrot-seeds": "border-orange-400",
@@ -78,7 +78,7 @@ export default function SeedMenu() {
   };
 
   // Update click handler to set remaining uses
-  const handleClick = (item: DbItem) => {
+  const handleClick = (item: Item) => {
     const seed = state.seeds.find((s) => s.item.id === item.id);
     const perk = state.perks?.find((p) => p.item.id === item.id);
     const isAvailable = item.category === "seed" ? !!seed : !!perk;

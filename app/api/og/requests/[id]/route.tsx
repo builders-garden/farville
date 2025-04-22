@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
-import { getRequestById } from "@/supabase/queries";
 import { env } from "@/lib/env";
+import { getRequestById } from "@/lib/prisma/queries";
 
 export const dynamic = "force-dynamic";
 const size = {

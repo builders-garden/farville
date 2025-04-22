@@ -15,7 +15,7 @@ export const getUserNotifications = async (
 };
 
 export const createUserNotification = async (
-  notification: Prisma.UserNotificationCreateInput
+  notification: Prisma.UserNotificationUncheckedCreateInput
 ): Promise<UserNotification> => {
   const data = await prisma.userNotification.create({
     data: notification,

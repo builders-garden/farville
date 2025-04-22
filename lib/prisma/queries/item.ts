@@ -1,7 +1,7 @@
 import { prisma } from "../client";
-import { DbItem } from "../types";
+import { Item } from "../types";
 
-export const getItems = async (category?: string): Promise<DbItem[]> => {
+export const getItems = async (category?: string): Promise<Item[]> => {
   const items = await prisma.item.findMany({
     where: category ? { category } : undefined,
     orderBy: [
@@ -14,7 +14,7 @@ export const getItems = async (category?: string): Promise<DbItem[]> => {
   return items;
 };
 
-export const getItemById = async (itemId: number): Promise<DbItem | null> => {
+export const getItemById = async (itemId: number): Promise<Item | null> => {
   const item = await prisma.item.findUnique({
     where: {
       id: itemId,
@@ -24,9 +24,7 @@ export const getItemById = async (itemId: number): Promise<DbItem | null> => {
   return item;
 };
 
-export const getItemsByCategory = async (
-  category: string
-): Promise<DbItem[]> => {
+export const getItemsByCategory = async (category: string): Promise<Item[]> => {
   const items = await prisma.item.findMany({
     where: {
       category,
@@ -39,7 +37,7 @@ export const getItemsByCategory = async (
   return items;
 };
 
-export const getItemBySlug = async (slug: string): Promise<DbItem | null> => {
+export const getItemBySlug = async (slug: string): Promise<Item | null> => {
   const item = await prisma.item.findUnique({
     where: {
       slug,

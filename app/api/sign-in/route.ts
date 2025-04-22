@@ -2,7 +2,6 @@ import { fetchUser } from "@/lib/neynar";
 import { NextRequest, NextResponse } from "next/server";
 import { verifyMessage } from "viem";
 import * as jose from "jose";
-import { initDailyUserQuests, initWeeklyUserQuests } from "@/supabase/queries";
 import { trackEvent } from "@/lib/posthog/server";
 import {
   addReferral,
@@ -12,7 +11,9 @@ import {
   getUserGridCells,
   getUserLeaderboardEntry,
   giftStarterPack,
+  initDailyUserQuests,
   initializeGrid,
+  initWeeklyUserQuests,
 } from "@/lib/prisma/queries";
 import { getUserLeague } from "@/lib/utils";
 import { env } from "@/lib/env";

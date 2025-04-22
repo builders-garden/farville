@@ -1,4 +1,4 @@
-import { DbItem } from "@/supabase/types";
+import { Item } from "@/supabase/types";
 import { motion } from "framer-motion";
 import RequestButton from "../ui/request-button";
 import { useState } from "react";
@@ -11,13 +11,13 @@ import {
 import { Input } from "../ui/input";
 
 interface MarketplaceItemProps {
-  item: DbItem;
+  item: Item;
   ownedQuantity: number;
   index: number;
   isLevelRequired: boolean;
   requiredLevel?: number;
-  onItemSelect: (item: DbItem) => void;
-  onRequestClick: (item: DbItem) => void;
+  onItemSelect: (item: Item) => void;
+  onRequestClick: (item: Item) => void;
   onBuyClick: (itemId: number, quantity: number) => void;
   gridSize: number;
   canBuy?: boolean;

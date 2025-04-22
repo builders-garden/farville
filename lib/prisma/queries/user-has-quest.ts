@@ -1,4 +1,4 @@
-import { Prisma, UserHasQuest } from "@prisma/client";
+import { Prisma, Quest, UserHasQuest } from "@prisma/client";
 import { prisma } from "../client";
 import { Mode, QuestStatus, QuestType } from "@/lib/types/game";
 
@@ -224,7 +224,12 @@ export async function getQuestPartialLeaderboardFromFids({
 export const getUserQuestById = async (
   fid: number,
   questId: number
-): Promise<UserHasQuest | null> => {
+): Promise<
+  | (UserHasQuest & {
+      quest: Quest;
+    })
+  | null
+> => {
   const userQuest = await prisma.userHasQuest.findFirst({
     where: {
       fid,
