@@ -102,7 +102,7 @@ export default function StreaksModal({ onClose }: { onClose: () => void }) {
       state.user.fid,
       currentDayStreak
     );
-    await sdk.actions.openUrl(castUrl);
+    await sdk.actions.composeCast(castUrl);
   };
 
   const streakDates = getStreakDates(state.streaks);

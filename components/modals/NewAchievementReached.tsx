@@ -118,7 +118,7 @@ export const NewAchievementReached = ({
                 fullAchievementsData[0].step,
                 fullAchievementsData[0].title
               );
-              await sdk.actions.openUrl(castUrl);
+              await sdk.actions.composeCast(castUrl);
             }}
             className="flex-1 py-2 px-4 rounded bg-yellow-500/20 text-yellow-400 hover:bg-yellow-500/30
                       transition-colors text-sm font-medium border border-yellow-500/30 flex items-center justify-center gap-2"

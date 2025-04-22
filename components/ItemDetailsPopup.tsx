@@ -14,7 +14,7 @@ interface ItemDetailsPopupProps {
   requestQuantity: number;
   onRequestQuantityChange: (quantity: number) => void;
   onShareRequest: () => void;
-  requestUrl: string | null; // Add this new prop to pass the URL
+  requestUrl: string | undefined; // Add this new prop to pass the URL
 }
 
 export default function ItemDetailsPopup({

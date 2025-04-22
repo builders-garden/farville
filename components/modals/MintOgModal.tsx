@@ -130,7 +130,7 @@ export default function MintOgModal({ onCancel }: MintOgModalProps) {
 
   const handleShareMint = async () => {
     const { castUrl } = mintedOgFlexCardComposeCastUrl(state.user.fid);
-    await sdk.actions.openUrl(castUrl);
+    await sdk.actions.composeCast(castUrl);
   };
 
   const userIsEligibleButWrongAddress =

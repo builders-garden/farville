@@ -572,7 +572,7 @@ export default function MintCollectibleModal({
       state.user.fid,
       selectedCollectible?.id.toString() ?? ""
     );
-    await sdk.actions.openUrl(castUrl);
+    await sdk.actions.composeCast(castUrl);
   };
 
   // Check if select collectible should be shown

@@ -102,7 +102,7 @@ export default function ProfileModal({
             state.user.fid,
             badgeModalData.crop
           );
-          await sdk.actions.openUrl(castUrl);
+          await sdk.actions.composeCast(castUrl);
         }
         break;
       case "honour":
@@ -113,7 +113,7 @@ export default function ProfileModal({
             badgeModalData.step,
             badgeModalData.title
           );
-          await sdk.actions.openUrl(castUrl);
+          await sdk.actions.composeCast(castUrl);
         }
         break;
       case "collectible":
@@ -122,7 +122,7 @@ export default function ProfileModal({
             state.user.fid,
             badgeModalData.collectibleId
           );
-          await sdk.actions.openUrl(castUrl);
+          await sdk.actions.composeCast(castUrl);
         }
         break;
       default:

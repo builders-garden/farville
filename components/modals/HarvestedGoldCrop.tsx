@@ -27,7 +27,7 @@ export const HarvestedGoldCrop = ({
       state.user.fid,
       goldCropsFound[0].crop
     );
-    await sdk.actions.openUrl(castUrl);
+    await sdk.actions.composeCast(castUrl);
   };
 
   useEffect(() => {

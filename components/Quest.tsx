@@ -15,6 +15,7 @@ import { useFrameContext } from "@/context/FrameContext";
 import { useCreateRequest } from "@/hooks/game-actions/use-create-request";
 import sdk from "@farcaster/frame-sdk";
 import RequestButton from "./ui/request-button";
+import { ComposeCastParams } from "@/lib/types/miniapp";
 
 interface QuestProps {
   quest: DbUserHasQuestWithQuest;
@@ -58,7 +59,10 @@ const renderQuestRewards = (
     </div>
 
     {showRequestButton && (
-      <RequestButton variant="secondary" onClick={onRequestClick} />
+      <RequestButton
+        variant="secondary"
+        onClick={onRequestClick}
+      />
     )}
   </div>
 );
@@ -138,8 +142,8 @@ export default function Quest({
   const [requestQuantity, setRequestQuantity] = useState(
     quest.quest.amount || 1
   );
-  const [castUrl, setCastUrl] = useState<string | null>(null);
-  const [requestUrl, setRequestUrl] = useState<string | null>(null);
+  const [castUrl, setCastUrl] = useState<ComposeCastParams | null>(null);
+  const [requestUrl, setRequestUrl] = useState<string | undefined>(undefined);
 
   // Handle showing item details
   const handleShowItemDetails = () => {
@@ -174,13 +178,13 @@ export default function Quest({
         },
         {
           onSuccess: async (data) => {
-            const { castUrl, requestUrl } = requestItemComposeCastUrl(
+            const { castUrl } = requestItemComposeCastUrl(
               data.id,
               selectedItem,
               requestQuantity
             );
             setCastUrl(castUrl);
-            setRequestUrl(requestUrl);
+            setRequestUrl(castUrl?.embeds[0]);
           },
           onError: (error) => {
             console.error("Error creating request", error);
@@ -196,7 +200,7 @@ export default function Quest({
     if (!castUrl || !requestUrl) return;
 
     try {
-      await sdk.actions.openUrl(castUrl);
+      await sdk.actions.composeCast(castUrl);
       setSelectedItem(null);
       setRequestQuantity(1);
     } catch (error) {
@@ -328,7 +332,7 @@ export default function Quest({
             setSelectedItem(null);
             setRequestQuantity(quest.quest.amount || 1);
             setCastUrl(null);
-            setRequestUrl(null);
+            setRequestUrl(undefined);
           }}
           requestQuantity={requestQuantity}
           onRequestQuantityChange={setRequestQuantity}

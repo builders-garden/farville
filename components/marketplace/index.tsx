@@ -18,6 +18,7 @@ import PerkItem from "./PerkItem";
 import ExpansionPanel from "./ExpansionPanel";
 import ItemDetailsModal from "./ItemDetailsModal";
 import { useNextStep } from "nextstepjs";
+import { ComposeCastParams } from "@/lib/types/miniapp";
 
 // Add new type for selected item details
 type SelectedItemDetails = {
@@ -55,8 +56,8 @@ export default function MarketplaceModal({
   const [selectedItemForRequest, setSelectedItemForRequest] =
     useState<DbItem | null>(null);
   const [requestQuantity, setRequestQuantity] = useState(1);
-  const [castUrl, setCastUrl] = useState<string | null>(null);
-  const [requestUrl, setRequestUrl] = useState<string | null>(null);
+  const [castUrl, setCastUrl] = useState<ComposeCastParams | null>(null);
+  const [requestUrl, setRequestUrl] = useState<string | undefined>(undefined);
 
   const gridSize = state.gridSize.width * state.gridSize.height;
 
@@ -80,13 +81,13 @@ export default function MarketplaceModal({
         },
         {
           onSuccess: async (data) => {
-            const { castUrl, requestUrl } = requestItemComposeCastUrl(
+            const { castUrl } = requestItemComposeCastUrl(
               data.id,
               selectedItemForRequest,
               requestQuantity
             );
             setCastUrl(castUrl);
-            setRequestUrl(requestUrl);
+            setRequestUrl(castUrl?.embeds[0]);
           },
           onError: (error) => {
             console.error("Error creating request", error);
@@ -102,7 +103,7 @@ export default function MarketplaceModal({
     if (!castUrl || !requestUrl) return;
 
     try {
-      await sdk.actions.openUrl(castUrl);
+      await sdk.actions.composeCast(castUrl);
       setSelectedItemForRequest(null);
       setRequestQuantity(1);
     } catch (error) {
@@ -392,7 +393,7 @@ export default function MarketplaceModal({
           onClose={() => {
             setSelectedItemForRequest(null);
             setRequestQuantity(1);
-            setRequestUrl(null);
+            setRequestUrl(undefined);
             setCastUrl(null);
           }}
           requestQuantity={requestQuantity}

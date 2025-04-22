@@ -134,7 +134,7 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
       leaderboardType,
       activeTab === "friends"
     );
-    await sdk.actions.openUrl(castUrl);
+    await sdk.actions.composeCast(castUrl);
   };
 
   const handleShareWeeklyLeaderboard = async () => {
@@ -143,7 +143,7 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
       state.weeklyStats.league,
       isShowingCurrentWeek
     );
-    await sdk.actions.openUrl(castUrl);
+    await sdk.actions.composeCast(castUrl);
   };
 
   const handleShare = () => {

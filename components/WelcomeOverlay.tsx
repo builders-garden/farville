@@ -419,8 +419,8 @@ export default function WelcomeOverlay({
                 ease: "easeInOut",
               }}
               onClick={async () => {
-                const url = warpcastComposeCastUrl();
-                await sdk.actions.openUrl(url);
+                const { castUrl } = warpcastComposeCastUrl();
+                await sdk.actions.composeCast(castUrl);
               }}
               className={`
             mt-4 px-16 py-4 

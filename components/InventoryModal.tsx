@@ -12,6 +12,7 @@ import { requestItemComposeCastUrl } from "@/lib/utils";
 import sdk from "@farcaster/frame-sdk";
 import { useCreateRequest } from "@/hooks/game-actions/use-create-request";
 import InventoryItem from "./InventoryItem";
+import { ComposeCastParams } from "@/lib/types/miniapp";
 
 export default function InventoryModal({ onClose }: { onClose: () => void }) {
   const { state, setSelectedSeed, setSelectedPerk } = useGame();
@@ -19,8 +20,8 @@ export default function InventoryModal({ onClose }: { onClose: () => void }) {
   const [selectedItem, setSelectedItem] = useState<DbItem | null>(null);
   const [requestQuantity, setRequestQuantity] = useState(1);
   const { mutate: createRequest } = useCreateRequest();
-  const [castUrl, setCastUrl] = useState<string | null>(null);
-  const [requestUrl, setRequestUrl] = useState<string | null>(null);
+  const [castUrl, setCastUrl] = useState<ComposeCastParams | null>(null);
+  const [requestUrl, setRequestUrl] = useState<string | undefined>(undefined);
 
   const handlePerkClick = (perk: UserItem) => {
     if (perk.quantity && perk.quantity > 0) {
@@ -48,20 +49,20 @@ export default function InventoryModal({ onClose }: { onClose: () => void }) {
     if (!context?.user.fid) return;
 
     try {
-      await createRequest(
+      createRequest(
         {
           itemId: item.id,
           quantity: requestQuantity,
         },
         {
           onSuccess: async (data) => {
-            const { castUrl, requestUrl } = requestItemComposeCastUrl(
+            const { castUrl } = requestItemComposeCastUrl(
               data.id,
               item,
               requestQuantity
             );
             setCastUrl(castUrl);
-            setRequestUrl(requestUrl);
+            setRequestUrl(castUrl?.embeds[0]);
           },
           onError: (error) => {
             console.error("Error creating requests", error);
@@ -77,7 +78,7 @@ export default function InventoryModal({ onClose }: { onClose: () => void }) {
     if (!castUrl || !requestUrl) return;
 
     try {
-      await sdk.actions.openUrl(castUrl);
+      await sdk.actions.composeCast(castUrl);
       setSelectedItem(null);
       setRequestQuantity(1);
     } catch (error) {
@@ -228,7 +229,7 @@ export default function InventoryModal({ onClose }: { onClose: () => void }) {
           }
           onClose={() => {
             setSelectedItem(null);
-            setRequestUrl(null);
+            setRequestUrl(undefined);
             setCastUrl(null);
             setRequestQuantity(1); // Reset quantity when closing
           }}
