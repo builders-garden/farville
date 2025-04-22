@@ -1,4 +1,4 @@
-import { DbQuestWithItem, DbUserHasQuestWithQuest } from "@/lib/prisma/types";
+import { QuestWithItem, UserHasQuestWithQuest } from "@/lib/prisma/types";
 import { useApiQuery } from "./use-api-query";
 
 export const useQuests = () => {
@@ -6,7 +6,7 @@ export const useQuests = () => {
     data: allQuests,
     isLoading: isLoadingAll,
     refetch: refetchAll,
-  } = useApiQuery<DbQuestWithItem[]>({
+  } = useApiQuery<QuestWithItem[]>({
     queryKey: ["quests"],
     url: "/api/quests",
     isProtected: true,
@@ -16,7 +16,7 @@ export const useQuests = () => {
     data: activeQuests,
     isLoading: isLoadingActive,
     refetch: refetchActive,
-  } = useApiQuery<DbQuestWithItem[]>({
+  } = useApiQuery<QuestWithItem[]>({
     queryKey: ["quests", "active"],
     url: "/api/quests?active=true",
     isProtected: true,
@@ -34,7 +34,7 @@ export const useQuests = () => {
 };
 
 export const useQuest = (id: number) => {
-  const { data, isLoading, refetch } = useApiQuery<DbQuestWithItem | null>({
+  const { data, isLoading, refetch } = useApiQuery<QuestWithItem | null>({
     queryKey: ["quests", id],
     url: `/api/quests/${id}`,
     isProtected: true,
@@ -53,8 +53,8 @@ export const useUserQuests = (fid: number | undefined, status: string) => {
     isLoading,
     refetch,
   } = useApiQuery<{
-    daily: DbUserHasQuestWithQuest[];
-    weekly: DbUserHasQuestWithQuest[];
+    daily: UserHasQuestWithQuest[];
+    weekly: UserHasQuestWithQuest[];
   }>({
     queryKey: ["users", fid, "quests", status],
     url: `/api/users/${fid}/quests?status=${status}&activeToday=${
@@ -74,7 +74,7 @@ export const useUserQuests = (fid: number | undefined, status: string) => {
 
 export const useUserQuest = (fid: number | undefined, questId: number) => {
   const { data, isLoading, refetch } =
-    useApiQuery<DbUserHasQuestWithQuest | null>({
+    useApiQuery<UserHasQuestWithQuest | null>({
       queryKey: ["users", fid, "quests", questId],
       url: `/api/users/${fid}/quests/${questId}`,
       isProtected: true,

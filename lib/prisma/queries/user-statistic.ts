@@ -25,11 +25,10 @@ export const getUserByMode = async (
     return null;
   }
 
-  console.log("user", user);
-
   return {
     ...user,
     ...user.user,
+    mode: user.mode as Mode,
     notificationDetails:
       typeof user.user.notificationDetails === "string" &&
       user.user.notificationDetails !== ""
@@ -76,6 +75,7 @@ export const getUsersByFidsAndMode = async (
     users: users.map((user, index) => ({
       ...user,
       ...user.user,
+      mode: user.mode as Mode,
       notificationDetails:
         typeof user.user.notificationDetails === "string" &&
         user.user.notificationDetails !== ""
@@ -141,6 +141,7 @@ export const getModePartialLeaderboardFromUserPosition = async (
   return partialLeaderboard.map((user, index) => ({
     ...user,
     ...user.user,
+    mode: user.mode as Mode,
     notificationDetails:
       typeof user.user.notificationDetails === "string" &&
       user.user.notificationDetails !== ""
@@ -251,6 +252,7 @@ export const getUsersByXp = async (
     users: users.map((user) => ({
       ...user,
       ...user.user,
+      mode: user.mode as Mode,
       createdAt: user.createdAt,
       notificationDetails:
         typeof user.user.notificationDetails === "string" &&
@@ -320,6 +322,7 @@ export const updateUserXP = async (
         user: {
           ...user,
           ...user.user,
+          mode: user.mode as Mode,
           createdAt: user.createdAt,
           notificationDetails:
             typeof user.user.notificationDetails === "string" &&

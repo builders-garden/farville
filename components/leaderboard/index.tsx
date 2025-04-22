@@ -3,7 +3,7 @@
 import { useGame } from "@/context/GameContext";
 import { useLeaderboard } from "@/hooks/use-leadeboard";
 import {
-  getCurrentLevelAndProgress,
+  // getCurrentLevelAndProgress,
   leaderboardFlexCardComposeCastUrl,
   shareWeeklyLeaderboardPositionComposeCastUrl,
 } from "@/lib/utils";
@@ -193,10 +193,7 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
   return (
     <div className="fixed inset-0 bg-black/50 flex items-start z-50">
       {selectedUserFid ? (
-        <ProfileModal
-          onClose={handleCloseProfile}
-          userFid={selectedUserFid}
-        />
+        <ProfileModal onClose={handleCloseProfile} userFid={selectedUserFid} />
       ) : (
         <>
           <motion.div
@@ -476,10 +473,7 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
                             </div>
                             <div className="bg-[#6d4c2c]/80 rounded-lg p-1 flex items-center justify-between">
                               <div className="flex items-center gap-1 text-white/80">
-                                <Clock
-                                  size={14}
-                                  className="text-[#FFB938]"
-                                />
+                                <Clock size={14} className="text-[#FFB938]" />
                                 <span className="text-[8px]">Time left:</span>
                               </div>
                               <div className="flex gap-1 text-white font-bold">
@@ -645,10 +639,10 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
                                 {activeTab !== "weekly" && (
                                   <span className="text-[#FFB938] rounded-full font-medium text-[10px] xs:text-xs">
                                     Lvl{" "}
-                                    {
+                                    {/* {
                                       getCurrentLevelAndProgress(entry.xp)
                                         .currentLevel
-                                    }
+                                    } */}
                                   </span>
                                 )}
                                 <div className="text-white/60 text-[10px] xs:text-xs">
@@ -667,7 +661,7 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
                                           : entry.lastScore?.toLocaleString())}
                                     </div>
                                   ) : (
-                                    <>XP:{entry.xp.toLocaleString()}</>
+                                    <>XP:{/*entry.xp.toLocaleString()*/} N/A</>
                                   )}
                                 </div>
                               </>

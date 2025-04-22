@@ -78,8 +78,8 @@ export const createQuest = async (
 
 export const createQuests = async (
   quests: Prisma.QuestCreateInput[]
-): Promise<void> => {
-  await prisma.quest.createMany({
+): Promise<Quest[]> => {
+  return await prisma.quest.createManyAndReturn({
     data: quests,
     skipDuplicates: true, // Optional: skips duplicates if needed
   });
@@ -164,7 +164,6 @@ export const initDailyUserQuests = async (
   );
 
   if (!dailyQuests || dailyQuests.length === 0) {
-    // TODO: fix this function return
     dailyQuests = await generateDailyQuests(thresholdLevel);
   }
 
@@ -202,7 +201,6 @@ export const initWeeklyUserQuests = async (
   );
 
   if (!weeklyQuests || weeklyQuests.length === 0) {
-    // TODO: fix this function return
     weeklyQuests = await generateWeeklyQuests(thresholdLevel);
   }
 

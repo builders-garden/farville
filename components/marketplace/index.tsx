@@ -17,7 +17,7 @@ import PerkItem from "./PerkItem";
 import ExpansionPanel from "./ExpansionPanel";
 import ItemDetailsModal from "./ItemDetailsModal";
 import { useNextStep } from "nextstepjs";
-import { Item } from "@/lib/prisma/types";
+import { Item } from "@prisma/client";
 
 // Add new type for selected item details
 type SelectedItemDetails = {
@@ -238,10 +238,7 @@ export default function MarketplaceModal({
           </div>
 
           {/* Tabs */}
-          <MarketplaceTabs
-            activeTab={activeTab}
-            setActiveTab={setActiveTab}
-          />
+          <MarketplaceTabs activeTab={activeTab} setActiveTab={setActiveTab} />
 
           {/* Sub tabs */}
           {activeTab === "buy" && (

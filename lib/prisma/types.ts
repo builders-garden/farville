@@ -4,21 +4,9 @@ import {
   Quest,
   UserHasCollectible,
   UserHasQuest,
+  Item,
 } from "@prisma/client";
-import { Mode } from "fs";
-
-export interface Item {
-  id: number;
-  name: string;
-  description: string | null;
-  icon: string;
-  category: string;
-  buyPrice: number | null;
-  sellPrice: number | null;
-  requiredLevel: number;
-  slug: string;
-  createdAt: Date;
-}
+import { Mode } from "../types/game";
 
 export interface UserWithStatistic {
   fid: number;
@@ -62,17 +50,10 @@ export interface DbUserDonation {
   times: number | null;
 }
 
-export interface DbUserHasItem {
-  userFid: number;
-  itemId: number;
-  quantity: number;
-  createdAt: Date;
-}
+export type QuestWithItem = Quest & { item: Item | null };
 
-export type DbQuestWithItem = Quest & { items: Item | null };
-
-export type DbUserHasQuestWithQuest = UserHasQuest & {
-  quest: DbQuestWithItem;
+export type UserHasQuestWithQuest = UserHasQuest & {
+  quest: QuestWithItem;
 };
 
 export type UserCompleteCollectible = Collectible & {

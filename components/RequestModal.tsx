@@ -48,9 +48,10 @@ export default function RequestModal({
     0;
 
   // Calculate remaining quantity needed
-  const remainingQuantity = request
-    ? request.quantity - (request.filledQuantity || 0)
-    : 0;
+  const remainingQuantity =
+    request && request.quantity
+      ? request.quantity - (request.filledQuantity || 0)
+      : 0;
 
   const [selectedQuantity, setSelectedQuantity] = useState(() => {
     if (currentQuantity > 0) {
@@ -396,18 +397,20 @@ export default function RequestModal({
                       const rewardedXp = safeQuantity * XP_PER_DONATED_ITEM;
                       setRewardedXp(rewardedXp);
                       donate({
-                        itemId: request?.itemId,
+                        itemId: request.itemId,
                         quantity: safeQuantity,
-                        toFid: request?.fid,
-                        requestId: request?.id,
+                        toFid: request.fid,
+                        requestId: request.id,
                       });
-                      updateUserItems([
-                        {
-                          itemId: request?.itemId,
-                          quantity: currentQuantity - safeQuantity,
-                          item: request?.item,
-                        },
-                      ]);
+                      if (request.itemId) {
+                        updateUserItems([
+                          {
+                            itemId: request.itemId,
+                            quantity: currentQuantity - safeQuantity,
+                            item: request.item,
+                          },
+                        ]);
+                      }
                       setShowFloatingNumber(true);
                       addUserXpsAndCheckLevelUp(rewardedXp);
                       setTimeout(() => {

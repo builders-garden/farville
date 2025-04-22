@@ -1,4 +1,4 @@
-import { Item } from "@/lib/prisma/types";
+import { Item } from "@prisma/client";
 import { motion } from "framer-motion";
 import Image from "next/image";
 

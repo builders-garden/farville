@@ -390,9 +390,10 @@ export default function ProfileModal({
                                 collectible.userHasCollectibles.mintedImageUrl
                                 ? collectible.userHasCollectibles.mintedImageUrl
                                 : status === CollectibleStatus.Generated
-                                ? collectible.userHasCollectibles
-                                    .generatedImageUrls?.[0] ??
-                                  collectible.imageUrl
+                                ? (
+                                    collectible.userHasCollectibles
+                                      .generatedImageUrls as string[]
+                                  )?.[0] ?? collectible.imageUrl
                                 : collectible.imageUrl
                               : collectible.imageUrl;
                           return collectible ? (
@@ -424,7 +425,7 @@ export default function ProfileModal({
 
                               <Image
                                 src={collectibleImage}
-                                alt={collectible.name}
+                                alt={collectible.name || "Collectible"}
                                 fill
                                 className={`rounded-md transition-transform duration-300 group-hover:scale-110 ${
                                   showMintCollectible ? "filter blur-[3px]" : ""
@@ -725,9 +726,10 @@ export default function ProfileModal({
                                       ? collectible.userHasCollectibles
                                           .mintedImageUrl
                                       : status === CollectibleStatus.Generated
-                                      ? collectible.userHasCollectibles
-                                          .generatedImageUrls?.[0] ??
-                                        collectible.imageUrl
+                                      ? (
+                                          collectible.userHasCollectibles
+                                            .generatedImageUrls as string[]
+                                        )?.[0] ?? collectible.imageUrl
                                       : collectible.imageUrl
                                     : collectible.imageUrl;
                                 return status &&
@@ -747,7 +749,7 @@ export default function ProfileModal({
                                   >
                                     <Image
                                       src={collectibleImage}
-                                      alt={collectible.name}
+                                      alt={collectible.name || "Collectible"}
                                       fill
                                       className={`rounded-md transition-transform duration-300 ${
                                         isCurrentUser ? "group" : ""

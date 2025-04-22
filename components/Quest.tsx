@@ -10,11 +10,11 @@ import { useFrameContext } from "@/context/FrameContext";
 import { useCreateRequest } from "@/hooks/game-actions/use-create-request";
 import sdk from "@farcaster/frame-sdk";
 import RequestButton from "./ui/request-button";
-import { DbQuestWithItem, DbUserHasQuestWithQuest } from "@/lib/prisma/types";
+import { QuestWithItem, UserHasQuestWithQuest } from "@/lib/prisma/types";
 import { type Quest } from "@prisma/client";
 
 interface QuestProps {
-  quest: DbUserHasQuestWithQuest;
+  quest: UserHasQuestWithQuest;
   claimable: boolean;
   onClaim?: (
     questId: number,
@@ -55,15 +55,12 @@ const renderQuestRewards = (
     </div>
 
     {showRequestButton && (
-      <RequestButton
-        variant="secondary"
-        onClick={onRequestClick}
-      />
+      <RequestButton variant="secondary" onClick={onRequestClick} />
     )}
   </div>
 );
 
-const renderQuestProgress = (quest: DbUserHasQuestWithQuest) => {
+const renderQuestProgress = (quest: UserHasQuestWithQuest) => {
   const progress = quest.progress || 0;
   const target = quest.quest.amount || 1;
 
@@ -81,7 +78,7 @@ const renderQuestProgress = (quest: DbUserHasQuestWithQuest) => {
   );
 };
 
-const questDescription = (quest: DbQuestWithItem) => {
+const questDescription = (quest: QuestWithItem) => {
   let start = "";
   let end = "";
   switch (quest.category) {
@@ -115,7 +112,7 @@ const questDescription = (quest: DbQuestWithItem) => {
       break;
   }
   if (quest.amount && quest.itemId) {
-    end = quest.items?.name.toLowerCase() || end;
+    end = quest.item?.name.toLowerCase() || end;
   }
   return `${start} ${quest.amount} ${end}`;
 };
@@ -133,7 +130,7 @@ export default function Quest({
   });
   const { mutate: createRequest } = useCreateRequest();
   const [selectedItem, setSelectedItem] = useState<
-    DbQuestWithItem["items"] | null
+    QuestWithItem["item"] | null
   >(null);
   const [requestQuantity, setRequestQuantity] = useState(
     quest.quest.amount || 1
@@ -143,8 +140,8 @@ export default function Quest({
 
   // Handle showing item details
   const handleShowItemDetails = () => {
-    if (quest.quest.items) {
-      setSelectedItem(quest.quest.items);
+    if (quest.quest.item) {
+      setSelectedItem(quest.quest.item);
     }
   };
 
@@ -224,7 +221,7 @@ export default function Quest({
             {(quest.quest.category === "plant" ||
               quest.quest.category === "harvest") && (
               <Image
-                src={`/images${quest.quest.items?.icon}` || "🧑‍🌾"}
+                src={`/images${quest.quest.item?.icon}` || "🧑‍🌾"}
                 width={40}
                 height={40}
                 alt={`Quest icon for ${quest.quest.category}`}
@@ -251,7 +248,7 @@ export default function Quest({
             quest.quest,
             !claimable &&
               quest.quest.category === "receive" &&
-              !!quest.quest.items,
+              !!quest.quest.item,
             handleShowItemDetails
           )}
         </div>

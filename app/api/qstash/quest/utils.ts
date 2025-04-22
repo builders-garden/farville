@@ -39,8 +39,9 @@ export const calculateUserQuestsProgress = async (
           // Get current progress and increment it atomically
           const updated = await tx.userHasQuest.update({
             where: {
-              fid_questId: {
+              fid_questId_mode: {
                 fid,
+                mode: Mode.Classic,
                 questId: quest.questId,
               },
             },
@@ -55,8 +56,9 @@ export const calculateUserQuestsProgress = async (
           if (updated.progress >= (quest.quest!.amount || 1)) {
             return tx.userHasQuest.update({
               where: {
-                fid_questId: {
+                fid_questId_mode: {
                   fid,
+                  mode: Mode.Classic,
                   questId: quest.questId,
                 },
               },

@@ -40,6 +40,7 @@ export const createUserAndMode = async (
   return {
     ...newUser.statistics[0],
     ...newUser,
+    mode: newUser.statistics[0].mode as Mode,
     notificationDetails:
       typeof newUser.notificationDetails === "string"
         ? (JSON.parse(newUser.notificationDetails) as FrameNotificationDetails)
@@ -86,6 +87,10 @@ export const createUser = async (
 
   return {
     ...newUser,
+    statistics: newUser.statistics.map((s) => ({
+      ...s,
+      mode: s.mode as Mode,
+    })),
     notificationDetails:
       typeof newUser.notificationDetails === "string"
         ? (JSON.parse(newUser.notificationDetails) as FrameNotificationDetails)

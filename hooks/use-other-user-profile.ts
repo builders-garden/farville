@@ -6,11 +6,11 @@ import { useUserStreaks } from "./use-user-streaks";
 import { useUserFrosts } from "./use-user-frosts";
 import { useEffect, useState } from "react";
 import { useUserCollectibles } from "./use-user-collectibles";
-import { User, UserHarvestedCrop } from "@prisma/client";
-import { UserCompleteCollectible } from "@/lib/prisma/types";
+import { UserHarvestedCrop } from "@prisma/client";
+import { UserCompleteCollectible, UserWithStatistic } from "@/lib/prisma/types";
 
 interface OtherUserProfileData {
-  user: User | undefined;
+  user: UserWithStatistic | undefined;
   specialCrops: UserItem[] | undefined;
   harvestedCropsSummary: UserHarvestedCrop[] | undefined;
   level: number;

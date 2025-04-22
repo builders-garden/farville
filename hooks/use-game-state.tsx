@@ -11,14 +11,14 @@ import { useUserHarvestedCrops } from "./use-user-harvested-crops";
 import { useWeeklyStats } from "./use-weekly-stats";
 import { useUserCollectibles } from "./use-user-collectibles";
 import { CROP_DATA } from "../lib/game-constants";
-import { DbUserHasQuestWithQuest, Item } from "@/lib/prisma/types";
+import { UserHasQuestWithQuest, UserWithStatistic } from "@/lib/prisma/types";
 import {
   Collectible,
   UserGridCell,
   Streak,
-  User,
   UserHarvestedCrop,
   UserHasCollectible,
+  Item,
 } from "@prisma/client";
 
 export interface RefetchType {
@@ -33,8 +33,8 @@ export interface RefetchType {
 }
 
 export interface AllQuests {
-  daily: DbUserHasQuestWithQuest[];
-  weekly: DbUserHasQuestWithQuest[];
+  daily: UserHasQuestWithQuest[];
+  weekly: UserHasQuestWithQuest[];
 }
 
 export interface GameState {
@@ -52,7 +52,7 @@ export interface GameState {
   expansionLevel: number;
   items: Item[];
   inventory: UserItem[];
-  user: User;
+  user: UserWithStatistic;
   completedQuests: AllQuests;
   claimableQuests: boolean;
   streakUpdated: boolean;
@@ -94,7 +94,7 @@ export const useGameState = () => {
     expansionLevel: 0,
     items: [],
     inventory: [],
-    user: {} as User,
+    user: {} as UserWithStatistic,
     completedQuests: {
       daily: [],
       weekly: [],

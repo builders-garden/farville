@@ -11,10 +11,14 @@ export const getUserGridCells = async (
       fid,
       mode,
     },
-    orderBy: {
-      x: "asc",
-      y: "asc",
-    },
+    orderBy: [
+      {
+        x: "asc",
+      },
+      {
+        y: "asc",
+      },
+    ],
   });
   return cells;
 };

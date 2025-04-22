@@ -21,7 +21,7 @@ import { Card, CardContent } from "./ui/card";
 import { useUserMe } from "@/hooks/use-user-me";
 import { getCurrentLevelAndProgress } from "@/lib/utils";
 import { useGame } from "@/context/GameContext";
-import { Item } from "@/lib/prisma/types";
+import { Item } from "@prisma/client";
 
 interface TimelineData {
   level: number;

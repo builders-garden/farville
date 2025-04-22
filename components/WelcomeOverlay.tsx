@@ -11,18 +11,15 @@ import { useFrameContext } from "../context/FrameContext";
 import { CROPS } from "../lib/game-constants";
 import FloatingNumber from "./animations/FloatingNumber";
 import { warpcastComposeCastUrl } from "../lib/utils";
-import { DbUser } from "../supabase/types";
 import Link from "next/link";
 import { WHITELISTED_FIDS } from "../lib/whitelist";
+import { User } from "@prisma/client";
 
 // Demo version of CropSprite that shows seconds instead of minutes/hours
 function DemoCropSprite({ crop }: { crop?: Crop }) {
   return (
     <>
-      <CropSprite
-        crop={crop}
-        isDemo={true}
-      />
+      <CropSprite crop={crop} isDemo={true} />
     </>
   );
 }
@@ -69,7 +66,7 @@ export default function WelcomeOverlay({
   const [isMuted, setIsMuted] = useState(false);
 
   const { isSDKLoaded, context } = useFrameContext();
-  const [user, setUser] = useState<DbUser | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [showPreview, setShowPreview] = useState(false);
 
   useEffect(() => {

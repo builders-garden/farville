@@ -96,10 +96,7 @@ export default function QuestsModal({
       <div className="text-xs px-1 py-2">No {type} quests available.</div>
       <div className="bg-[#6d4c2c]/80 rounded-lg p-2 flex items-center justify-between">
         <div className="flex items-center gap-1 text-white/80">
-          <Clock
-            size={16}
-            className="text-[#FFB938]"
-          />
+          <Clock size={16} className="text-[#FFB938]" />
           <span className="text-[10px]">New quests in:</span>
         </div>
         <div className="flex gap-1 text-white font-bold">
@@ -257,7 +254,7 @@ export default function QuestsModal({
                         {completedQuests?.daily.map((quest) => (
                           <Quest
                             quest={quest}
-                            key={quest.id}
+                            key={`${quest.fid}${quest.questId}`}
                             claimable={true}
                             onClaim={handleQuestClaim}
                           />
@@ -265,7 +262,7 @@ export default function QuestsModal({
                         {incompleteQuests?.daily.map((quest) => (
                           <Quest
                             quest={quest}
-                            key={quest.id}
+                            key={`${quest.fid}${quest.questId}`}
                             claimable={false}
                           />
                         ))}
@@ -281,7 +278,7 @@ export default function QuestsModal({
                         {completedQuests?.weekly.map((quest) => (
                           <Quest
                             quest={quest}
-                            key={quest.id}
+                            key={`${quest.fid}${quest.questId}`}
                             claimable={true}
                             onClaim={handleQuestClaim}
                           />
@@ -289,7 +286,7 @@ export default function QuestsModal({
                         {incompleteQuests?.weekly.map((quest) => (
                           <Quest
                             quest={quest}
-                            key={quest.id}
+                            key={`${quest.fid}${quest.questId}`}
                             claimable={false}
                           />
                         ))}

@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import { Slider } from "@/components/ui/slider";
 import { useEffect, useState } from "react";
-import { Item } from "@/lib/prisma/types";
+import { Item } from "@prisma/client";
 
 interface ItemDetailsPopupProps {
   item: Item;

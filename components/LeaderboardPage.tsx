@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { useFrameContext } from "../context/FrameContext";
 import Image from "next/image";
 import Link from "next/link";
-import { ReferralLeaderboardEntry } from "../supabase/queries";
+import { ReferralLeaderboardEntry } from "@/lib/prisma/queries";
 
 interface LeaderboardPageProps {
   leaderboard: ReferralLeaderboardEntry[];

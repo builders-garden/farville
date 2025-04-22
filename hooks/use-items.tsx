@@ -1,4 +1,4 @@
-import { Item } from "@/lib/prisma/types";
+import { Item } from "@prisma/client";
 import { useApiQuery } from "./use-api-query";
 
 export const useItems = () => {

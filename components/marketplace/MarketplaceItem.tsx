@@ -8,7 +8,7 @@ import {
   AccordionTrigger,
 } from "../ui/accordion";
 import { Input } from "../ui/input";
-import { Item } from "@/lib/prisma/types";
+import { Item } from "@prisma/client";
 
 interface MarketplaceItemProps {
   item: Item;
@@ -178,11 +178,7 @@ export default function MarketplaceItem({
             </div>
           </div>
 
-          <Accordion
-            type="single"
-            collapsible
-            className="w-full"
-          >
+          <Accordion type="single" collapsible className="w-full">
             <AccordionItem
               value="custom-quantity"
               className="border-0 pb-0 pt-1 xs:pt-2"

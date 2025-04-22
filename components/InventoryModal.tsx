@@ -11,7 +11,7 @@ import { requestItemComposeCastUrl } from "@/lib/utils";
 import sdk from "@farcaster/frame-sdk";
 import { useCreateRequest } from "@/hooks/game-actions/use-create-request";
 import InventoryItem from "./InventoryItem";
-import { Item } from "@/lib/prisma/types";
+import { Item } from "@prisma/client";
 
 export default function InventoryModal({ onClose }: { onClose: () => void }) {
   const { state, setSelectedSeed, setSelectedPerk } = useGame();
@@ -115,12 +115,7 @@ export default function InventoryModal({ onClose }: { onClose: () => void }) {
           animate={{ x: 0, opacity: 1 }}
         >
           {isImageUrl ? (
-            <Image
-              src={icon}
-              alt={title}
-              width={28}
-              height={28}
-            />
+            <Image src={icon} alt={title} width={28} height={28} />
           ) : (
             <span className="text-2xl">{icon}</span>
           )}

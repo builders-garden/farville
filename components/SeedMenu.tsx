@@ -5,7 +5,7 @@ import { useGame } from "../context/GameContext";
 import { SeedType } from "../lib/types/game";
 import { useRef } from "react";
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/solid";
-import { Item } from "@/lib/prisma/types";
+import { Item } from "@prisma/client";
 
 const CROP_COLORS: Record<SeedType, string> = {
   "carrot-seeds": "border-orange-400",
@@ -133,11 +133,7 @@ export default function SeedMenu() {
                   : perk?.quantity || 0;
 
               return (
-                <div
-                  key={item.id}
-                  id={item.slug}
-                  className="py-1 px-1"
-                >
+                <div key={item.id} id={item.slug} className="py-1 px-1">
                   <motion.button
                     onClick={() => handleClick(item)}
                     className={`

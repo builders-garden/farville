@@ -1,5 +1,5 @@
+import { Item } from "@prisma/client";
 import { prisma } from "../client";
-import { Item } from "../types";
 
 export const getItems = async (category?: string): Promise<Item[]> => {
   const items = await prisma.item.findMany({
