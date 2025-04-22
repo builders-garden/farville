@@ -100,6 +100,8 @@ export default function MintCollectibleModal({
   const { chainId } = useAccount();
   const { switchChain } = useSwitchChain();
 
+  const isPaused = true;
+
   const selectedCollectible = useMemo(
     () => state.collectibles.find((collectible) => collectible.id === 1),
     [state.collectibles]
@@ -785,42 +787,54 @@ export default function MintCollectibleModal({
                 </span>
               </>
             )}
-            {errorMessage && (
-              <span className="bg-red-500 text-red-200 text-[8px] p-2 rounded">
-                {errorMessage}
+
+            {isPaused && (
+              <span className="bg-red-500 text-red-200 text-[10px] p-2 rounded mt-2">
+                We paused the Farville Avatars claimings. It will be available
+                again shortly!
               </span>
             )}
-            {errorMessage === "API Error: 500" &&
-            selectedCollectible?.userHasCollectibles?.status ===
-              CollectibleStatus.Description ? (
-              <Button
-                onClick={() => {
-                  setErrorMessage(null);
-                  setPfpDescription(null);
-                  setIsLoading(true);
-                  getImageDescription({
-                    imageUrl: userPfp || "",
-                    fid: state.user.fid,
-                    collectibleId: selectedCollectible?.id ?? 1,
-                  });
-                }}
-                className="w-full py-1 px-2 text-sm bg-red-500/10 text-red-400 hover:bg-red-500/20 border border-red-400/30"
-              >
-                Retry
-              </Button>
-            ) : null}
-            {!isFinalState &&
-              address !== undefined &&
-              !!tokenBalancesData &&
-              (!hasEnoughEthBalance || !hasEnoughUSDBalance) && (
-                <span className="bg-red-500 text-red-200 text-[8px] p-2 rounded">
-                  Insufficient {!hasEnoughEthBalance ? "ETH" : "USD"} balance to
-                  mint. Please add some {hasEnoughEthBalance ? "USD" : "ETH"} to
-                  your wallet.
-                </span>
-              )}
+
+            {!isPaused && (
+              <>
+                {errorMessage && (
+                  <span className="bg-red-500 text-red-200 text-[8px] p-2 rounded">
+                    {errorMessage}
+                  </span>
+                )}
+                {errorMessage === "API Error: 500" &&
+                selectedCollectible?.userHasCollectibles?.status ===
+                  CollectibleStatus.Description ? (
+                  <Button
+                    onClick={() => {
+                      setErrorMessage(null);
+                      setPfpDescription(null);
+                      setIsLoading(true);
+                      getImageDescription({
+                        imageUrl: userPfp || "",
+                        fid: state.user.fid,
+                        collectibleId: selectedCollectible?.id ?? 1,
+                      });
+                    }}
+                    className="w-full py-1 px-2 text-sm bg-red-500/10 text-red-400 hover:bg-red-500/20 border border-red-400/30"
+                  >
+                    Retry
+                  </Button>
+                ) : null}
+                {!isFinalState &&
+                  address !== undefined &&
+                  !!tokenBalancesData &&
+                  (!hasEnoughEthBalance || !hasEnoughUSDBalance) && (
+                    <span className="bg-red-500 text-red-200 text-[8px] p-2 rounded">
+                      Insufficient {!hasEnoughEthBalance ? "ETH" : "USD"}{" "}
+                      balance to mint. Please add some{" "}
+                      {hasEnoughEthBalance ? "USD" : "ETH"} to your wallet.
+                    </span>
+                  )}
+              </>
+            )}
           </div>
-          {!errorOnDescription && (
+          {!isPaused && !errorOnDescription && (
             <div className="flex flex-col gap-3 mt-0">
               {/* PAY PRICE */}
               {showSelectMintPrice ? (
