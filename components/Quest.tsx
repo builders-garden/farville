@@ -58,7 +58,10 @@ const renderQuestRewards = (
     </div>
 
     {showRequestButton && (
-      <RequestButton variant="secondary" onClick={onRequestClick} />
+      <RequestButton
+        variant="secondary"
+        onClick={onRequestClick}
+      />
     )}
   </div>
 );
@@ -265,7 +268,7 @@ export default function Quest({
                 Ends in:{" "}
                 {(() => {
                   const endTime = new Date(quest.quest.endAt).getTime();
-                  const timeRemaining = endTime - getUserNowDate().getTime();
+                  const timeRemaining = endTime - new Date().getTime();
                   if (timeRemaining <= 0) return "";
 
                   const SECOND = 1000;

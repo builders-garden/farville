@@ -250,16 +250,6 @@ export const getLevelThresholdLeagueByLeague = (league: number) => {
   return 15;
 };
 
-export const getUserNowDate = () => {
-  // This implementation is incorrect because:
-  // 1. toLocaleString() output format is locale-dependent and unreliable
-  // 2. Creating date string manually can lead to timezone issues
-  // 3. The .000Z suffix forces UTC which may not match user's timezone
-
-  // Instead, we should just return the current date:
-  return new Date();
-};
-
 export const chooseRandomItem = <T>(items: T[]): T => {
   return items[Math.floor(Math.random() * items.length)];
 };

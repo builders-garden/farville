@@ -4,7 +4,6 @@ import { useCallback, useEffect, useState } from "react";
 import { MESSAGE_EXPIRATION_TIME } from "@/lib/contracts/constants";
 import posthog from "posthog-js";
 import * as Sentry from "@sentry/nextjs";
-import { getUserNowDate } from "@/lib/utils";
 import { useAuthCheck } from "./use-auth-check";
 
 export const useSignIn = (isInMaintenance: boolean) => {
@@ -46,8 +45,6 @@ export const useSignIn = (isInMaintenance: boolean) => {
           ? context?.location.cast.fid
           : null;
 
-      const userNow = getUserNowDate().toISOString();
-
       const res = await fetch("/api/sign-in", {
         method: "POST",
         headers: {
@@ -58,7 +55,6 @@ export const useSignIn = (isInMaintenance: boolean) => {
           message: result?.message,
           fid: context?.user?.fid,
           referrerFid,
-          userNow,
         }),
       });
 
