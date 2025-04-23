@@ -1,6 +1,7 @@
 import { Item, UserHasItem } from "@prisma/client";
 import { prisma } from "../client";
 import { Mode } from "@/lib/types/game";
+import { STARTER_PACKS } from "@/lib/modes/constants";
 
 export const getUserItemByItemId = async (
   fid: number,
@@ -130,8 +131,17 @@ export const giftStarterPack = async (
   fid: number,
   mode: Mode = Mode.Classic
 ) => {
-  await addUserItem(fid, 1, 4, mode);
-  await addUserItem(fid, 9, 4, mode);
+  const starterPack = STARTER_PACKS[mode];
+  if (!starterPack) {
+    throw new Error(`No starter pack found for mode: ${mode}`);
+  }
+
+  // add user items based on the starter pack
+  for (const item of starterPack) {
+    await addUserItem(fid, item.itemId, item.quantity, mode);
+  }
+  // await addUserItem(fid, 1, 4, mode);
+  // await addUserItem(fid, 9, 4, mode);
 };
 
 export const removeUserItem = async (

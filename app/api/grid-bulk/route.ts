@@ -25,7 +25,7 @@ const requestSchema = z.object({
       y: z.number(),
     })
   ),
-  mode: z.nativeEnum(Mode).default(Mode.Classic),
+  mode: z.nativeEnum(Mode),
 });
 
 export const POST = async (req: NextRequest) => {
@@ -33,12 +33,6 @@ export const POST = async (req: NextRequest) => {
 
   if (!fid) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  const user = await getUserByMode(Number(fid));
-
-  if (!user) {
-    return NextResponse.json({ error: "User not found" }, { status: 404 });
   }
 
   const requestJson = await req.json();
@@ -52,6 +46,12 @@ export const POST = async (req: NextRequest) => {
   }
 
   const { action, itemSlug, cells, mode } = requestBody.data;
+
+  const user = await getUserByMode(Number(fid), mode);
+
+  if (!user) {
+    return NextResponse.json({ error: "User not found" }, { status: 404 });
+  }
 
   try {
     switch (action) {

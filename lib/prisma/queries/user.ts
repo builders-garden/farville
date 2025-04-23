@@ -111,3 +111,19 @@ export const updateUser = async (
 
   return updatedUser;
 };
+
+export const getUser = async (
+  fid: number,
+  includeStatistics = false
+): Promise<User | null> => {
+  const user = await prisma.user.findUnique({
+    where: { fid },
+    include: {
+      statistics: includeStatistics,
+    },
+  });
+
+  if (!user) return null;
+
+  return user;
+};

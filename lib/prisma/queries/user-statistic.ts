@@ -347,3 +347,20 @@ export const updateUserXP = async (
     }
   );
 };
+
+export const createUserStatistic = async (
+  fid: number,
+  mode: Mode = Mode.Classic
+): Promise<UserStatistic> => {
+  const userStatistic = await prisma.userStatistic.create({
+    data: {
+      fid,
+      mode,
+      xp: 0,
+      coins: 0,
+      expansions: 1,
+    },
+  });
+
+  return userStatistic;
+};

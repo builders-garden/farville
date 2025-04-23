@@ -18,6 +18,7 @@ import ExpansionPanel from "./ExpansionPanel";
 import ItemDetailsModal from "./ItemDetailsModal";
 import { useNextStep } from "nextstepjs";
 import { Item } from "@prisma/client";
+import { Mode } from "@/lib/types/game";
 
 // Add new type for selected item details
 type SelectedItemDetails = {
@@ -166,7 +167,7 @@ export default function MarketplaceModal({
           price: (item.sellPrice || 0) * actualQuantity,
         });
       } else {
-        sellItem({ itemId, quantity: 1 });
+        sellItem({ itemId, quantity: 1, mode: Mode.Classic });
       }
     } else {
       // For seeds and perks (buying)
@@ -179,7 +180,7 @@ export default function MarketplaceModal({
           price: (item.buyPrice || 0) * quantity,
         });
       } else {
-        buyItem({ itemId, quantity });
+        buyItem({ itemId, quantity, mode: Mode.Classic });
       }
     }
   };
@@ -415,11 +416,13 @@ export default function MarketplaceModal({
               buyItem({
                 itemId: confirmAction.itemId,
                 quantity: confirmAction.quantity,
+                mode: Mode.Classic,
               });
             } else {
               sellItem({
                 itemId: confirmAction.itemId,
                 quantity: confirmAction.quantity,
+                mode: Mode.Classic,
               });
             }
             setConfirmAction(null);

@@ -180,6 +180,7 @@ function SeedDetailPopup({
 
 export default function GridCell({ cell }: GridCellProps) {
   const {
+    mode,
     addGridOperation,
     // fertilize,
     selectedSeed,
@@ -244,6 +245,7 @@ export default function GridCell({ cell }: GridCellProps) {
         action: ActionType.ApplyPerk,
         itemSlug: boostType,
         cells: [{ x: cell.x, y: cell.y }],
+        mode,
       });
 
       updateGridCells([
@@ -255,6 +257,7 @@ export default function GridCell({ cell }: GridCellProps) {
               getBoostTime(boostType as PerkType)
           ),
           speedBoostedAt: new Date(),
+          mode,
         },
       ]);
 
@@ -302,6 +305,7 @@ export default function GridCell({ cell }: GridCellProps) {
           action: ActionType.ApplyPerk,
           itemSlug: selectedPerk.item.slug as SeedType | PerkType,
           cells: [{ x: cell.x, y: cell.y }],
+          mode,
         });
 
         const itemSlug = selectedPerk.item.slug as PerkType;
@@ -315,6 +319,7 @@ export default function GridCell({ cell }: GridCellProps) {
               new Date(cell.harvestAt!).getTime() - boostTime
             ),
             speedBoostedAt: new Date(),
+            mode,
           },
         ]);
 
@@ -346,6 +351,7 @@ export default function GridCell({ cell }: GridCellProps) {
         addGridOperation({
           action: ActionType.Fertilize,
           cells: [{ x: cell.x, y: cell.y }],
+          mode,
         });
 
         updateGridCells([
@@ -354,6 +360,7 @@ export default function GridCell({ cell }: GridCellProps) {
             y: cell.y,
             harvestAt: new Date(),
             speedBoostedAt: new Date(),
+            mode,
           },
         ]);
 
@@ -387,6 +394,7 @@ export default function GridCell({ cell }: GridCellProps) {
           addGridOperation({
             action: ActionType.Harvest,
             cells: [{ x: cell.x, y: cell.y }],
+            mode,
           });
 
           updateGridCells([
@@ -398,6 +406,7 @@ export default function GridCell({ cell }: GridCellProps) {
               harvestAt: null,
               speedBoostedAt: null,
               isReadyToHarvest: false,
+              mode,
             },
           ]);
 
@@ -434,6 +443,7 @@ export default function GridCell({ cell }: GridCellProps) {
           action: ActionType.Plant,
           itemSlug: selectedSeed,
           cells: [{ x: cell.x, y: cell.y }],
+          mode,
         });
 
         updateGridCells([
@@ -447,6 +457,7 @@ export default function GridCell({ cell }: GridCellProps) {
                 CROP_DATA[selectedSeed.replace("-seeds", "")].growthTime
             ),
             isReadyToHarvest: false,
+            mode,
           },
         ]);
 
@@ -483,6 +494,7 @@ export default function GridCell({ cell }: GridCellProps) {
       addGridOperation({
         action: ActionType.Fertilize,
         cells: [{ x: cell.x, y: cell.y }],
+        mode,
       });
 
       updateGridCells([
@@ -491,6 +503,7 @@ export default function GridCell({ cell }: GridCellProps) {
           y: cell.y,
           harvestAt: new Date(),
           speedBoostedAt: new Date(),
+          mode,
         },
       ]);
 

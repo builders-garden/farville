@@ -445,7 +445,10 @@ export const useGameState = (mode: Mode) => {
 
         updatedCells.forEach((updatedCell) => {
           const index = newGrid.findIndex(
-            (cell) => cell.x === updatedCell.x && cell.y === updatedCell.y
+            (cell) =>
+              cell.x === updatedCell.x &&
+              cell.y === updatedCell.y &&
+              cell.mode === updatedCell.mode
           );
           if (index !== -1) {
             newGrid[index] = { ...newGrid[index], ...updatedCell };

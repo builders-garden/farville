@@ -32,6 +32,7 @@ import {
   UserHarvestedCrop,
   UserHasCollectible,
 } from "@prisma/client";
+import { useInitializeMode } from "@/hooks/game-actions/use-initialize-mode";
 
 // Update the OverlayType to be more flexible with parameters
 export type OverlayConfig =
@@ -136,6 +137,7 @@ interface GameContextType {
       userHasCollectibles: UserHasCollectible | null;
     })[]
   ) => void;
+  initializeMode: (params: { mode: Mode }) => void;
 }
 
 export const GameContext = createContext<GameContextType | null>(null);
@@ -487,6 +489,14 @@ export function GameProvider({
     setIsActionInProgress,
   });
 
+  const { mutate: initializeMode } = useInitializeMode({
+    refetchUser: refetch.user,
+    refetchUserItems: refetch.userItems,
+    refetchUserGrid: refetch.grid,
+    isActionInProgress,
+    setIsActionInProgress,
+  });
+
   if (!state) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -561,6 +571,7 @@ export function GameProvider({
         setNewGoldCropsFound,
         updateUserWeeklyStats,
         updateUserCollectibles,
+        initializeMode,
       }}
     >
       {children}

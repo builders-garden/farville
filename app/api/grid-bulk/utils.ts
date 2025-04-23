@@ -63,14 +63,19 @@ export const plantBulk = async (
   fid: number,
   cells: { x: number; y: number }[],
   seedType: SeedType,
-  mode: Mode = Mode.Classic
+  mode: Mode
 ) => {
-  const userSeeds = await getUserItemBySlug(fid, seedType);
+  const userSeeds = await getUserItemBySlug(fid, seedType, mode);
 
   if (!userSeeds || userSeeds.quantity < cells.length) {
-    return NextResponse.json({ error: "User does not have enough seeds" });
+    return NextResponse.json(
+      { error: "User does not have enough seeds" },
+      {
+        status: 400,
+      }
+    );
   }
-  const gridCells = await getUserGridCells(fid);
+  const gridCells = await getUserGridCells(fid, mode);
 
   const notPlantedCells: (UserGridCell | undefined)[] = [];
   const plantableCells: UserGridCell[] = [];
@@ -97,7 +102,12 @@ export const plantBulk = async (
 
   // TODO: add different track
   if (updatedGridCellsBulk.length > 0) {
-    await removeUserItem(fid, userSeeds.itemId, updatedGridCellsBulk.length);
+    await removeUserItem(
+      fid,
+      userSeeds.itemId,
+      updatedGridCellsBulk.length,
+      mode
+    );
 
     await sendDelayedNotification(
       fid.toString(),
@@ -110,7 +120,8 @@ export const plantBulk = async (
       fid,
       "plant",
       userSeeds.itemId,
-      updatedGridCellsBulk.length
+      updatedGridCellsBulk.length,
+      mode
     );
     await sendBatchToPostHog(
       fid,
@@ -135,9 +146,9 @@ export const plantBulk = async (
 export const harvestBulk = async (
   fid: number,
   cells: { x: number; y: number }[],
-  mode: Mode = Mode.Classic
+  mode: Mode
 ) => {
-  const gridCells = await getUserGridCells(fid);
+  const gridCells = await getUserGridCells(fid, mode);
   const harvestableCells = [];
   const notHarvestableCells = [];
 
@@ -176,7 +187,7 @@ export const harvestBulk = async (
       speedBoostedAt: null,
     }))
   );
-  const rewards = await rewardUserBulk(fid, crops);
+  const rewards = await rewardUserBulk(fid, crops, mode);
 
   // update user items based on the rewards for each type of crop
   const harvestCropSummary: {
@@ -238,7 +249,7 @@ export const harvestBulk = async (
 
     const regularCropAmount = amount - goldCropCount;
     if (regularCropAmount > 0) {
-      await addUserItem(fid, CROP_DATA[cropType].id, regularCropAmount);
+      await addUserItem(fid, CROP_DATA[cropType].id, regularCropAmount, mode);
     }
 
     await upsertUserHarvestedCrop(fid, cropType, amount);
@@ -246,7 +257,8 @@ export const harvestBulk = async (
       fid,
       ActionType.Harvest,
       CROP_DATA[cropType].id,
-      amount
+      amount,
+      mode
     );
   }
 
@@ -278,7 +290,8 @@ export const harvestBulk = async (
 
 const rewardUserBulk = async (
   fid: number,
-  crops: { crop: string; x: number; y: number; xp: number }[]
+  crops: { crop: string; x: number; y: number; xp: number }[],
+  mode: Mode
 ) => {
   const cropsWithRewards = crops.map((crop) => {
     const roll = Math.random();
@@ -289,7 +302,7 @@ const rewardUserBulk = async (
     };
   });
   const totalXp = cropsWithRewards.reduce((acc, crop) => acc + crop.xp, 0);
-  const updateResult = await updateUserXP(fid, totalXp);
+  const updateResult = await updateUserXP(fid, totalXp, mode);
   await updateUserWeeklyScore(
     fid,
     totalXp,
