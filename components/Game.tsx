@@ -85,9 +85,7 @@ export default function Game({
               className="bg-[#FFB938] text-[#7E4E31] px-4 py-2 rounded-lg font-bold 
                  hover:bg-[#ffc661] transition-colors"
               onClick={() => {
-                sdk.actions.openUrl(
-                  "https://warpcast.com/~/inbox/create/5698?text=Hey%21%20I%20have%20this%20issue%20on%20Farville%3A"
-                );
+                sdk.actions.openUrl("https://warpcast.com/~/inbox/create/5698");
               }}
             >
               Contact Support
