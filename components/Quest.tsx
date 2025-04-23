@@ -1,6 +1,6 @@
 import { useGame } from "@/context/GameContext";
 import { useUpdateUserQuest } from "@/hooks/game-actions/use-update-user-quest";
-import { getUserNowDate, requestItemComposeCastUrl } from "@/lib/utils";
+import { requestItemComposeCastUrl } from "@/lib/utils";
 import {
   DbQuest,
   DbQuestWithItem,
