@@ -67,8 +67,8 @@ interface GameContextType {
   //   y: number;
   //   setIsLoading: Dispatch<SetStateAction<boolean>>;
   // }) => void;
-  buyItem: (params: { itemId: number; quantity: number }) => void;
-  sellItem: (params: { itemId: number; quantity: number }) => void;
+  buyItem: (params: { itemId: number; quantity: number; mode: Mode }) => void;
+  sellItem: (params: { itemId: number; quantity: number; mode: Mode }) => void;
   expandGrid: () => void;
   refetchState: () => Promise<void>;
   refetchUser: () => Promise<void>;
@@ -147,7 +147,7 @@ export function GameProvider({
   children: React.ReactNode;
   initialOverlay?: OverlayConfig;
 }) {
-  const [mode, setMode] = useState<Mode>(Mode.Farcon);
+  const [mode, setMode] = useState<Mode>(Mode.Classic);
   const [showInventory, setShowInventory] = useState(false);
   const [showMarket, setShowMarket] = useState(false);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
@@ -169,7 +169,7 @@ export function GameProvider({
     updateUserHarvestedCrops,
     updateUserWeeklyStats,
     updateUserCollectibles,
-  } = useGameState();
+  } = useGameState(mode);
   const [selectedSeed, setSelectedSeed] = useState<SeedType | null>(null);
   const [selectedPerk, setSelectedPerk] = useState<UserItem | null>(null);
   const [isActionInProgress, setIsActionInProgress] = useState(false);
@@ -265,6 +265,7 @@ export function GameProvider({
     }
   }, [gridBulkOperations, sendGridBulkOperations, toastIds]);
 
+  // TODO: need to update this to use the Mode
   const updateUserItemsStateFromReward = (
     rewards: {
       crop: string;

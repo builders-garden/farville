@@ -1,5 +1,5 @@
 import { MAX_FROSTS_QUANTITY } from "@/lib/game-constants";
-import { PerkType, SpecialItemType } from "@/lib/types/game";
+import { Mode, PerkType, SpecialItemType } from "@/lib/types/game";
 import {
   addUserItem,
   getItemById,
@@ -12,9 +12,10 @@ import {
 export const buyItem = async (
   fid: number,
   itemId: number,
-  quantity: number
+  quantity: number,
+  mode: Mode
 ) => {
-  const user = await getUserByMode(fid);
+  const user = await getUserByMode(fid, mode);
   if (!user) {
     return {
       success: false,
@@ -43,7 +44,7 @@ export const buyItem = async (
 
   // frosts quantity cannot exceed MAX_FROSTS_QUANTITY at the same time
   if (item.slug === SpecialItemType.Frost) {
-    const userFrost = await getUserItemByItemId(user.fid, itemId);
+    const userFrost = await getUserItemByItemId(user.fid, itemId, mode);
     if (
       (userFrost && userFrost.quantity + quantity > MAX_FROSTS_QUANTITY) ||
       quantity > MAX_FROSTS_QUANTITY
@@ -64,17 +65,18 @@ export const buyItem = async (
     };
   }
 
-  await addUserItem(user.fid, itemId, quantity);
-  await updateUserCoins(user.fid, user.coins - item.buyPrice * quantity);
+  await addUserItem(user.fid, itemId, quantity, mode);
+  await updateUserCoins(user.fid, user.coins - item.buyPrice * quantity, mode);
   return { success: true };
 };
 
 export const sellItem = async (
   fid: number,
   itemId: number,
-  quantity: number
+  quantity: number,
+  mode: Mode
 ) => {
-  const user = await getUserByMode(fid);
+  const user = await getUserByMode(fid, mode);
   if (!user) {
     return { success: false, message: "User not found", status: 404 };
   }
@@ -93,7 +95,7 @@ export const sellItem = async (
     };
   }
 
-  const userItem = await getUserItemByItemId(user.fid, itemId);
+  const userItem = await getUserItemByItemId(user.fid, itemId, mode);
   if (!userItem) {
     return {
       success: false,
@@ -110,7 +112,7 @@ export const sellItem = async (
     };
   }
 
-  await removeUserItem(user.fid, itemId, quantity);
-  await updateUserCoins(user.fid, user.coins + item.sellPrice * quantity);
+  await removeUserItem(user.fid, itemId, quantity, mode);
+  await updateUserCoins(user.fid, user.coins + item.sellPrice * quantity, mode);
   return { success: true };
 };

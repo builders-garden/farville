@@ -20,6 +20,7 @@ import {
   UserHasCollectible,
   Item,
 } from "@prisma/client";
+import { Mode } from "@/lib/types/game";
 
 export interface RefetchType {
   all: () => Promise<void>;
@@ -78,7 +79,7 @@ export interface GameState {
   showMarketplaceTutorial: boolean;
 }
 
-export const useGameState = () => {
+export const useGameState = (mode: Mode) => {
   const [state, setState] = useState<GameState>({
     coins: 0,
     level: 0,
@@ -124,19 +125,23 @@ export const useGameState = () => {
     userItems,
     isLoading: userItemsLoading,
     refetch: refetchUserItems,
-  } = useUserItems();
-  const { user, isLoading: userLoading, refetch: refetchUser } = useUserMe();
+  } = useUserItems(mode);
+  const {
+    user,
+    isLoading: userLoading,
+    refetch: refetchUser,
+  } = useUserMe(mode);
   const {
     gridCells,
     isLoading: gridCellsLoading,
     refetch: refetchGrid,
-  } = useGridCells();
+  } = useGridCells(mode);
   const { items, isLoading: itemsLoading, refetch: refetchItems } = useItems();
   const {
     quests: completedQuests,
     isLoading: completedQuestsLoading,
     refetch: refetchClaimableQuests,
-  } = useUserQuests(state?.user?.fid, "completed");
+  } = useUserQuests(state?.user?.fid, "completed", mode);
   const {
     userStreaks,
     isLoading: streaksLoading,
@@ -164,7 +169,7 @@ export const useGameState = () => {
     userWeeklyStats,
     isLoading: weeklyStatsLoading,
     refetch: refetchWeeklyStats,
-  } = useWeeklyStats(state?.user?.fid);
+  } = useWeeklyStats(mode, state?.user?.fid);
 
   const {
     userCollectibles,
@@ -426,6 +431,10 @@ export const useGameState = () => {
     refetchUserCollectibles,
   ]);
 
+  useEffect(() => {
+    refetchAll();
+  }, [mode, refetchAll]);
+
   // Add new method to update grid cells directly
   const updateGridCells = useCallback(
     (updatedCells: Partial<UserGridCell>[]) => {
@@ -625,6 +634,8 @@ export const useGameState = () => {
     },
     []
   );
+
+  console.log("GameState", state);
 
   return {
     state,

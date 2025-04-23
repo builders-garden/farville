@@ -1,14 +1,15 @@
 import { QuestWithItem, UserHasQuestWithQuest } from "@/lib/prisma/types";
 import { useApiQuery } from "./use-api-query";
+import { Mode } from "@/lib/types/game";
 
-export const useQuests = () => {
+export const useQuests = (mode: Mode) => {
   const {
     data: allQuests,
     isLoading: isLoadingAll,
     refetch: refetchAll,
   } = useApiQuery<QuestWithItem[]>({
-    queryKey: ["quests"],
-    url: "/api/quests",
+    queryKey: ["quests", mode],
+    url: `/api/quests?mode=${mode}`,
     isProtected: true,
   });
 
@@ -33,10 +34,10 @@ export const useQuests = () => {
   };
 };
 
-export const useQuest = (id: number) => {
+export const useQuest = (id: number, mode: Mode) => {
   const { data, isLoading, refetch } = useApiQuery<QuestWithItem | null>({
-    queryKey: ["quests", id],
-    url: `/api/quests/${id}`,
+    queryKey: ["quests", id, mode],
+    url: `/api/quests/${id}?mode=${mode}`,
     isProtected: true,
   });
 
@@ -47,7 +48,11 @@ export const useQuest = (id: number) => {
   };
 };
 
-export const useUserQuests = (fid: number | undefined, status: string) => {
+export const useUserQuests = (
+  fid: number | undefined,
+  status: string,
+  mode: Mode
+) => {
   const {
     data: quests,
     isLoading,
@@ -56,10 +61,10 @@ export const useUserQuests = (fid: number | undefined, status: string) => {
     daily: UserHasQuestWithQuest[];
     weekly: UserHasQuestWithQuest[];
   }>({
-    queryKey: ["users", fid, "quests", status],
+    queryKey: ["users", fid, "quests", status, mode],
     url: `/api/users/${fid}/quests?status=${status}&activeToday=${
       status === "incomplete" ? "true" : "false"
-    }`,
+    }&mode=${mode}`,
     isProtected: true,
     enabled: !!fid,
     staleTime: 30000,
@@ -72,11 +77,15 @@ export const useUserQuests = (fid: number | undefined, status: string) => {
   };
 };
 
-export const useUserQuest = (fid: number | undefined, questId: number) => {
+export const useUserQuest = (
+  fid: number | undefined,
+  questId: number,
+  mode: Mode
+) => {
   const { data, isLoading, refetch } =
     useApiQuery<UserHasQuestWithQuest | null>({
-      queryKey: ["users", fid, "quests", questId],
-      url: `/api/users/${fid}/quests/${questId}`,
+      queryKey: ["users", fid, "quests", questId, mode],
+      url: `/api/users/${fid}/quests/${questId}?mode=${mode}`,
       isProtected: true,
       enabled: !!fid,
     });

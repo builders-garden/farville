@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import { useUserCollectibles } from "./use-user-collectibles";
 import { UserHarvestedCrop } from "@prisma/client";
 import { UserCompleteCollectible, UserWithStatistic } from "@/lib/prisma/types";
+import { Mode } from "@/lib/types/game";
 
 interface OtherUserProfileData {
   user: UserWithStatistic | undefined;
@@ -18,12 +19,15 @@ interface OtherUserProfileData {
   collectibles: UserCompleteCollectible[] | undefined;
 }
 
-export function useOtherUserProfile(fid?: number): {
+export function useOtherUserProfile(
+  mode: Mode = Mode.Classic,
+  fid?: number
+): {
   userData: OtherUserProfileData;
   isLoading: boolean;
 } {
   const { user, isLoading: userLoading } = useUser({ fid });
-  const { userItems, isLoading: userItemsLoading } = useUserItems(fid);
+  const { userItems, isLoading: userItemsLoading } = useUserItems(mode, fid);
   const { userHarvestedCrops, isLoading: isUserHarvestedCropsLoading } =
     useUserHarvestedCrops(fid);
   const { userStreaks, isLoading: streaksLoading } = useUserStreaks(fid);

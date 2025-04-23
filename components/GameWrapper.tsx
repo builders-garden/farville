@@ -135,6 +135,7 @@ const FARCON_BACKGROUND_COLOR = "#2a1043";
 // Add new container component
 function QuestsModalContainer() {
   const {
+    mode,
     state,
     showQuests,
     setShowQuests,
@@ -146,7 +147,7 @@ function QuestsModalContainer() {
     quests: incompleteQuests,
     isLoading: isLoadingIncompleteQuests,
     refetch: refetchIncompleteQuests,
-  } = useUserQuests(state?.user?.fid, "incomplete");
+  } = useUserQuests(state?.user?.fid, "incomplete", mode);
 
   useEffect(() => {
     if (showQuests) {
@@ -254,10 +255,7 @@ export default function GameWrapper() {
     <div className="relative z-10">
       {activeOverlay?.type === "requests" && (
         <AnimatePresence>
-          <RequestModal
-            onClose={handleOverlayComplete}
-            id={activeOverlay.id}
-          />
+          <RequestModal onClose={handleOverlayComplete} id={activeOverlay.id} />
         </AnimatePresence>
       )}
 
@@ -281,10 +279,7 @@ export default function GameWrapper() {
           className="flex flex-col h-[100dvh] w-full overflow-hidden"
         >
           <Header />
-          <div
-            className="flex-1 relative min-h-0"
-            id="game-grid"
-          >
+          <div className="flex-1 relative min-h-0" id="game-grid">
             <GameGrid />
           </div>
           <Toolbar safeAreaInsets={safeAreaInsets} />

@@ -26,9 +26,11 @@ export const getUserByMode = async (
   }
 
   return {
-    ...user,
     ...user.user,
+    xp: user.xp,
+    coins: user.coins,
     mode: user.mode as Mode,
+    expansions: user.expansions,
     notificationDetails:
       typeof user.user.notificationDetails === "string" &&
       user.user.notificationDetails !== ""
@@ -36,6 +38,7 @@ export const getUserByMode = async (
             user.user.notificationDetails
           ) as FrameNotificationDetails)
         : null,
+    createdAt: user.createdAt,
   };
 };
 

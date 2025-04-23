@@ -1,10 +1,11 @@
 import { UserGridCell } from "@prisma/client";
 import { useApiQuery } from "./use-api-query";
+import { Mode } from "@/lib/types/game";
 
-export const useGridCells = () => {
+export const useGridCells = (mode: Mode) => {
   const { data, isLoading, refetch } = useApiQuery<UserGridCell[]>({
-    queryKey: ["gridCells"],
-    url: "/api/grid-cells",
+    queryKey: ["gridCells", mode],
+    url: `/api/grid-cells?mode=${mode}`,
     isProtected: true,
   });
 

@@ -7,6 +7,7 @@ import { NewAchievementReached } from "./modals/NewAchievementReached";
 import SeedMenu from "./SeedMenu";
 import MintOgModal from "./modals/MintOgModal";
 import MintCollectibleModal from "./modals/mint-collectible-modal";
+import { Card, CardContent } from "./ui/card";
 
 export default function GameGrid() {
   const {
@@ -62,10 +63,23 @@ export default function GameGrid() {
           gridTemplateRows: `repeat(${state.gridSize.height}, 1fr)`,
         }}
       >
-        {grid.map((row) =>
-          row.map((cell) => (
-            <GridCell key={`${cell.fid}-${cell.x}-${cell.y}`} cell={cell} />
-          ))
+        {grid.length > 0 ? (
+          grid.map((row) =>
+            row.map((cell) => (
+              <GridCell key={`${cell.fid}-${cell.x}-${cell.y}`} cell={cell} />
+            ))
+          )
+        ) : (
+          <div className="flex items-center justify-center col-span-full">
+            <Card className="w-full max-w-[400px] p-4">
+              <CardContent>
+                <p className="text-center text-sm text-gray-500">
+                  You are not inside Farcon mode yet. Please click below to see
+                  if you are eligible to play in this modality.
+                </p>
+              </CardContent>
+            </Card>
+          </div>
         )}
       </div>
       <div className="w-full overflow-x-auto">

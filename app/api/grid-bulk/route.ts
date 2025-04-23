@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { SeedType, PerkType, ActionType } from "@/lib/types/game";
+import { SeedType, PerkType, ActionType, Mode } from "@/lib/types/game";
 import { fertilizeBulk, harvestBulk, perkBulk, plantBulk } from "./utils";
 import { z } from "zod";
 import { getUserByMode } from "@/lib/prisma/queries";
@@ -11,6 +11,7 @@ export interface GridBulkRequest {
     x: number;
     y: number;
   }[];
+  mode: Mode;
 }
 
 const requestSchema = z.object({
@@ -24,6 +25,7 @@ const requestSchema = z.object({
       y: z.number(),
     })
   ),
+  mode: z.nativeEnum(Mode).default(Mode.Classic),
 });
 
 export const POST = async (req: NextRequest) => {
@@ -49,7 +51,7 @@ export const POST = async (req: NextRequest) => {
     );
   }
 
-  const { action, itemSlug, cells } = requestBody.data;
+  const { action, itemSlug, cells, mode } = requestBody.data;
 
   try {
     switch (action) {
@@ -69,14 +71,15 @@ export const POST = async (req: NextRequest) => {
         const plantResult = await plantBulk(
           Number(fid),
           cells,
-          itemSlug as SeedType
+          itemSlug as SeedType,
+          mode
         );
         return NextResponse.json({
           success: true,
           data: plantResult,
         });
       case ActionType.Harvest:
-        const harvestResult = await harvestBulk(Number(fid), cells);
+        const harvestResult = await harvestBulk(Number(fid), cells, mode);
         return NextResponse.json({
           success: true,
           data: harvestResult,
