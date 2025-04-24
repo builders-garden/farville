@@ -1,6 +1,6 @@
 import { useAudio } from "@/context/AudioContext";
 import { useApiMutation } from "@/hooks/use-api-mutation";
-import { Mode } from "@/lib/types/game";
+import { MarketActionType, Mode } from "@/lib/types/game";
 
 interface BuyItemVariables {
   itemId: number;
@@ -24,7 +24,7 @@ export const useBuyItem = ({
   return useApiMutation<unknown, BuyItemVariables>({
     url: ({ itemId }) => `/api/users/me/items/${itemId}`,
     body: ({ itemId, quantity, mode }) => ({
-      action: "buy",
+      action: MarketActionType.Buy,
       itemId,
       quantity,
       mode,

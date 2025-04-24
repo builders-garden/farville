@@ -11,6 +11,7 @@ import { useFrameContext } from "@/context/FrameContext";
 import { useGame } from "@/context/GameContext";
 import {
   FROST_COST,
+  GAME_ITEMS,
   MAX_FROSTS_QUANTITY,
   MONTHLY_REWARDS,
 } from "@/lib/game-constants";
@@ -27,6 +28,7 @@ import ConfirmationModal from "./modals/ConfirmationModal";
 import InfoModal from "./modals/InfoModal";
 import sdk from "@farcaster/frame-sdk";
 import { FloatingShareButton } from "./FloatingShareButton";
+import { Mode } from "@/lib/types/game";
 
 interface StreakReward {
   day: number;
@@ -47,6 +49,7 @@ export default function StreaksModal({ onClose }: { onClose: () => void }) {
     claimRewards,
     buyItem,
     isActionInProgress: isClaimInProgress,
+    mode,
   } = useGame();
   const [rewards, setRewards] = useState<StreakReward[]>([]);
   const [activeReward, setActiveReward] = useState<StreakReward | undefined>(
@@ -418,16 +421,24 @@ export default function StreaksModal({ onClose }: { onClose: () => void }) {
             <ConfirmationModal
               title="Buy Streaks Frosts"
               message={
-                state.user.coins >= FROST_COST
+                mode !== Mode.Classic
+                  ? "Streak Frosts are not available in this mode. Switch to Classic mode to buy them."
+                  : state.user.coins >= FROST_COST
                   ? `Do you want to buy a Streak Frost for ${FROST_COST}🪙 coins?`
                   : `You don't have enough coins to buy a Streak Frost. One costs ${FROST_COST}🪙 coins.`
               }
               onCancel={() => setIsConfirmationOpen(false)}
               onConfirm={() => {
-                buyItem({ itemId: 29, quantity: 1 });
+                buyItem({
+                  itemId: GAME_ITEMS.find((item) => item.slug === "frost")!.id,
+                  quantity: 1,
+                  mode: Mode.Classic,
+                });
                 setIsConfirmationOpen(false);
               }}
-              confirmDisabled={state.user.coins < FROST_COST}
+              confirmDisabled={
+                state.user.coins < FROST_COST || mode !== Mode.Classic
+              }
             />
           )}
           <div className="flex flex-col w-full gap-1 p-4 pt-4 pb-4">

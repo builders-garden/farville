@@ -61,7 +61,8 @@ function extractTimelineData(items: Item[]): TimelineData[] {
 export default function TimelineModal({ onClose }: { onClose: () => void }) {
   const { safeAreaInsets } = useFrameContext();
   const [timelineData, setTimelineData] = useState<TimelineData[]>([]);
-  const { user, isLoading: isLoadingUser } = useUserMe();
+  const { state, mode } = useGame();
+  const { user, isLoading: isLoadingUser } = useUserMe(mode);
   const [userStats, setUserStats] = useState<
     | {
         level: number;
@@ -69,8 +70,6 @@ export default function TimelineModal({ onClose }: { onClose: () => void }) {
       }
     | undefined
   >(undefined);
-
-  const { state } = useGame();
 
   useEffect(() => {
     if (state.items) {

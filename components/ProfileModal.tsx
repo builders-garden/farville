@@ -53,6 +53,7 @@ export default function ProfileModal({
     setShowMintCollectible,
     newGoldCropsFound,
     setNewGoldCropsFound,
+    mode,
   } = useGame();
   const [isWhatIsThisOpen, setIsWhatIsThisOpen] = useState(false);
   const [isWhatIsThisCollectibleOpen, setIsWhatIsCollectibleThisOpen] =
@@ -64,7 +65,7 @@ export default function ProfileModal({
     null
   );
 
-  const { userData, isLoading } = useOtherUserProfile(userFid);
+  const { userData, isLoading } = useOtherUserProfile(mode, userFid);
 
   const isCurrentUser = !userFid || userFid === state.user.fid;
   const user = isCurrentUser ? state.user : userData?.user;

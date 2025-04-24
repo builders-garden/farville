@@ -33,12 +33,24 @@ export const getUserItems = async (
   const userItems = await prisma.userHasItem.findMany({
     where: {
       fid,
-      mode,
-      ...(category && {
-        item: {
-          category,
+      OR: [
+        {
+          mode,
+          ...(category && {
+            item: {
+              category,
+            },
+          }),
         },
-      }),
+        {
+          mode: Mode.Classic,
+          item: {
+            category: {
+              in: ["special", "special-crop"],
+            },
+          },
+        },
+      ],
     },
     include: {
       item: true,
