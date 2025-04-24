@@ -53,6 +53,12 @@ export const useUserQuests = (
   status: string,
   mode: Mode
 ) => {
+  const url = fid
+    ? `/api/users/${fid}/quests?status=${status}&activeToday=${
+        status === "incomplete" ? "true" : "false"
+      }&mode=${mode}`
+    : "";
+
   const {
     data: quests,
     isLoading,
@@ -62,9 +68,7 @@ export const useUserQuests = (
     weekly: UserHasQuestWithQuest[];
   }>({
     queryKey: ["users", fid, "quests", status, mode],
-    url: `/api/users/${fid}/quests?status=${status}&activeToday=${
-      status === "incomplete" ? "true" : "false"
-    }&mode=${mode}`,
+    url,
     isProtected: true,
     enabled: !!fid,
     staleTime: 30000,

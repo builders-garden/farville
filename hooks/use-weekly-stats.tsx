@@ -3,7 +3,9 @@ import { useApiQuery } from "./use-api-query";
 import { Mode } from "@/lib/types/game";
 
 export const useWeeklyStats = (mode: Mode, targetFid?: number) => {
-  const url = `/api/weekly-leaderboard/${targetFid}?mode=${mode}`;
+  const url = targetFid
+    ? `/api/weekly-leaderboard/${targetFid}?mode=${mode}`
+    : "";
 
   const { data, isLoading, refetch } = useApiQuery<UserLeaderboardEntry>({
     url,

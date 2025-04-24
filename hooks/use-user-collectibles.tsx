@@ -2,7 +2,7 @@ import { Collectible, UserHasCollectible } from "@prisma/client";
 import { useApiQuery } from "./use-api-query";
 
 export const useUserCollectibles = (targetFid?: number) => {
-  const url = `/api/users/${targetFid}/collectibles`;
+  const url = targetFid ? `/api/users/${targetFid}/collectibles` : "";
 
   const { data, isLoading, refetch } = useApiQuery<
     (Collectible & { userHasCollectibles: UserHasCollectible | null })[]
