@@ -28,51 +28,51 @@ export const calculateUserQuestsProgress = async (
   }
 
   // Filter eligible quests and process updates
-  const questUpdates = await Promise.all(
-    quests
-      .filter(
-        (quest) =>
-          quest.quest && (!quest.quest.itemId || quest.quest.itemId === itemId)
-      )
-      .map(async (quest) => {
-        return prisma.$transaction(async (tx) => {
-          // Get current progress and increment it atomically
-          const updated = await tx.userHasQuest.update({
-            where: {
-              fid_questId_mode: {
-                fid,
-                mode: Mode.Classic,
-                questId: quest.questId,
-              },
-            },
-            data: {
-              progress: {
-                increment: itemAmount,
-              },
-            },
-          });
+  const questUpdates = [];
 
-          // If completed, update the status in the same transaction
-          if (updated.progress >= (quest.quest!.amount || 1)) {
-            return tx.userHasQuest.update({
-              where: {
-                fid_questId_mode: {
-                  fid,
-                  mode: Mode.Classic,
-                  questId: quest.questId,
-                },
-              },
-              data: {
-                status: QuestStatus.Completed,
-                completedAt: new Date(),
-              },
-            });
-          }
+  for (const quest of quests.filter(
+    (quest) =>
+      quest.quest && (!quest.quest.itemId || quest.quest.itemId === itemId)
+  )) {
+    const result = await prisma.$transaction(async (tx) => {
+      // Get current progress and increment it atomically
+      const updated = await tx.userHasQuest.update({
+        where: {
+          fid_questId_mode: {
+            fid,
+            mode: Mode.Classic,
+            questId: quest.questId,
+          },
+        },
+        data: {
+          progress: {
+            increment: itemAmount,
+          },
+        },
+      });
 
-          return updated;
+      // If completed, update the status in the same transaction
+      if (updated.progress >= (quest.quest!.amount || 1)) {
+        return tx.userHasQuest.update({
+          where: {
+            fid_questId_mode: {
+              fid,
+              mode: Mode.Classic,
+              questId: quest.questId,
+            },
+          },
+          data: {
+            status: QuestStatus.Completed,
+            completedAt: new Date(),
+          },
         });
-      })
-  );
+      }
+
+      return updated;
+    });
+
+    questUpdates.push(result);
+  }
 
   return questUpdates;
 };

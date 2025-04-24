@@ -16,8 +16,6 @@ export async function GET(request: NextRequest) {
   if (!fid) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
-  const { searchParams } = new URL(request.url);
-  const userLocalDate = searchParams.get("userLocalDate")!;
 
   // generate new entry inside the user leaderboard if it doesn't exist
   let weeklyUserLeaderboard = await getUserLeaderboardEntry(Number(fid));
@@ -38,12 +36,10 @@ export async function GET(request: NextRequest) {
   const dailyQuests = await getUserHasQuests(Number(fid), Mode.Classic, {
     type: [QuestType.Daily],
     activeToday: true,
-    timeToCompare: new Date(userLocalDate),
   });
   const weeklyQuests = await getUserHasQuests(Number(fid), Mode.Classic, {
     type: [QuestType.Weekly],
     activeToday: true,
-    timeToCompare: new Date(userLocalDate),
   });
   if (!dailyQuests || dailyQuests?.length === 0) {
     await initDailyUserQuests(Number(fid));

@@ -21,7 +21,7 @@ import { getUserHasQuests } from "@/lib/prisma/queries";
 import { Mode, QuestType } from "@/lib/types/game";
 
 export const POST = async (req: NextRequest) => {
-  const { fid, referrerFid, signature, message, userNow } = await req.json();
+  const { fid, referrerFid, signature, message } = await req.json();
 
   let user = await getUserByMode(fid);
 
@@ -88,10 +88,10 @@ export const POST = async (req: NextRequest) => {
   const dailyQuests = await getUserHasQuests(fid, Mode.Classic, {
     type: [QuestType.Daily],
     activeToday: true,
-    timeToCompare: userNow,
   });
   const weeklyQuests = await getUserHasQuests(Number(fid), Mode.Classic, {
     type: [QuestType.Weekly],
+    activeToday: true,
   });
   if (!dailyQuests || dailyQuests?.length === 0) {
     await initDailyUserQuests(Number(fid));

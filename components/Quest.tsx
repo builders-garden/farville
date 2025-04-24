@@ -1,6 +1,6 @@
 import { useGame } from "@/context/GameContext";
 import { useUpdateUserQuest } from "@/hooks/game-actions/use-update-user-quest";
-import { getUserNowDate, requestItemComposeCastUrl } from "@/lib/utils";
+import { requestItemComposeCastUrl } from "@/lib/utils";
 import { QuestStatus } from "@/lib/types/game";
 import { motion } from "framer-motion";
 import Image from "next/image";
@@ -55,7 +55,10 @@ const renderQuestRewards = (
     </div>
 
     {showRequestButton && (
-      <RequestButton variant="secondary" onClick={onRequestClick} />
+      <RequestButton
+        variant="secondary"
+        onClick={onRequestClick}
+      />
     )}
   </div>
 );
@@ -262,7 +265,7 @@ export default function Quest({
                 Ends in:{" "}
                 {(() => {
                   const endTime = new Date(quest.quest.endAt).getTime();
-                  const timeRemaining = endTime - getUserNowDate().getTime();
+                  const timeRemaining = endTime - new Date().getTime();
                   if (timeRemaining <= 0) return "";
 
                   const SECOND = 1000;

@@ -22,7 +22,9 @@ export const getUserHasQuests = async (
   filters: QuestFilters = {},
   includes: QuestIncludes = { quest: true }
 ) => {
-  const timeToCompare = filters.timeToCompare || new Date();
+  const midnightUtc = new Date();
+  midnightUtc.setUTCHours(0, 0, 0, 0);
+  const timeToCompare = filters.timeToCompare || midnightUtc;
 
   const questWhere: Prisma.QuestWhereInput = {};
   const whereClause: Prisma.UserHasQuestWhereInput = {
