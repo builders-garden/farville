@@ -10,8 +10,6 @@ import { useFrameContext } from "../context/FrameContext";
 import { useGame } from "../context/GameContext";
 import Header from "./Header";
 import InventoryModal from "./InventoryModal";
-import LeaderboardModal from "./LeaderboardModal";
-import MarketplaceModal from "./MarketplaceModal";
 // import toast from "react-hot-toast";
 // import PatchNotesModal from "./PatchNotesModal";
 import PerkIndicator from "./PerkIndicator";
@@ -20,10 +18,12 @@ import ProfileModal from "./ProfileModal";
 import QuestsModal from "./QuestsModal";
 import RequestModal from "./RequestModal";
 import SeedMenu from "./SeedMenu";
-import SettingsModal from "./SettingsModal";
+import HelpModal from "./help";
 import StreaksModal from "./StreaksModal";
 import TimelineModal from "./TimelineModal";
 import Toolbar from "./Toolbar";
+import MarketplaceModal from "./marketplace";
+import LeaderboardModal from "./leaderboard";
 
 // const WelcomeOverlay = dynamic(() => import("./../components/WelcomeOverlay"), {
 //   ssr: false,
@@ -75,13 +75,12 @@ function MarketplaceModalContainer() {
   );
 }
 
-// New container component for the settings modal
-function SettingsModalContainer() {
-  const { showSettings, setShowSettings } = useGame();
+function HelpModalContainer() {
+  const { showHelp, setShowHelp } = useGame();
 
   return (
     <AnimatePresence>
-      {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
+      {showHelp && <HelpModal onClose={() => setShowHelp(false)} />}
     </AnimatePresence>
   );
 }
@@ -181,13 +180,7 @@ function TimelineModalContainer() {
 
 export default function GameWrapper() {
   const { startBackgroundMusic } = useAudio();
-  const {
-    state,
-    activeOverlay,
-    setActiveOverlay,
-    showMintCollectible,
-    loading,
-  } = useGame();
+  const { state, activeOverlay, setActiveOverlay } = useGame();
   const { safeAreaInsets } = useFrameContext();
   // const [showPatchNotes, setShowPatchNotes] = useState(false);
   // const toastShownRef = useRef(false);
@@ -200,15 +193,10 @@ export default function GameWrapper() {
   const { startNextStep } = useNextStep();
 
   useEffect(() => {
-    if (state.showGridCellsTutorial && !loading && !showMintCollectible) {
+    if (state.showGridCellsTutorial) {
       startNextStep("mainTour");
     }
-  }, [
-    loading,
-    showMintCollectible,
-    startNextStep,
-    state.showGridCellsTutorial,
-  ]);
+  }, [startNextStep, state.showGridCellsTutorial]);
 
   // useEffect(() => {
   //   if (!toastShownRef.current) {
@@ -281,7 +269,7 @@ export default function GameWrapper() {
           <InventoryModalContainer />
           <StreaksModalContainer />
           <MarketplaceModalContainer />
-          <SettingsModalContainer />
+          <HelpModalContainer />
           <ProfileModalContainer />
           <LeaderboardModalContainer />
           <SeedMenuContainer />

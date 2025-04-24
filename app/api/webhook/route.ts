@@ -1,11 +1,10 @@
 import { fetchUser } from "@/lib/neynar";
 import { sendFrameNotification } from "@/lib/notifs";
 import { trackEvent } from "@/lib/posthog/server";
+import { createUser, getUser } from "@/lib/prisma/queries";
 import {
   setUserNotificationDetails,
   deleteUserNotificationDetails,
-  getUser,
-  createUser,
 } from "@/supabase/queries";
 import {
   ParseWebhookEvent,
@@ -77,7 +76,7 @@ export async function POST(request: NextRequest) {
         }
         await sendFrameNotification({
           fid,
-          title: "Welcome to FarVille 🧑‍🌾",
+          title: "Welcome to Farville 🧑‍🌾",
           body: "Plant, grow, and harvest your crops to earn rewards!",
         });
       } else {
@@ -92,7 +91,7 @@ export async function POST(request: NextRequest) {
       await sendFrameNotification({
         fid,
         title: "Ding ding ding",
-        body: "Notifications for FarVille are now enabled",
+        body: "Notifications for Farville are now enabled",
       });
       break;
     case "notifications_disabled":

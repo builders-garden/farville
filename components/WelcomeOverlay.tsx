@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 import { useAudio } from "../context/AudioContext";
 import { useState, useEffect } from "react";
-import { GridCell as GridCellType, Crop, CropType } from "../types/game";
+import { GridCell as GridCellType, Crop, CropType } from "../lib/types/game";
 import CropSprite from "./CropSprite";
 import Image from "next/image";
 import sdk from "@farcaster/frame-sdk";
@@ -19,7 +19,10 @@ import { WHITELISTED_FIDS } from "../lib/whitelist";
 function DemoCropSprite({ crop }: { crop?: Crop }) {
   return (
     <>
-      <CropSprite crop={crop} isDemo={true} />
+      <CropSprite
+        crop={crop}
+        isDemo={true}
+      />
     </>
   );
 }
@@ -251,10 +254,10 @@ export default function WelcomeOverlay({
 
       {/* Content container */}
       <div className="relative z-20 flex flex-col items-center gap-2 w-full max-w-md p-4">
-        {/* FarVille title */}
+        {/* Farville title */}
         <div className="flex flex-col text-center items-center gap-2">
           <h1 className="text-white/90 text-4xl font-bold [text-shadow:_2px_2px_4px_rgb(0_0_0_/_50%)]">
-            FarVille
+            Farville
           </h1>
           <p className="text-white/70 text-sm [text-shadow:_1px_1px_2px_rgb(0_0_0_/_50%)]">
             Plant, grow, and harvest crops with frens!

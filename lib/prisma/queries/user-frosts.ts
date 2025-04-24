@@ -1,0 +1,68 @@
+import { prisma } from "../client";
+import { getUserStreaks } from "./streak";
+import { removeUserItem } from "./user-has-items";
+import { UserFrosts } from "@prisma/client";
+
+export const getUserFrosts = async (fid: number) => {
+  const streaks = await getUserStreaks(fid);
+  const streakIds = streaks.map((streak) => streak.id);
+
+  if (streakIds.length === 0) {
+    return {
+      allFrostsDates: [],
+      lastStreakDates: [],
+    };
+  }
+
+  const userFrosts: UserFrosts[] = await prisma.userFrosts.findMany({
+    where: {
+      streakId: {
+        in: streakIds,
+      },
+    },
+    orderBy: {
+      frozenAt: "asc",
+    },
+  });
+
+  const allFrostsDates = userFrosts.map((frost) => new Date(frost.frozenAt));
+
+  const lastStreakId = streaks[0]?.id;
+  const lastStreakFrosts = userFrosts.filter(
+    (frost) => frost.streakId === lastStreakId
+  );
+  const lastStreakDates = lastStreakFrosts.map(
+    (frost) => new Date(frost.frozenAt)
+  );
+
+  return {
+    allFrostsDates,
+    lastStreakDates,
+  };
+};
+
+export const applyUserFrost = async (
+  fid: number,
+  streakId: number,
+  from: Date,
+  amount: number,
+  frostItemId: number
+) => {
+  const records = Array.from({ length: amount }, (_, i) => {
+    const date = new Date(from);
+    date.setDate(date.getDate() + i);
+    return {
+      streakId,
+      frozenAt: date,
+    };
+  });
+  try {
+    await prisma.userFrosts.createMany({
+      data: records,
+    });
+    await removeUserItem(fid, frostItemId, amount);
+  } catch (error) {
+    console.error("Error creating user frosts:", error);
+    throw new Error("Failed to apply user frost");
+  }
+};

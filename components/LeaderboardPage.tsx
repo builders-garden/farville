@@ -43,7 +43,7 @@ export default function LeaderboardPage({ leaderboard }: LeaderboardPageProps) {
 
       {/* Content container */}
       <div className="relative z-20 flex flex-col gap-2 w-full max-w-md p-4">
-        {/* FarVille title */}
+        {/* Farville title */}
         <div className="flex flex-col text-center gap-2">
           <h1 className="text-white/90 text-3xl font-bold [text-shadow:_2px_2px_4px_rgb(0_0_0_/_50%)]">
             Leaderboard

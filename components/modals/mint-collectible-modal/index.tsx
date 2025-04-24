@@ -2,7 +2,6 @@
 
 import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
-import { useLocalStorage } from "usehooks-ts";
 import { useAccount, useBalance, useSwitchChain } from "wagmi";
 import { useQuery } from "@tanstack/react-query";
 import { getWalletBalance } from "@/lib/lifi";
@@ -42,13 +41,12 @@ import {
   getPfpNftTxCalldata,
   mintedCollectibleFlexCardComposeCastUrl,
 } from "@/lib/utils";
-import { CollectibleStatus } from "@/types/game";
+import { CollectibleStatus } from "@/lib/types/game";
 import { CustomImage } from "./custom-image";
 import { SelectMintPrice } from "./select-mint-price";
 import { env } from "@/lib/env";
 import { DbUserHasCollectible } from "@/supabase/types";
 import { useUpdateUserAvatar } from "@/hooks/use-update-user-avatar";
-import { Checkbox } from "@/components/ui/checkbox";
 
 interface MintCollectibleModalProps {
   onCancel: () => void;
@@ -95,22 +93,18 @@ export default function MintCollectibleModal({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [finalTxHash, setFinalTxHash] = useState<string | null>(null);
   const [updatedUserAvatar, setUpdatedUserAvatar] = useState<boolean>(false);
+  const [errorOnGeneration, setErrorOnGeneration] = useState(false);
 
   const [showConfetti, setShowConfetti] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { chainId } = useAccount();
   const { switchChain } = useSwitchChain();
 
+  const isPaused = true;
+
   const selectedCollectible = useMemo(
     () => state.collectibles.find((collectible) => collectible.id === 1),
     [state.collectibles]
-  );
-
-  const [dontShowAgain, setDontShowAgain] = useLocalStorage(
-    `dontShowAgainModalCollectible-${
-      selectedCollectible ? selectedCollectible.id : 1
-    }`,
-    false
   );
 
   const userPfp = useMemo(() => {
@@ -178,6 +172,7 @@ export default function MintCollectibleModal({
     setMidjourneyImageUrls,
     setIsLoading,
     handleUpdateStateCollectibles,
+    setErrorOnGeneration,
   });
 
   // Step 4: On confirm selection, upload to pinata
@@ -350,10 +345,9 @@ export default function MintCollectibleModal({
       (status === CollectibleStatus.Pending ||
         status === CollectibleStatus.Description) &&
       !midjourneyTaskId &&
-      // hide when showing retry button
-      !errorOnDescription
+      !errorOnGeneration // Add this condition
     );
-  }, [midjourneyTaskId, selectedCollectible, errorOnDescription]);
+  }, [midjourneyTaskId, selectedCollectible, errorOnGeneration]);
 
   // Check if user can generate image
   const canGenerate = useMemo(() => {
@@ -458,8 +452,12 @@ export default function MintCollectibleModal({
 
   // Step 2. handle generate image
   const handleGenerate = async () => {
-    if (canGenerate && pfpDescription && !midjourneyTaskId) {
+    if (
+      (errorOnGeneration && pfpDescription) ||
+      (canGenerate && pfpDescription && !midjourneyTaskId)
+    ) {
       setIsLoading(true);
+      setErrorOnGeneration(false);
       try {
         generateMidjourneyImage({
           prompt: pfpDescription,
@@ -481,7 +479,8 @@ export default function MintCollectibleModal({
     if (
       status === CollectibleStatus.Pending &&
       midjourneyTaskId &&
-      !midjourneyImageUrl
+      !midjourneyImageUrl &&
+      !errorOnGeneration // Added this condition
     ) {
       // periodically check if midjourney image is ready
       const retryInterval = 5000;
@@ -505,6 +504,7 @@ export default function MintCollectibleModal({
     midjourneyImageUrl,
     getMidjourneyImage,
     state.user.fid,
+    errorOnGeneration, // Added to dependencies array
   ]);
 
   // Step 4. handle confirm selection
@@ -787,42 +787,54 @@ export default function MintCollectibleModal({
                 </span>
               </>
             )}
-            {errorMessage && (
-              <span className="bg-red-500 text-red-200 text-[8px] p-2 rounded">
-                {errorMessage}
+
+            {isPaused && (
+              <span className="bg-red-500 text-red-200 text-[10px] p-2 rounded mt-2">
+                We paused the Farville Avatars claimings. It will be available
+                again shortly!
               </span>
             )}
-            {errorMessage === "API Error: 500" &&
-            selectedCollectible?.userHasCollectibles?.status ===
-              CollectibleStatus.Description ? (
-              <Button
-                onClick={() => {
-                  setErrorMessage(null);
-                  setPfpDescription(null);
-                  setIsLoading(true);
-                  getImageDescription({
-                    imageUrl: userPfp || "",
-                    fid: state.user.fid,
-                    collectibleId: selectedCollectible?.id ?? 1,
-                  });
-                }}
-                className="w-full py-1 px-2 text-sm bg-red-500/10 text-red-400 hover:bg-red-500/20 border border-red-400/30"
-              >
-                Retry
-              </Button>
-            ) : null}
-            {!isFinalState &&
-              address !== undefined &&
-              !!tokenBalancesData &&
-              (!hasEnoughEthBalance || !hasEnoughUSDBalance) && (
-                <span className="bg-red-500 text-red-200 text-[8px] p-2 rounded">
-                  Insufficient {!hasEnoughEthBalance ? "ETH" : "USD"} balance to
-                  mint. Please add some {hasEnoughEthBalance ? "USD" : "ETH"} to
-                  your wallet.
-                </span>
-              )}
+
+            {!isPaused && (
+              <>
+                {errorMessage && (
+                  <span className="bg-red-500 text-red-200 text-[8px] p-2 rounded">
+                    {errorMessage}
+                  </span>
+                )}
+                {errorMessage === "API Error: 500" &&
+                selectedCollectible?.userHasCollectibles?.status ===
+                  CollectibleStatus.Description ? (
+                  <Button
+                    onClick={() => {
+                      setErrorMessage(null);
+                      setPfpDescription(null);
+                      setIsLoading(true);
+                      getImageDescription({
+                        imageUrl: userPfp || "",
+                        fid: state.user.fid,
+                        collectibleId: selectedCollectible?.id ?? 1,
+                      });
+                    }}
+                    className="w-full py-1 px-2 text-sm bg-red-500/10 text-red-400 hover:bg-red-500/20 border border-red-400/30"
+                  >
+                    Retry
+                  </Button>
+                ) : null}
+                {!isFinalState &&
+                  address !== undefined &&
+                  !!tokenBalancesData &&
+                  (!hasEnoughEthBalance || !hasEnoughUSDBalance) && (
+                    <span className="bg-red-500 text-red-200 text-[8px] p-2 rounded">
+                      Insufficient {!hasEnoughEthBalance ? "ETH" : "USD"}{" "}
+                      balance to mint. Please add some{" "}
+                      {hasEnoughEthBalance ? "USD" : "ETH"} to your wallet.
+                    </span>
+                  )}
+              </>
+            )}
           </div>
-          {!errorOnDescription && (
+          {!isPaused && !errorOnDescription && (
             <div className="flex flex-col gap-3 mt-0">
               {/* PAY PRICE */}
               {showSelectMintPrice ? (
@@ -901,6 +913,19 @@ export default function MintCollectibleModal({
                       Wait, do not close this page.
                     </p>
                   ) : null}
+                </div>
+              ) : errorOnGeneration ? (
+                <div className="relative flex flex-col gap-2">
+                  <button
+                    onClick={handleGenerate}
+                    className="flex-1 py-2 px-4 rounded bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors text-sm font-medium border border-red-400/30 flex items-center justify-center gap-2"
+                  >
+                    Retry Generation
+                  </button>
+                  <p className="text-red-400/70 text-[8px] text-center">
+                    There was an error generating your image. Click to try
+                    again.
+                  </p>
                 </div>
               ) : showGetImageButton ? (
                 <div className="relative flex flex-col gap-2">
@@ -1012,23 +1037,6 @@ export default function MintCollectibleModal({
               ) : null}
             </div>
           )}
-
-          <div className="flex w-full justify-center items-center gap-3 mt-2">
-            <Checkbox
-              id="dontShowAgain"
-              checked={dontShowAgain}
-              onCheckedChange={() => {
-                setDontShowAgain((prev) => !prev);
-              }}
-              className="size-4 border-white/80 data-[state=checked]:bg-white/80 data-[state=checked]:text-[#1D1D1D]/80"
-            />
-            <label
-              htmlFor="dontShowAgain"
-              className="text-[7px] font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-white/80"
-            >
-              Don&apos;t show this again
-            </label>
-          </div>
         </motion.div>
       </motion.div>
     </>

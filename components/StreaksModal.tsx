@@ -113,8 +113,9 @@ export default function StreaksModal({ onClose }: { onClose: () => void }) {
     // Calculate the effective day within the monthly cycle
     const effectiveLastClaimedDay = ((lastClaimedDay - 1) % 28) + 1;
 
-    // Handle cycle transition - when lastClaimed is 28 and we're moving to 29+
-    const isNewCycle = lastClaimedDay === 28 && currentDayStreak > 28;
+    // Handle cycle transition - when lastClaimed is a multiple of 28 and we're moving beyond it
+    const isNewCycle =
+      lastClaimedDay % 28 === 0 && currentDayStreak > lastClaimedDay;
 
     // Determine what range of rewards to show
     let startIndex, endIndex;
@@ -134,30 +135,24 @@ export default function StreaksModal({ onClose }: { onClose: () => void }) {
     const currentRewards = MONTHLY_REWARDS.slice(startIndex, endIndex);
 
     const streaksRewards = currentRewards.map((reward) => {
-      // Calculate the actual day
-      const adjustedRewardDay = reward.day;
-      const cycleOffset =
-        Math.floor((Math.max(1, lastClaimedDay) - 1) / 28) * 28;
+      // Calculate which cycle we're in (1-based)
+      const currentCycle =
+        Math.floor((Math.max(1, lastClaimedDay) - 1) / 28) + 1;
 
-      // Handle the cycle transition differently
+      // Calculate the start day of the current cycle
+      const cycleStartDay = (currentCycle - 1) * 28 + 1;
+
+      // Calculate if we're starting a new cycle
+      const isNewCycle =
+        lastClaimedDay % 28 === 0 && currentDayStreak > lastClaimedDay;
+
       let actualDay;
       if (isNewCycle) {
-        // For new cycle, we add 28 to the reward day to get days 29, 30, etc.
-        actualDay = cycleOffset + adjustedRewardDay;
-
-        // If this is day 1 in the array, make it day 29 in the actual streak
-        if (adjustedRewardDay === 1) {
-          actualDay = 29;
-        } else {
-          actualDay = 28 + adjustedRewardDay;
-        }
+        // For new cycle, start from the next cycle's start day
+        actualDay = cycleStartDay + 28 + (reward.day - 1);
       } else {
-        // Standard calculation for non-transition cases
-        actualDay =
-          cycleOffset +
-          (adjustedRewardDay < effectiveLastClaimedDay
-            ? adjustedRewardDay
-            : adjustedRewardDay);
+        // For ongoing cycle, offset the reward day by the cycle start
+        actualDay = cycleStartDay + (reward.day - 1);
       }
 
       const streak: StreakReward = {
@@ -167,6 +162,7 @@ export default function StreaksModal({ onClose }: { onClose: () => void }) {
         claimed: actualDay <= lastClaimedDay,
       };
 
+      // Add rewards
       for (const item of reward.rewards) {
         const itemData = state.items.find((i) => i.id === item.itemId);
         if (itemData) {
@@ -178,6 +174,7 @@ export default function StreaksModal({ onClose }: { onClose: () => void }) {
         }
       }
 
+      // Set active reward if this is the next claimable day
       if (actualDay === lastClaimedDay + 1) {
         setActiveReward(streak);
       }
@@ -259,7 +256,10 @@ export default function StreaksModal({ onClose }: { onClose: () => void }) {
             <div className="bg-gradient-to-br from-[#8B5c3C] to-[#6d4c2c] rounded-xl p-2 xs:p-3 border border-[#ffa07a]/20">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-1 xs:gap-2 text-white/80">
-                  <Clock size={16} className="text-[#FFB938]" />
+                  <Clock
+                    size={16}
+                    className="text-[#FFB938]"
+                  />
                   <span className="text-[8px] xs:text-[9px]">Next day in:</span>
                 </div>
                 <div className="flex gap-1 text-white font-bold">

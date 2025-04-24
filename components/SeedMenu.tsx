@@ -2,8 +2,8 @@
 
 import { motion } from "framer-motion";
 import { useGame } from "../context/GameContext";
-import { SeedType } from "../types/game";
-import { useState, useRef, useEffect, useCallback } from "react";
+import { SeedType } from "../lib/types/game";
+import { useRef } from "react";
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/solid";
 import { DbItem } from "@/supabase/types";
 
@@ -32,37 +32,6 @@ export default function SeedMenu() {
   } = useGame();
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const [showScrollHints, setShowScrollHints] = useState({
-    left: false,
-    right: false,
-  });
-
-  // Add scroll detection
-  const checkScroll = useCallback(() => {
-    if (!scrollContainerRef.current) return;
-
-    const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
-    setShowScrollHints({
-      left: scrollLeft > 0,
-      right: scrollLeft < scrollWidth - clientWidth - 1, // -1 for potential rounding
-    });
-  }, []);
-
-  useEffect(() => {
-    const scrollContainer = scrollContainerRef.current;
-    if (scrollContainer) {
-      checkScroll();
-      scrollContainer.addEventListener("scroll", checkScroll);
-      window.addEventListener("resize", checkScroll);
-    }
-
-    return () => {
-      if (scrollContainer) {
-        scrollContainer.removeEventListener("scroll", checkScroll);
-        window.removeEventListener("resize", checkScroll);
-      }
-    };
-  }, [checkScroll]);
 
   // Add these scroll functions
   const scrollLeft = () => {
@@ -110,22 +79,18 @@ export default function SeedMenu() {
         className="bg-[#7E4E31]/40 p-1 xs:px-4 xs:py-2 rounded-lg shadow-lg border-2 border-[#8B5E3C]/60 w-full relative"
         whileHover={{ scale: 1.02 }}
       >
-        {showScrollHints.left && (
-          <button
-            onClick={scrollLeft}
-            className="absolute left-0 top-1/2 -translate-y-1/2 bg-[#6d4c2c]/90 hover:bg-[#6d4c2c] rounded-lg p-1 h-12 flex items-center justify-center z-40 transition-colors"
-          >
-            <ChevronLeftIcon className="w-4 h-4 text-white/90" />
-          </button>
-        )}
-        {showScrollHints.right && (
-          <button
-            onClick={scrollRight}
-            className="absolute right-0 top-1/2 -translate-y-1/2 bg-[#6d4c2c]/90 hover:bg-[#6d4c2c] rounded-lg p-1 h-12 flex items-center justify-center z-40 transition-colors"
-          >
-            <ChevronRightIcon className="w-4 h-4 text-white/90" />
-          </button>
-        )}
+        <button
+          onClick={scrollLeft}
+          className="absolute left-0 top-1/2 -translate-y-1/2 bg-[#6d4c2c]/90 hover:bg-[#6d4c2c] rounded-lg p-1 h-12 flex items-center justify-center z-40 transition-colors"
+        >
+          <ChevronLeftIcon className="w-4 h-4 text-white/90" />
+        </button>
+        <button
+          onClick={scrollRight}
+          className="absolute right-0 top-1/2 -translate-y-1/2 bg-[#6d4c2c]/90 hover:bg-[#6d4c2c] rounded-lg p-1 h-12 flex items-center justify-center z-40 transition-colors"
+        >
+          <ChevronRightIcon className="w-4 h-4 text-white/90" />
+        </button>
         <div
           ref={scrollContainerRef}
           className="flex gap-2 overflow-x-auto py-3 px-6 no-scrollbar"
@@ -135,9 +100,26 @@ export default function SeedMenu() {
               (item) => item.category === "seed" || item.category === "perk"
             )
             .sort((a, b) => {
-              // Sort seeds first, then perks
-              if (a.category === b.category) return 0;
-              return a.category === "seed" ? -1 : 1;
+              const aQuantity =
+                a.category === "seed"
+                  ? state.seeds.find((s) => s.item.id === a.id)?.quantity || 0
+                  : state.perks?.find((p) => p.item.id === a.id)?.quantity || 0;
+              const bQuantity =
+                b.category === "seed"
+                  ? state.seeds.find((s) => s.item.id === b.id)?.quantity || 0
+                  : state.perks?.find((p) => p.item.id === b.id)?.quantity || 0;
+
+              // If both items have quantity > 0 or both have 0 quantity, sort by category
+              if (
+                (aQuantity > 0 && bQuantity > 0) ||
+                (aQuantity === 0 && bQuantity === 0)
+              ) {
+                if (a.category === b.category) return 0;
+                return a.category === "seed" ? -1 : 1;
+              }
+
+              // If one item has 0 quantity, sort by quantity first
+              return bQuantity - aQuantity;
             })
             .map((item) => {
               const seed = state.seeds.find((seed) => seed.item.id === item.id);
@@ -151,7 +133,11 @@ export default function SeedMenu() {
                   : perk?.quantity || 0;
 
               return (
-                <div key={item.id} id={item.slug} className="py-1 px-1">
+                <div
+                  key={item.id}
+                  id={item.slug}
+                  className="py-1 px-1"
+                >
                   <motion.button
                     onClick={() => handleClick(item)}
                     className={`

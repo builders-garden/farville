@@ -1,5 +1,13 @@
 import { DbItem } from "@/supabase/types";
 import { motion } from "framer-motion";
+import { useState } from "react";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "../ui/accordion";
+import { Input } from "../ui/input";
 
 interface PerkItemProps {
   perk: DbItem;
@@ -16,7 +24,30 @@ export default function PerkItem({
   gridSize,
   userCoins,
 }: PerkItemProps) {
+  const [customQuantity, setCustomQuantity] = useState<string>("");
   const buttons = gridSize > 10 ? [1, 5, 10, gridSize] : [1, 5, 10];
+
+  const handleCustomQuantityChange = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const value = e.target.value.replace(/\D/g, "");
+    const numValue = value === "" ? 0 : parseInt(value, 10);
+    const maxPurchase = Math.floor(userCoins / (perk.buyPrice || 1));
+
+    if (numValue > maxPurchase) {
+      setCustomQuantity(maxPurchase.toString());
+      return;
+    }
+
+    setCustomQuantity(value);
+  };
+
+  const handleCustomQuantitySubmit = () => {
+    const quantity = parseInt(customQuantity, 10);
+    if (isNaN(quantity) || quantity <= 0) return;
+    onBuyClick(perk.id, quantity);
+    setCustomQuantity("");
+  };
 
   return (
     <motion.div
@@ -67,28 +98,87 @@ export default function PerkItem({
         </div>
       </div>
       {perk.buyPrice && (
-        <div className="flex gap-3 ml-13 md:ml-0 items-center">
-          <span className="text-[10px] xs:text-xs w-fit text-white/90 pl-1">
-            Buy
-          </span>
-          <div className="flex gap-2 w-full">
-            {buttons.map((amount) => (
-              <motion.button
-                key={amount}
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.97 }}
-                onClick={() => {
-                  onBuyClick(perk.id, amount);
-                }}
-                disabled={userCoins < (perk.buyPrice || 0) * amount}
-                className="w-full px-1 xs:px-2 py-1 xs:py-1.5 bg-[#2B593B] text-white/90 rounded hover:bg-[#346344] 
-                transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-[10px] xs:text-xs font-medium
-                border border-white/10"
-              >
-                {amount}
-              </motion.button>
-            ))}
+        <div className="flex flex-col gap-1 w-full">
+          <div className="flex gap-3 ml-13 md:ml-0 items-center">
+            <span className="text-[10px] xs:text-xs w-fit text-white/90 pl-1">
+              Buy
+            </span>
+            <div className="flex gap-2 w-full">
+              {buttons.map((amount) => (
+                <motion.button
+                  key={amount}
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
+                  onClick={() => {
+                    onBuyClick(perk.id, amount);
+                  }}
+                  disabled={userCoins < (perk.buyPrice || 0) * amount}
+                  className="w-full px-1 xs:px-2 py-1 xs:py-1.5 bg-[#2B593B] text-white/90 rounded hover:bg-[#346344] 
+                  transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-[10px] xs:text-xs font-medium
+                  border border-white/10"
+                >
+                  {amount}
+                </motion.button>
+              ))}
+            </div>
           </div>
+
+          <Accordion
+            type="single"
+            collapsible
+            className="w-full"
+          >
+            <AccordionItem
+              value="custom-quantity"
+              className="border-0 pb-0 pt-1 xs:pt-2"
+            >
+              <AccordionTrigger className="py-0.5 xs:py-1 text-[10px] xs:text-xs text-white/70 hover:no-underline">
+                Custom quantity
+              </AccordionTrigger>
+              <AccordionContent className="pt-1 xs:pt-2 pb-0">
+                <div className="flex flex-col gap-1 xs:gap-2">
+                  <div className="flex gap-2 items-center w-full justify-between">
+                    <Input
+                      type="text"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      value={customQuantity}
+                      onChange={handleCustomQuantityChange}
+                      className="h-6 xs:h-7 bg-[#5A4129] border-[#8B5E3C] text-white/90 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 max-w-[50%]"
+                      placeholder="Quantity"
+                      style={{ fontSize: "16px" }}
+                      onFocus={(e) => {
+                        e.currentTarget.style.fontSize = "16px";
+                        e.currentTarget.select();
+                      }}
+                    />
+                    <div className="text-[10px] xs:text-xs text-white/80">
+                      {!isNaN(parseInt(customQuantity, 10))
+                        ? parseInt(customQuantity, 10) * (perk.buyPrice || 0)
+                        : 0}{" "}
+                      🪙
+                    </div>
+                  </div>
+                  <motion.button
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.97 }}
+                    onClick={handleCustomQuantitySubmit}
+                    disabled={
+                      isNaN(parseInt(customQuantity, 10)) ||
+                      parseInt(customQuantity, 10) <= 0 ||
+                      userCoins <
+                        (perk.buyPrice || 0) * parseInt(customQuantity, 10)
+                    }
+                    className="w-full px-2 xs:px-3 py-1.5 xs:py-2 bg-[#2B593B] text-white/90 rounded hover:bg-[#346344] 
+                            transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-[10px] xs:text-xs font-medium
+                            border border-white/10"
+                  >
+                    Buy {customQuantity}
+                  </motion.button>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
         </div>
       )}
     </motion.div>

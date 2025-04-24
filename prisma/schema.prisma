@@ -47,7 +47,7 @@ model Item {
   sellPrice         Int?
   requiredLevel     Int
   createdAt         DateTime            @default(now()) @db.Timestamptz(6)
-  slug              String?             @unique
+  slug              String              @unique
   quests            Quest[]
   requests          Request[]
   user_grid_cells   GridCell[]
@@ -255,6 +255,14 @@ model UserHasCollectibles {
 
   @@id([fid, collectibleId])
   @@map("user_has_collectibles")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model leagues_snapshot {
+  id        Int      @id @default(autoincrement())
+  week      Int
+  snapshot  Json     @db.Json
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
 }
 
 enum UserHasQuestStatus {

@@ -1,7 +1,7 @@
 import { MIDJOURNEY_API_URL } from "@/lib/constants";
 import { env } from "@/lib/env";
 import { updateUserCollectible } from "@/supabase/queries";
-import { CollectibleStatus } from "@/types/game";
+import { CollectibleStatus } from "@/lib/types/game";
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
@@ -22,7 +22,11 @@ export async function POST(request: Request) {
 
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData.message || "Failed to get task status");
+      console.error("Error generating image:", errorData);
+      return NextResponse.json(
+        { error: "Failed to generate image" },
+        { status: 500 }
+      );
     }
 
     const data = await response.json();
@@ -41,22 +45,45 @@ export async function POST(request: Request) {
         }
       );
 
-      return NextResponse.json({
-        success: true,
-        data: {
+      return NextResponse.json(
+        {
           status: data.data.status,
           imageUrl: data.data.output.image_url,
           imageUrls: data.data.output.temporary_image_urls,
           userHasCollectible: res,
         },
-      });
+        {
+          status: 200,
+        }
+      );
     } else {
       console.log("still generating image", data.data.status);
-      return NextResponse.json({
-        status: data.data.status,
-        imageUrl: null,
-        imageUrls: null,
-      });
+      if (data.data.status === "failed") {
+        console.error("Image generation failed:", data.data.error);
+        return NextResponse.json(
+          {
+            status: "failed",
+            imageUrl: null,
+            imageUrls: null,
+            error: data.data.error,
+          },
+          {
+            status: 500,
+          }
+        );
+      } else {
+        return NextResponse.json(
+          {
+            status: data.data.status,
+            imageUrl: null,
+            imageUrls: null,
+            error: null,
+          },
+          {
+            status: 200,
+          }
+        );
+      }
     }
   } catch (error) {
     console.error("Error getting task status:", error);

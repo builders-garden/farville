@@ -1,7 +1,8 @@
-import { SeedType } from "@/types/game";
+import { SeedType } from "@/lib/types/game";
 import { qstashPublishJSON } from "../qstash";
 import { CROP_DATA } from "@/lib/game-constants";
 import { env } from "@/lib/env";
+import Logger from "../logger";
 
 export async function sendDelayedNotification(
   fid: string,
@@ -24,10 +25,8 @@ export async function sendDelayedNotification(
     delay,
   });
 
-  console.log(
-    `[QSTASH-${new Date().toISOString()}] - sent delayed notification to QStash with id: ${
-      res?.messageId
-    }`
+  Logger.log(
+    `(QSTASH) - sent delayed notification to QStash with id: ${res?.messageId}`
   );
 }
 

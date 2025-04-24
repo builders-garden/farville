@@ -50,7 +50,7 @@ export async function GET(
 
     const { user, item, quantity } = request;
 
-    const text = user ? `is looking for` : "FarVille";
+    const text = user ? `is looking for` : "Farville";
     const secondaryText = item && quantity ? `${quantity} ${item.name}` : "";
 
     const appUrl = env.NEXT_PUBLIC_URL;
@@ -69,7 +69,7 @@ export async function GET(
 
     const fontData = await loadGoogleFont(
       "Press+Start+2P",
-      "FarVille" + text + secondaryText + user?.username || ""
+      "Farville" + text + secondaryText + user?.username || ""
     );
 
     const ensName = user?.username || "";
@@ -99,108 +99,122 @@ export async function GET(
               left: 0,
               right: 0,
               bottom: 0,
-              backgroundColor: "rgba(0, 0, 0, 0.4)",
+              backgroundColor: "rgba(0, 0, 0, 0.6)",
             }}
           />
 
-          <div
-            style={{
-              position: "absolute",
-              top: "20px",
-              fontSize: "12px",
-              color: "#ffffff",
-              fontFamily: "PressStart2P",
-              textShadow: "0px 2px 4px rgba(0, 0, 0, 0.5)",
-            }}
-          >
-            FarVille
-          </div>
-
+          {/* Glassy Container */}
           <div
             style={{
               display: "flex",
-              flexDirection: "column",
-              justifyContent: "center",
-              alignItems: "center",
-              padding: "0.5rem",
-              borderRadius: "0.5rem",
+              width: "90%",
+              height: "80%",
+              background: "rgba(44, 25, 15, 0.6)", // More brown base background
+              backdropFilter: "blur(16px)",
+              borderRadius: "16px",
+              border: "1px solid rgba(255, 255, 255, 0.2)",
+              overflow: "hidden",
+              boxShadow: "0 8px 32px rgba(44, 25, 15, 0.6)", // Brown shadow
               position: "relative",
+              flexDirection: "column",
+              padding: "25px",
+              paddingTop: "30px",
+              gap: "25px",
+              alignItems: "center",
             }}
           >
+            {/* Additional inner shadow for better text contrast */}
+            <div
+              style={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                background:
+                  "linear-gradient(180deg, rgba(44, 25, 15, 0.2) 0%, rgba(44, 25, 15, 0.3) 100%)", // Brown gradient
+                pointerEvents: "none",
+              }}
+            />
+
             {profilePic && (
-              <>
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: "8px",
+                  marginBottom: "10px",
+                }}
+              >
                 <div
                   style={{
+                    width: "80px",
+                    height: "80px",
+                    borderRadius: "40px",
+                    border: "2px solid rgba(255, 255, 255, 0.3)",
+                    overflow: "hidden",
                     display: "flex",
-                    flexDirection: "column",
                     alignItems: "center",
-                    gap: "0px",
+                    justifyContent: "center",
+                    boxShadow: "0 4px 8px rgba(0, 0, 0, 0.4)",
                   }}
                 >
-                  <div
+                  <img
+                    src={profilePic}
+                    width="80"
+                    height="80"
                     style={{
-                      width: "50px",
-                      height: "50px",
-                      borderRadius: "25px",
-                      border: "2px solid #fff",
-                      overflow: "hidden",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
+                      objectFit: "cover",
                     }}
-                  >
-                    <img
-                      src={profilePic}
-                      width="50"
-                      height="50"
-                      style={{
-                        objectFit: "cover",
-                      }}
-                    />
-                  </div>
-                  <p
-                    style={{
-                      fontSize: "10px",
-                      color: "rgba(255, 255, 255, 0.75)",
-                      textShadow: "0px 2px 4px rgba(0, 0, 0, 0.5)",
-                      fontFamily: "PressStart2P",
-                      marginBottom: "16px",
-                      textAlign: "center",
-                      marginTop: "8px",
-                    }}
-                  >
-                    {ensName}
-                  </p>
+                  />
                 </div>
-              </>
+                <p
+                  style={{
+                    fontSize: "14px",
+                    color: "rgba(255, 255, 255, 0.9)",
+                    textShadow: "0px 2px 4px rgba(0, 0, 0, 0.5)",
+                    fontFamily: "PressStart2P",
+                    margin: 0,
+                  }}
+                >
+                  {ensName}
+                </p>
+              </div>
             )}
+
             <p
               style={{
-                fontSize: "16px",
-                fontWeight: "bold",
+                fontSize: "14px",
+                fontFamily: "PressStart2P",
                 textAlign: "center",
-                color: "#fff",
-                textShadow: "0px 4px 8px rgba(0, 0, 0, 0.5)",
+                color: "#ffffff",
+                textShadow: "0px 2px 4px rgba(0, 0, 0, 0.5)",
+                margin: "5px 0",
               }}
             >
               {text}
             </p>
+
             {request.itemId && quantity && item && (
               <div
                 style={{
                   display: "flex",
-                  flexDirection: "row",
                   alignItems: "center",
-                  gap: "6px",
+                  gap: "12px",
+                  background: "rgba(126, 78, 49, 0.5)",
+                  padding: "12px 20px",
+                  borderRadius: "8px",
+                  border: "1px solid rgba(126, 78, 49, 0.7)",
                 }}
               >
                 <p
                   style={{
-                    fontSize: "24px",
-                    marginTop: "16px",
-                    color: "#fff",
+                    fontSize: "20px",
+                    color: "#FFD700",
                     textShadow: "0px 2px 4px rgba(0, 0, 0, 0.5)",
                     fontFamily: "PressStart2P",
+                    margin: 0,
                   }}
                 >
                   {secondaryText}
@@ -208,9 +222,8 @@ export async function GET(
                 {item.icon && (
                   <div
                     style={{
-                      marginLeft: "6px",
-                      width: "24px",
-                      height: "24px",
+                      width: "32px",
+                      height: "32px",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
@@ -224,8 +237,8 @@ export async function GET(
                             ).toString("base64")}`
                           : undefined
                       }
-                      width="24"
-                      height="24"
+                      width="32"
+                      height="32"
                       style={{
                         objectFit: "contain",
                       }}

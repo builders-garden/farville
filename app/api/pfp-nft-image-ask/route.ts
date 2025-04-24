@@ -5,7 +5,7 @@ import {
 } from "@/lib/constants";
 import { env } from "@/lib/env";
 import { updateUserCollectible } from "@/supabase/queries";
-import { CollectibleStatus } from "@/types/game";
+import { CollectibleStatus } from "@/lib/types/game";
 import { NextResponse } from "next/server";
 
 const replacements = {
@@ -57,8 +57,11 @@ export async function POST(request: Request) {
     });
 
     if (!response.ok) {
-      console.error("Error generating image");
-      throw new Error("Failed to generate image");
+      console.error("Error generating image", response);
+      return NextResponse.json(
+        { error: "Failed to generate image" },
+        { status: 500 }
+      );
     }
 
     const data = await response.json();

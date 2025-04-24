@@ -24,7 +24,7 @@ export const useSignIn = (isInMaintenance: boolean) => {
       }
 
       if (!context) {
-        throw new Error("FarVille must be played from Warpcast!");
+        throw new Error("Farville must be played from Warpcast!");
       }
 
       if (!context.user?.fid) {

@@ -2,7 +2,7 @@ import {
   getUserHarvestedCrops,
   upsertUserHarvestedCrop,
 } from "@/supabase/queries";
-import { CropType } from "@/types/game";
+import { CropType } from "@/lib/types/game";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 

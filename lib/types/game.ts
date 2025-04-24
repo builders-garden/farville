@@ -132,6 +132,11 @@ export enum QuestStatus {
   Claimed = "claimed",
 }
 
+export enum QuestType {
+  Daily = "daily",
+  Weekly = "weekly",
+}
+
 export enum CollectibleStatus {
   Description = "description",
   Pending = "pending",

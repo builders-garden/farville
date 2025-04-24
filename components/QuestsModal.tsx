@@ -1,12 +1,13 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useFrameContext } from "../context/FrameContext";
 import Quest from "./Quest";
 import FloatingNumber from "@/components/animations/FloatingNumber";
 import Confetti from "./animations/Confetti";
 import { AllQuests } from "@/hooks/use-game-state";
+import { Clock } from "lucide-react";
 
 type Tab = "daily" | "weekly";
 
@@ -45,6 +46,82 @@ export default function QuestsModal({
 
   const [showLevelUpConfetti, setShowLevelUpConfetti] = useState(false);
 
+  const [timeUntilReset, setTimeUntilReset] = useState({
+    daily: { days: 0, hours: 0, minutes: 0 },
+    weekly: { days: 0, hours: 0, minutes: 0 },
+  });
+
+  useEffect(() => {
+    const calculateTimeUntilReset = () => {
+      const now = new Date();
+
+      // Daily reset (00:00 UTC)
+      const tomorrow = new Date();
+      tomorrow.setUTCHours(24, 0, 0, 0);
+      const dailyDiff = tomorrow.getTime() - now.getTime();
+
+      // Weekly reset (Monday 00:00 UTC)
+      const nextMonday = new Date();
+      nextMonday.setUTCHours(0, 0, 0, 0);
+      nextMonday.setDate(
+        nextMonday.getDate() + ((1 + 7 - nextMonday.getDay()) % 7)
+      );
+      const weeklyDiff = nextMonday.getTime() - now.getTime();
+
+      return {
+        daily: {
+          days: Math.floor(dailyDiff / (1000 * 60 * 60 * 24)),
+          hours: Math.floor((dailyDiff / (1000 * 60 * 60)) % 24),
+          minutes: Math.floor((dailyDiff / (1000 * 60)) % 60),
+        },
+        weekly: {
+          days: Math.floor(weeklyDiff / (1000 * 60 * 60 * 24)),
+          hours: Math.floor((weeklyDiff / (1000 * 60 * 60)) % 24),
+          minutes: Math.floor((weeklyDiff / (1000 * 60)) % 60),
+        },
+      };
+    };
+
+    const timer = setInterval(() => {
+      setTimeUntilReset(calculateTimeUntilReset());
+    }, 60000);
+
+    setTimeUntilReset(calculateTimeUntilReset());
+
+    return () => clearInterval(timer);
+  }, []);
+
+  const NoQuestsMessage = ({ type }: { type: "daily" | "weekly" }) => (
+    <div className="flex flex-col gap-2">
+      <div className="text-xs px-1 py-2">No {type} quests available.</div>
+      <div className="bg-[#6d4c2c]/80 rounded-lg p-2 flex items-center justify-between">
+        <div className="flex items-center gap-1 text-white/80">
+          <Clock
+            size={16}
+            className="text-[#FFB938]"
+          />
+          <span className="text-[10px]">New quests in:</span>
+        </div>
+        <div className="flex gap-1 text-white font-bold">
+          {timeUntilReset[type].days > 0 && (
+            <div className="bg-[#5c4121] px-1 py-0.5 rounded text-[11px] min-w-[22px] text-center">
+              {timeUntilReset[type].days}
+              <span className="text-[#FFB938] ml-0.5">d</span>
+            </div>
+          )}
+          <div className="bg-[#5c4121] px-1 py-0.5 rounded text-[11px] min-w-[22px] text-center">
+            {timeUntilReset[type].hours.toString().padStart(2, "0")}
+            <span className="text-[#FFB938] ml-0.5">h</span>
+          </div>
+          <div className="bg-[#5c4121] px-1 py-0.5 rounded text-[11px] min-w-[22px] text-center">
+            {timeUntilReset[type].minutes.toString().padStart(2, "0")}
+            <span className="text-[#FFB938] ml-0.5">m</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
   const handleQuestClaim = async (
     questId: number,
     x: number,
@@ -54,8 +131,6 @@ export default function QuestsModal({
     const quest = [
       ...(completedQuests?.daily || []),
       ...(completedQuests?.weekly || []),
-      ...(completedQuests?.monthly || []),
-      ...(completedQuests?.farmer || []),
     ].find((q) => q.questId === questId);
 
     if (quest) {
@@ -176,7 +251,7 @@ export default function QuestsModal({
                   {activeTab === "daily" &&
                     (incompleteQuests?.daily.length === 0 &&
                     completedQuests?.daily.length === 0 ? (
-                      <div>No daily quests available.</div>
+                      <NoQuestsMessage type="daily" />
                     ) : (
                       <>
                         {completedQuests?.daily.map((quest) => (
@@ -200,7 +275,7 @@ export default function QuestsModal({
                   {activeTab === "weekly" &&
                     (incompleteQuests?.weekly.length === 0 &&
                     completedQuests?.weekly.length === 0 ? (
-                      <div>No weekly quests available.</div>
+                      <NoQuestsMessage type="weekly" />
                     ) : (
                       <>
                         {completedQuests?.weekly.map((quest) => (

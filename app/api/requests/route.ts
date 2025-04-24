@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createRequest, getItemById } from "@/supabase/queries";
+import { createRequest } from "@/supabase/queries";
 import { z } from "zod";
 import { GAME_ITEMS } from "@/lib/game-constants";
+import { getItemById } from "@/lib/prisma/queries";
 
 const requestSchema = z.object({
   itemId: z.number().min(1),

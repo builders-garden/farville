@@ -1,8 +1,8 @@
-import { getItemById } from "@/supabase/queries";
+import { getItemById } from "@/lib/prisma/queries";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const itemId = Number((await params).id);

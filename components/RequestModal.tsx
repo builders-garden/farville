@@ -112,8 +112,21 @@ export default function RequestModal({
 
   if ((!request && isLoading) || todayDonations === undefined) {
     return (
-      <div className="bg-white text-emerald-500 rounded-lg text-center p-4 fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-        Loading Request...
+      <div className="fixed inset-0 flex items-center justify-center">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="w-fit bg-white/90 text-emerald-500 rounded-xl text-center p-4 transform shadow-lg border border-emerald-100"
+        >
+          <div className="flex items-center gap-4 font-medium">
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+              className="w-4 h-4 aspect-square border-[3px] border-emerald-500 border-t-transparent rounded-full text-sm"
+            />
+            Loading Request
+          </div>
+        </motion.div>
       </div>
     );
   }
