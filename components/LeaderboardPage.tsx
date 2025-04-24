@@ -23,7 +23,7 @@ export default function LeaderboardPage({ leaderboard }: LeaderboardPageProps) {
         marginLeft: safeAreaInsets.left,
         marginRight: safeAreaInsets.right,
       }}
-      className="fixed inset-0 w-full h-full z-[100] flex flex-col items-center justify-center gap-2 bg-black"
+      className="fixed inset-0 w-full max-w-md mx-auto h-full z-[100] flex flex-col items-center justify-center gap-2 bg-black"
     >
       {/* Full-screen background image */}
       <div className="absolute inset-0 w-full h-full">

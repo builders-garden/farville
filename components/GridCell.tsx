@@ -552,6 +552,7 @@ export default function GridCell({ cell }: GridCellProps) {
         onClick={handleClick}
         data-x={cell.x}
         data-y={cell.y}
+        data-crop-type={cell.cropType}
         className={cellClassName}
         initial={false}
         animate={{

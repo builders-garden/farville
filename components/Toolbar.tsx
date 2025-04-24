@@ -20,7 +20,7 @@ export default function Toolbar({
   } = useGame();
 
   return (
-    <div className="fixed bottom-0 inset-x-0 bg-[#7E4E31]">
+    <div className="fixed bottom-0 inset-x-0 bg-[#7E4E31] max-w-md mx-auto">
       <div
         className="py-3 flex justify-evenly items-center"
         style={{
@@ -129,12 +129,7 @@ export default function Toolbar({
             className="relative w-9 h-9 xs:w-12 xs:h-12 rounded-lg flex items-center justify-center bg-[#8B5E3C] hover:bg-[#6d4c2c] transition-colors"
           >
             <div className="relative w-6 h-6 xs:w-8 xs:h-8">
-              <Image
-                src="/images/icons/help.png"
-                alt="Help"
-                fill
-                sizes="48"
-              />
+              <Image src="/images/icons/help.png" alt="Help" fill sizes="48" />
             </div>
           </motion.button>
           <span className="text-[4px] xs:text-[6px] text-white mt-1">Help</span>

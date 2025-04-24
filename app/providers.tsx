@@ -2,6 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { AudioProvider } from "./../context/AudioContext";
+import { TestProvider } from "@/context/TestContext";
 import posthog from "posthog-js";
 import { PostHogProvider } from "posthog-js/react";
 import { NextStepProvider, NextStep } from "nextstepjs";
@@ -29,15 +30,17 @@ export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <PostHogProvider client={posthog}>
       <WagmiProvider>
-        <NextStepProvider>
-          <NextStep
-            steps={steps}
-            cardComponent={CustomTutorialCard}
-            shadowOpacity="0.4"
-          >
-            <AudioProvider>{children}</AudioProvider>
-          </NextStep>
-        </NextStepProvider>
+        <TestProvider>
+          <NextStepProvider>
+            <NextStep
+              steps={steps}
+              cardComponent={CustomTutorialCard}
+              shadowOpacity="0.4"
+            >
+              <AudioProvider>{children}</AudioProvider>
+            </NextStep>
+          </NextStepProvider>
+        </TestProvider>
       </WagmiProvider>
     </PostHogProvider>
   );

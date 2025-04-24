@@ -96,10 +96,7 @@ export default function QuestsModal({
       <div className="text-xs px-1 py-2">No {type} quests available.</div>
       <div className="bg-[#6d4c2c]/80 rounded-lg p-2 flex items-center justify-between">
         <div className="flex items-center gap-1 text-white/80">
-          <Clock
-            size={16}
-            className="text-[#FFB938]"
-          />
+          <Clock size={16} className="text-[#FFB938]" />
           <span className="text-[10px]">New quests in:</span>
         </div>
         <div className="flex gap-1 text-white font-bold">
@@ -157,7 +154,7 @@ export default function QuestsModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-start z-50">
+    <div className="fixed inset-0 max-w-md mx-auto bg-black/50 flex items-start z-50">
       {showLevelUpConfetti && <Confetti title="LEVEL UP!" />}
       <motion.div
         initial={{ opacity: 0, y: 50 }}

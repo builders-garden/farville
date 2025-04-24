@@ -19,10 +19,7 @@ import { WHITELISTED_FIDS } from "../lib/whitelist";
 function DemoCropSprite({ crop }: { crop?: Crop }) {
   return (
     <>
-      <CropSprite
-        crop={crop}
-        isDemo={true}
-      />
+      <CropSprite crop={crop} isDemo={true} />
     </>
   );
 }
@@ -234,7 +231,7 @@ export default function WelcomeOverlay({
         marginLeft: safeAreaInsets.left,
         marginRight: safeAreaInsets.right,
       }}
-      className="fixed inset-0 w-full h-full z-[100] flex flex-col items-center justify-center gap-2 bg-black"
+      className="fixed inset-0 w-full max-w-md mx-auto h-full z-[100] flex flex-col items-center justify-center gap-2 bg-black"
     >
       {/* Full-screen background image */}
       <div className="absolute inset-0 w-full h-full">

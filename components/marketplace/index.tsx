@@ -185,7 +185,7 @@ export default function MarketplaceModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-start z-50">
+    <div className="fixed inset-0 max-w-md mx-auto bg-black/50 flex items-start z-50">
       <motion.div
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
@@ -238,10 +238,7 @@ export default function MarketplaceModal({
           </div>
 
           {/* Tabs */}
-          <MarketplaceTabs
-            activeTab={activeTab}
-            setActiveTab={setActiveTab}
-          />
+          <MarketplaceTabs activeTab={activeTab} setActiveTab={setActiveTab} />
 
           {/* Sub tabs */}
           {activeTab === "buy" && (

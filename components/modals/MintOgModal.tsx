@@ -148,7 +148,7 @@ export default function MintOgModal({ onCancel }: MintOgModalProps) {
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         transition={{ duration: 0.2 }}
-        className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60]"
+        className="fixed inset-0 max-w-md mx-auto bg-black/50 flex items-center justify-center z-[60]"
       >
         <motion.div
           initial={{ opacity: 0, y: 20 }}

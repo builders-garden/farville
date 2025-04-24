@@ -1,5 +1,6 @@
 import { sdk } from "@farcaster/frame-sdk";
 import { useFrameContext } from "@/context/FrameContext";
+import { useTestMode } from "@/context/TestContext";
 import { useCallback, useEffect, useState } from "react";
 import { MESSAGE_EXPIRATION_TIME } from "@/lib/contracts/constants";
 import posthog from "posthog-js";
@@ -9,6 +10,7 @@ import { useAuthCheck } from "./use-auth-check";
 
 export const useSignIn = (isInMaintenance: boolean) => {
   const { isSDKLoaded, context, error: contextError } = useFrameContext();
+  const { isTestMode } = useTestMode();
   const [isSignedIn, setIsSignedIn] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -84,6 +86,8 @@ export const useSignIn = (isInMaintenance: boolean) => {
       setIsLoading(true);
       setError(null);
       if (token && !isSignedIn && !authCheckError) {
+        setIsSignedIn(true);
+      } else if (isTestMode) {
         setIsSignedIn(true);
       } else {
         const data = await signIn();

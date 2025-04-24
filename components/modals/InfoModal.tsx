@@ -20,7 +20,7 @@ export default function InfoModal({
   options,
 }: InfoModalProps) {
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60]">
+    <div className="fixed inset-0 max-w-md mx-auto bg-black/50 flex items-center justify-center z-[60]">
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -31,12 +31,7 @@ export default function InfoModal({
           {
             // if icon is a string, render an image
             typeof icon === "string" ? (
-              <Image
-                src={icon}
-                alt={title}
-                width={24}
-                height={24}
-              />
+              <Image src={icon} alt={title} width={24} height={24} />
             ) : (
               // if icon is a React component, render it
               icon

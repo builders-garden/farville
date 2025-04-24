@@ -3,9 +3,11 @@
 import { useEffect, useState } from "react";
 import sdk from "@farcaster/frame-sdk";
 import { FrameContext, SafeAreaInsets } from "@farcaster/frame-node";
+import { useTestMode } from "./TestContext";
 import { env } from "@/lib/env";
 
 export const useFrameContext = () => {
+  const { isTestMode } = useTestMode();
   const [context, setContext] = useState<FrameContext | null>(null);
   const [safeAreaInsets, setSafeAreaInsets] = useState<SafeAreaInsets>({
     top: 0,
@@ -18,6 +20,7 @@ export const useFrameContext = () => {
 
   useEffect(() => {
     const load = async () => {
+      if (isTestMode) return;
       try {
         const context = await sdk.context;
         if (context) {
@@ -44,7 +47,8 @@ export const useFrameContext = () => {
         setIsSDKLoaded(true);
         if (
           !context?.client.added &&
-          !env.NEXT_PUBLIC_URL.includes("localhost")
+          !env.NEXT_PUBLIC_URL.includes("localhost") &&
+          !isTestMode
         ) {
           try {
             sdk.actions.addFrame();

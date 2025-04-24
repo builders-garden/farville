@@ -79,7 +79,7 @@ export const MAX_DAILY_ALLOWED_DONATION_BETWEEN_USERS = 2;
 export const MAX_DAILY_ALLOWED_DONATION_TO_USERS = 5;
 
 export const millisecondsInHour =
-  process.env.NODE_ENV === "production" ? 3600000 : 1000;
+  process.env.NEXT_PUBLIC_APP_ENV === "production" ? 3600000 : 1000;
 
 export const CROP_DATA: { [key: string]: CropData } = {
   wheat: {

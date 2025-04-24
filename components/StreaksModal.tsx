@@ -191,7 +191,7 @@ export default function StreaksModal({ onClose }: { onClose: () => void }) {
     0;
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-start z-50">
+    <div className="fixed max-w-md mx-auto inset-0 bg-black/50 flex items-start z-50">
       {isClaimInProgress && (
         <div className="absolute inset-0 bg-black/60 flex items-center justify-center z-50 rounded-lg">
           <motion.div
@@ -256,10 +256,7 @@ export default function StreaksModal({ onClose }: { onClose: () => void }) {
             <div className="bg-gradient-to-br from-[#8B5c3C] to-[#6d4c2c] rounded-xl p-2 xs:p-3 border border-[#ffa07a]/20">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-1 xs:gap-2 text-white/80">
-                  <Clock
-                    size={16}
-                    className="text-[#FFB938]"
-                  />
+                  <Clock size={16} className="text-[#FFB938]" />
                   <span className="text-[8px] xs:text-[9px]">Next day in:</span>
                 </div>
                 <div className="flex gap-1 text-white font-bold">

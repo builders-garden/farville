@@ -2,6 +2,7 @@
 
 import { useFrameContext } from "@/context/FrameContext";
 import { OverlayConfig } from "@/context/GameContext";
+import { useTestMode } from "@/context/TestContext";
 import { useSignIn } from "@/hooks/use-sign-in";
 import Image from "next/image";
 import React, { useEffect, useState } from "react";
@@ -19,6 +20,7 @@ export default function Game({
 }) {
   const { isSDKLoaded, context } = useFrameContext();
   const [isInMaintenance, setIsInMaintenance] = useState(true);
+  const { isTestMode } = useTestMode();
 
   // const monday = new Date("2025-04-13T18:17:30+02:00");
   const monday = getThisWeekMonday();
@@ -41,7 +43,7 @@ export default function Game({
 
   const { isSignedIn, isLoading, error } = useSignIn(isInMaintenance);
 
-  if (!context && isSDKLoaded && !isLoading) {
+  if (!context && isSDKLoaded && !isLoading && !isTestMode) {
     return <Website />;
   }
 
@@ -50,7 +52,7 @@ export default function Game({
   }
 
   return (
-    <main className="h-screen w-screen overflow-hidden">
+    <main className="h-screen w-screen max-w-md mx-auto overflow-hidden">
       <div className="fixed inset-0">
         <Image
           src="/images/welcome.png"
