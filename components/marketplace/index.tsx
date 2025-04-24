@@ -10,7 +10,10 @@ import ItemDetailsPopup from "@/components/ItemDetailsPopup";
 import { useFrameContext } from "@/context/FrameContext";
 import { useCreateRequest } from "@/hooks/game-actions/use-create-request";
 import sdk from "@farcaster/frame-sdk";
-import { requestItemComposeCastUrl } from "@/lib/utils";
+import {
+  getGrowthTimeBasedOnMode,
+  requestItemComposeCastUrl,
+} from "@/lib/utils";
 import MarketplaceTabs, { Tab } from "./MarketplaceTabs";
 import MarketplaceItem from "./MarketplaceItem";
 import PerkItem from "./PerkItem";
@@ -18,6 +21,7 @@ import ExpansionPanel from "./ExpansionPanel";
 import ItemDetailsModal from "./ItemDetailsModal";
 import { useNextStep } from "nextstepjs";
 import { Item } from "@prisma/client";
+import { CropType } from "@/lib/types/game";
 
 // Add new type for selected item details
 type SelectedItemDetails = {
@@ -38,7 +42,7 @@ export default function MarketplaceModal({
   onClose: () => void;
   safeAreaInsets: { top: number; bottom: number; left: number; right: number };
 }) {
-  const { state, buyItem, sellItem, expandGrid, isActionInProgress, mode } =
+  const { mode, state, buyItem, sellItem, expandGrid, isActionInProgress } =
     useGame();
   const { context } = useFrameContext();
   const { mutate: createRequest } = useCreateRequest();
@@ -139,7 +143,11 @@ export default function MarketplaceModal({
         harvestXp: CROP_DATA[item.slug.replace("-seeds", "")]?.rewardXP,
         description: item.description,
         growthTime:
-          CROP_DATA[item.slug.replace("-seeds", "")]?.growthTime / (60000 * 60),
+          getGrowthTimeBasedOnMode(
+            item.slug.replace("-seeds", "") as CropType,
+            mode
+          ) /
+          (60000 * 60),
       };
       setSelectedItem(itemDetails);
     }
@@ -238,10 +246,7 @@ export default function MarketplaceModal({
           </div>
 
           {/* Tabs */}
-          <MarketplaceTabs
-            activeTab={activeTab}
-            setActiveTab={setActiveTab}
-          />
+          <MarketplaceTabs activeTab={activeTab} setActiveTab={setActiveTab} />
 
           {/* Sub tabs */}
           {activeTab === "buy" && (

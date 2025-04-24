@@ -4,12 +4,13 @@ import {
   ACHIEVEMENTS_GOLD_MULTIPLIER,
   ACHIEVEMENTS_THRESHOLDS,
   BASE_GOLD_CROP_PERCENTAGE,
+  CROP_DATA,
   LEVEL_XP_THRESHOLDS,
   MAX_DAILY_ALLOWED_DONATION_BETWEEN_USERS,
   MAX_DAILY_ALLOWED_DONATION_TO_USERS,
   SPEED_BOOST,
 } from "./game-constants";
-import { CropType, PerkType } from "@/lib/types/game";
+import { CropType, Mode, PerkType } from "@/lib/types/game";
 import { fetchUsersFollowedBy } from "./neynar";
 import {
   getModePartialLeaderboardFromFids,
@@ -26,6 +27,7 @@ import { PFP_NFT_ABI } from "./contracts/pfp-nft/abi";
 import { env } from "@/lib/env";
 import { DbUserDonation } from "@/lib/prisma/types";
 import { Item, Streak, UserHarvestedCrop } from "@prisma/client";
+import { MODE_DEFINITIONS } from "./modes/constants";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -563,4 +565,9 @@ export const userCanDonate = (
     canDonateToAnotherUser,
     lastDonationToReceiver,
   };
+};
+
+export const getGrowthTimeBasedOnMode = (crop: CropType, mode: Mode) => {
+  const baseGrowthTime = CROP_DATA[crop].growthTime;
+  return Math.floor(baseGrowthTime / MODE_DEFINITIONS[mode].growthTimeDivisor);
 };

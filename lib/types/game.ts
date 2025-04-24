@@ -156,4 +156,5 @@ export enum ItemCategory {
 export enum Mode {
   Classic = "classic",
   Farcon = "farcon",
+  Sonic = "sonic",
 }

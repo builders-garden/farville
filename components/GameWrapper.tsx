@@ -25,6 +25,7 @@ import Toolbar from "./Toolbar";
 import { Mode } from "@/lib/types/game";
 import MarketplaceModal from "./marketplace";
 import LeaderboardModal from "./leaderboard";
+import { MODE_DEFINITIONS } from "@/lib/modes/constants";
 
 // const WelcomeOverlay = dynamic(() => import("./../components/WelcomeOverlay"), {
 //   ssr: false,
@@ -114,23 +115,6 @@ function SeedMenuContainer() {
 
   return <AnimatePresence>{showSeedsMenu && <SeedMenu />}</AnimatePresence>;
 }
-
-// Add this constant at the top of the file after imports
-const CLASSIC_BACKGROUND_PATTERN = `
-  linear-gradient(45deg, #386A48 25%, transparent 25%),
-  linear-gradient(-45deg, #386A48 25%, transparent 25%),
-  linear-gradient(45deg, transparent 75%, #386A48 75%),
-  linear-gradient(-45deg, transparent 75%, #386A48 75%)
-`;
-const CLASSIC_BACKGROUND_COLOR = "#255F37";
-
-const FARCON_BACKGROUND_PATTERN = `
-  linear-gradient(45deg, #3a2150 25%, transparent 25%),
-  linear-gradient(-45deg, #3a2150 25%, transparent 25%),
-  linear-gradient(45deg, transparent 75%, #3a2150 75%),
-  linear-gradient(-45deg, transparent 75%, #3a2150 75%)
-`;
-const FARCON_BACKGROUND_COLOR = "#2a1043";
 
 // Add new container component
 function QuestsModalContainer() {
@@ -242,12 +226,16 @@ export default function GameWrapper() {
   let BACKGROUND_COLOR: string;
   switch (mode) {
     case Mode.Farcon:
-      BACKGROUND_COLOR = FARCON_BACKGROUND_COLOR;
-      BACKGROUND_PATTERN = FARCON_BACKGROUND_PATTERN;
+      BACKGROUND_COLOR = MODE_DEFINITIONS[Mode.Farcon].background.color;
+      BACKGROUND_PATTERN = MODE_DEFINITIONS[Mode.Farcon].background.pattern;
+      break;
+    case Mode.Sonic:
+      BACKGROUND_COLOR = MODE_DEFINITIONS[Mode.Sonic].background.color;
+      BACKGROUND_PATTERN = MODE_DEFINITIONS[Mode.Sonic].background.pattern;
       break;
     default:
-      BACKGROUND_COLOR = CLASSIC_BACKGROUND_COLOR;
-      BACKGROUND_PATTERN = CLASSIC_BACKGROUND_PATTERN;
+      BACKGROUND_COLOR = MODE_DEFINITIONS[Mode.Classic].background.color;
+      BACKGROUND_PATTERN = MODE_DEFINITIONS[Mode.Classic].background.pattern;
       break;
   }
 

@@ -78,8 +78,8 @@ export interface CropData {
 export const MAX_DAILY_ALLOWED_DONATION_BETWEEN_USERS = 2;
 export const MAX_DAILY_ALLOWED_DONATION_TO_USERS = 5;
 
-export const millisecondsInHour =
-  process.env.NODE_ENV === "production" ? 3600000 : 1000;
+export const millisecondsInHour = 3600000;
+// process.env.NODE_ENV === "production" ? 3600000 : 1000;
 
 export const CROP_DATA: { [key: string]: CropData } = {
   wheat: {
@@ -92,7 +92,7 @@ export const CROP_DATA: { [key: string]: CropData } = {
     goldId: 31,
   },
   carrot: {
-    growthTime: 4 * millisecondsInHour, // 6h
+    growthTime: 4 * millisecondsInHour, // 4h
     deathTime: 3.3 * millisecondsInHour, // 3.3h
     rewardXP: 8,
     power: 1.2,

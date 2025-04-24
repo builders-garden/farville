@@ -100,14 +100,15 @@ export const POST = async (req: NextRequest) => {
         const perkResult = await perkBulk(
           Number(fid),
           cells,
-          itemSlug as PerkType
+          itemSlug as PerkType,
+          mode
         );
         return NextResponse.json({
           success: true,
           data: perkResult,
         });
       case ActionType.Fertilize:
-        const fertilizeResult = await fertilizeBulk(Number(fid), cells);
+        const fertilizeResult = await fertilizeBulk(Number(fid), cells, mode);
         return NextResponse.json({
           success: true,
           data: fertilizeResult,

@@ -9,7 +9,11 @@ import { useState, useRef, useEffect, useMemo, Fragment } from "react";
 import { CROP_DATA, SPEED_BOOST } from "@/lib/game-constants";
 import Confetti from "./animations/Confetti";
 import { createPortal } from "react-dom";
-import { formatTime, getBoostTime } from "@/lib/utils";
+import {
+  formatTime,
+  getBoostTime,
+  getGrowthTimeBasedOnMode,
+} from "@/lib/utils";
 import { useAudio } from "@/context/AudioContext";
 import { useUserXp } from "@/hooks/use-user-xp";
 import { UserGridCell } from "@prisma/client";
@@ -33,11 +37,11 @@ function SeedDetailPopup({
   onBoost,
   onClose,
 }: SeedDetailPopupProps) {
-  const { state, remainingUses } = useGame();
+  const { state, remainingUses, mode } = useGame();
   const seedData = state.items.find(
     (seed) => seed.slug === `${cell.cropType}-seeds`
   );
-  const cropData = CROP_DATA[cell.cropType as CropType];
+
   const plantedAt = new Date(cell.plantedAt!);
   const harvestAt = useMemo(() => new Date(cell.harvestAt!), [cell.harvestAt]);
   const timeLeft = Math.max(0, (harvestAt.getTime() - Date.now()) / 1000);
@@ -92,7 +96,9 @@ function SeedDetailPopup({
       )
     : 0;
 
-  const formattedGrowthTime = formatTime(cropData.growthTime / 1000);
+  const formattedGrowthTime = formatTime(
+    getGrowthTimeBasedOnMode(cell.cropType as CropType, mode) / 1000
+  );
   const formattedPlantAt =
     plantedAt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) +
     " " +
@@ -454,7 +460,10 @@ export default function GridCell({ cell }: GridCellProps) {
             plantedAt: new Date(),
             harvestAt: new Date(
               Date.now() +
-                CROP_DATA[selectedSeed.replace("-seeds", "")].growthTime
+                getGrowthTimeBasedOnMode(
+                  selectedSeed.replace("-seeds", "") as CropType,
+                  mode
+                )
             ),
             isReadyToHarvest: false,
             mode,

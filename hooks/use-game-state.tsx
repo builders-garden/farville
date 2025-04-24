@@ -638,8 +638,6 @@ export const useGameState = (mode: Mode) => {
     []
   );
 
-  console.log("GameState", state);
-
   return {
     state,
     loading:
