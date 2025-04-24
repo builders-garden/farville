@@ -21,6 +21,7 @@ import {
   getAchievementProgressByCrop,
   getBoostTime,
   getGrowthTimeBasedOnMode,
+  isBoostable,
 } from "@/lib/utils";
 import {
   ActionType,
@@ -229,73 +230,66 @@ export const harvestBulk = async (
     ModeFeature.Quests
   );
 
-  if (isHarvestHonoursAndGoldEnabled || isQuestsEnabled) {
-    let userHarvestedCrops: UserHarvestedCrop[] = [];
+  let userHarvestedCrops: UserHarvestedCrop[] = [];
+  if (isHarvestHonoursAndGoldEnabled) {
+    userHarvestedCrops = await getUserHarvestedCrops(fid);
+  }
+
+  // Process each crop type in a single pass
+  for (const cropType in harvestCropSummary) {
+    const amount = harvestCropSummary[cropType];
+    let goldCropCount = 0;
+
     if (isHarvestHonoursAndGoldEnabled) {
-      userHarvestedCrops = await getUserHarvestedCrops(fid);
+      const achievementProgress = getAchievementProgressByCrop(
+        userHarvestedCrops,
+        cropType as CropType
+      );
+
+      // Check if the user has reached a new badge
+      if (
+        achievementProgress.step < 4 &&
+        achievementProgress.count + amount >= achievementProgress.currentGoal
+      ) {
+        newBadges.push({
+          crop: cropType,
+          step: achievementProgress.step,
+        });
+      }
+
+      // Check if the user has found gold crops
+      goldCropCount = calculateGoldCropsInBatch(
+        amount,
+        achievementProgress.step
+      );
+
+      if (goldCropCount > 0) {
+        console.log(
+          `User ${fid} harvested ${goldCropCount} gold ${cropType}! 🌟`
+        );
+        await addUserItem(fid, CROP_DATA[cropType].goldId, goldCropCount, mode);
+        goldCrops.push({
+          crop: "gold-" + cropType,
+          amount: goldCropCount,
+        });
+      }
+
+      await upsertUserHarvestedCrop(fid, cropType, amount);
     }
 
-    // Process each crop type in a single pass
-    for (const cropType in harvestCropSummary) {
-      const amount = harvestCropSummary[cropType];
-      let goldCropCount = 0;
+    const regularCropAmount = amount - goldCropCount;
+    if (regularCropAmount > 0) {
+      await addUserItem(fid, CROP_DATA[cropType].id, regularCropAmount, mode);
+    }
 
-      if (isHarvestHonoursAndGoldEnabled) {
-        const achievementProgress = getAchievementProgressByCrop(
-          userHarvestedCrops,
-          cropType as CropType
-        );
-
-        // Check if the user has reached a new badge
-        if (
-          achievementProgress.step < 4 &&
-          achievementProgress.count + amount >= achievementProgress.currentGoal
-        ) {
-          newBadges.push({
-            crop: cropType,
-            step: achievementProgress.step,
-          });
-        }
-
-        // Check if the user has found gold crops
-        goldCropCount = calculateGoldCropsInBatch(
-          amount,
-          achievementProgress.step
-        );
-
-        if (goldCropCount > 0) {
-          console.log(
-            `User ${fid} harvested ${goldCropCount} gold ${cropType}! 🌟`
-          );
-          await addUserItem(
-            fid,
-            CROP_DATA[cropType].goldId,
-            goldCropCount,
-            mode
-          );
-          goldCrops.push({
-            crop: "gold-" + cropType,
-            amount: goldCropCount,
-          });
-        }
-
-        await upsertUserHarvestedCrop(fid, cropType, amount);
-      }
-
-      const regularCropAmount = amount - goldCropCount;
-      if (regularCropAmount > 0) {
-        await addUserItem(fid, CROP_DATA[cropType].id, regularCropAmount, mode);
-      }
-
-      if (isQuestsEnabled) {
-        await sendQuestsCalculation(
-          fid,
-          ActionType.Harvest,
-          CROP_DATA[cropType].id,
-          amount,
-          mode
-        );
-      }
+    if (isQuestsEnabled) {
+      await sendQuestsCalculation(
+        fid,
+        ActionType.Harvest,
+        CROP_DATA[cropType].id,
+        amount,
+        mode
+      );
     }
   }
 
@@ -386,13 +380,15 @@ export const perkBulk = async (
       // Check if enough time has passed since last speed boost
       if (gridCell.speedBoostedAt) {
         const lastBoostTime = new Date(gridCell.speedBoostedAt);
-        const timeSinceBoost = Date.now() - lastBoostTime.getTime();
-        if (timeSinceBoost < SPEED_BOOST[itemSlug].duration) {
+        if (isBoostable(itemSlug, mode, lastBoostTime)) {
           nonPerkableCells.push(gridCell);
           continue;
         }
       }
-      const boostTime = getBoostTime(itemSlug);
+      const boostTime = getBoostTime(itemSlug, mode);
+      console.log(
+        `User ${fid} applied ${itemSlug} to cell ${gridCell.x}/${gridCell.y} with boost time: ${boostTime}`
+      );
       await sendDelayedNotification(
         fid.toString(),
         `Harvest time! 🌾`,

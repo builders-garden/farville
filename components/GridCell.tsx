@@ -260,7 +260,7 @@ export default function GridCell({ cell }: GridCellProps) {
           y: cell.y,
           harvestAt: new Date(
             new Date(cell.harvestAt!).getTime() -
-              getBoostTime(boostType as PerkType)
+              getBoostTime(boostType as PerkType, mode)
           ),
           speedBoostedAt: new Date(),
           mode,
@@ -315,7 +315,7 @@ export default function GridCell({ cell }: GridCellProps) {
         });
 
         const itemSlug = selectedPerk.item.slug as PerkType;
-        const boostTime = getBoostTime(itemSlug);
+        const boostTime = getBoostTime(itemSlug, mode);
 
         updateGridCells([
           {

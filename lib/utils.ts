@@ -272,8 +272,28 @@ export const formatTime = (seconds: number) => {
     .join(" ");
 };
 
-export const getBoostTime = (perkSlug: PerkType) => {
-  return SPEED_BOOST[perkSlug].duration * (1 - 1 / SPEED_BOOST[perkSlug].boost);
+export const getBoostTime = (perkSlug: PerkType, mode: Mode) => {
+  return (
+    Math.floor(
+      SPEED_BOOST[perkSlug].duration / MODE_DEFINITIONS[mode].growthTimeDivisor
+    ) *
+    (1 - 1 / SPEED_BOOST[perkSlug].boost)
+  );
+};
+
+// TODO: duration needs to be calculated based on the mode using a different operation
+export const isBoostable = (
+  itemSlug: string,
+  mode: Mode,
+  lastBoostTime: Date
+) => {
+  const timeSinceBoost = Date.now() - lastBoostTime.getTime();
+  return (
+    timeSinceBoost <
+    Math.floor(
+      SPEED_BOOST[itemSlug].duration / MODE_DEFINITIONS[mode].boosterTimeDivisor
+    )
+  );
 };
 
 export const getStreakDates = (streaks: Streak[]) => {

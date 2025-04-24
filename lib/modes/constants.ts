@@ -67,6 +67,7 @@ export const MODE_DEFINITIONS = {
       button: "#ffffff",
     },
     growthTimeDivisor: 1,
+    boosterTimeDivisor: 1,
   },
   [Mode.Farcon]: {
     name: "Farcon",
@@ -91,6 +92,7 @@ export const MODE_DEFINITIONS = {
       button: "#ffffff",
     },
     growthTimeDivisor: 2,
+    boosterTimeDivisor: 4,
   },
   [Mode.Sonic]: {
     name: "Sonic",
@@ -115,5 +117,6 @@ export const MODE_DEFINITIONS = {
       button: "#ffffff",
     },
     growthTimeDivisor: 48,
+    boosterTimeDivisor: 8,
   },
 };
