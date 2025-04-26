@@ -1,5 +1,10 @@
 import { useAudio } from "@/context/AudioContext";
 import { useApiMutation } from "@/hooks/use-api-mutation";
+import { Mode } from "@/lib/types/game";
+
+interface ExpandGridProps {
+  mode: Mode;
+}
 
 export const useExpandGrid = ({
   isActionInProgress,
@@ -13,8 +18,11 @@ export const useExpandGrid = ({
   refetchUser: () => Promise<void>;
 }) => {
   const { playSound } = useAudio();
-  return useApiMutation<unknown, void>({
+  return useApiMutation<unknown, ExpandGridProps>({
     url: "/api/grid-cells",
+    body: ({ mode }) => ({
+      mode,
+    }),
     onMutate: () => {
       if (isActionInProgress) return;
       setIsActionInProgress(true);

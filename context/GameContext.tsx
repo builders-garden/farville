@@ -70,7 +70,7 @@ interface GameContextType {
   // }) => void;
   buyItem: (params: { itemId: number; quantity: number; mode: Mode }) => void;
   sellItem: (params: { itemId: number; quantity: number; mode: Mode }) => void;
-  expandGrid: () => void;
+  expandGrid: (params: { mode: Mode }) => void;
   refetchState: () => Promise<void>;
   refetchUser: () => Promise<void>;
   refetchClaimableQuests: () => Promise<void>;

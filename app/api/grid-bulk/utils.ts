@@ -386,9 +386,6 @@ export const perkBulk = async (
         }
       }
       const boostTime = getBoostTime(itemSlug, mode);
-      console.log(
-        `User ${fid} applied ${itemSlug} to cell ${gridCell.x}/${gridCell.y} with boost time: ${boostTime}`
-      );
       await sendDelayedNotification(
         fid.toString(),
         `Harvest time! 🌾`,
