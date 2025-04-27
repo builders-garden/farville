@@ -42,6 +42,19 @@ export const getUserByMode = async (
   };
 };
 
+export const getUserModes = async (fid: number): Promise<Mode[]> => {
+  const user = await prisma.userStatistic.findMany({
+    where: {
+      fid,
+    },
+    select: {
+      mode: true,
+    },
+  });
+
+  return user.map((user) => user.mode as Mode);
+};
+
 export const getPlayerCountByMode = async (mode: Mode = Mode.Classic) => {
   return await prisma.userStatistic.count({
     where: {

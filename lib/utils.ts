@@ -10,7 +10,7 @@ import {
   MAX_DAILY_ALLOWED_DONATION_TO_USERS,
   SPEED_BOOST,
 } from "./game-constants";
-import { CropType, Mode, PerkType } from "@/lib/types/game";
+import { CropType, Mode, PerkType, QuestType } from "@/lib/types/game";
 import { fetchUsersFollowedBy } from "./neynar";
 import {
   getModePartialLeaderboardFromFids,
@@ -21,13 +21,19 @@ import {
   getUserByMode,
   getLeaderboardUserPositionByMode,
   getUsersByXp,
+  getUserLeaderboardEntry,
+  createUserLeaderboardEntry,
+  getUserHasQuests,
+  initDailyUserQuests,
+  initWeeklyUserQuests,
 } from "./prisma/queries";
 import { encodeFunctionData, Address, Hex } from "viem";
 import { PFP_NFT_ABI } from "./contracts/pfp-nft/abi";
 import { env } from "@/lib/env";
 import { DbUserDonation } from "@/lib/prisma/types";
 import { Item, Streak, UserHarvestedCrop } from "@prisma/client";
-import { MODE_DEFINITIONS } from "./modes/constants";
+import { MODE_DEFINITIONS, ModeFeature } from "./modes/constants";
+import { NextResponse } from "next/server";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -580,4 +586,66 @@ export const userCanDonate = (
 export const getGrowthTimeBasedOnMode = (crop: CropType, mode: Mode) => {
   const baseGrowthTime = CROP_DATA[crop].growthTime;
   return Math.floor(baseGrowthTime / MODE_DEFINITIONS[mode].growthTimeDivisor);
+};
+
+export const initQuestsAndLeaderboardEntryByMode = async (
+  fid: number,
+  mode: Mode
+) => {
+  // generate new entry inside the user leaderboard if it doesn't exist
+  let weeklyUserLeaderboard = await getUserLeaderboardEntry(Number(fid));
+
+  if (!weeklyUserLeaderboard) {
+    const user = await getUserByMode(Number(fid), mode);
+    if (!user) {
+      return NextResponse.json({ message: "User not found" }, { status: 404 });
+    }
+    const userLeague = getUserLeague(user.xp);
+    weeklyUserLeaderboard = await createUserLeaderboardEntry(
+      Number(fid),
+      {
+        league: userLeague,
+      },
+      mode
+    );
+  }
+
+  // Check if the user has daily, weekly and monthly quests
+  // If not, initialize them
+  const dailyQuests = await getUserHasQuests(Number(fid), mode, {
+    type: [QuestType.Daily],
+    activeToday: true,
+  });
+  const weeklyQuests = await getUserHasQuests(Number(fid), mode, {
+    type: [QuestType.Weekly],
+    activeToday: true,
+  });
+  if (!dailyQuests || dailyQuests?.length === 0) {
+    await initDailyUserQuests(Number(fid), mode);
+  }
+  if (!weeklyQuests || weeklyQuests?.length === 0) {
+    await initWeeklyUserQuests(Number(fid), mode);
+  }
+};
+
+export const initQuestsAndLeaderboardEntry = async (
+  fid: number,
+  modes: Mode[]
+) => {
+  for (const mode of modes) {
+    const now = new Date();
+    const modeStartDate = MODE_DEFINITIONS[mode].startDate;
+    const modeEndDate = MODE_DEFINITIONS[mode].endDate;
+    const modeFeatures = MODE_DEFINITIONS[mode].features;
+    if (
+      modeStartDate &&
+      modeEndDate &&
+      mode !== Mode.Classic &&
+      (now < modeStartDate || now > modeEndDate) &&
+      !modeFeatures.includes(ModeFeature.Quests)
+    ) {
+      continue;
+    }
+    await initQuestsAndLeaderboardEntryByMode(fid, mode);
+  }
 };

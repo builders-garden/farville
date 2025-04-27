@@ -6,19 +6,15 @@ import { trackEvent } from "@/lib/posthog/server";
 import {
   addReferral,
   createUserAndMode,
-  createUserLeaderboardEntry,
   getUserByMode,
   getUserGridCells,
-  getUserLeaderboardEntry,
+  getUserModes,
   giftStarterPack,
-  initDailyUserQuests,
   initializeGrid,
-  initWeeklyUserQuests,
 } from "@/lib/prisma/queries";
-import { getUserLeague } from "@/lib/utils";
+import { initQuestsAndLeaderboardEntry } from "@/lib/utils";
 import { env } from "@/lib/env";
-import { getUserHasQuests } from "@/lib/prisma/queries";
-import { Mode, QuestType } from "@/lib/types/game";
+import { Mode } from "@/lib/types/game";
 
 export const POST = async (req: NextRequest) => {
   const { fid, referrerFid, signature, message } = await req.json();
@@ -73,32 +69,8 @@ export const POST = async (req: NextRequest) => {
     // await initializeUserQuest(fid);
   }
 
-  // generate new entry inside the user leaderboard if it doesn't exist
-  let weeklyUserLeaderboard = await getUserLeaderboardEntry(fid);
-
-  if (!weeklyUserLeaderboard) {
-    const userLeague = getUserLeague(user.xp);
-    weeklyUserLeaderboard = await createUserLeaderboardEntry(fid, {
-      league: userLeague,
-    });
-  }
-
-  // Check if the user has daily, weekly and monthly quests
-  // If not, initialize them
-  const dailyQuests = await getUserHasQuests(fid, Mode.Classic, {
-    type: [QuestType.Daily],
-    activeToday: true,
-  });
-  const weeklyQuests = await getUserHasQuests(Number(fid), Mode.Classic, {
-    type: [QuestType.Weekly],
-    activeToday: true,
-  });
-  if (!dailyQuests || dailyQuests?.length === 0) {
-    await initDailyUserQuests(Number(fid));
-  }
-  if (!weeklyQuests || weeklyQuests?.length === 0) {
-    await initWeeklyUserQuests(Number(fid));
-  }
+  const userModes = await getUserModes(fid);
+  await initQuestsAndLeaderboardEntry(fid, userModes);
 
   // Generate a session token using fid and current timestamp
   const jwtToken = await new jose.SignJWT({

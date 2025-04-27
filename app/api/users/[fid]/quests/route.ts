@@ -19,10 +19,11 @@ export async function GET(
     const type = searchParams.get("type");
     const itemId = searchParams.get("itemId");
     const activeToday = searchParams.get("activeToday");
+    const mode = searchParams.get("mode");
 
     const quests = await getUserHasQuests(
       fid,
-      Mode.Classic,
+      mode ? Mode[mode as keyof typeof Mode] : Mode.Classic,
       {
         status: status as QuestStatus,
         category: category || undefined,

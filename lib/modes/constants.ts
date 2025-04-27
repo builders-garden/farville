@@ -1,6 +1,11 @@
 import { Mode } from "../types/game";
 
-export const STARTER_PACKS = {
+interface StarterPack {
+  itemId: number;
+  quantity: number;
+}
+
+export const STARTER_PACKS: Record<Mode, Array<StarterPack>> = {
   [Mode.Classic]: [
     {
       itemId: 1,
@@ -39,7 +44,30 @@ export enum ModeFeature {
   Quests = "quests",
 }
 
-export const MODE_DEFINITIONS = {
+interface ModeDefinition {
+  name: string;
+  description: string;
+  starterPack: Array<StarterPack>;
+  features: ModeFeature[];
+  startAt: Date;
+  endAt: Date | null;
+  background: {
+    pattern: string;
+    color: string;
+  };
+  welcomeCardColors: {
+    background: string;
+    title: string;
+    description: string;
+    button: string;
+  };
+  growthTimeDivisor: number;
+  boosterTimeDivisor: number;
+  startDate?: Date;
+  endDate?: Date;
+}
+
+export const MODE_DEFINITIONS: Record<Mode, ModeDefinition> = {
   [Mode.Classic]: {
     name: "Classic",
     description: "The original game mode with no special features.",
@@ -93,6 +121,8 @@ export const MODE_DEFINITIONS = {
     },
     growthTimeDivisor: 2,
     boosterTimeDivisor: 4,
+    startDate: new Date("2025-03-30T00:00:00Z"),
+    endDate: new Date("2025-05-04T23:59:59Z"),
   },
   [Mode.Sonic]: {
     name: "Sonic",
@@ -118,5 +148,7 @@ export const MODE_DEFINITIONS = {
     },
     growthTimeDivisor: 48,
     boosterTimeDivisor: 8,
+    startDate: new Date("2025-05-03T00:00:00Z"),
+    endDate: new Date("2025-05-03T23:59:59Z"),
   },
 };

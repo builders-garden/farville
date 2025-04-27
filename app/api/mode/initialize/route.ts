@@ -8,6 +8,7 @@ import {
   giftStarterPack,
   initializeGrid,
 } from "@/lib/prisma/queries";
+import { initQuestsAndLeaderboardEntryByMode } from "@/lib/utils";
 
 const requestSchema = z.object({
   mode: z.nativeEnum(Mode),
@@ -53,6 +54,8 @@ export const POST = async (req: NextRequest) => {
     // create new user grid for the given mode
     await initializeGrid(Number(fid), mode);
     await giftStarterPack(Number(fid), mode);
+    // initialize quests and leaderboard entry
+    await initQuestsAndLeaderboardEntryByMode(Number(fid), mode);
 
     return NextResponse.json(
       { message: `User initialized for mode ${mode}` },

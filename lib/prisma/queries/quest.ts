@@ -23,21 +23,6 @@ import {
   millisecondsInHour,
 } from "@/lib/game-constants";
 
-export const getQuests = async (): Promise<
-  (Quest & { item: Item | null })[]
-> => {
-  const quests = await prisma.quest.findMany({
-    include: {
-      item: true,
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
-  });
-
-  return quests;
-};
-
 export const getActiveQuests = async (): Promise<
   (Quest & { item: Item | null })[]
 > => {
@@ -66,16 +51,6 @@ export const getQuestById = async (id: number): Promise<Quest | null> => {
   return quest;
 };
 
-export const createQuest = async (
-  quest: Prisma.QuestCreateInput
-): Promise<Quest> => {
-  const newQuest = await prisma.quest.create({
-    data: quest,
-  });
-
-  return newQuest;
-};
-
 export const createQuests = async (
   quests: Prisma.QuestCreateInput[]
 ): Promise<Quest[]> => {
@@ -83,45 +58,6 @@ export const createQuests = async (
     data: quests,
     skipDuplicates: true, // Optional: skips duplicates if needed
   });
-};
-
-export const updateQuest = async (
-  id: number,
-  updates: Prisma.QuestUpdateInput
-): Promise<Quest> => {
-  const updatedQuest = await prisma.quest.update({
-    where: { id },
-    data: updates,
-  });
-
-  return updatedQuest;
-};
-
-export const deleteQuest = async (id: number): Promise<void> => {
-  await prisma.quest.delete({
-    where: { id },
-  });
-};
-
-export const getQuestsByItemId = async (
-  itemId: number,
-  active: boolean = true
-): Promise<Quest[]> => {
-  const now = new Date();
-  const data = await prisma.quest.findMany({
-    where: {
-      itemId,
-      ...(active && {
-        startAt: { lte: now },
-        endAt: { gt: now },
-      }),
-    },
-    include: {
-      item: true,
-    },
-  });
-
-  return data;
 };
 
 export const getQuestsByTypeAndLevel = async (
@@ -421,81 +357,6 @@ export const generateWeeklyQuests = async (level: number) => {
   }
 
   const insertedQuests = await createQuests(weeklyQuests);
-  return insertedQuests;
-};
-
-export const generateMonthlyQuests = async (level: number) => {
-  let questCategories = ["sell", "receive", "donate", "plant", "harvest"];
-
-  let seedItems = (await getItemsByCategory("seed")).filter(
-    (item) => item.requiredLevel <= level
-  );
-  let cropItems = (await getItemsByCategory("crop")).filter(
-    (item) => item.requiredLevel <= level
-  );
-
-  // const amounts = [40, 60, 80, 100, 120];
-  const amountsByTier = {
-    S: [100, 120, 150],
-    A: [200, 225, 250],
-    B: [300, 350, 400],
-    C: [500, 550, 600],
-  };
-
-  const monthlyQuests: Prisma.QuestCreateArgs["data"][] = [];
-  for (let i = 0; i < 5; i++) {
-    const category = chooseRandomItem(questCategories);
-    questCategories = questCategories.filter((c) => c !== category);
-    let item: Item;
-    if (category === "plant") {
-      item = chooseRandomItem(seedItems);
-    } else if (category === "sell") {
-      item = chooseRandomItem(cropItems);
-    } else if (category === "harvest") {
-      item = chooseRandomItem(cropItems);
-    } else {
-      const allItems = [...seedItems, ...cropItems];
-      item = chooseRandomItem(allItems);
-    }
-    seedItems = seedItems.filter((i) => i.id !== item.id);
-    cropItems = cropItems.filter((i) => i.id !== item.id);
-    const slugToUse =
-      item.category === "crop" ? item.slug : item.slug.split("-")[0];
-    const cropData = CROP_DATA[slugToUse];
-
-    // const amount = chooseRandomItem(amounts);
-    // Apply level-based multiplier for quest amount
-    const amount = chooseRandomItem(
-      amountsByTier[cropData.tier as keyof typeof amountsByTier]
-    );
-
-    const xp = calculateQuestXP(level, cropData, amount);
-    const startAt = new Date();
-    startAt.setUTCHours(0, 0, 0, 0);
-    const startAtISO = startAt.toISOString();
-    const endAt = new Date();
-    endAt.setUTCDate(1);
-    endAt.setUTCMonth(endAt.getUTCMonth() + 1);
-    endAt.setUTCDate(0);
-    endAt.setUTCHours(23, 59, 59, 999);
-    const endAtISO = endAt.toISOString();
-
-    const monthlyQuest: Prisma.QuestCreateArgs["data"] = {
-      type: "monthly",
-      category,
-      itemId: item.id ? item.id : cropItems[0].id,
-      amount,
-      xp,
-      startAt: startAtISO,
-      endAt: endAtISO,
-      coins: 0,
-      level,
-    };
-
-    monthlyQuests.push(monthlyQuest);
-  }
-
-  const insertedQuests = await createQuests(monthlyQuests);
   return insertedQuests;
 };
 

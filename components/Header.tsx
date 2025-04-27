@@ -161,7 +161,7 @@ export default function Header() {
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button className="bg-[#8B5E3C] hover:bg-[#6d4c2c] text-white border-[#6d4c2c] shadow-lg shadow-[#A17449]/50">
+            <Button className="bg-[#8B5E3C] hover:bg-[#6d4c2c] text-white border-[#6d4c2c] shadow-lg shadow-[#A17449]/50 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0">
               {mode.charAt(0).toUpperCase() + mode.slice(1)}
             </Button>
           </DropdownMenuTrigger>
@@ -177,8 +177,8 @@ export default function Header() {
                 className={`flex items-center gap-2 text-white
               ${
                 modeValue === mode
-                  ? "bg-[#ffb938] cursor-not-allowed hover:bg-[#ffb938]! text-[#5d3c1c]"
-                  : "hover:bg-[#6d4c2c]/50 focus:bg-[#6d4c2c]/50 cursor-pointer"
+                  ? "bg-[#ffb938] cursor-not-allowed focus:bg-[#ffb938] text-[#5d3c1c]"
+                  : "hover:bg-[#6d4c2c]/50 focus:bg-[#6d4c2c]/50 cursor-pointer focus:text-white"
               }`}
               >
                 <Image
