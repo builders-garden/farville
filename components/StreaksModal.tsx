@@ -113,60 +113,22 @@ export default function StreaksModal({ onClose }: { onClose: () => void }) {
   const lastClaimedDay = state.streaks[0] ? state.streaks[0].lastClaimed : 0;
 
   useEffect(() => {
-    // Calculate the effective day within the monthly cycle
-    const effectiveLastClaimedDay = ((lastClaimedDay - 1) % 28) + 1;
-
-    // Handle cycle transition - when lastClaimed is a multiple of 28 and we're moving beyond it
-    const isNewCycle =
-      lastClaimedDay % 28 === 0 && currentDayStreak > lastClaimedDay;
-
-    // Determine what range of rewards to show
-    let startIndex, endIndex;
-
-    if (isNewCycle) {
-      // If we're transitioning to a new cycle, show rewards starting from day 1
-      startIndex = 0;
-      endIndex = 6; // Show 6 rewards
-    } else {
-      // Always show some rewards before the last claimed day, the current day to claim,
-      // and a few upcoming rewards
-      startIndex = Math.max(0, effectiveLastClaimedDay - 2); // Show 2 days before last claimed
-      endIndex = startIndex + 6; // Show 6 rewards total
-    }
-
-    // Slice the rewards to show the relevant portion
-    const currentRewards = MONTHLY_REWARDS.slice(startIndex, endIndex);
-
-    const streaksRewards = currentRewards.map((reward) => {
-      // Calculate which cycle we're in (1-based)
-      const currentCycle =
-        Math.floor((Math.max(1, lastClaimedDay) - 1) / 28) + 1;
-
-      // Calculate the start day of the current cycle
-      const cycleStartDay = (currentCycle - 1) * 28 + 1;
-
-      // Calculate if we're starting a new cycle
-      const isNewCycle =
-        lastClaimedDay % 28 === 0 && currentDayStreak > lastClaimedDay;
-
-      let actualDay;
-      if (isNewCycle) {
-        // For new cycle, start from the next cycle's start day
-        actualDay = cycleStartDay + 28 + (reward.day - 1);
-      } else {
-        // For ongoing cycle, offset the reward day by the cycle start
-        actualDay = cycleStartDay + (reward.day - 1);
-      }
-
+    // Helper functions inside useEffect to avoid dependency issues
+    const createStreakReward = (
+      day: number,
+      currentDayStreak: number,
+      lastClaimedDay: number,
+      rewardData: (typeof MONTHLY_REWARDS)[0]
+    ) => {
       const streak: StreakReward = {
-        day: actualDay,
+        day,
         rewards: [],
-        claimable: actualDay <= currentDayStreak,
-        claimed: actualDay <= lastClaimedDay,
+        claimable: day <= currentDayStreak,
+        claimed: day <= lastClaimedDay,
       };
 
       // Add rewards
-      for (const item of reward.rewards) {
+      for (const item of rewardData.rewards) {
         const itemData = state.items.find((i) => i.id === item.itemId);
         if (itemData) {
           streak.rewards.push({
@@ -177,13 +139,72 @@ export default function StreaksModal({ onClose }: { onClose: () => void }) {
         }
       }
 
-      // Set active reward if this is the next claimable day
-      if (actualDay === lastClaimedDay + 1) {
-        setActiveReward(streak);
-      }
-
       return streak;
-    });
+    };
+
+    const handleInitialStreak = (currentDayStreak: number) => {
+      const currentRewards = MONTHLY_REWARDS.slice(0, 6);
+      return currentRewards.map((reward) => {
+        const streak = createStreakReward(
+          reward.day,
+          currentDayStreak,
+          0,
+          reward
+        );
+
+        // Set active reward if this is day 1 and we have a streak
+        if (reward.day === 1 && currentDayStreak > 0) {
+          setActiveReward(streak);
+        }
+
+        return streak;
+      });
+    };
+
+    const handleOngoingStreak = (
+      lastClaimedDay: number,
+      currentDayStreak: number
+    ) => {
+      const effectiveLastClaimedDay = ((lastClaimedDay - 1) % 28) + 1;
+      const isNewCycle =
+        lastClaimedDay % 28 === 0 && currentDayStreak > lastClaimedDay;
+
+      // Determine range of rewards to show
+      const startIndex = isNewCycle
+        ? 0
+        : Math.max(0, effectiveLastClaimedDay - 2);
+      const endIndex = startIndex + 6;
+
+      const currentRewards = MONTHLY_REWARDS.slice(startIndex, endIndex);
+      const currentCycle =
+        Math.floor((Math.max(1, lastClaimedDay) - 1) / 28) + 1;
+      const cycleStartDay = (currentCycle - 1) * 28 + 1;
+
+      return currentRewards.map((reward) => {
+        const actualDay = isNewCycle
+          ? cycleStartDay + 28 + (reward.day - 1)
+          : cycleStartDay + (reward.day - 1);
+
+        const streak = createStreakReward(
+          actualDay,
+          currentDayStreak,
+          lastClaimedDay,
+          reward
+        );
+
+        // Set active reward if this is the next claimable day
+        if (actualDay === lastClaimedDay + 1) {
+          setActiveReward(streak);
+        }
+
+        return streak;
+      });
+    };
+
+    const streaksRewards =
+      lastClaimedDay === 0
+        ? handleInitialStreak(currentDayStreak)
+        : handleOngoingStreak(lastClaimedDay, currentDayStreak);
 
     setRewards(streaksRewards);
   }, [state.items, currentDayStreak, lastClaimedDay]);
