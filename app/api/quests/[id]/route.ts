@@ -11,6 +11,7 @@ import {
   updateUserXP,
 } from "@/lib/prisma/queries";
 import { getThisWeekMonday } from "@/lib/utils";
+import { MODE_DEFINITIONS, ModeFeature } from "@/lib/modes/constants";
 
 export async function GET(
   request: NextRequest,
@@ -110,14 +111,19 @@ export async function POST(
   let didLevelUp = false;
   if (status === "claimed") {
     if (userQuest.quest.coins) {
-      await updateUserCoins(Number(fid), user.coins + userQuest.quest.coins);
+      await updateUserCoins(
+        Number(fid),
+        user.coins + userQuest.quest.coins,
+        mode
+      );
     }
     if (userQuest.quest.xp) {
-      const xp = await updateUserXP(Number(fid), userQuest.quest.xp);
+      const xp = await updateUserXP(Number(fid), userQuest.quest.xp, mode);
       const thisWeekMonday = getThisWeekMonday();
       if (
         userQuest.quest.startAt &&
-        new Date(userQuest.quest.startAt) >= thisWeekMonday
+        new Date(userQuest.quest.startAt) >= thisWeekMonday &&
+        MODE_DEFINITIONS[mode].features.includes(ModeFeature.Leagues)
       ) {
         await updateUserWeeklyScore(
           Number(fid),
@@ -125,7 +131,7 @@ export async function POST(
           xp.newLevel,
           user.xp,
           xp.didLevelUp,
-          Mode.Classic
+          mode
         );
       }
       didLevelUp = xp.didLevelUp;

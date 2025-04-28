@@ -39,7 +39,7 @@ export async function GET(request: Request) {
         });
         return NextResponse.json({ users }, { headers });
       }
-      const { users } = await getUsersByFidsAndMode(userFids);
+      const { users } = await getUsersByFidsAndMode(userFids, mode);
       return NextResponse.json({ users }, { headers });
     }
 

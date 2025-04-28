@@ -12,7 +12,8 @@ export const useLeaderboard = (
   friends: boolean,
   mode: Mode,
   targetFid?: number,
-  quests = false
+  quests = false,
+  enabled = true
 ) => {
   const queryParams = new URLSearchParams();
   if (targetFid) queryParams.append("targetFid", targetFid.toString());
@@ -32,7 +33,7 @@ export const useLeaderboard = (
     url,
     queryKey: ["leaderboard", targetFid, friends, quests, mode],
     isProtected: true,
-    enabled: friends ? !!targetFid : true,
+    enabled: enabled && (friends ? !!targetFid : true),
     staleTime: 60 * 1000,
   });
 };

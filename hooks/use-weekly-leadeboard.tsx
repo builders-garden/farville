@@ -6,7 +6,8 @@ export const useWeeklyLeaderboard = (
   targetFid?: number,
   currentWeek?: boolean,
   league?: number,
-  limit?: number
+  limit?: number,
+  enabled = true
 ) => {
   const queryParams = new URLSearchParams();
   if (targetFid) queryParams.append("targetFid", targetFid.toString());
@@ -28,7 +29,7 @@ export const useWeeklyLeaderboard = (
     url,
     queryKey: ["weekly-leaderboard", targetFid, currentWeek, league],
     isProtected: true,
-    enabled: !!targetFid,
+    enabled: enabled && !!targetFid,
     staleTime: 60 * 1000,
   });
 

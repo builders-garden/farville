@@ -125,7 +125,7 @@ export default function Quest({
   claimable = false,
   onClaim,
 }: QuestProps) {
-  const { isActionInProgress, setIsActionInProgress, state } = useGame();
+  const { isActionInProgress, setIsActionInProgress, state, mode } = useGame();
   const { context } = useFrameContext();
   const { mutate: updateUserQuest, isPending } = useUpdateUserQuest({
     isActionInProgress,
@@ -303,7 +303,7 @@ export default function Quest({
               const y = rect.y + rect.height / 2;
 
               updateUserQuest(
-                { questId: quest.questId, status: QuestStatus.Claimed },
+                { questId: quest.questId, status: QuestStatus.Claimed, mode },
                 {
                   onSuccess: (data) => {
                     onClaim?.(quest.questId, x, y, data.didLevelUp);

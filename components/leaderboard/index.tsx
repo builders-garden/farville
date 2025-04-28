@@ -33,13 +33,15 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
     false,
     mode,
     state?.user.fid,
-    true
+    true,
+    MODE_DEFINITIONS[mode]?.features?.includes(ModeFeature.Quests)
   );
   const { data: questsFriendsData } = useLeaderboard(
     true,
     mode,
     state?.user.fid,
-    true
+    true,
+    MODE_DEFINITIONS[mode]?.features?.includes(ModeFeature.Quests)
   );
   const [activeTab, setActiveTab] = useState<"global" | "friends" | "weekly">(
     MODE_DEFINITIONS[mode]?.features?.includes(ModeFeature.Leagues)
@@ -57,21 +59,24 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
       state.weeklyStats.league === 3 ? state?.user.fid : undefined,
       isShowingCurrentWeek,
       3,
-      50
+      50,
+      MODE_DEFINITIONS[mode]?.features?.includes(ModeFeature.Leagues)
     );
   const { weeklyLeaderboard: silverWeeklyLeaderboard, refetch: refetchSilver } =
     useWeeklyLeaderboard(
       state.weeklyStats.league === 2 ? state?.user.fid : undefined,
       isShowingCurrentWeek,
       2,
-      50
+      50,
+      MODE_DEFINITIONS[mode]?.features?.includes(ModeFeature.Leagues)
     );
   const { weeklyLeaderboard: bronzeWeeklyLeaderboard, refetch: refetchBronze } =
     useWeeklyLeaderboard(
       state.weeklyStats.league === 1 ? state?.user.fid : undefined,
       isShowingCurrentWeek,
       1,
-      50
+      50,
+      MODE_DEFINITIONS[mode]?.features?.includes(ModeFeature.Leagues)
     );
 
   useEffect(() => {
@@ -205,7 +210,10 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
   return (
     <div className="fixed inset-0 bg-black/50 flex items-start z-50">
       {selectedUserFid ? (
-        <ProfileModal onClose={handleCloseProfile} userFid={selectedUserFid} />
+        <ProfileModal
+          onClose={handleCloseProfile}
+          userFid={selectedUserFid}
+        />
       ) : (
         <>
           <motion.div
@@ -307,7 +315,11 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
                     <div className="flex gap-2 xs:gap-3">
                       {[
                         { id: "xp", label: "XP", icon: "⭐" },
-                        { id: "quests", label: "Quests", icon: "🎯" },
+                        ...(MODE_DEFINITIONS[mode]?.features?.includes(
+                          ModeFeature.Quests
+                        )
+                          ? [{ id: "quests", label: "Quests", icon: "🎯" }]
+                          : []),
                       ].map((tab) => (
                         <motion.button
                           key={tab.id}
@@ -493,7 +505,10 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
                             </div>
                             <div className="bg-[#6d4c2c]/80 rounded-lg p-1 flex items-center justify-between">
                               <div className="flex items-center gap-1 text-white/80">
-                                <Clock size={14} className="text-[#FFB938]" />
+                                <Clock
+                                  size={14}
+                                  className="text-[#FFB938]"
+                                />
                                 <span className="text-[8px]">Time left:</span>
                               </div>
                               <div className="flex gap-1 text-white font-bold">

@@ -1,10 +1,11 @@
-import { QuestStatus } from "@/lib/types/game";
+import { Mode, QuestStatus } from "@/lib/types/game";
 import { useApiMutation } from "../use-api-mutation";
 import { useAudio } from "@/context/AudioContext";
 
 type UpdateUserQuestVariables = {
   questId: number;
   status: QuestStatus;
+  mode: Mode;
 };
 
 export const useUpdateUserQuest = ({
@@ -21,7 +22,7 @@ export const useUpdateUserQuest = ({
   >({
     url: (variables) => `/api/quests/${variables.questId}`,
     method: "POST",
-    body: (variables) => ({ status: variables.status }),
+    body: (variables) => ({ status: variables.status, mode: variables.mode }),
     onMutate: () => {
       if (isActionInProgress) return;
       setIsActionInProgress(true);
