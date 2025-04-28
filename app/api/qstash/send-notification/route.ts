@@ -6,6 +6,7 @@ import {
   getUserNotificationDetails,
   getUserNotificationsByCategory,
 } from "@/lib/prisma/queries";
+import { Mode } from "@/lib/types/game";
 import {
   SendNotificationRequest,
   sendNotificationResponseSchema,
@@ -32,6 +33,7 @@ export async function POST(req: NextRequest) {
   }
 
   const { fid, title, text, category } = requestBody.data;
+  const mode = Mode.Classic;
   const parsedFid = parseInt(fid);
   const timestamp = new Date();
   const minutes = 30;
@@ -65,8 +67,8 @@ export async function POST(req: NextRequest) {
   // Check category-specific conditions
   if (category === "harvest" || category === "boost-expired") {
     const count = await (category === "harvest"
-      ? getHarvestableCellsCount(parsedFid)
-      : getExpiredBoostCellsCount(parsedFid));
+      ? getHarvestableCellsCount(parsedFid, mode)
+      : getExpiredBoostCellsCount(parsedFid, mode));
 
     if (count === 0) {
       console.warn(

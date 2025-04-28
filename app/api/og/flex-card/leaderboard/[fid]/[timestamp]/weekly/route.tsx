@@ -79,11 +79,12 @@ export async function GET(
       userWeeklyStats.league,
       currentWeek === "true",
       10,
+      mode,
       Number(fid)
     );
 
     const currentWeeklyLeaderboardUsers =
-      await getWeeklyLeaderboardUsersByLeague(userWeeklyStats.league);
+      await getWeeklyLeaderboardUsersByLeague(userWeeklyStats.league, mode);
 
     const userPosition = usersWeekSummaries.targetPosition as number;
 

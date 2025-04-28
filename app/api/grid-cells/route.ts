@@ -17,15 +17,12 @@ export const GET = async (req: NextRequest) => {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const mode = req.nextUrl.searchParams.get("mode") || undefined;
+  const mode = req.nextUrl.searchParams.get("mode");
   if (mode && !validMode(mode)) {
     return NextResponse.json({ error: "Invalid mode" }, { status: 400 });
   }
 
-  const gridCells = await getUserGridCells(
-    Number(fid),
-    mode as Mode | undefined
-  );
+  const gridCells = await getUserGridCells(Number(fid), mode as Mode);
   return NextResponse.json(gridCells);
 };
 

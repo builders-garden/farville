@@ -18,11 +18,11 @@ export const GET = async (
       return NextResponse.json({ error: "Invalid FID" }, { status: 400 });
     }
     const category = req.nextUrl.searchParams.get("category") || undefined;
-    const mode = req.nextUrl.searchParams.get("mode") || undefined;
+    const mode = req.nextUrl.searchParams.get("mode");
     if (mode && !validMode(mode)) {
       return NextResponse.json({ error: "Invalid mode" }, { status: 400 });
     }
-    const items = await getUserItems(fid, category, mode as Mode | undefined);
+    const items = await getUserItems(fid, mode as Mode, category);
     return NextResponse.json(items);
   } catch (error) {
     console.error("Error fetching user items:", error);

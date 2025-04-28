@@ -4,7 +4,7 @@ import { UserGridCell } from "@prisma/client";
 
 export const getUserGridCells = async (
   fid: number,
-  mode: Mode = Mode.Classic
+  mode: Mode
 ): Promise<UserGridCell[]> => {
   const cells = await prisma.userGridCell.findMany({
     where: {
@@ -56,7 +56,7 @@ export const updateGridCellsBulk = async (
 
 export const initializeGrid = async (
   fid: number,
-  mode: Mode = Mode.Classic
+  mode: Mode
 ): Promise<void> => {
   const initialSize = {
     width: 2,
@@ -87,7 +87,7 @@ export const createGridCell = async (
   fid: number,
   x: number,
   y: number,
-  mode: Mode = Mode.Classic
+  mode: Mode
 ): Promise<void> => {
   await prisma.userGridCell.upsert({
     where: {
@@ -110,7 +110,7 @@ export const createGridCell = async (
 
 export const getHarvestableCellsCount = async (
   fid: number,
-  mode: Mode = Mode.Classic,
+  mode: Mode,
   withinMinutes: number = 3
 ): Promise<number> => {
   const threeMinutesFromNow = new Date(Date.now() + withinMinutes * 60 * 1000);
@@ -131,7 +131,7 @@ export const getHarvestableCellsCount = async (
 
 export const getExpiredBoostCellsCount = async (
   fid: number,
-  mode: Mode = Mode.Classic,
+  mode: Mode,
   withinMinutes: number = 3
 ): Promise<number> => {
   const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000);

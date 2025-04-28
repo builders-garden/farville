@@ -61,11 +61,11 @@ export const POST = async (req: NextRequest) => {
 
   // check if the user has already the grid cells
   // if not, initialize the grid
-  const gridCells = await getUserGridCells(fid);
+  const gridCells = await getUserGridCells(fid, Mode.Classic);
   if (gridCells.length === 0) {
-    await initializeGrid(fid);
+    await initializeGrid(fid, Mode.Classic);
     // Give them a starter pack
-    await giftStarterPack(fid);
+    await giftStarterPack(fid, Mode.Classic);
     // await initializeUserQuest(fid);
   }
 

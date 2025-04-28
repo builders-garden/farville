@@ -20,7 +20,7 @@ interface OtherUserProfileData {
 }
 
 export function useOtherUserProfile(
-  mode: Mode = Mode.Classic,
+  mode: Mode,
   fid?: number
 ): {
   userData: OtherUserProfileData;

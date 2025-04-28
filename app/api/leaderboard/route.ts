@@ -54,9 +54,9 @@ export async function GET(request: Request) {
     }
 
     const users = await getUsersByXp(
+      mode,
       20,
-      targetFid ? Number(targetFid) : undefined,
-      mode
+      targetFid ? Number(targetFid) : undefined
     );
     return NextResponse.json(users, { headers });
   } catch (error) {

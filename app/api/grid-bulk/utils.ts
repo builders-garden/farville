@@ -127,9 +127,9 @@ export const plantBulk = async (
       await sendQuestsCalculation(
         fid,
         "plant",
+        mode,
         userSeeds.itemId,
-        updatedGridCellsBulk.length,
-        mode
+        updatedGridCellsBulk.length
       );
     }
     await sendBatchToPostHog(
@@ -286,9 +286,9 @@ export const harvestBulk = async (
       await sendQuestsCalculation(
         fid,
         ActionType.Harvest,
+        mode,
         CROP_DATA[cropType].id,
-        amount,
-        mode
+        amount
       );
     }
   }

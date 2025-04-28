@@ -20,8 +20,8 @@ export async function GET(request: Request) {
       Number(league),
       currentWeek === "true",
       Number(limit),
-      Number(targetFid),
-      mode
+      mode,
+      Number(targetFid)
     );
     return NextResponse.json(usersWeekSummaries, { headers });
   } catch (error) {

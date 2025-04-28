@@ -474,7 +474,8 @@ export const getPartialLeaderboardBasedOnFid = async (
     const users = await getModePartialLeaderboardFromFids(
       userFids,
       targetFid,
-      Number(options.limit)
+      Number(options.limit),
+      mode
     );
     return users;
   }
@@ -489,11 +490,12 @@ export const getPartialLeaderboardBasedOnFid = async (
     return users;
   }
 
-  const userPosition = await getLeaderboardUserPositionByMode(user.xp);
+  const userPosition = await getLeaderboardUserPositionByMode(user.xp, mode);
   console.log(`User ${targetFid} position is: ${userPosition}`);
   const partialLeaderboard = await getModePartialLeaderboardFromUserPosition(
     userPosition,
-    Number(options.limit)
+    Number(options.limit),
+    mode
   );
 
   return partialLeaderboard;
@@ -514,6 +516,7 @@ export const getGlobalLeaderboard = async (
     });
   } else {
     users = await getUsersByXp(
+      mode,
       limit,
       targetFid ? Number(targetFid) : undefined
     );

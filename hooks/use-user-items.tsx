@@ -6,7 +6,7 @@ export interface UserItem extends UserHasItem {
   item: Item;
 }
 
-export const useUserItems = (mode: Mode = Mode.Classic, fid?: number) => {
+export const useUserItems = (mode: Mode, fid?: number) => {
   const { data, isLoading, refetch } = useApiQuery<UserItem[]>({
     queryKey: ["user-items", fid, mode],
     url: !fid

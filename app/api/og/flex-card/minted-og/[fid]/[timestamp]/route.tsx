@@ -76,7 +76,7 @@ export async function GET(
       });
     }
 
-    const playerCount = await getPlayerCountByMode();
+    const playerCount = await getPlayerCountByMode(mode);
 
     const leaderboardData = (await getGlobalLeaderboard(
       fid,

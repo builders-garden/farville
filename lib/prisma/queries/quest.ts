@@ -84,10 +84,10 @@ export const getQuestsByTypeAndLevel = async (
 
 export const initDailyUserQuests = async (
   fid: number,
-  mode: Mode = Mode.Classic
+  mode: Mode
 ): Promise<void> => {
   // get user level
-  const user = await getUserByMode(fid);
+  const user = await getUserByMode(fid, mode);
   if (!user) {
     throw new Error("User not found");
   }
@@ -121,10 +121,10 @@ export const initDailyUserQuests = async (
 
 export const initWeeklyUserQuests = async (
   fid: number,
-  mode: Mode = Mode.Classic
+  mode: Mode
 ): Promise<void> => {
   // get user level
-  const user = await getUserByMode(fid);
+  const user = await getUserByMode(fid, mode);
   if (!user) {
     throw new Error("User not found");
   }

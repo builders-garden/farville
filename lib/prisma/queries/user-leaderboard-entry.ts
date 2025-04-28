@@ -6,7 +6,7 @@ import { Mode } from "@/lib/types/game";
 export const createUserLeaderboardEntry = async (
   fid: number,
   data: Partial<UserLeaderboardEntry>,
-  mode: Mode = Mode.Classic
+  mode: Mode
 ) => {
   return await prisma.userLeaderboardEntry.create({
     data: {
@@ -19,7 +19,7 @@ export const createUserLeaderboardEntry = async (
 
 export const updateUserLeaderboardEntry = async (
   fid: number,
-  mode: Mode = Mode.Classic,
+  mode: Mode,
   data: Partial<UserLeaderboardEntry>
 ) => {
   return await prisma.userLeaderboardEntry.update({
@@ -43,7 +43,7 @@ export const getUserLeaderboardEntry = async (fid: number, mode: Mode) => {
 
 export const getWeeklyLeaderboardUsersByLeague = async (
   league: number,
-  mode: Mode = Mode.Classic
+  mode: Mode
 ) => {
   const userCount = await prisma.userLeaderboardEntry.count({
     where: {
@@ -62,8 +62,8 @@ export const getWeeklyUserLeaderboardByLeague = async (
   league: number,
   currentWeek: boolean,
   limit: number = 10,
-  targetFid?: number,
-  mode: Mode = Mode.Classic
+  mode: Mode,
+  targetFid?: number
 ) => {
   const filter = {
     where: {

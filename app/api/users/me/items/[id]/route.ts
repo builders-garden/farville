@@ -52,9 +52,9 @@ export const POST = async (req: NextRequest) => {
         await sendQuestsCalculation(
           Number(fid),
           "sell",
+          mode,
           itemId,
-          quantity,
-          mode
+          quantity
         );
         return NextResponse.json({ message: "Item sold" });
       default:

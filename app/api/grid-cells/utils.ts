@@ -6,9 +6,9 @@ import { Mode } from "@/lib/types/game";
 export async function sendQuestsCalculation(
   fid: number,
   category: string,
+  mode: Mode,
   itemId?: number,
-  itemAmount?: number,
-  mode: Mode = Mode.Classic
+  itemAmount?: number
 ) {
   if (env.NEXT_PUBLIC_URL === "http://localhost:3000") {
     return;

@@ -101,7 +101,11 @@ export async function GET(
     );
 
     // check that the user actually owned the gold crop
-    const userSpecialCrops = await getUserItemBySlug(Number(fid), crop);
+    const userSpecialCrops = await getUserItemBySlug(
+      Number(fid),
+      crop,
+      Mode.Classic
+    );
 
     if (!userSpecialCrops || userSpecialCrops.quantity < 1) {
       console.error(

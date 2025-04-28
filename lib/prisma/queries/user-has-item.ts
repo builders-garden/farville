@@ -6,7 +6,7 @@ import { STARTER_PACKS } from "@/lib/modes/constants";
 export const getUserItemByItemId = async (
   fid: number,
   itemId: number,
-  mode: Mode = Mode.Classic
+  mode: Mode
 ): Promise<(UserHasItem & { item: Item }) | null> => {
   const userItem = await prisma.userHasItem.findFirst({
     where: {
@@ -27,8 +27,8 @@ export const getUserItemByItemId = async (
 
 export const getUserItems = async (
   fid: number,
-  category?: string,
-  mode: Mode = Mode.Classic
+  mode: Mode,
+  category?: string
 ): Promise<(UserHasItem & { item: Item })[]> => {
   const userItems = await prisma.userHasItem.findMany({
     where: {
@@ -63,7 +63,7 @@ export const getUserItems = async (
 export const getUserItemBySlug = async (
   fid: number,
   slug: string,
-  mode: Mode = Mode.Classic
+  mode: Mode
 ): Promise<UserHasItem | null> => {
   const userItem = await prisma.userHasItem.findFirst({
     where: {
@@ -139,10 +139,7 @@ export const addUserItem = async (
   });
 };
 
-export const giftStarterPack = async (
-  fid: number,
-  mode: Mode = Mode.Classic
-) => {
+export const giftStarterPack = async (fid: number, mode: Mode) => {
   const starterPack = STARTER_PACKS[mode];
   if (!starterPack) {
     throw new Error(`No starter pack found for mode: ${mode}`);

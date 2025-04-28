@@ -141,8 +141,8 @@ export const POST = async (
   });
 
   await Promise.all([
-    sendQuestsCalculation(Number(fid), "donate", itemId, quantity),
-    sendQuestsCalculation(Number(toFid), "receive", itemId, quantity),
+    sendQuestsCalculation(Number(fid), "donate", mode, itemId, quantity),
+    sendQuestsCalculation(Number(toFid), "receive", mode, itemId, quantity),
     sendDelayedNotification(
       toFid.toString(),
       "New Donation!",

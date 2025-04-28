@@ -9,15 +9,11 @@ export const GET = async (req: NextRequest) => {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   const category = req.nextUrl.searchParams.get("category") || undefined;
-  const mode = req.nextUrl.searchParams.get("mode") || undefined;
+  const mode = req.nextUrl.searchParams.get("mode");
   if (mode && !validMode(mode)) {
     return NextResponse.json({ error: "Invalid mode" }, { status: 400 });
   }
 
-  const items = await getUserItems(
-    Number(fid),
-    category,
-    mode as Mode | undefined
-  );
+  const items = await getUserItems(Number(fid), mode as Mode, category);
   return NextResponse.json(items);
 };

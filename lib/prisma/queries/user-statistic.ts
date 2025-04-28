@@ -7,7 +7,7 @@ import { FrameNotificationDetails } from "@farcaster/frame-sdk";
 
 export const getUserByMode = async (
   fid: number,
-  mode: Mode = Mode.Classic
+  mode: Mode
 ): Promise<UserWithStatistic | null> => {
   const user = await prisma.userStatistic.findUnique({
     where: {
@@ -55,7 +55,7 @@ export const getUserModes = async (fid: number): Promise<Mode[]> => {
   return user.map((user) => user.mode as Mode);
 };
 
-export const getPlayerCountByMode = async (mode: Mode = Mode.Classic) => {
+export const getPlayerCountByMode = async (mode: Mode) => {
   return await prisma.userStatistic.count({
     where: {
       mode,
@@ -68,7 +68,7 @@ export const getPlayerCountByMode = async (mode: Mode = Mode.Classic) => {
 
 export const getUsersByFidsAndMode = async (
   fids: string[],
-  mode: Mode = Mode.Classic
+  mode: Mode
 ): Promise<{
   users: UserWithStatistic[];
 }> => {
@@ -108,7 +108,7 @@ export const getModePartialLeaderboardFromFids = async (
   fids: string[],
   targetFid: string,
   limit: number = 5,
-  mode: Mode = Mode.Classic
+  mode: Mode
 ): Promise<(UserWithStatistic & { position: number })[]> => {
   const fullLeaderboard = await getUsersByFidsAndMode(fids, mode);
   const targetIndex = fullLeaderboard.users.findIndex(
@@ -134,7 +134,7 @@ export const getModePartialLeaderboardFromFids = async (
 export const getModePartialLeaderboardFromUserPosition = async (
   position: number,
   limit: number = 5,
-  mode: Mode = Mode.Classic
+  mode: Mode
 ): Promise<(UserWithStatistic & { position: number })[]> => {
   const skip = Math.max(0, position - Math.ceil(limit / 2));
   const partialLeaderboard = await prisma.userStatistic.findMany({
@@ -171,7 +171,7 @@ export const getModePartialLeaderboardFromUserPosition = async (
 
 export const getLeaderboardUserPositionByMode = async (
   targetXp: number,
-  mode: Mode = Mode.Classic
+  mode: Mode
 ): Promise<number> => {
   const count = await prisma.userStatistic.count({
     where: {
@@ -187,7 +187,7 @@ export const getLeaderboardUserPositionByMode = async (
 export const updateUserStatistic = async (
   fid: number,
   updates: Prisma.UserStatisticUpdateInput,
-  mode: Mode = Mode.Classic
+  mode: Mode
 ): Promise<UserStatistic> => {
   const updatedUser = await prisma.userStatistic.update({
     where: {
@@ -205,7 +205,7 @@ export const updateUserStatistic = async (
 export const updateUserCoins = async (
   fid: number,
   coins: number,
-  mode: Mode = Mode.Classic
+  mode: Mode
 ) => {
   return await prisma.userStatistic.update({
     where: { fid_mode: { fid, mode } },
@@ -214,9 +214,9 @@ export const updateUserCoins = async (
 };
 
 export const getUsersByXp = async (
+  mode: Mode,
   limit?: number,
-  targetFid?: number,
-  mode: Mode = Mode.Classic
+  targetFid?: number
 ): Promise<{
   users: UserWithStatistic[];
   targetPosition?: number;
@@ -285,7 +285,7 @@ export const getUsersByXp = async (
 export const updateUserXP = async (
   fid: number,
   xp: number,
-  mode: Mode = Mode.Classic
+  mode: Mode
 ): Promise<{
   user: UserWithStatistic;
   didLevelUp: boolean;
@@ -363,7 +363,7 @@ export const updateUserXP = async (
 
 export const createUserStatistic = async (
   fid: number,
-  mode: Mode = Mode.Classic
+  mode: Mode
 ): Promise<UserStatistic> => {
   const userStatistic = await prisma.userStatistic.create({
     data: {

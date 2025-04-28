@@ -19,7 +19,7 @@ export const useLeaderboard = (
   if (targetFid) queryParams.append("targetFid", targetFid.toString());
   if (friends) queryParams.append("friends", "true");
   if (quests) queryParams.append("type", "quests");
-  if (mode) queryParams.append("mode", mode);
+  queryParams.append("mode", mode);
 
   const url = `/api/leaderboard${
     queryParams.toString() ? `?${queryParams.toString()}` : ""
