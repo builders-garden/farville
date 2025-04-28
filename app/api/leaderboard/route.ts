@@ -5,12 +5,14 @@ import {
 } from "@/lib/prisma/queries";
 import { NextResponse } from "next/server";
 import { fetchUsersFollowedBy } from "@/lib/neynar";
+import { Mode } from "@/lib/types/game";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const targetFid = searchParams.get("targetFid");
   const friends = searchParams.get("friends") === "true";
   const type = searchParams.get("type") || "xp";
+  const mode = (searchParams.get("mode") as Mode) || Mode.Classic;
 
   // Add cache headers
   const headers = {
@@ -51,7 +53,8 @@ export async function GET(request: Request) {
 
     const users = await getUsersByXp(
       20,
-      targetFid ? Number(targetFid) : undefined
+      targetFid ? Number(targetFid) : undefined,
+      mode
     );
     return NextResponse.json(users, { headers });
   } catch (error) {

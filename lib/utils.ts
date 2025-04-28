@@ -592,39 +592,48 @@ export const initQuestsAndLeaderboardEntryByMode = async (
   fid: number,
   mode: Mode
 ) => {
-  // generate new entry inside the user leaderboard if it doesn't exist
-  let weeklyUserLeaderboard = await getUserLeaderboardEntry(Number(fid));
+  const modeFeatures = MODE_DEFINITIONS[mode].features;
 
-  if (!weeklyUserLeaderboard) {
-    const user = await getUserByMode(Number(fid), mode);
-    if (!user) {
-      return NextResponse.json({ message: "User not found" }, { status: 404 });
+  if (modeFeatures.includes(ModeFeature.Leagues)) {
+    // generate new entry inside the user leaderboard if it doesn't exist
+    let weeklyUserLeaderboard = await getUserLeaderboardEntry(Number(fid));
+
+    if (!weeklyUserLeaderboard) {
+      const user = await getUserByMode(Number(fid), mode);
+      if (!user) {
+        return NextResponse.json(
+          { message: "User not found" },
+          { status: 404 }
+        );
+      }
+      const userLeague = getUserLeague(user.xp);
+      weeklyUserLeaderboard = await createUserLeaderboardEntry(
+        Number(fid),
+        {
+          league: userLeague,
+        },
+        mode
+      );
     }
-    const userLeague = getUserLeague(user.xp);
-    weeklyUserLeaderboard = await createUserLeaderboardEntry(
-      Number(fid),
-      {
-        league: userLeague,
-      },
-      mode
-    );
   }
 
-  // Check if the user has daily, weekly and monthly quests
-  // If not, initialize them
-  const dailyQuests = await getUserHasQuests(Number(fid), mode, {
-    type: [QuestType.Daily],
-    activeToday: true,
-  });
-  const weeklyQuests = await getUserHasQuests(Number(fid), mode, {
-    type: [QuestType.Weekly],
-    activeToday: true,
-  });
-  if (!dailyQuests || dailyQuests?.length === 0) {
-    await initDailyUserQuests(Number(fid), mode);
-  }
-  if (!weeklyQuests || weeklyQuests?.length === 0) {
-    await initWeeklyUserQuests(Number(fid), mode);
+  if (modeFeatures.includes(ModeFeature.Quests)) {
+    // Check if the user has daily, weekly and monthly quests
+    // If not, initialize them
+    const dailyQuests = await getUserHasQuests(Number(fid), mode, {
+      type: [QuestType.Daily],
+      activeToday: true,
+    });
+    const weeklyQuests = await getUserHasQuests(Number(fid), mode, {
+      type: [QuestType.Weekly],
+      activeToday: true,
+    });
+    if (!dailyQuests || dailyQuests?.length === 0) {
+      await initDailyUserQuests(Number(fid), mode);
+    }
+    if (!weeklyQuests || weeklyQuests?.length === 0) {
+      await initWeeklyUserQuests(Number(fid), mode);
+    }
   }
 };
 
@@ -636,13 +645,11 @@ export const initQuestsAndLeaderboardEntry = async (
     const now = new Date();
     const modeStartDate = MODE_DEFINITIONS[mode].startDate;
     const modeEndDate = MODE_DEFINITIONS[mode].endDate;
-    const modeFeatures = MODE_DEFINITIONS[mode].features;
     if (
       modeStartDate &&
       modeEndDate &&
       mode !== Mode.Classic &&
-      (now < modeStartDate || now > modeEndDate) &&
-      !modeFeatures.includes(ModeFeature.Quests)
+      (now < modeStartDate || now > modeEndDate)
     ) {
       continue;
     }

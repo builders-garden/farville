@@ -14,7 +14,7 @@ import {
   incrementRequestFilledQuantity,
 } from "@/lib/prisma/queries";
 import { userCanDonate } from "@/lib/utils";
-import { PerkType, SpecialItemType } from "@/lib/types/game";
+import { Mode, PerkType, SpecialItemType } from "@/lib/types/game";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -116,7 +116,8 @@ export const POST = async (
     quantity * XP_PER_DONATED_ITEM,
     userAfterUpdate.newLevel,
     user.xp,
-    userAfterUpdate.didLevelUp
+    userAfterUpdate.didLevelUp,
+    Mode.Classic
   );
 
   if (requestId) {

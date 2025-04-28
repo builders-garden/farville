@@ -42,6 +42,7 @@ export enum ModeFeature {
   GoldCrops = "gold-crops",
   HarvestHonours = "harvest-honours",
   Quests = "quests",
+  Leagues = "leagues",
 }
 
 interface ModeDefinition {
@@ -76,6 +77,7 @@ export const MODE_DEFINITIONS: Record<Mode, ModeDefinition> = {
       ModeFeature.GoldCrops,
       ModeFeature.HarvestHonours,
       ModeFeature.Quests,
+      ModeFeature.Leagues,
     ],
     startAt: new Date("2025-01-01T00:00:00Z"),
     endAt: null,

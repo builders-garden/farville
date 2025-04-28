@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { QuestStatus } from "@/lib/types/game";
+import { Mode, QuestStatus } from "@/lib/types/game";
 import {
   getQuestById,
   getUserByMode,
@@ -123,7 +123,8 @@ export async function POST(
           userQuest.quest.xp,
           xp.newLevel,
           user.xp,
-          xp.didLevelUp
+          xp.didLevelUp,
+          Mode.Classic
         );
       }
       didLevelUp = xp.didLevelUp;

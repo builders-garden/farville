@@ -1,5 +1,6 @@
 import { getWeeklyUserLeaderboardByLeague } from "@/lib/prisma/queries";
 import { NextResponse } from "next/server";
+import { Mode } from "@/lib/types/game";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -7,6 +8,7 @@ export async function GET(request: Request) {
   const league = searchParams.get("league") || "3";
   const currentWeek = searchParams.get("currentWeek") || "true";
   const limit = searchParams.get("limit") || "20";
+  const mode = (searchParams.get("mode") as Mode) || Mode.Classic;
 
   // Add cache headers
   const headers = {
@@ -18,7 +20,8 @@ export async function GET(request: Request) {
       Number(league),
       currentWeek === "true",
       Number(limit),
-      Number(targetFid)
+      Number(targetFid),
+      mode
     );
     return NextResponse.json(usersWeekSummaries, { headers });
   } catch (error) {

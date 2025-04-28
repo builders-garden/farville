@@ -334,13 +334,14 @@ const rewardUserBulk = async (
   });
   const totalXp = cropsWithRewards.reduce((acc, crop) => acc + crop.xp, 0);
   const updateResult = await updateUserXP(fid, totalXp, mode);
-  if (mode === Mode.Classic) {
+  if (MODE_DEFINITIONS[mode].features.includes(ModeFeature.Leagues)) {
     await updateUserWeeklyScore(
       fid,
       totalXp,
       updateResult.newLevel,
       updateResult.oldXp,
-      updateResult.didLevelUp
+      updateResult.didLevelUp,
+      mode
     );
   }
 

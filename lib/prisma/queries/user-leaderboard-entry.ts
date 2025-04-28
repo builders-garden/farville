@@ -131,7 +131,8 @@ export const updateUserWeeklyScore = async (
   score: number,
   userLevel: number,
   currentUserXp: number,
-  didLevelUp: boolean = false
+  didLevelUp: boolean = false,
+  mode: Mode
 ): Promise<{
   currentScore: number;
 }> => {
@@ -151,7 +152,7 @@ export const updateUserWeeklyScore = async (
         const currentLeaderboardEntry =
           await tx.userLeaderboardEntry.findUnique({
             // TODO: fix this mode constraint
-            where: { fid_mode: { fid, mode: Mode.Classic } },
+            where: { fid_mode: { fid, mode } },
             select: { currentScore: true },
           });
 
@@ -164,7 +165,7 @@ export const updateUserWeeklyScore = async (
         // Update user's current score
         // TODO: fix this mode constraint
         const updatedEntry = await tx.userLeaderboardEntry.update({
-          where: { fid_mode: { fid, mode: Mode.Classic } },
+          where: { fid_mode: { fid, mode } },
           data: {
             currentScore: { increment: weeklyScoreToAdd },
           },

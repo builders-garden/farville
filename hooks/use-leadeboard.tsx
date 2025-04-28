@@ -1,14 +1,16 @@
-import { User } from "@prisma/client";
 import { useApiQuery } from "./use-api-query";
+import { Mode } from "@/lib/types/game";
+import { UserWithStatistic } from "@/lib/prisma/types";
 
 export interface LeaderboardResponse {
-  users: (User & { questCount?: number })[];
+  users: (UserWithStatistic & { questCount?: number })[];
   targetPosition?: number;
   questCount?: number;
 }
 
 export const useLeaderboard = (
   friends: boolean,
+  mode: Mode,
   targetFid?: number,
   quests = false
 ) => {
@@ -16,13 +18,14 @@ export const useLeaderboard = (
   if (targetFid) queryParams.append("targetFid", targetFid.toString());
   if (friends) queryParams.append("friends", "true");
   if (quests) queryParams.append("type", "quests");
+  if (mode) queryParams.append("mode", mode);
 
   const url = `/api/leaderboard${
     queryParams.toString() ? `?${queryParams.toString()}` : ""
   }`;
 
   return useApiQuery<{
-    users: (User & { questCount?: number })[];
+    users: (UserWithStatistic & { questCount?: number })[];
     targetPosition?: number;
     questCount?: number;
   }>({

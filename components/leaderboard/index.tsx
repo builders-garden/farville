@@ -3,7 +3,7 @@
 import { useGame } from "@/context/GameContext";
 import { useLeaderboard } from "@/hooks/use-leadeboard";
 import {
-  // getCurrentLevelAndProgress,
+  getCurrentLevelAndProgress,
   leaderboardFlexCardComposeCastUrl,
   shareWeeklyLeaderboardPositionComposeCastUrl,
 } from "@/lib/utils";
@@ -21,19 +21,31 @@ import InfoModal from "@/components/modals/InfoModal";
 import { FloatingShareButton } from "@/components/FloatingShareButton";
 import { LeaderboardPrizeCard } from "./LeaderboardPrizeCard";
 import { User } from "@prisma/client";
+import { MODE_DEFINITIONS, ModeFeature } from "@/lib/modes/constants";
+import { UserWithStatistic } from "@/lib/prisma/types";
+import { Mode } from "@/lib/types/game";
 
 export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
-  const { state } = useGame();
-  const { data: globalData } = useLeaderboard(false, state?.user.fid);
-  const { data: friendsData } = useLeaderboard(true, state?.user.fid);
-  const { data: questsData } = useLeaderboard(false, state?.user.fid, true);
+  const { state, mode } = useGame();
+  const { data: globalData } = useLeaderboard(false, mode, state?.user.fid);
+  const { data: friendsData } = useLeaderboard(true, mode, state?.user.fid);
+  console.log("globalData", globalData);
+  const { data: questsData } = useLeaderboard(
+    false,
+    mode,
+    state?.user.fid,
+    true
+  );
   const { data: questsFriendsData } = useLeaderboard(
     true,
+    mode,
     state?.user.fid,
     true
   );
   const [activeTab, setActiveTab] = useState<"global" | "friends" | "weekly">(
-    "weekly"
+    MODE_DEFINITIONS[mode]?.features?.includes(ModeFeature.Leagues)
+      ? "weekly"
+      : "global"
   );
   const [leaderboardType, setLeaderboardType] = useState<"xp" | "quests">("xp");
   const [leagueType, setLeagueType] = useState<number>(
@@ -156,7 +168,7 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
 
   type LeaderboardData = {
     targetPosition?: number;
-    users?: (User & {
+    users?: (UserWithStatistic & {
       currentScore?: number;
       lastScore?: number;
       league?: number;
@@ -176,7 +188,7 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
           : bronzeWeeklyLeaderboard;
       return {
         targetPosition: weeklyLeaderboard?.targetPosition,
-        users: weeklyLeaderboard?.users.map((user) => ({
+        users: weeklyLeaderboard?.users?.map((user) => ({
           ...user.user,
           ...user,
           questCount: undefined,
@@ -193,7 +205,10 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
   return (
     <div className="fixed inset-0 bg-black/50 flex items-start z-50">
       {selectedUserFid ? (
-        <ProfileModal onClose={handleCloseProfile} userFid={selectedUserFid} />
+        <ProfileModal
+          onClose={handleCloseProfile}
+          userFid={selectedUserFid}
+        />
       ) : (
         <>
           <motion.div
@@ -243,7 +258,11 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
                 {/* Tabs */}
                 <div className="grid grid-cols-3 gap-1 xs:gap-2 mb-3 xs:mb-4">
                   {[
-                    { id: "weekly", label: "Weekly", icon: "🏆" },
+                    ...(MODE_DEFINITIONS[mode]?.features?.includes(
+                      ModeFeature.Leagues
+                    )
+                      ? [{ id: "weekly", label: "Weekly", icon: "🏆" }]
+                      : []),
                     { id: "global", label: "Global", icon: "🌍" },
                     { id: "friends", label: "Friends", icon: "👥" },
                   ].map((tab) => (
@@ -333,49 +352,53 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
                 )}
 
                 {/* Weekly Card summary */}
-                {activeTab === "weekly" && (
-                  <div className="flex flex-col gap-1 xs:gap-2 mb-2">
-                    <div className="flex flex-row justify-between gap-1 xs:gap-2">
-                      {[
-                        { id: 3, label: "Gold", icon: "🏆" },
-                        { id: 2, label: "Iron", icon: "🥈" },
-                        { id: 1, label: "Wood", icon: "🥉" },
-                      ].map((tab) => (
-                        <motion.button
-                          key={tab.id}
-                          initial={{ opacity: 0, y: -20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          onClick={() => setLeagueType(tab.id)}
-                          className={`flex-1 px-2 xs:px-3 rounded-full flex items-center justify-center gap-1 xs:gap-1.5 transition-all duration-200 text-[10px] xs:text-xs
+                {activeTab === "weekly" &&
+                  MODE_DEFINITIONS[mode]?.features?.includes(
+                    ModeFeature.Leagues
+                  ) && (
+                    <div className="flex flex-col gap-1 xs:gap-2 mb-2">
+                      <div className="flex flex-row justify-between gap-1 xs:gap-2">
+                        {[
+                          { id: 3, label: "Gold", icon: "🏆" },
+                          { id: 2, label: "Iron", icon: "🥈" },
+                          { id: 1, label: "Wood", icon: "🥉" },
+                        ].map((tab) => (
+                          <motion.button
+                            key={tab.id}
+                            initial={{ opacity: 0, y: -20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            onClick={() => setLeagueType(tab.id)}
+                            className={`flex-1 px-2 xs:px-3 rounded-full flex items-center justify-center gap-1 xs:gap-1.5 transition-all duration-200 text-[10px] xs:text-xs
                         ${
                           leagueType === tab.id
                             ? "bg-[#FFB938] text-[#5c4121] font-semibold shadow-md"
                             : "text-white/70 hover:bg-white/10 border border-white/20"
                         }`}
-                          whileHover={{
-                            scale: leagueType === tab.id ? 1.05 : 1.02,
-                          }}
-                          whileTap={{ scale: 0.98 }}
-                        >
-                          <motion.span
-                            animate={{
-                              rotate: leagueType === tab.id ? [0, -5, 5, 0] : 0,
+                            whileHover={{
+                              scale: leagueType === tab.id ? 1.05 : 1.02,
                             }}
-                            transition={{
-                              duration: 0.5,
-                              repeat: Infinity,
-                              repeatDelay: 2,
-                            }}
-                            className="text-sm mb-1"
+                            whileTap={{ scale: 0.98 }}
                           >
-                            {tab.icon}
-                          </motion.span>
-                          <span>{tab.label}</span>
-                        </motion.button>
-                      ))}
+                            <motion.span
+                              animate={{
+                                rotate:
+                                  leagueType === tab.id ? [0, -5, 5, 0] : 0,
+                              }}
+                              transition={{
+                                duration: 0.5,
+                                repeat: Infinity,
+                                repeatDelay: 2,
+                              }}
+                              className="text-sm mb-1"
+                            >
+                              {tab.icon}
+                            </motion.span>
+                            <span>{tab.label}</span>
+                          </motion.button>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
               </div>
 
               {/* Scrollable leaderboard list */}
@@ -473,7 +496,10 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
                             </div>
                             <div className="bg-[#6d4c2c]/80 rounded-lg p-1 flex items-center justify-between">
                               <div className="flex items-center gap-1 text-white/80">
-                                <Clock size={14} className="text-[#FFB938]" />
+                                <Clock
+                                  size={14}
+                                  className="text-[#FFB938]"
+                                />
                                 <span className="text-[8px]">Time left:</span>
                               </div>
                               <div className="flex gap-1 text-white font-bold">
@@ -639,10 +665,10 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
                                 {activeTab !== "weekly" && (
                                   <span className="text-[#FFB938] rounded-full font-medium text-[10px] xs:text-xs">
                                     Lvl{" "}
-                                    {/* {
+                                    {
                                       getCurrentLevelAndProgress(entry.xp)
                                         .currentLevel
-                                    } */}
+                                    }
                                   </span>
                                 )}
                                 <div className="text-white/60 text-[10px] xs:text-xs">
