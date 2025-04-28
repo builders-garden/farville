@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma/client";
 
 export const calculateUserQuestsProgress = async (
   fid: number,
+  mode: Mode,
   category: string,
   itemId?: number,
   itemAmount: number = 1
@@ -11,7 +12,7 @@ export const calculateUserQuestsProgress = async (
   // Get all quests that are incomplete and match the category and itemId
   const quests = await getUserHasQuests(
     fid,
-    Mode.Classic,
+    mode,
     {
       status: QuestStatus.Incomplete,
       category,
@@ -38,9 +39,8 @@ export const calculateUserQuestsProgress = async (
       // Get current progress and increment it atomically
       const updated = await tx.userHasQuest.update({
         where: {
-          fid_questId_mode: {
+          fid_questId: {
             fid,
-            mode: Mode.Classic,
             questId: quest.questId,
           },
         },
@@ -55,9 +55,8 @@ export const calculateUserQuestsProgress = async (
       if (updated.progress >= (quest.quest!.amount || 1)) {
         return tx.userHasQuest.update({
           where: {
-            fid_questId_mode: {
+            fid_questId: {
               fid,
-              mode: Mode.Classic,
               questId: quest.questId,
             },
           },

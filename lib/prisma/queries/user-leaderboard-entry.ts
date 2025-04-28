@@ -30,10 +30,7 @@ export const updateUserLeaderboardEntry = async (
   });
 };
 
-export const getUserLeaderboardEntry = async (
-  fid: number,
-  mode: string = Mode.Classic
-) => {
+export const getUserLeaderboardEntry = async (fid: number, mode: string) => {
   return await prisma.userLeaderboardEntry.findUnique({
     where: {
       fid_mode: {

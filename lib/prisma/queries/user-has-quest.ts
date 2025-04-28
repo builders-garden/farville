@@ -18,7 +18,7 @@ interface QuestIncludes {
 
 export const getUserHasQuests = async (
   fid: number,
-  mode: Mode = Mode.Classic,
+  mode: Mode,
   filters: QuestFilters = {},
   includes: QuestIncludes = { quest: true }
 ) => {
@@ -29,9 +29,12 @@ export const getUserHasQuests = async (
   const questWhere: Prisma.QuestWhereInput = {};
   const whereClause: Prisma.UserHasQuestWhereInput = {
     fid,
-    mode,
     quest: questWhere,
   };
+
+  if (mode) {
+    questWhere.mode = mode;
+  }
 
   if (filters.status) {
     whereClause.status = filters.status;
@@ -91,7 +94,9 @@ export async function getQuestLeaderboard({
       fid: true,
     },
     where: {
-      mode,
+      quest: {
+        mode,
+      },
       status: {
         not: "incomplete",
       },
@@ -266,15 +271,13 @@ export const createUserQuest = async (
 export const updateUserQuest = async (
   fid: number,
   questId: number,
-  updates: Prisma.UserHasQuestUpdateInput,
-  mode: Mode = Mode.Classic
+  updates: Prisma.UserHasQuestUpdateInput
 ): Promise<UserHasQuest> => {
   const data = await prisma.userHasQuest.update({
     where: {
-      fid_questId_mode: {
+      fid_questId: {
         fid,
         questId,
-        mode,
       },
     },
     data: updates,
@@ -283,27 +286,30 @@ export const updateUserQuest = async (
   return data;
 };
 
-export const getActiveUserQuests = async (
-  fid: number,
-  mode: Mode = Mode.Classic
-): Promise<UserHasQuest[]> => {
-  const data = await prisma.userHasQuest.findMany({
-    where: {
-      fid,
-      mode,
-      status: "incomplete",
-    },
-    include: {
-      quest: {
-        include: {
-          item: true,
-        },
-      },
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
-  });
+// the following function is commented out because it is not used anywhere in the codebase
+// export const getActiveUserQuests = async (
+//   fid: number,
+//   mode: Mode = Mode.Classic
+// ): Promise<UserHasQuest[]> => {
+//   const data = await prisma.userHasQuest.findMany({
+//     where: {
+//       fid,
+//       quest: {
+//         mode,
+//       },
+//       status: "incomplete",
+//     },
+//     include: {
+//       quest: {
+//         include: {
+//           item: true,
+//         },
+//       },
+//     },
+//     orderBy: {
+//       createdAt: "desc",
+//     },
+//   });
 
-  return data;
-};
+//   return data;
+// };

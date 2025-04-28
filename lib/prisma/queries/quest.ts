@@ -62,11 +62,13 @@ export const createQuests = async (
 
 export const getQuestsByTypeAndLevel = async (
   type: QuestType,
-  level: number
+  level: number,
+  mode: Mode
 ): Promise<Quest[]> => {
   const now = new Date();
   const data = await prisma.quest.findMany({
     where: {
+      mode,
       type,
       level,
       startAt: { lte: now },
@@ -90,24 +92,24 @@ export const initDailyUserQuests = async (
     throw new Error("User not found");
   }
 
-  const userLeague = (await getUserLeaderboardEntry(fid))?.league || 0;
+  const userLeague = (await getUserLeaderboardEntry(fid, mode))?.league || 0;
 
   const thresholdLevel = getLevelThresholdLeagueByLeague(userLeague);
 
   let dailyQuests: Quest[] = await getQuestsByTypeAndLevel(
     QuestType.Daily,
-    thresholdLevel
+    thresholdLevel,
+    mode
   );
 
   if (!dailyQuests || dailyQuests.length === 0) {
-    dailyQuests = await generateDailyQuests(thresholdLevel);
+    dailyQuests = await generateDailyQuests(thresholdLevel, mode);
   }
 
   await Promise.all(
     dailyQuests.map((quest) =>
       createUserQuest({
         fid,
-        mode,
         questId: quest.id,
         completedAt: null,
         status: QuestStatus.Incomplete,
@@ -127,24 +129,24 @@ export const initWeeklyUserQuests = async (
     throw new Error("User not found");
   }
 
-  const userLeague = (await getUserLeaderboardEntry(fid))?.league || 0;
+  const userLeague = (await getUserLeaderboardEntry(fid, mode))?.league || 0;
 
   const thresholdLevel = getLevelThresholdLeagueByLeague(userLeague);
 
   let weeklyQuests: Quest[] = await getQuestsByTypeAndLevel(
     QuestType.Weekly,
-    thresholdLevel
+    thresholdLevel,
+    mode
   );
 
   if (!weeklyQuests || weeklyQuests.length === 0) {
-    weeklyQuests = await generateWeeklyQuests(thresholdLevel);
+    weeklyQuests = await generateWeeklyQuests(thresholdLevel, mode);
   }
 
   await Promise.all(
     weeklyQuests.map((quest) =>
       createUserQuest({
         fid,
-        mode,
         questId: quest.id,
         completedAt: null,
         status: QuestStatus.Incomplete,
@@ -154,7 +156,7 @@ export const initWeeklyUserQuests = async (
   );
 };
 
-export const generateDailyQuests = async (level: number) => {
+export const generateDailyQuests = async (level: number, mode: Mode) => {
   let questCategories = ["sell", "receive", "donate", "plant", "harvest"];
 
   // TODO: optimize this to not access the database multiple times
@@ -207,6 +209,7 @@ export const generateDailyQuests = async (level: number) => {
 
     const dailyQuest: Prisma.QuestCreateArgs["data"] = {
       type: "daily",
+      mode,
       category,
       itemId: item.id,
       amount,
@@ -281,7 +284,7 @@ const calculateValidAmount = (crop: CropData, level: number, mode: Mode) => {
   return maxAmount;
 };
 
-export const generateWeeklyQuests = async (level: number) => {
+export const generateWeeklyQuests = async (level: number, mode: Mode) => {
   let questCategories = ["sell", "plant", "harvest"];
 
   let seedItems = (await getItemsByCategory("seed")).filter(
@@ -343,6 +346,7 @@ export const generateWeeklyQuests = async (level: number) => {
 
     const weeklyQuest: Prisma.QuestCreateArgs["data"] = {
       type: "weekly",
+      mode,
       category,
       itemId: item.id ? item.id : cropItems[0].id,
       amount,

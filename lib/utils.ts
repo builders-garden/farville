@@ -596,9 +596,9 @@ export const initQuestsAndLeaderboardEntryByMode = async (
 
   if (modeFeatures.includes(ModeFeature.Leagues)) {
     // generate new entry inside the user leaderboard if it doesn't exist
-    let weeklyUserLeaderboard = await getUserLeaderboardEntry(Number(fid));
+    let userLeaderboardEntry = await getUserLeaderboardEntry(Number(fid), mode);
 
-    if (!weeklyUserLeaderboard) {
+    if (!userLeaderboardEntry) {
       const user = await getUserByMode(Number(fid), mode);
       if (!user) {
         return NextResponse.json(
@@ -607,7 +607,7 @@ export const initQuestsAndLeaderboardEntryByMode = async (
         );
       }
       const userLeague = getUserLeague(user.xp);
-      weeklyUserLeaderboard = await createUserLeaderboardEntry(
+      userLeaderboardEntry = await createUserLeaderboardEntry(
         Number(fid),
         {
           league: userLeague,
@@ -628,6 +628,9 @@ export const initQuestsAndLeaderboardEntryByMode = async (
       type: [QuestType.Weekly],
       activeToday: true,
     });
+    console.log(
+      `User ${fid} has ${dailyQuests.length} daily quests and ${weeklyQuests.length} weekly quests in mode ${mode}`
+    );
     if (!dailyQuests || dailyQuests?.length === 0) {
       await initDailyUserQuests(Number(fid), mode);
     }
@@ -648,11 +651,14 @@ export const initQuestsAndLeaderboardEntry = async (
     if (
       modeStartDate &&
       modeEndDate &&
-      mode !== Mode.Classic &&
+      // mode !== Mode.Classic &&
       (now < modeStartDate || now > modeEndDate)
     ) {
       continue;
     }
+    console.log(
+      `Initializing quests and leaderboard entry for fid ${fid} in mode ${mode}`
+    );
     await initQuestsAndLeaderboardEntryByMode(fid, mode);
   }
 };

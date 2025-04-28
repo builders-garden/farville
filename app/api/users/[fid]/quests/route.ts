@@ -23,7 +23,7 @@ export async function GET(
 
     const quests = await getUserHasQuests(
       fid,
-      mode ? Mode[mode as keyof typeof Mode] : Mode.Classic,
+      mode as Mode,
       {
         status: status as QuestStatus,
         category: category || undefined,
