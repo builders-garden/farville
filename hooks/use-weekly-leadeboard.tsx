@@ -1,5 +1,6 @@
-import { User, UserLeaderboardEntry } from "@prisma/client";
+import { UserLeaderboardEntry } from "@prisma/client";
 import { useApiQuery } from "./use-api-query";
+import { UserWithStatistic } from "@/lib/prisma/types";
 
 export const useWeeklyLeaderboard = (
   targetFid?: number,
@@ -20,7 +21,7 @@ export const useWeeklyLeaderboard = (
 
   const { data, isLoading, refetch } = useApiQuery<{
     users: (UserLeaderboardEntry & {
-      user: User;
+      user: UserWithStatistic;
     })[];
     targetPosition?: number;
   }>({

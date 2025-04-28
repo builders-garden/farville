@@ -7,6 +7,7 @@ import {
   TopStreaksResult,
 } from "@/lib/prisma/queries";
 import { UserWithStatistic } from "@/lib/prisma/types";
+import { Mode } from "@/lib/types/game";
 import { ImageResponse } from "next/og";
 
 export const dynamic = "force-dynamic";
@@ -64,7 +65,7 @@ export async function GET(
       });
     }
 
-    const user = await getUserByMode(Number(fid));
+    const user = await getUserByMode(Number(fid), Mode.Classic);
 
     if (!user) {
       return new Response("User not found", {
@@ -77,7 +78,7 @@ export async function GET(
 
     const topStreaksUsers: UserWithStatistic[] = [];
     for (const streak of topStreaks) {
-      const user = await getUserByMode(streak.fid);
+      const user = await getUserByMode(streak.fid, Mode.Classic);
       if (user) {
         topStreaksUsers.push(user);
       }

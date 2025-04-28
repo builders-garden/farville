@@ -20,7 +20,6 @@ import { useWeeklyLeaderboard } from "@/hooks/use-weekly-leadeboard";
 import InfoModal from "@/components/modals/InfoModal";
 import { FloatingShareButton } from "@/components/FloatingShareButton";
 import { LeaderboardPrizeCard } from "./LeaderboardPrizeCard";
-import { User } from "@prisma/client";
 import { MODE_DEFINITIONS, ModeFeature } from "@/lib/modes/constants";
 import { UserWithStatistic } from "@/lib/prisma/types";
 import { Mode } from "@/lib/types/game";
@@ -191,6 +190,7 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
         users: weeklyLeaderboard?.users?.map((user) => ({
           ...user.user,
           ...user,
+          mode: user.mode as Mode,
           questCount: undefined,
         })),
         questCount: undefined,
@@ -205,10 +205,7 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
   return (
     <div className="fixed inset-0 bg-black/50 flex items-start z-50">
       {selectedUserFid ? (
-        <ProfileModal
-          onClose={handleCloseProfile}
-          userFid={selectedUserFid}
-        />
+        <ProfileModal onClose={handleCloseProfile} userFid={selectedUserFid} />
       ) : (
         <>
           <motion.div
@@ -496,10 +493,7 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
                             </div>
                             <div className="bg-[#6d4c2c]/80 rounded-lg p-1 flex items-center justify-between">
                               <div className="flex items-center gap-1 text-white/80">
-                                <Clock
-                                  size={14}
-                                  className="text-[#FFB938]"
-                                />
+                                <Clock size={14} className="text-[#FFB938]" />
                                 <span className="text-[8px]">Time left:</span>
                               </div>
                               <div className="flex gap-1 text-white font-bold">
@@ -687,7 +681,7 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
                                           : entry.lastScore?.toLocaleString())}
                                     </div>
                                   ) : (
-                                    <>XP:{/*entry.xp.toLocaleString()*/} N/A</>
+                                    <>XP:{entry.xp.toLocaleString()}</>
                                   )}
                                 </div>
                               </>

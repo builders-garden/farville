@@ -438,13 +438,14 @@ export const calculateGoldCropsInBatch = (
 
 export const getPartialLeaderboardBasedOnFid = async (
   targetFid: string,
+  mode: Mode,
   options: {
     friends: boolean;
     type: "quests" | "xp";
     limit: number;
   }
 ) => {
-  const user = await getUserByMode(Number(targetFid));
+  const user = await getUserByMode(Number(targetFid), mode);
 
   if (!user) {
     throw new Error("Failed to fetch leaderboard: user not found");
@@ -464,6 +465,7 @@ export const getPartialLeaderboardBasedOnFid = async (
       const users = await getQuestPartialLeaderboardFromFids({
         fids: userFids,
         targetFid,
+        mode,
         limit: Number(options.limit),
       });
       return users;
@@ -481,6 +483,7 @@ export const getPartialLeaderboardBasedOnFid = async (
   if (options.type === "quests") {
     const users = await getQuestPartialLeaderboard({
       targetFid: targetFid,
+      mode,
       limit: Number(options.limit),
     });
     return users;
@@ -498,6 +501,7 @@ export const getPartialLeaderboardBasedOnFid = async (
 
 export const getGlobalLeaderboard = async (
   targetFid: string,
+  mode: Mode,
   type: "quests" | "xp" = "xp",
   limit: number = 20
 ) => {
@@ -506,6 +510,7 @@ export const getGlobalLeaderboard = async (
     users = await getQuestLeaderboard({
       limit,
       targetFid: targetFid ? targetFid : undefined,
+      mode,
     });
   } else {
     users = await getUsersByXp(

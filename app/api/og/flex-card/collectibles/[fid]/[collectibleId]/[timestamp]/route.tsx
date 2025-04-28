@@ -7,7 +7,7 @@ import {
   TopStreaksResult,
 } from "@/lib/prisma/queries";
 import { ImageResponse } from "next/og";
-import { CollectibleStatus } from "@/lib/types/game";
+import { CollectibleStatus, Mode } from "@/lib/types/game";
 import { env } from "@/lib/env";
 import { UserWithStatistic } from "@/lib/prisma/types";
 
@@ -37,7 +37,7 @@ async function loadGoogleFont(font: string, text: string) {
 }
 
 export async function GET(
-  request: Request,
+  _request: Request,
   {
     params,
   }: {
@@ -84,7 +84,7 @@ export async function GET(
 
     const topStreaksUsers: UserWithStatistic[] = [];
     for (const streak of topStreaks) {
-      const user = await getUserByMode(streak.fid);
+      const user = await getUserByMode(streak.fid, Mode.Classic);
       if (user) {
         topStreaksUsers.push(user);
       }

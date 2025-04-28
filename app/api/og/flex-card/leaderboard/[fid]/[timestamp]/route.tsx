@@ -6,6 +6,7 @@ import { ImageResponse } from "next/og";
 import { getActiveStreaksCount } from "@/lib/prisma/queries";
 import { env } from "@/lib/env";
 import { UserWithStatistic } from "@/lib/prisma/types";
+import { Mode } from "@/lib/types/game";
 
 export const dynamic = "force-dynamic";
 const size = {
@@ -53,6 +54,7 @@ export async function GET(
     const { searchParams } = new URL(request.url);
     const friends = searchParams.get("friends") === "true";
     const quests = searchParams.get("quests") === "true";
+    const mode = (searchParams.get("mode") as Mode) || Mode.Classic;
 
     const appUrl = env.NEXT_PUBLIC_URL;
 
@@ -64,7 +66,7 @@ export async function GET(
 
     const totActiveStreaks = await getActiveStreaksCount();
 
-    const leaderboardData = (await getPartialLeaderboardBasedOnFid(fid, {
+    const leaderboardData = (await getPartialLeaderboardBasedOnFid(fid, mode, {
       friends,
       type: quests ? "quests" : "xp",
       limit: 5,

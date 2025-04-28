@@ -19,7 +19,7 @@ import { Mode } from "@/lib/types/game";
 export const POST = async (req: NextRequest) => {
   const { fid, referrerFid, signature, message } = await req.json();
 
-  let user = await getUserByMode(fid);
+  let user = await getUserByMode(fid, Mode.Classic);
 
   if (!user) {
     const newUser = await fetchUser(fid);

@@ -13,6 +13,6 @@ export async function GET(request: NextRequest) {
   if (mode && !validMode(mode)) {
     return NextResponse.json({ error: "Invalid mode" }, { status: 400 });
   }
-  const user = await getUserByMode(Number(fid), mode as Mode | undefined);
+  const user = await getUserByMode(Number(fid), mode as Mode | Mode.Classic);
   return NextResponse.json(user);
 }

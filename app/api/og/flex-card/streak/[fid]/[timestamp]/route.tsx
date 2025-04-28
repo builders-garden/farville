@@ -7,6 +7,7 @@ import {
   TopStreaksResult,
 } from "@/lib/prisma/queries";
 import { UserWithStatistic } from "@/lib/prisma/types";
+import { Mode } from "@/lib/types/game";
 import { ImageResponse } from "next/og";
 
 export const dynamic = "force-dynamic";
@@ -48,20 +49,22 @@ export async function GET(
   try {
     const { fid } = await params;
 
+    const mode = Mode.Classic;
+
     if (!fid) {
       return new Response("Farmer ID is required", {
         status: 400,
       });
     }
 
-    const user = await getUserByMode(Number(fid));
+    const user = await getUserByMode(Number(fid), mode);
     const currentStreak = await getUserCurrentStreakNumber(Number(fid));
     const topStreaks: TopStreaksResult[] = await getTopStreaks();
     const totActiveStreaks = await getActiveStreaksCount();
 
     const topStreaksUsers: UserWithStatistic[] = [];
     for (const streak of topStreaks) {
-      const user = await getUserByMode(streak.fid);
+      const user = await getUserByMode(streak.fid, mode);
       if (user) {
         topStreaksUsers.push(user);
       }

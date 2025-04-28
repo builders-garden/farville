@@ -77,12 +77,12 @@ export async function getQuestLeaderboard({
   limit,
   fids,
   targetFid,
-  mode = Mode.Classic,
+  mode,
 }: {
   limit?: number;
   fids?: string[];
   targetFid?: string;
-  mode?: Mode;
+  mode: Mode;
 }) {
   // If no specific fids provided and targetFid exists, we need full leaderboard data
   const needsFullLeaderboard = !fids && targetFid;
@@ -159,12 +159,14 @@ export async function getQuestLeaderboard({
 
 export async function getQuestPartialLeaderboard({
   targetFid,
+  mode,
   limit = 5,
 }: {
   targetFid: string;
+  mode: Mode;
   limit?: number;
 }) {
-  const fullLeaderboard = (await getQuestLeaderboard({})) as {
+  const fullLeaderboard = (await getQuestLeaderboard({ mode })) as {
     questCount: number;
     fid: number;
     username: string;
@@ -191,13 +193,13 @@ export async function getQuestPartialLeaderboard({
 export async function getQuestPartialLeaderboardFromFids({
   fids,
   targetFid,
+  mode,
   limit = 5,
-  mode = Mode.Classic,
 }: {
   fids: string[];
   targetFid: string;
+  mode: Mode;
   limit?: number;
-  mode?: Mode;
 }) {
   const fullLeaderboard = (await getQuestLeaderboard({
     fids,

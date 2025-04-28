@@ -35,6 +35,7 @@ export async function GET(request: Request) {
           fids: userFids,
           targetFid,
           limit: 20,
+          mode,
         });
         return NextResponse.json({ users }, { headers });
       }
@@ -47,6 +48,7 @@ export async function GET(request: Request) {
       const users = await getQuestLeaderboard({
         limit: 20,
         targetFid: targetFid ? targetFid : undefined,
+        mode,
       });
       return NextResponse.json(users, { headers });
     }

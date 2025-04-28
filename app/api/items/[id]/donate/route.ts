@@ -22,6 +22,7 @@ const requestSchema = z.object({
   quantity: z.number().min(1).max(10),
   toFid: z.number().min(1),
   requestId: z.number().optional(),
+  mode: z.nativeEnum(Mode),
 });
 
 export const POST = async (
@@ -47,9 +48,9 @@ export const POST = async (
     );
   }
 
-  const { quantity, toFid, requestId } = requestBody.data;
+  const { quantity, toFid, requestId, mode } = requestBody.data;
 
-  const user = await getUserByMode(Number(fid));
+  const user = await getUserByMode(Number(fid), mode);
   if (!user) {
     return NextResponse.json({ message: "User not found" }, { status: 404 });
   }
@@ -80,7 +81,7 @@ export const POST = async (
   }
 
   // check if the user has enough items
-  const userItem = await getUserItemByItemId(Number(fid), itemId);
+  const userItem = await getUserItemByItemId(Number(fid), itemId, mode);
   if (!userItem || userItem.quantity < quantity) {
     return NextResponse.json(
       { message: "Not enough items to donate" },
@@ -109,7 +110,8 @@ export const POST = async (
   await addUserItem(Number(toFid), itemId, quantity);
   const userAfterUpdate = await updateUserXP(
     Number(fid),
-    quantity * XP_PER_DONATED_ITEM
+    quantity * XP_PER_DONATED_ITEM,
+    mode
   );
   await updateUserWeeklyScore(
     Number(fid),

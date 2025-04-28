@@ -39,6 +39,7 @@ export async function GET(
 
 const requestSchema = z.object({
   status: z.nativeEnum(QuestStatus),
+  mode: z.nativeEnum(Mode),
 });
 
 export async function POST(
@@ -60,9 +61,9 @@ export async function POST(
     );
   }
 
-  const { status } = requestBody.data;
+  const { status, mode } = requestBody.data;
 
-  const user = await getUserByMode(Number(fid));
+  const user = await getUserByMode(Number(fid), mode);
   if (!user) {
     return NextResponse.json({ error: "User not found" }, { status: 404 });
   }

@@ -30,7 +30,7 @@ export const useLeaderboard = (
     questCount?: number;
   }>({
     url,
-    queryKey: ["leaderboard", targetFid, friends, quests],
+    queryKey: ["leaderboard", targetFid, friends, quests, mode],
     isProtected: true,
     enabled: friends ? !!targetFid : true,
     staleTime: 60 * 1000,

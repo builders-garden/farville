@@ -6,6 +6,7 @@ import {
   TopStreaksResult,
 } from "@/lib/prisma/queries";
 import { UserWithStatistic } from "@/lib/prisma/types";
+import { Mode } from "@/lib/types/game";
 import { getUserLeague } from "@/lib/utils";
 import { ImageResponse } from "next/og";
 
@@ -48,6 +49,8 @@ export async function GET(
   try {
     const { fid } = await params;
 
+    const mode = Mode.Classic; // Default mode
+
     const appUrl = env.NEXT_PUBLIC_URL;
 
     if (!fid) {
@@ -56,7 +59,7 @@ export async function GET(
       });
     }
 
-    const user = await getUserByMode(Number(fid));
+    const user = await getUserByMode(Number(fid), mode);
 
     if (!user) {
       return new Response("User not found", {
@@ -69,7 +72,7 @@ export async function GET(
 
     const topStreaksUsers: UserWithStatistic[] = [];
     for (const streak of topStreaks) {
-      const user = await getUserByMode(streak.fid);
+      const user = await getUserByMode(streak.fid, mode);
       if (user) {
         topStreaksUsers.push(user);
       }

@@ -1,6 +1,7 @@
 import { env } from "@/lib/env";
 import { getActiveStreaksCount, getUserByMode } from "@/lib/prisma/queries";
 import { UserWithStatistic } from "@/lib/prisma/types";
+import { Mode } from "@/lib/types/game";
 import { getGlobalLeaderboard } from "@/lib/utils";
 import { ImageResponse } from "next/og";
 
@@ -57,6 +58,7 @@ export async function GET(
     const { searchParams } = new URL(request.url);
     // const friends = searchParams.get("friends") === "true";
     const quests = searchParams.get("quests") === "true";
+    const mode = (searchParams.get("mode") as Mode) || Mode.Classic;
 
     const appUrl = env.NEXT_PUBLIC_URL;
 
@@ -66,18 +68,19 @@ export async function GET(
       });
     }
 
-    const user = await getUserByMode(Number(fid));
+    const user = await getUserByMode(Number(fid), mode);
     const totActivePlayers = await getActiveStreaksCount();
 
     const leaderboardData = (await getGlobalLeaderboard(
       fid,
+      mode,
       quests ? "quests" : "xp",
       5
     )) as LeaderboardData;
 
     const topLeaderboardUsers: UserWithStatistic[] = [];
     for (const leaderboardUser of leaderboardData.users) {
-      const user = await getUserByMode(leaderboardUser.fid);
+      const user = await getUserByMode(leaderboardUser.fid, mode);
       if (user) {
         topLeaderboardUsers.push(user);
       }

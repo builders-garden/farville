@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getUserLeaderboardEntry } from "@/lib/prisma/queries";
 import { validMode } from "@/lib/validators/mode";
+import { Mode } from "@/lib/types/game";
 
 export async function GET(
   request: NextRequest,
@@ -31,7 +32,7 @@ export async function GET(
   try {
     const userWeeklyStats = await getUserLeaderboardEntry(
       Number(targetFid),
-      mode
+      mode as Mode
     );
 
     return NextResponse.json(userWeeklyStats);

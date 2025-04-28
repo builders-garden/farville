@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
   switch (event.event) {
     case "frame_added":
       if (event.notificationDetails) {
-        const user = await getUserByMode(fid);
+        const user = await getUserByMode(fid, Mode.Classic);
         if (!user) {
           const neynarUser = await fetchUser(fid.toString());
           await createUserAndMode({
