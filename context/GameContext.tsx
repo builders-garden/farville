@@ -138,6 +138,8 @@ interface GameContextType {
     })[]
   ) => void;
   initializeMode: (params: { mode: Mode }) => void;
+  showNotActiveMode: boolean;
+  setShowNotActiveMode: Dispatch<SetStateAction<boolean>>;
 }
 
 export const GameContext = createContext<GameContextType | null>(null);
@@ -162,6 +164,7 @@ export function GameProvider({
   const [showProfile, setShowProfile] = useState(false);
   const [showMintOGBadge, setShowMintOGBadge] = useState(false);
   const [showMintCollectible, setShowMintCollectible] = useState(false);
+  const [showNotActiveMode, setShowNotActiveMode] = useState(false);
   const {
     state,
     refetch,
@@ -572,6 +575,8 @@ export function GameProvider({
         updateUserWeeklyStats,
         updateUserCollectibles,
         initializeMode,
+        showNotActiveMode,
+        setShowNotActiveMode,
       }}
     >
       {children}

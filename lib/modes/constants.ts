@@ -50,8 +50,7 @@ interface ModeDefinition {
   description: string;
   starterPack: Array<StarterPack>;
   features: ModeFeature[];
-  startAt: Date;
-  endAt: Date | null;
+  displayable: boolean;
   background: {
     pattern: string;
     color: string;
@@ -79,8 +78,7 @@ export const MODE_DEFINITIONS: Record<Mode, ModeDefinition> = {
       ModeFeature.Quests,
       ModeFeature.Leagues,
     ],
-    startAt: new Date("2025-01-01T00:00:00Z"),
-    endAt: null,
+    displayable: true,
     background: {
       pattern: `
         linear-gradient(45deg, #386A48 25%, transparent 25%),
@@ -104,8 +102,7 @@ export const MODE_DEFINITIONS: Record<Mode, ModeDefinition> = {
     description: "A new game mode specifically designed for the Farcon event.",
     starterPack: STARTER_PACKS.farcon,
     features: [ModeFeature.HarvestHonours, ModeFeature.Quests],
-    startAt: new Date("2025-04-24T00:00:00Z"),
-    endAt: new Date("2025-05-07T23:59:59Z"),
+    displayable: true,
     background: {
       pattern: `
         linear-gradient(45deg, #3a2150 25%, transparent 25%),
@@ -123,16 +120,15 @@ export const MODE_DEFINITIONS: Record<Mode, ModeDefinition> = {
     },
     growthTimeDivisor: 2,
     boosterTimeDivisor: 4,
-    startDate: new Date("2025-03-30T00:00:00Z"),
-    endDate: new Date("2025-05-04T23:59:59Z"),
+    startDate: new Date("2025-04-30T23:59:59Z"),
+    endDate: new Date("2025-05-07T23:59:59Z"),
   },
   [Mode.Sonic]: {
     name: "Sonic",
     description: "A limited-time game mode where the crops grow very fast.",
     starterPack: STARTER_PACKS.sonic,
     features: Array<ModeFeature>(),
-    startAt: new Date("2025-05-02T14:00:00Z"),
-    endAt: new Date("2025-05-02T16:00:00Z"),
+    displayable: true,
     background: {
       pattern: `
         linear-gradient(45deg, #2B4C7E 25%, transparent 25%),
@@ -150,7 +146,7 @@ export const MODE_DEFINITIONS: Record<Mode, ModeDefinition> = {
     },
     growthTimeDivisor: 48,
     boosterTimeDivisor: 8,
-    startDate: new Date("2025-05-03T00:00:00Z"),
-    endDate: new Date("2025-05-03T23:59:59Z"),
+    startDate: new Date("2025-05-02T00:00:00Z"),
+    endDate: new Date("2025-05-02T23:59:59Z"),
   },
 };

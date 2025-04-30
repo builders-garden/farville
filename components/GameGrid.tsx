@@ -8,9 +8,14 @@ import SeedMenu from "./SeedMenu";
 import MintOgModal from "./modals/MintOgModal";
 import MintCollectibleModal from "./modals/mint-collectible-modal";
 import { WelcomeOnNewModeCard } from "./modes/WelcomeOnNewModeCard";
+import { NotActiveModeModal } from "./modals/NotActiveModeModal";
+import { Mode } from "@/lib/types/game";
+import { MODE_DEFINITIONS } from "@/lib/modes/constants";
+import { useEffect } from "react";
 
 export default function GameGrid() {
   const {
+    mode,
     state,
     showHarvestedNewGoldCrops,
     gridBulkResult,
@@ -21,12 +26,24 @@ export default function GameGrid() {
     setShowMintOGBadge,
     showMintCollectible,
     setShowMintCollectible,
+    showNotActiveMode,
+    setShowNotActiveMode,
+    setMode,
   } = useGame();
 
   // Create a 2D grid from the flat array
   const grid = Array.from({ length: state.gridSize.height }, (_, i) =>
     state.grid.slice(i * state.gridSize.width, (i + 1) * state.gridSize.width)
   );
+
+  useEffect(() => {
+    if (
+      mode !== Mode.Classic &&
+      MODE_DEFINITIONS[mode].startDate! > new Date()
+    ) {
+      setShowNotActiveMode(true);
+    }
+  }, [mode, setShowNotActiveMode]);
 
   return (
     <div className="flex flex-col h-full w-full items-start p-4 justify-start overflow-hidden gap-2 xs:gap-8">
@@ -52,6 +69,15 @@ export default function GameGrid() {
 
       {showMintCollectible && (
         <MintCollectibleModal onCancel={() => setShowMintCollectible(false)} />
+      )}
+
+      {showNotActiveMode && (
+        <NotActiveModeModal
+          onClose={() => {
+            setShowNotActiveMode(false);
+            setMode(Mode.Classic);
+          }}
+        />
       )}
 
       {/* Render the grid */}

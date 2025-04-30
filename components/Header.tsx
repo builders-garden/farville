@@ -2,7 +2,7 @@
 
 import { useGame } from "../context/GameContext";
 import { motion } from "framer-motion";
-import { getCurrentLevelAndProgress } from "@/lib/utils";
+import { getCurrentLevelAndProgress, modeAvailableForUser } from "@/lib/utils";
 import Image from "next/image";
 import {
   DropdownMenu,
@@ -27,6 +27,10 @@ export default function Header() {
   const { progress } = getCurrentLevelAndProgress(state.experience);
 
   // const showOgButton = OG_FIDS_LIST.indexOf(state.user.fid) !== -1;
+
+  const availableUserModes = Object.values(Mode).filter((modeValue) =>
+    modeAvailableForUser(modeValue, state.user.fid)
+  ).length;
 
   return (
     <div className="bg-[#8B5E3C]/40 px-4 py-2 shadow-lg bg-opacity-95 backdrop-blur-sm border-b-2 border-[#6d4c2c]/50 z-30">
@@ -159,40 +163,45 @@ export default function Header() {
           </motion.div>
         </div>
 
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button className="bg-[#8B5E3C] hover:bg-[#6d4c2c] text-white border-[#6d4c2c] shadow-lg shadow-[#A17449]/50 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0">
-              {mode.charAt(0).toUpperCase() + mode.slice(1)}
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent className="bg-[#8B5E3C]/95 border-[#6d4c2c] backdrop-blur-sm w-44 mr-4">
-            {Object.values(Mode).map((modeValue) => (
-              <DropdownMenuItem
-                key={modeValue}
-                onClick={() => {
-                  if (modeValue !== mode) {
-                    setMode(modeValue);
-                  }
-                }}
-                className={`flex items-center gap-2 text-white
+        {availableUserModes > 1 && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button className="bg-[#8B5E3C] hover:bg-[#6d4c2c] text-white border-[#6d4c2c] shadow-lg shadow-[#A17449]/50 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0">
+                {mode.charAt(0).toUpperCase() + mode.slice(1)}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="bg-[#8B5E3C]/95 border-[#6d4c2c] backdrop-blur-sm w-44 mr-4">
+              {Object.values(Mode).map(
+                (modeValue) =>
+                  modeAvailableForUser(modeValue, state.user.fid) && (
+                    <DropdownMenuItem
+                      key={modeValue}
+                      onClick={() => {
+                        if (modeValue !== mode) {
+                          setMode(modeValue);
+                        }
+                      }}
+                      className={`flex items-center gap-2 text-white
               ${
                 modeValue === mode
                   ? "bg-[#ffb938] cursor-not-allowed focus:bg-[#ffb938] text-[#5d3c1c]"
                   : "hover:bg-[#6d4c2c]/50 focus:bg-[#6d4c2c]/50 cursor-pointer focus:text-white"
               }`}
-              >
-                <Image
-                  src={`/images/modes/${modeValue}.png`}
-                  alt={modeValue}
-                  width={24}
-                  height={24}
-                  className="w-6 h-6 rounded-lg"
-                />
-                {modeValue.charAt(0).toUpperCase() + modeValue.slice(1)}
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
+                    >
+                      <Image
+                        src={`/images/modes/${modeValue}.png`}
+                        alt={modeValue}
+                        width={24}
+                        height={24}
+                        className="w-6 h-6 rounded-lg"
+                      />
+                      {modeValue.charAt(0).toUpperCase() + modeValue.slice(1)}
+                    </DropdownMenuItem>
+                  )
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
       </div>
     </div>
   );

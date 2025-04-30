@@ -34,6 +34,7 @@ import { DbUserDonation } from "@/lib/prisma/types";
 import { Item, Streak, UserHarvestedCrop } from "@prisma/client";
 import { MODE_DEFINITIONS, ModeFeature } from "./modes/constants";
 import { NextResponse } from "next/server";
+import { FARCON_ATTENDEES_FIDS } from "./modes/farcon";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -636,9 +637,6 @@ export const initQuestsAndLeaderboardEntryByMode = async (
       type: [QuestType.Weekly],
       activeToday: true,
     });
-    console.log(
-      `User ${fid} has ${dailyQuests.length} daily quests and ${weeklyQuests.length} weekly quests in mode ${mode}`
-    );
     if (!dailyQuests || dailyQuests?.length === 0) {
       await initDailyUserQuests(Number(fid), mode);
     }
@@ -664,9 +662,21 @@ export const initQuestsAndLeaderboardEntry = async (
     ) {
       continue;
     }
-    console.log(
-      `Initializing quests and leaderboard entry for fid ${fid} in mode ${mode}`
-    );
     await initQuestsAndLeaderboardEntryByMode(fid, mode);
   }
+};
+
+export const modeAvailableForUser = (mode: Mode, fid: number) => {
+  if (MODE_DEFINITIONS[mode].displayable === false) {
+    return false;
+  }
+
+  if (
+    [Mode.Farcon, Mode.Sonic].includes(mode) &&
+    FARCON_ATTENDEES_FIDS.indexOf(fid) === -1
+  ) {
+    return false;
+  }
+
+  return true;
 };
