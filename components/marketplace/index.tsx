@@ -81,6 +81,7 @@ export default function MarketplaceModal({
         {
           itemId: selectedItemForRequest.id,
           quantity: requestQuantity,
+          mode,
         },
         {
           onSuccess: async (data) => {
@@ -246,7 +247,10 @@ export default function MarketplaceModal({
           </div>
 
           {/* Tabs */}
-          <MarketplaceTabs activeTab={activeTab} setActiveTab={setActiveTab} />
+          <MarketplaceTabs
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
+          />
 
           {/* Sub tabs */}
           {activeTab === "buy" && (

@@ -1,7 +1,12 @@
+import { Mode } from "@/lib/types/game";
 import { useApiQuery } from "./use-api-query";
 import { DbUserDonationWithUsers } from "@/lib/prisma/queries";
 
-export const useDonationHistory = (donator?: number, receiver?: number) => {
+export const useDonationHistory = (
+  mode: Mode,
+  donator?: number,
+  receiver?: number
+) => {
   const { data, isLoading } = useApiQuery<
     {
       todayDonations: DbUserDonationWithUsers[];
@@ -10,8 +15,8 @@ export const useDonationHistory = (donator?: number, receiver?: number) => {
     },
     { donator?: number; receiver?: number }
   >({
-    queryKey: ["donationHistory", donator, receiver],
-    url: `/api/donation-history?donator=${donator}&receiver=${receiver}`,
+    queryKey: ["donationHistory", donator, receiver, mode],
+    url: `/api/donation-history?donator=${donator}&receiver=${receiver}&mode=${mode}`,
     method: "GET",
     isProtected: true,
     enabled: !!donator && !!receiver,

@@ -1,6 +1,7 @@
 import { ImageResponse } from "next/og";
 import { env } from "@/lib/env";
 import { getRequestById } from "@/lib/prisma/queries";
+import { Mode } from "@/lib/types/game";
 
 export const dynamic = "force-dynamic";
 const size = {
@@ -48,8 +49,9 @@ export async function GET(
       });
     }
 
-    const { user, item, quantity } = request;
+    const { user, item, quantity, mode } = request;
 
+    const requestMode = mode as Mode;
     const text = user ? `is looking for` : "Farville";
     const secondaryText = item && quantity ? `${quantity} ${item.name}` : "";
 
@@ -123,6 +125,34 @@ export async function GET(
               alignItems: "center",
             }}
           >
+            {requestMode !== Mode.Classic && (
+              <div
+                style={{
+                  position: "absolute",
+                  top: "15px",
+                  right: "15px",
+                  width: "60px",
+                  height: "60px",
+                  borderRadius: "8px",
+                  overflow: "hidden",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  background: "rgba(255, 255, 255, 0.1)",
+                  border: "1px solid rgba(255, 255, 255, 0.2)",
+                }}
+              >
+                <img
+                  src={`${appUrl}/images/modes/${requestMode}.png`}
+                  width="48"
+                  height="48"
+                  style={{
+                    objectFit: "contain",
+                    borderRadius: "4px",
+                  }}
+                />
+              </div>
+            )}
             {/* Additional inner shadow for better text contrast */}
             <div
               style={{

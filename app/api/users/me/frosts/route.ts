@@ -22,7 +22,7 @@ export const POST = async (req: NextRequest) => {
     );
     const streaks = await getUserStreaks(Number(fid));
     if (streaks.length === 0 && (!userFrost || userFrost.quantity === 0)) {
-      await addUserItem(Number(fid), 29, FIRST_FROST_QUANTITY);
+      await addUserItem(Number(fid), 29, FIRST_FROST_QUANTITY, Mode.Classic);
     } else if (streaks.length > 0) {
       await checkUserActivityAndApplyFrost(streaks[0], userFrost, false);
     }

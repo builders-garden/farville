@@ -42,13 +42,16 @@ export function WelcomeOnNewModeCard() {
         </button>
         <div className="bg-[#6d4c2c]/80 rounded-lg p-2 flex items-center justify-between w-full">
           <div className="flex items-center gap-1 text-white/80">
-            <Clock size={14} className="text-[#FFB938]" />
+            <Clock
+              size={14}
+              className="text-[#FFB938]"
+            />
             <span className="text-[8px]">Starts in:</span>
           </div>
           <div className="flex gap-1 text-white font-bold">
             {(() => {
               const now = new Date();
-              const startAt = new Date(modeDefinition.startAt);
+              const startAt = new Date(modeDefinition.startDate || 0);
               const nowUTC = Date.UTC(
                 now.getUTCFullYear(),
                 now.getUTCMonth(),

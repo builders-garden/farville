@@ -6,8 +6,6 @@ import {
   BASE_GOLD_CROP_PERCENTAGE,
   CROP_DATA,
   LEVEL_XP_THRESHOLDS,
-  MAX_DAILY_ALLOWED_DONATION_BETWEEN_USERS,
-  MAX_DAILY_ALLOWED_DONATION_TO_USERS,
   SPEED_BOOST,
 } from "./game-constants";
 import { CropType, Mode, PerkType, QuestType } from "@/lib/types/game";
@@ -30,8 +28,12 @@ import {
 import { encodeFunctionData, Address, Hex } from "viem";
 import { PFP_NFT_ABI } from "./contracts/pfp-nft/abi";
 import { env } from "@/lib/env";
-import { DbUserDonation } from "@/lib/prisma/types";
-import { Item, Streak, UserHarvestedCrop } from "@prisma/client";
+import {
+  Item,
+  Streak,
+  UserDonationHistory,
+  UserHarvestedCrop,
+} from "@prisma/client";
 import { MODE_DEFINITIONS, ModeFeature } from "./modes/constants";
 import { NextResponse } from "next/server";
 import { FARCON_ATTENDEES_FIDS } from "./modes/farcon";
@@ -572,19 +574,26 @@ export const getPfpNftTxCalldata = (params: {
 };
 
 export const userCanDonate = (
-  donationsLast24h: DbUserDonation[],
-  receiver: number
+  donationsLast24h: UserDonationHistory[],
+  receiver: number,
+  mode: Mode
 ) => {
   const lastDonationToReceiver = donationsLast24h.find(
     (d) => d.receiverFid === receiver
   );
+  const dailyLimitDonationsToSameUser =
+    MODE_DEFINITIONS[mode].dailyLimitDonationsToSameUser;
+  const dailyLimitDonationsToUsers =
+    MODE_DEFINITIONS[mode].dailyLimitDonationsToUsers;
   const canDonateToReceiver =
+    !dailyLimitDonationsToSameUser ||
     !lastDonationToReceiver ||
     (lastDonationToReceiver &&
       lastDonationToReceiver?.times !== null &&
-      lastDonationToReceiver.times < MAX_DAILY_ALLOWED_DONATION_BETWEEN_USERS);
+      lastDonationToReceiver.times < dailyLimitDonationsToSameUser);
   const canDonateToAnotherUser =
-    donationsLast24h.length < MAX_DAILY_ALLOWED_DONATION_TO_USERS;
+    !dailyLimitDonationsToUsers ||
+    donationsLast24h.length < dailyLimitDonationsToUsers;
   return {
     canDonateToReceiver,
     canDonateToAnotherUser,

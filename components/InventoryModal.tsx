@@ -14,7 +14,7 @@ import InventoryItem from "./InventoryItem";
 import { Item } from "@prisma/client";
 
 export default function InventoryModal({ onClose }: { onClose: () => void }) {
-  const { state, setSelectedSeed, setSelectedPerk } = useGame();
+  const { state, setSelectedSeed, setSelectedPerk, mode } = useGame();
   const { safeAreaInsets, context } = useFrameContext();
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
   const [requestQuantity, setRequestQuantity] = useState(1);
@@ -48,10 +48,11 @@ export default function InventoryModal({ onClose }: { onClose: () => void }) {
     if (!context?.user.fid) return;
 
     try {
-      await createRequest(
+      createRequest(
         {
           itemId: item.id,
           quantity: requestQuantity,
+          mode,
         },
         {
           onSuccess: async (data) => {
@@ -115,7 +116,12 @@ export default function InventoryModal({ onClose }: { onClose: () => void }) {
           animate={{ x: 0, opacity: 1 }}
         >
           {isImageUrl ? (
-            <Image src={icon} alt={title} width={28} height={28} />
+            <Image
+              src={icon}
+              alt={title}
+              width={28}
+              height={28}
+            />
           ) : (
             <span className="text-2xl">{icon}</span>
           )}

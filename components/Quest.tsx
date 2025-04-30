@@ -171,6 +171,7 @@ export default function Quest({
         {
           itemId: selectedItem.id,
           quantity: requestQuantity,
+          mode,
         },
         {
           onSuccess: async (data) => {

@@ -43,13 +43,6 @@ export interface UserWithStatistics {
   }[];
 }
 
-export interface DbUserDonation {
-  lastDonation: Date;
-  donatorFid: number;
-  receiverFid: number;
-  times: number | null;
-}
-
 export type QuestWithItem = Quest & { item: Item | null };
 
 export type UserHasQuestWithQuest = UserHasQuest & {

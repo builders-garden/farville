@@ -11,7 +11,6 @@ import {
   updateUserXP,
 } from "@/lib/prisma/queries";
 import { getThisWeekMonday } from "@/lib/utils";
-import { MODE_DEFINITIONS, ModeFeature } from "@/lib/modes/constants";
 
 export async function GET(
   request: NextRequest,
@@ -122,8 +121,7 @@ export async function POST(
       const thisWeekMonday = getThisWeekMonday();
       if (
         userQuest.quest.startAt &&
-        new Date(userQuest.quest.startAt) >= thisWeekMonday &&
-        MODE_DEFINITIONS[mode].features.includes(ModeFeature.Leagues)
+        new Date(userQuest.quest.startAt) >= thisWeekMonday
       ) {
         await updateUserWeeklyScore(
           Number(fid),

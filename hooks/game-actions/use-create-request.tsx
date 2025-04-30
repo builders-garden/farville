@@ -1,8 +1,10 @@
 import { useApiMutation } from "@/hooks/use-api-mutation";
+import { Mode } from "@/lib/types/game";
 
 interface CreateRequestVariables {
   itemId: number;
   quantity: number;
+  mode: Mode;
 }
 
 interface CreateRequestResponse {
@@ -20,6 +22,7 @@ export const useCreateRequest = () => {
     body: (variables) => ({
       itemId: variables.itemId,
       quantity: variables.quantity,
+      mode: variables.mode,
     }),
     isProtected: true,
   });

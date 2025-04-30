@@ -1,15 +1,18 @@
 import { Item, Request, User } from "@prisma/client";
 import { prisma } from "../client";
+import { Mode } from "@/lib/types/game";
 
 export const createRequest = async (request: {
   fid: number;
   itemId: number;
   quantity: number;
+  mode: Mode;
 }): Promise<Request> => {
   const data = await prisma.request.create({
     data: {
       ...request,
       filledQuantity: 0,
+      mode: request.mode,
     },
   });
 
@@ -28,38 +31,6 @@ export const getRequestById = async (
   });
 
   return request;
-};
-
-export const getUserRequests = async (
-  fid: number
-): Promise<(Request & { item: Item | null })[]> => {
-  const requests = await prisma.request.findMany({
-    where: { fid },
-    include: {
-      item: true,
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
-  });
-
-  return requests;
-};
-
-export const getAllRequests = async (): Promise<
-  (Request & { item: Item | null; user: User })[]
-> => {
-  const requests = await prisma.request.findMany({
-    include: {
-      item: true,
-      user: true,
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
-  });
-
-  return requests;
 };
 
 export const incrementRequestFilledQuantity = async (

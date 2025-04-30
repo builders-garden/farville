@@ -89,7 +89,7 @@ export const updateUserItem = async (
   fid: number,
   itemId: number,
   quantity: number,
-  mode: string = Mode.Classic
+  mode: Mode
 ): Promise<UserHasItem> => {
   const updatedItem = await prisma.userHasItem.upsert({
     where: {
@@ -117,7 +117,7 @@ export const addUserItem = async (
   fid: number,
   itemId: number,
   quantity: number,
-  mode: string = Mode.Classic
+  mode: Mode
 ) => {
   return await prisma.userHasItem.upsert({
     where: {
@@ -157,7 +157,7 @@ export const removeUserItem = async (
   fid: number,
   itemId: number,
   quantity: number,
-  mode: string = Mode.Classic
+  mode: Mode
 ) => {
   // Use a transaction to prevent race conditions
   return await prisma.$transaction(

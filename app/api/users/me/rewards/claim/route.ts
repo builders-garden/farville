@@ -72,7 +72,8 @@ export const POST = async (req: NextRequest) => {
     await updateUserItem(
       Number(fid),
       item.itemId,
-      userItem ? userItem.quantity + item.quantity : item.quantity
+      userItem ? userItem.quantity + item.quantity : item.quantity,
+      Mode.Classic
     );
   }
 

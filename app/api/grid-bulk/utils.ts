@@ -122,16 +122,13 @@ export const plantBulk = async (
       getGrowthTime(seedType)
     );
 
-    // check if quests are enabled inside this mode
-    if (MODE_DEFINITIONS[mode].features.includes(ModeFeature.Quests)) {
-      await sendQuestsCalculation(
-        fid,
-        "plant",
-        mode,
-        userSeeds.itemId,
-        updatedGridCellsBulk.length
-      );
-    }
+    await sendQuestsCalculation(
+      fid,
+      "plant",
+      mode,
+      userSeeds.itemId,
+      updatedGridCellsBulk.length
+    );
     await sendBatchToPostHog(
       fid,
       "planted-seed",
@@ -225,11 +222,6 @@ export const harvestBulk = async (
     mode
   ].features.includes(ModeFeature.HarvestHonours);
 
-  // check if Quests is enabled inside this mode
-  const isQuestsEnabled = MODE_DEFINITIONS[mode].features.includes(
-    ModeFeature.Quests
-  );
-
   let userHarvestedCrops: UserHarvestedCrop[] = [];
   if (isHarvestHonoursAndGoldEnabled) {
     userHarvestedCrops = await getUserHarvestedCrops(fid);
@@ -282,15 +274,13 @@ export const harvestBulk = async (
       await addUserItem(fid, CROP_DATA[cropType].id, regularCropAmount, mode);
     }
 
-    if (isQuestsEnabled) {
-      await sendQuestsCalculation(
-        fid,
-        ActionType.Harvest,
-        mode,
-        CROP_DATA[cropType].id,
-        amount
-      );
-    }
+    await sendQuestsCalculation(
+      fid,
+      ActionType.Harvest,
+      mode,
+      CROP_DATA[cropType].id,
+      amount
+    );
   }
 
   if (rewards.cropsWithRewards.length > 0) {
@@ -334,16 +324,14 @@ const rewardUserBulk = async (
   });
   const totalXp = cropsWithRewards.reduce((acc, crop) => acc + crop.xp, 0);
   const updateResult = await updateUserXP(fid, totalXp, mode);
-  if (MODE_DEFINITIONS[mode].features.includes(ModeFeature.Leagues)) {
-    await updateUserWeeklyScore(
-      fid,
-      totalXp,
-      updateResult.newLevel,
-      updateResult.oldXp,
-      updateResult.didLevelUp,
-      mode
-    );
-  }
+  await updateUserWeeklyScore(
+    fid,
+    totalXp,
+    updateResult.newLevel,
+    updateResult.oldXp,
+    updateResult.didLevelUp,
+    mode
+  );
 
   return {
     cropsWithRewards,

@@ -2,6 +2,7 @@ import { CREATOR_FIDS, LEVEL_XP_THRESHOLDS } from "@/lib/game-constants";
 import { prisma } from "../client";
 import { UserLeaderboardEntry } from "@prisma/client";
 import { Mode } from "@/lib/types/game";
+import { MODE_DEFINITIONS, ModeFeature } from "@/lib/modes/constants";
 
 export const createUserLeaderboardEntry = async (
   fid: number,
@@ -133,6 +134,12 @@ export const updateUserWeeklyScore = async (
 ): Promise<{
   currentScore: number;
 }> => {
+  if (!MODE_DEFINITIONS[mode].features.includes(ModeFeature.Leagues)) {
+    return {
+      currentScore: 0,
+    };
+  }
+
   const level5 = LEVEL_XP_THRESHOLDS[4];
 
   if (userLevel >= 5) {

@@ -1,5 +1,6 @@
 import { env } from "@/lib/env";
 import Logger from "@/lib/logger";
+import { MODE_DEFINITIONS, ModeFeature } from "@/lib/modes/constants";
 import { qstashPublishJSON } from "@/lib/qstash";
 import { Mode } from "@/lib/types/game";
 
@@ -10,7 +11,10 @@ export async function sendQuestsCalculation(
   itemId?: number,
   itemAmount?: number
 ) {
-  if (env.NEXT_PUBLIC_URL === "http://localhost:3000") {
+  if (
+    env.NEXT_PUBLIC_URL === "http://localhost:3000" ||
+    !MODE_DEFINITIONS[mode].features.includes(ModeFeature.Quests)
+  ) {
     return;
   }
 

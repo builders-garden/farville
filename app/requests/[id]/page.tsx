@@ -41,7 +41,7 @@ export async function generateMetadata({
     };
   }
   const fid = request.fid;
-  const user = await getUserByMode(Number(fid), Mode.Classic);
+  const user = await getUserByMode(Number(fid), request.mode as Mode);
 
   // Construct the dynamic image URL
   const imageUrl = new URL(`${appUrl}/api/og/requests/${requestId}`);

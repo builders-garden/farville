@@ -12,6 +12,7 @@ import {
   updateUserWeeklyScore,
   updateUserXP,
   incrementRequestFilledQuantity,
+  getRequestById,
 } from "@/lib/prisma/queries";
 import { userCanDonate } from "@/lib/utils";
 import { Mode, PerkType, SpecialItemType } from "@/lib/types/game";
@@ -21,8 +22,7 @@ import { z } from "zod";
 const requestSchema = z.object({
   quantity: z.number().min(1).max(10),
   toFid: z.number().min(1),
-  requestId: z.number().optional(),
-  mode: z.nativeEnum(Mode),
+  requestId: z.number(),
 });
 
 export const POST = async (
@@ -48,7 +48,15 @@ export const POST = async (
     );
   }
 
-  const { quantity, toFid, requestId, mode } = requestBody.data;
+  const { quantity, toFid, requestId } = requestBody.data;
+
+  const request = await getRequestById(requestId);
+
+  if (!request) {
+    return NextResponse.json({ message: "Request not found" }, { status: 404 });
+  }
+
+  const mode = request.mode as Mode;
 
   const user = await getUserByMode(Number(fid), mode);
   if (!user) {
@@ -89,13 +97,13 @@ export const POST = async (
     );
   }
 
-  const todayDonations = await getUserDonationsOfToday(Number(fid));
+  const todayDonations = await getUserDonationsOfToday(Number(fid), mode);
 
   const {
     canDonateToReceiver,
     canDonateToAnotherUser,
     lastDonationToReceiver,
-  } = userCanDonate(todayDonations, Number(toFid));
+  } = userCanDonate(todayDonations, Number(toFid), mode);
 
   if (!canDonateToReceiver && !canDonateToAnotherUser) {
     return NextResponse.json(
@@ -106,8 +114,8 @@ export const POST = async (
     );
   }
 
-  await removeUserItem(Number(fid), itemId, quantity);
-  await addUserItem(Number(toFid), itemId, quantity);
+  await removeUserItem(Number(fid), itemId, quantity, mode);
+  await addUserItem(Number(toFid), itemId, quantity, mode);
   const userAfterUpdate = await updateUserXP(
     Number(fid),
     quantity * XP_PER_DONATED_ITEM,
@@ -119,12 +127,10 @@ export const POST = async (
     userAfterUpdate.newLevel,
     user.xp,
     userAfterUpdate.didLevelUp,
-    Mode.Classic
+    mode
   );
 
-  if (requestId) {
-    await incrementRequestFilledQuantity(Number(requestId), quantity);
-  }
+  await incrementRequestFilledQuantity(Number(requestId), quantity);
 
   // POST: the user can donate
   // create or update here the user donation history
@@ -138,6 +144,7 @@ export const POST = async (
         ? 1
         : (lastDonationToReceiver?.times ?? 0) + 1,
     lastDonation: new Date(),
+    mode,
   });
 
   await Promise.all([

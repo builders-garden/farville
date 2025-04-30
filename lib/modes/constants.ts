@@ -63,6 +63,8 @@ interface ModeDefinition {
   };
   growthTimeDivisor: number;
   boosterTimeDivisor: number;
+  dailyLimitDonationsToUsers?: number;
+  dailyLimitDonationsToSameUser?: number;
   startDate?: Date;
   endDate?: Date;
 }
@@ -96,6 +98,8 @@ export const MODE_DEFINITIONS: Record<Mode, ModeDefinition> = {
     },
     growthTimeDivisor: 1,
     boosterTimeDivisor: 1,
+    dailyLimitDonationsToUsers: 5,
+    dailyLimitDonationsToSameUser: 2,
   },
   [Mode.Farcon]: {
     name: "Farcon",
@@ -120,8 +124,10 @@ export const MODE_DEFINITIONS: Record<Mode, ModeDefinition> = {
     },
     growthTimeDivisor: 2,
     boosterTimeDivisor: 4,
-    startDate: new Date("2025-04-30T23:59:59Z"),
-    endDate: new Date("2025-05-07T23:59:59Z"),
+    dailyLimitDonationsToUsers: 10,
+    dailyLimitDonationsToSameUser: 3,
+    startDate: new Date("2025-03-30T00:00:00Z"),
+    endDate: new Date("2025-05-04T23:59:59Z"),
   },
   [Mode.Sonic]: {
     name: "Sonic",
