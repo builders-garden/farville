@@ -21,17 +21,14 @@ export const NotActiveModeModal = ({ onClose }: NotActiveModeProps) => {
           {mode.charAt(0).toUpperCase() + mode.slice(1)} Mode
         </h3>
         <div
-          className={`flex flex-col text-md overflow-x-auto my-2 mx-auto no-scrollbar justify-center gap-4`}
+          className={`flex flex-col text-center text-white/70 text-sm overflow-x-auto my-2 mx-auto no-scrollbar justify-center gap-4 my-8`}
         >
-          <span className="text-white/70 text-center px-2">
-            {modeDefinition.description}
-          </span>
-          <Countdown
-            date={new Date(modeDefinition.startDate!)}
-            text="Starts in"
-            startsIn
-          />
+          {modeDefinition.description}
         </div>
+        <Countdown
+          date={new Date(modeDefinition.startDate!)}
+          text="Starts in"
+        />
         <div className="flex flex-row gap-3 mt-8">
           <button
             onClick={() => onClose()}

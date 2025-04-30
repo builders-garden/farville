@@ -1,4 +1,5 @@
 import { Mode } from "../types/game";
+import { Separator } from "@/components/ui/separator";
 
 interface StarterPack {
   itemId: number;
@@ -47,7 +48,7 @@ export enum ModeFeature {
 
 interface ModeDefinition {
   name: string;
-  description: string;
+  description: React.ReactNode;
   starterPack: Array<StarterPack>;
   features: ModeFeature[];
   displayable: boolean;
@@ -72,7 +73,7 @@ interface ModeDefinition {
 export const MODE_DEFINITIONS: Record<Mode, ModeDefinition> = {
   [Mode.Classic]: {
     name: "Classic",
-    description: "The original game mode with no special features.",
+    description: "The original game mode with no special features",
     starterPack: STARTER_PACKS.classic,
     features: [
       ModeFeature.GoldCrops,
@@ -103,7 +104,15 @@ export const MODE_DEFINITIONS: Record<Mode, ModeDefinition> = {
   },
   [Mode.Farcon]: {
     name: "Farcon",
-    description: "A new game mode specifically designed for the Farcon event.",
+    description: (
+      <>
+        <p>Compete with fellow Farcon attendees</p>
+        <Separator className="w-[80%] m-auto" />
+        <p>
+          whoever has the most XP by May 4th at 11:59PM takes home $100 USDC 💸
+        </p>
+      </>
+    ),
     starterPack: STARTER_PACKS.farcon,
     features: [ModeFeature.HarvestHonours, ModeFeature.Quests],
     displayable: true,
@@ -126,12 +135,18 @@ export const MODE_DEFINITIONS: Record<Mode, ModeDefinition> = {
     boosterTimeDivisor: 4,
     dailyLimitDonationsToUsers: 10,
     dailyLimitDonationsToSameUser: 3,
-    startDate: new Date("2025-03-30T00:00:00Z"),
+    startDate: new Date("2025-05-30T00:00:00Z"),
     endDate: new Date("2025-05-04T23:59:59Z"),
   },
   [Mode.Sonic]: {
     name: "Sonic",
-    description: "A limited-time game mode where the crops grow very fast.",
+    description: (
+      <>
+        <p>2 hours. ultra fast growth. pure chaos.</p>
+        <Separator className="w-[80%] m-auto" />
+        <p>whoever racks up the most XP before time&apos;s up wins $50 USDC.</p>
+      </>
+    ),
     starterPack: STARTER_PACKS.sonic,
     features: Array<ModeFeature>(),
     displayable: true,

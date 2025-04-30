@@ -120,12 +120,21 @@ export default function Toolbar({
             className="w-9 h-9 xs:w-12 xs:h-12 rounded-lg flex items-center justify-center bg-[#8B5E3C] hover:bg-[#6d4c2c] transition-colors"
           >
             <div className="relative w-6 h-7 xs:w-7 xs:h-9">
-              <Image
-                src={`/images/leagues/${state.weeklyStats.league || 1}.png`}
-                alt="League"
-                fill
-                sizes="48"
-              />
+              {modeDefinition.features.includes(ModeFeature.Leagues) ? (
+                <Image
+                  src={`/images/leagues/${state.weeklyStats.league || 1}.png`}
+                  alt="League"
+                  fill
+                  sizes="48"
+                />
+              ) : (
+                <Image
+                  src="/images/icons/experience.png"
+                  alt="Ranking"
+                  fill
+                  sizes="48"
+                />
+              )}
             </div>
           </motion.button>
           <span className="text-[4px] xs:text-[6px] text-white mt-1">

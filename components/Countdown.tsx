@@ -4,15 +4,15 @@ import { useEffect, useState } from "react";
 interface CountdownProps {
   date: Date;
   text: string;
-  startsIn: boolean;
+  border?: boolean;
 }
 
-export const Countdown = ({ date, text, startsIn }: CountdownProps) => {
+export const Countdown = ({ date, text, border = false }: CountdownProps) => {
   const [timeBasedOnDate, setTimeBasedOnDate] = useState<{
+    days: number;
     hours: number;
     minutes: number;
-    seconds: number;
-  }>({ hours: 0, minutes: 0, seconds: 0 });
+  }>({ days: 0, hours: 0, minutes: 0 });
 
   useEffect(() => {
     const calculateTimeBasedOnDate = () => {
@@ -34,22 +34,28 @@ export const Countdown = ({ date, text, startsIn }: CountdownProps) => {
         date.getUTCSeconds()
       );
 
-      const diffMs = startsIn ? utcDate - utcNow : utcNow - utcDate;
-      const hours = Math.floor(diffMs / (1000 * 60 * 60));
+      const diffMs = utcDate - utcNow;
+      const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+      const hours = Math.floor(
+        (diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
+      );
       const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((diffMs % (1000 * 60)) / 1000);
 
-      setTimeBasedOnDate({ hours, minutes, seconds });
+      setTimeBasedOnDate({ days, hours, minutes });
     };
 
     calculateTimeBasedOnDate();
     const intervalId = setInterval(calculateTimeBasedOnDate, 1000);
 
     return () => clearInterval(intervalId);
-  }, [date, startsIn]);
+  }, [date]);
 
   return (
-    <div className="bg-gradient-to-br from-[#8B5c3C] to-[#6d4c2c] rounded-xl p-2 xs:p-3 border border-[#ffa07a]/20">
+    <div
+      className={`bg-gradient-to-br from-[#8B5c3C] to-[#6d4c2c] w-full rounded-xl p-2 xs:p-3 ${
+        border && "border border-[#ffa07a]/20"
+      }`}
+    >
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1 xs:gap-2 text-white/80">
           <Clock size={16} className="text-[#FFB938]" />
@@ -57,15 +63,16 @@ export const Countdown = ({ date, text, startsIn }: CountdownProps) => {
         </div>
         <div className="flex gap-1 text-white font-bold">
           <div className="bg-[#6d4c2c] px-1.5 xs:px-2 py-0.5 xs:py-1 rounded-md text-[10px] xs:text-xs min-w-[25px] xs:min-w-[30px] flex items-center justify-center">
-            {timeBasedOnDate.hours.toString().padStart(2, "0")}
+            {timeBasedOnDate.days.toString().padStart(2, "0")}
+            <span className="text-[#FFB938]">d</span>
           </div>
-          <span className="text-[#FFB938] flex items-center">:</span>
+          <div className="bg-[#6d4c2c] px-1.5 xs:px-2 py-0.5 xs:py-1 rounded-md text-[10px] xs:text-xs min-w-[25px] xs:min-w-[30px] flex items-center justify-center">
+            {timeBasedOnDate.hours.toString().padStart(2, "0")}
+            <span className="text-[#FFB938]">h</span>
+          </div>
           <div className="bg-[#6d4c2c] px-1.5 xs:px-2 py-0.5 xs:py-1 rounded-md text-[10px] xs:text-xs min-w-[25px] xs:min-w-[30px] flex items-center justify-center">
             {timeBasedOnDate.minutes.toString().padStart(2, "0")}
-          </div>
-          <span className="text-[#FFB938] flex items-center">:</span>
-          <div className="bg-[#6d4c2c] px-1.5 xs:px-2 py-0.5 xs:py-1 rounded-md text-[10px] xs:text-xs min-w-[25px] xs:min-w-[30px] flex items-center justify-center">
-            {timeBasedOnDate.seconds.toString().padStart(2, "0")}
+            <span className="text-[#FFB938]">m</span>
           </div>
         </div>
       </div>

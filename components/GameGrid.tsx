@@ -102,7 +102,7 @@ export default function GameGrid() {
           </div>
         </>
       ) : (
-        <WelcomeOnNewModeCard />
+        !showNotActiveMode && <WelcomeOnNewModeCard />
       )}
     </div>
   );
