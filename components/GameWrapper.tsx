@@ -23,6 +23,7 @@ import StreaksModal from "./StreaksModal";
 import TimelineModal from "./TimelineModal";
 import Toolbar from "./Toolbar";
 import { Mode } from "@/lib/types/game";
+import VoucherModal from "./VoucherModal";
 import MarketplaceModal from "./marketplace";
 import LeaderboardModal from "./leaderboard";
 import { MODE_DEFINITIONS } from "@/lib/modes/constants";
@@ -177,6 +178,8 @@ export default function GameWrapper() {
   const { startBackgroundMusic } = useAudio();
   const { mode, state, activeOverlay, setActiveOverlay } = useGame();
 
+  console.log("activeOverlay", activeOverlay);
+
   const { safeAreaInsets } = useFrameContext();
   // const [showPatchNotes, setShowPatchNotes] = useState(false);
   // const toastShownRef = useRef(false);
@@ -189,10 +192,10 @@ export default function GameWrapper() {
   const { startNextStep } = useNextStep();
 
   useEffect(() => {
-    if (state.showGridCellsTutorial) {
+    if (!activeOverlay && state.showGridCellsTutorial) {
       startNextStep("mainTour");
     }
-  }, [startNextStep, state.showGridCellsTutorial]);
+  }, [startNextStep, state.showGridCellsTutorial, activeOverlay]);
 
   // useEffect(() => {
   //   if (!toastShownRef.current) {
@@ -241,18 +244,22 @@ export default function GameWrapper() {
 
   return (
     <div className="relative z-10">
-      {activeOverlay?.type === "requests" && (
-        <AnimatePresence>
-          <RequestModal onClose={handleOverlayComplete} id={activeOverlay.id} />
-        </AnimatePresence>
-      )}
-
       {/* {showPatchNotes && (
         <PatchNotesModal onClose={() => setShowPatchNotes(false)} />
       )} */}
 
-      {/* Main game content */}
-      {!activeOverlay && (
+      {activeOverlay?.type === "requests" ? (
+        <AnimatePresence>
+          <RequestModal onClose={handleOverlayComplete} id={activeOverlay.id} />
+        </AnimatePresence>
+      ) : activeOverlay?.type === "voucher" ? (
+        <AnimatePresence>
+          <VoucherModal
+            onClose={handleOverlayComplete}
+            slug={activeOverlay.slug}
+          />
+        </AnimatePresence>
+      ) : !activeOverlay ? (
         <div
           style={{
             backgroundColor: BACKGROUND_COLOR,
@@ -283,7 +290,7 @@ export default function GameWrapper() {
           <QuestsModalContainer />
           <TimelineModalContainer />
         </div>
-      )}
+      ) : null}
     </div>
   );
 }

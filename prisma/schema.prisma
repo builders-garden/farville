@@ -36,7 +36,7 @@ model Item {
   userGridCells      UserGridCell[]
   userHarvestedCrops UserHarvestedCrop[]
   userItems          UserHasItem[]
-  voucher            voucher[]
+  vouchers           Voucher[]
 
   @@map("item")
 }
@@ -87,6 +87,7 @@ model Request {
   filledQuantity Int
   createdAt      DateTime @default(now()) @db.Timestamptz(6)
   mode           String
+  mode           String
   user           User     @relation(fields: [fid], references: [fid], onDelete: NoAction, onUpdate: NoAction)
   item           Item?    @relation(fields: [itemId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "request_itemid_fkey")
 
@@ -127,7 +128,7 @@ model User {
   collectibles        UserHasCollectible[]
   items               UserHasItem[]
   quests              UserHasQuest[]
-  user_has_voucher    user_has_voucher[]
+  vouchers            UserHasVoucher[]
   leaderboardEntry    UserLeaderboardEntry[]
   user_notification   UserNotification[]
   statistics          UserStatistic[]
@@ -140,6 +141,7 @@ model UserDonationHistory {
   receiverFid  Int
   times        Int?     @default(0)
   lastDonation DateTime @default(now()) @db.Timestamptz(6)
+  mode         String
   mode         String
   donatorUser  User     @relation("user_donation_history_donatorFidTouser", fields: [donatorFid], references: [fid], onDelete: NoAction, onUpdate: NoAction, map: "user_donation_history_donatorfid_fkey")
   receiverUser User     @relation("user_donation_history_receiverFidTouser", fields: [receiverFid], references: [fid], onDelete: NoAction, onUpdate: NoAction, map: "user_donation_history_receiverfid_fkey")
@@ -272,28 +274,29 @@ model UserNotification {
   @@map("user_notification")
 }
 
-/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
-model user_has_voucher {
+model Voucher {
+  id           Int              @id @default(autoincrement())
+  slug         String           @unique
+  name         String
+  description  String
+  mode         String
+  quantity     Int
+  itemId       Int
+  createdAt    DateTime         @default(now()) @db.Timestamptz(6)
+  userVouchers UserHasVoucher[]
+  item         Item             @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  @@map("voucher")
+}
+
+model UserHasVoucher {
   fid           Int
   voucherId     Int
   claimedAmount Int
   createdAt     DateTime @default(now()) @db.Timestamptz(6)
   user          User     @relation(fields: [fid], references: [fid], onDelete: Cascade, onUpdate: NoAction)
-  voucher       voucher  @relation(fields: [voucherId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  voucher       Voucher  @relation(fields: [voucherId], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
   @@id([fid, voucherId])
-}
-
-/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
-model voucher {
-  id               Int                @id @default(autoincrement())
-  slug             String             @unique
-  name             String
-  description      String
-  mode             String
-  quantity         Int
-  itemId           Int
-  createdAt        DateTime           @default(now()) @db.Timestamptz(6)
-  user_has_voucher user_has_voucher[]
-  item             Item               @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  @@map("user_has_voucher")
 }

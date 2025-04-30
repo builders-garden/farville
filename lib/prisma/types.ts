@@ -5,6 +5,8 @@ import {
   UserHasCollectible,
   UserHasQuest,
   Item,
+  UserHasVoucher,
+  Voucher,
 } from "@prisma/client";
 import { Mode } from "../types/game";
 
@@ -51,4 +53,12 @@ export type UserHasQuestWithQuest = UserHasQuest & {
 
 export type UserCompleteCollectible = Collectible & {
   userHasCollectibles: UserHasCollectible | null;
+};
+
+export type VoucherWithItem = Voucher & {
+  item: Item | null;
+};
+
+export type UserHasVoucherWithVoucher = UserHasVoucher & {
+  voucher: VoucherWithItem;
 };

@@ -171,3 +171,14 @@ export const MODE_DEFINITIONS: Record<Mode, ModeDefinition> = {
     endDate: new Date("2025-05-02T23:59:59Z"),
   },
 };
+
+export const FARCON_VOUCHER = {
+  id: 1,
+  slug: "farcon-nyc",
+  name: "Farcon NYC",
+  description: "Farcon NYC 2025 voucher",
+  mode: "farcon",
+  quantity: 2,
+  itemId: 9,
+  createdAt: "2025-04-28 14:09:37.430436+00",
+};

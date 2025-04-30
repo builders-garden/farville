@@ -28,6 +28,7 @@ import {
 import { encodeFunctionData, Address, Hex } from "viem";
 import { PFP_NFT_ABI } from "./contracts/pfp-nft/abi";
 import { env } from "@/lib/env";
+import { UserHasVoucherWithVoucher } from "@/lib/prisma/types";
 import {
   Item,
   Streak,
@@ -598,6 +599,23 @@ export const userCanDonate = (
     canDonateToReceiver,
     canDonateToAnotherUser,
     lastDonationToReceiver,
+  };
+};
+
+export const userCanRedeem = (
+  newVoucherSlug: string,
+  userVouchers: UserHasVoucherWithVoucher[]
+) => {
+  const userHasVoucher = userVouchers.find(
+    (d) => d.voucher.slug === newVoucherSlug
+  );
+  const canRedeemVoucher =
+    !userHasVoucher ||
+    (userHasVoucher &&
+      userHasVoucher?.voucher.quantity !== null &&
+      userHasVoucher.claimedAmount <= userHasVoucher.voucher.quantity);
+  return {
+    canRedeemVoucher,
   };
 };
 

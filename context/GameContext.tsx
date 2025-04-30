@@ -38,6 +38,7 @@ import { useInitializeMode } from "@/hooks/game-actions/use-initialize-mode";
 export type OverlayConfig =
   | { type: "welcome" }
   | { type: "requests"; id: number }
+  | { type: "voucher"; slug: string }
   | null;
 
 // Update the floatingNumbers type to be an array
