@@ -119,6 +119,7 @@ export const plantBulk = async (
       `Harvest time! 🌾`,
       `Your ${getCropNameFromSeeds(seedType)} are ready to harvest!`,
       "harvest",
+      mode,
       getGrowthTime(seedType)
     );
 
@@ -380,6 +381,7 @@ export const perkBulk = async (
         `Harvest time! 🌾`,
         `Your ${gridCell.cropType} are ready to harvest!`,
         "harvest",
+        mode,
         (new Date(gridCell.harvestAt).getTime() - boostTime - Date.now()) / 1000
       );
       perkableCells.push({
@@ -409,6 +411,7 @@ export const perkBulk = async (
       `Speed boost expired! ⚡️`,
       `The speed boost has worn off. Check your crops!`,
       "boost-expired",
+      mode,
       SPEED_BOOST[itemSlug].duration / 1000
     );
 

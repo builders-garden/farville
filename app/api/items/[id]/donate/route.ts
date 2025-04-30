@@ -155,6 +155,7 @@ export const POST = async (
       "New Donation!",
       `${user?.username} donated ${quantity} ${item.name} to you!`,
       "donation",
+      mode,
       0
     ),
   ]);

@@ -19,6 +19,7 @@ const requestSchema = z.object({
   title: z.string().min(1),
   text: z.string().min(1),
   category: z.string().min(1),
+  mode: z.nativeEnum(Mode),
 });
 
 export async function POST(req: NextRequest) {
@@ -32,8 +33,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const { fid, title, text, category } = requestBody.data;
-  const mode = Mode.Classic;
+  const { fid, title, text, category, mode } = requestBody.data;
   const parsedFid = parseInt(fid);
   const timestamp = new Date();
   const minutes = 30;
