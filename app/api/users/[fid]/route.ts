@@ -4,10 +4,11 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
   _request: NextRequest,
-  { params }: { params: Promise<{ fid: string }> }
+  { params }: { params: Promise<{ fid: string; mode: Mode }> }
 ) {
   const fid = (await params).fid;
-  const user = await getUserByMode(Number(fid), Mode.Classic);
+  const mode = (await params).mode;
+  const user = await getUserByMode(Number(fid), mode);
   if (!user) {
     return NextResponse.json({ error: "User not found" }, { status: 404 });
   }

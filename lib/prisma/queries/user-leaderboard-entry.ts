@@ -91,9 +91,8 @@ export const getWeeklyUserLeaderboardByLeague = async (
   let targetPosition: number | undefined;
   if (targetFid) {
     if (!CREATOR_FIDS.includes(targetFid)) {
-      // TODO: fix this mode constraint
       const targetEntry = await prisma.userLeaderboardEntry.findUnique({
-        where: { fid_mode: { fid: targetFid, mode: Mode.Classic } },
+        where: { fid_mode: { fid: targetFid, mode } },
       });
 
       if (!targetEntry) {
@@ -155,7 +154,6 @@ export const updateUserWeeklyScore = async (
         // Get current user data with a lock
         const currentLeaderboardEntry =
           await tx.userLeaderboardEntry.findUnique({
-            // TODO: fix this mode constraint
             where: { fid_mode: { fid, mode } },
             select: { currentScore: true },
           });
@@ -167,7 +165,6 @@ export const updateUserWeeklyScore = async (
           currentLeaderboardEntry.currentScore + weeklyScoreToAdd;
 
         // Update user's current score
-        // TODO: fix this mode constraint
         const updatedEntry = await tx.userLeaderboardEntry.update({
           where: { fid_mode: { fid, mode } },
           data: {

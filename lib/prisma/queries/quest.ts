@@ -330,10 +330,8 @@ export const generateWeeklyQuests = async (level: number, mode: Mode) => {
     // and round the amount to the lowest 10 multiple
     // const amount =
     //   Math.round(Math.floor(chooseRandomItem(amounts) * level * 0.5) / 10) * 10;
-
-    // TODO: change here the static Mode
     const amount =
-      Math.round(calculateValidAmount(cropData, level, Mode.Classic) / 10) * 10;
+      Math.round(calculateValidAmount(cropData, level, mode) / 10) * 10;
 
     const xp = calculateQuestXP(level, cropData, amount);
     const startAt = new Date();

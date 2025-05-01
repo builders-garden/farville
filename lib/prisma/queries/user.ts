@@ -1,7 +1,7 @@
 import { Mode } from "@/lib/types/game";
 import { prisma } from "../client";
 import { Prisma, User } from "@prisma/client";
-import { UserWithStatistic, UserWithStatistics } from "../types";
+import { UserWithStatistic } from "../types";
 
 import { FrameNotificationDetails } from "@farcaster/frame-sdk";
 
@@ -69,33 +69,6 @@ export const deleteUserNotificationDetails = async (
       notificationDetails: undefined,
     },
   });
-};
-
-export const createUser = async (
-  user: Prisma.UserCreateInput
-): Promise<UserWithStatistics> => {
-  const newUser = await prisma.user.create({
-    data: user,
-    include: {
-      statistics: {
-        where: {
-          mode: Mode.Classic,
-        },
-      },
-    },
-  });
-
-  return {
-    ...newUser,
-    statistics: newUser.statistics.map((s) => ({
-      ...s,
-      mode: s.mode as Mode,
-    })),
-    notificationDetails:
-      typeof newUser.notificationDetails === "string"
-        ? (JSON.parse(newUser.notificationDetails) as FrameNotificationDetails)
-        : null,
-  };
 };
 
 export const updateUser = async (
