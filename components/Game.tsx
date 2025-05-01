@@ -4,9 +4,9 @@ import { useFrameContext } from "@/context/FrameContext";
 import { OverlayConfig } from "@/context/GameContext";
 import { useSignIn } from "@/hooks/use-sign-in";
 import Image from "next/image";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { GameProvider } from "./../context/GameContext";
-import { getThisWeekMonday } from "@/lib/utils";
+// import { getThisWeekMonday } from "@/lib/utils";
 import { Maintenance } from "./home/maintenance";
 import { Website } from "./home/website";
 import sdk from "@farcaster/frame-sdk";
@@ -19,26 +19,26 @@ export default function Game({
   initialOverlay?: OverlayConfig;
 }) {
   const { isSDKLoaded, context } = useFrameContext();
-  const [isInMaintenance, setIsInMaintenance] = useState(true);
+  const [isInMaintenance] = useState(true);
 
   // const monday = new Date("2025-04-13T18:17:30+02:00");
-  const monday = getThisWeekMonday();
-  const maintenanceStart = new Date(monday.getTime() - 5 * 60 * 1000); // 5 minutes before
-  const maintenanceEnd = new Date(monday.getTime() + 30 * 60 * 1000); // 30 minutes after
+  // const monday = getThisWeekMonday();
+  // const maintenanceStart = new Date(monday.getTime() - 5 * 60 * 1000); // 5 minutes before
+  const maintenanceEnd = new Date("2025-04-31T00:00:00-04:00"); // 5 minutes after
 
-  const checkMaintenance = () => {
-    const now = new Date();
-    return now >= maintenanceStart && now <= maintenanceEnd;
-  };
+  // const checkMaintenance = () => {
+  //   const now = new Date();
+  //   return now >= maintenanceStart && now <= maintenanceEnd;
+  // };
 
-  useEffect(() => {
-    setIsInMaintenance(checkMaintenance());
-    const interval = setInterval(() => {
-      setIsInMaintenance(checkMaintenance());
-    }, 60000); // 60000ms = 1 minute
+  // useEffect(() => {
+  //   setIsInMaintenance(checkMaintenance());
+  //   const interval = setInterval(() => {
+  //     setIsInMaintenance(checkMaintenance());
+  //   }, 60000); // 60000ms = 1 minute
 
-    return () => clearInterval(interval);
-  }, []);
+  //   return () => clearInterval(interval);
+  // }, []);
 
   const { isSignedIn, isLoading, error } = useSignIn(isInMaintenance);
 
