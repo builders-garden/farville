@@ -13,6 +13,7 @@ import {
 import { Button } from "./ui/button";
 import { Mode } from "@/lib/types/game";
 import { AnimatedCircularProgressBar } from "./ui/animated-circular-progress-bar";
+import { MODE_DEFINITIONS } from "@/lib/modes/constants";
 // import { OG_FIDS_LIST } from "@/lib/contracts/constants";
 
 export default function Header() {
@@ -22,6 +23,7 @@ export default function Header() {
     state,
     setShowTimeline,
     setShowStreaks,
+    setShowNotActiveMode,
     // setShowMintOGBadge
   } = useGame();
   const { progress } = getCurrentLevelAndProgress(state.experience);
@@ -166,7 +168,7 @@ export default function Header() {
         {availableUserModes > 1 && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button className="bg-[#8B5E3C] hover:bg-[#6d4c2c] text-white border-[#6d4c2c] shadow-lg shadow-[#A17449]/50 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0">
+              <Button className="bg-[#8B5E3C] hover:bg-[#6d4c2c] text-white border-[#6d4c2c] shadow-lg shadow-[#A17449]/50 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 py-1 px-2.5 h-8 text-[10px]">
                 {mode.charAt(0).toUpperCase() + mode.slice(1)}
               </Button>
             </DropdownMenuTrigger>
@@ -178,7 +180,17 @@ export default function Header() {
                       key={modeValue}
                       onClick={() => {
                         if (modeValue !== mode) {
-                          setMode(modeValue);
+                          // check if the mode is not active
+                          if (
+                            MODE_DEFINITIONS[modeValue].startDate! > new Date()
+                          ) {
+                            setShowNotActiveMode({
+                              show: true,
+                              mode: modeValue,
+                            });
+                          } else {
+                            setMode(modeValue);
+                          }
                         }
                       }}
                       className={`flex items-center gap-2 text-white

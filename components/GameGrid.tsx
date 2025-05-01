@@ -28,7 +28,6 @@ export default function GameGrid() {
     setShowMintCollectible,
     showNotActiveMode,
     setShowNotActiveMode,
-    setMode,
   } = useGame();
 
   // Create a 2D grid from the flat array
@@ -41,7 +40,10 @@ export default function GameGrid() {
       mode !== Mode.Classic &&
       MODE_DEFINITIONS[mode].startDate! > new Date()
     ) {
-      setShowNotActiveMode(true);
+      setShowNotActiveMode({
+        show: true,
+        mode: mode,
+      });
     }
   }, [mode, setShowNotActiveMode]);
 
@@ -71,17 +73,19 @@ export default function GameGrid() {
         <MintCollectibleModal onCancel={() => setShowMintCollectible(false)} />
       )}
 
-      {showNotActiveMode && (
+      {showNotActiveMode.show && (
         <NotActiveModeModal
           onClose={() => {
-            setShowNotActiveMode(false);
-            setMode(Mode.Classic);
+            setShowNotActiveMode({
+              show: false,
+              mode: Mode.Classic,
+            });
           }}
         />
       )}
 
       {/* Render the grid */}
-      {grid.length > 0 ? (
+      {state.userModes.includes(mode) && grid.length > 0 ? (
         <>
           <div
             className="grid gap-1 aspect-square w-full"
@@ -93,10 +97,7 @@ export default function GameGrid() {
           >
             {grid.map((row) =>
               row.map((cell) => (
-                <GridCell
-                  key={`${cell.fid}-${cell.x}-${cell.y}`}
-                  cell={cell}
-                />
+                <GridCell key={`${cell.fid}-${cell.x}-${cell.y}`} cell={cell} />
               ))
             )}
           </div>
@@ -105,7 +106,8 @@ export default function GameGrid() {
           </div>
         </>
       ) : (
-        !showNotActiveMode && mode !== Mode.Classic && <WelcomeOnNewModeCard />
+        !showNotActiveMode.show &&
+        mode !== Mode.Classic && <WelcomeOnNewModeCard />
       )}
     </div>
   );

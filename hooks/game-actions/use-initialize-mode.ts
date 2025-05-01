@@ -9,12 +9,14 @@ export const useInitializeMode = ({
   refetchUser,
   refetchUserItems,
   refetchUserGrid,
+  refetchUserModes,
   isActionInProgress,
   setIsActionInProgress,
 }: {
   refetchUser: () => void;
   refetchUserItems: () => void;
   refetchUserGrid: () => void;
+  refetchUserModes: () => void;
   isActionInProgress: boolean;
   setIsActionInProgress: (value: boolean) => void;
 }) => {
@@ -31,6 +33,7 @@ export const useInitializeMode = ({
       refetchUser();
       refetchUserItems();
       refetchUserGrid();
+      refetchUserModes();
     },
     onSettled: () => {
       setIsActionInProgress(false);

@@ -5,14 +5,14 @@ import { Countdown } from "../Countdown";
 import { Card, CardContent } from "../ui/card";
 
 export function WelcomeOnNewModeCard() {
-  const { initializeMode, mode, isActionInProgress } = useGame();
+  const { initializeMode, mode, isActionInProgress, state } = useGame();
 
   const [modeDefinition, setModeDefinition] = useState(MODE_DEFINITIONS[mode]);
   useEffect(() => {
     setModeDefinition(MODE_DEFINITIONS[mode]);
   }, [mode]);
 
-  return (
+  return !state.userModes.includes(mode) ? (
     <Card
       className="w-full max-w-[400px] p-4 bg-[#7e4e31] xs:mt-8 mt-1
       hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 backdrop-blur-sm border-none"
@@ -53,5 +53,5 @@ export function WelcomeOnNewModeCard() {
         />
       </CardContent>
     </Card>
-  );
+  ) : null;
 }
