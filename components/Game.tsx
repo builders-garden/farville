@@ -10,7 +10,7 @@ import { getThisWeekMonday } from "@/lib/utils";
 import { Maintenance } from "./home/maintenance";
 import { Website } from "./home/website";
 import sdk from "@farcaster/frame-sdk";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 export default function Game({
   children,
@@ -46,19 +46,28 @@ export default function Game({
   const pathname = usePathname();
   const isRedeemPath = pathname.startsWith("/redeem/");
 
+  const isFromBrowser = !context && isSDKLoaded && !isLoading;
+
+  const searchParams = useSearchParams();
+  const voucherIdFromQueryParams = searchParams.get("redeem");
+  const router = useRouter();
+
   useEffect(() => {
-    if (isRedeemPath) {
-      const encodedPath = encodeURIComponent(
-        "https://farville.farm" + pathname
-      );
-      const url = `https://warpcast.com/?launchFrameUrl=${encodedPath}`;
+    if (isRedeemPath && isFromBrowser) {
+      const voucherId = pathname.split("/redeem/")[1];
+      const url = `https://warpcast.com/miniapps/WoLihpyQDh7w/farville?redeem=${voucherId}`;
       window.location.href = url;
 
       return;
+    } else if (voucherIdFromQueryParams && !isFromBrowser) {
+      // let's redirect from https://farville.farm?redeem=voucherId to https://farville.farm/redeem/voucherId
+      const url = `/redeem/${voucherIdFromQueryParams}`;
+      router.push(url);
+      return;
     }
-  }, [isRedeemPath, pathname]);
+  }, [isRedeemPath, pathname, isFromBrowser, voucherIdFromQueryParams, router]);
 
-  if (!context && isSDKLoaded && !isLoading) {
+  if (isFromBrowser) {
     return <Website />;
   }
 
