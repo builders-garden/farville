@@ -152,7 +152,9 @@ export function GameProvider({
   children: React.ReactNode;
   initialOverlay?: OverlayConfig;
 }) {
-  const [mode, setMode] = useState<Mode>(Mode.Classic);
+  const [mode, setMode] = useState<Mode>(
+    (localStorage.getItem("mode") as Mode) || Mode.Classic
+  );
   const [showInventory, setShowInventory] = useState(false);
   const [showMarket, setShowMarket] = useState(false);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
@@ -500,6 +502,10 @@ export function GameProvider({
     isActionInProgress,
     setIsActionInProgress,
   });
+
+  useEffect(() => {
+    localStorage.setItem("mode", mode);
+  }, [mode]);
 
   if (!state) {
     return (
