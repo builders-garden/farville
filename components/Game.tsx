@@ -23,18 +23,18 @@ export default function Game({
 
   // const monday = new Date("2025-04-13T18:17:30+02:00");
   const monday = getThisWeekMonday();
-  const maintenanceStart = new Date(monday.getTime() - 5 * 60 * 1000); // 5 minutes before
+  //const maintenanceStart = new Date(monday.getTime() - 5 * 60 * 1000); // 5 minutes before
   const maintenanceEnd = new Date(monday.getTime() + 30 * 60 * 1000); // 30 minutes after
 
-  const checkMaintenance = () => {
-    const now = new Date();
-    return now >= maintenanceStart && now <= maintenanceEnd;
-  };
+  // const checkMaintenance = () => {
+  //   const now = new Date();
+  //   return now >= maintenanceStart && now <= maintenanceEnd;
+  // };
 
   useEffect(() => {
-    setIsInMaintenance(checkMaintenance());
+    setIsInMaintenance(true);
     const interval = setInterval(() => {
-      setIsInMaintenance(checkMaintenance());
+      setIsInMaintenance(true);
     }, 60000); // 60000ms = 1 minute
 
     return () => clearInterval(interval);
