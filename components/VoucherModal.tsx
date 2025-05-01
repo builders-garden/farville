@@ -57,6 +57,11 @@ export default function VoucherModal({
   });
   const [showFloatingNumber, setShowFloatingNumber] = useState(false);
 
+  // Check if Farcon mode has started
+  const isFarconStarted = MODE_DEFINITIONS[Mode.Farcon].startDate
+    ? new Date() >= MODE_DEFINITIONS[Mode.Farcon].startDate
+    : true;
+
   useEffect(() => {
     if (!voucher || !userModes || userModesIsLoading) return;
     if (!userModes.includes(voucher.mode as Mode)) {
@@ -194,6 +199,27 @@ export default function VoucherModal({
                   <Skeleton className="w-28 xs:w-32 h-5 xs:h-6 bg-white/10" />
                 </div>
               </div>
+            ) : !isFarconStarted ? (
+              <div className="flex flex-col items-center gap-4">
+                <Image
+                  src={`/images/vouchers/${voucher?.slug || "farcon-nyc"}.png`}
+                  alt={`${voucher?.item?.name} ${voucher?.item?.category} image`}
+                  className="w-[55%] object-contain rounded-lg"
+                  width={128}
+                  height={128}
+                />
+                <p className="text-white/90 text-center text-sm xs:text-base">
+                  You can&apos;t redeem the voucher as the mode didn&apos;t
+                  start yet
+                </p>
+                <button
+                  onClick={onClose}
+                  className="px-4 xs:px-6 py-2 xs:py-2.5 bg-black/10 hover:bg-black/30 rounded-lg text-white/90 
+                    transition-colors font-medium text-xs xs:text-sm"
+                >
+                  Go back
+                </button>
+              </div>
             ) : (
               <>
                 {/* Updated Request Text */}
@@ -278,7 +304,10 @@ export default function VoucherModal({
           </div>
 
           {/* Action Buttons */}
-          {userNotInMode && FARCON_ATTENDEES_FIDS.includes(state.user.fid) ? (
+          {!isFarconStarted ? (
+            <></>
+          ) : userNotInMode &&
+            FARCON_ATTENDEES_FIDS.includes(state.user.fid) ? (
             <button
               onClick={() => {
                 initializeMode({
@@ -311,9 +340,15 @@ export default function VoucherModal({
                     isActionInProgress
                   }
                   onClick={() => handleRedeemVoucher(slug)}
-                  className="px-4 xs:px-6 py-2 group flex items-center gap-2 bg-gradient-to-r from-[#FFB938] to-[#FFA000] text-[#7E4E31] 
-                    rounded-lg font-bold hover:from-[#ffc661] hover:to-[#FFB938] transition-all duration-300 disabled:bg-[#FFB938]/20 disabled:cursor-not-allowed
-                    transform hover:scale-105 hover:shadow-lg text-xs xs:text-sm justify-center"
+                  className={`px-4 xs:px-6 py-2 group flex items-center gap-2 rounded-lg font-bold 
+                  text-xs xs:text-sm justify-center transform transition-all duration-300
+                  ${
+                    remainingQuantity === 0 ||
+                    isUserVouchersLoading ||
+                    isActionInProgress
+                      ? "bg-[#FFB938]/20 cursor-not-allowed text-[#7E4E31]"
+                      : "bg-gradient-to-r from-[#FFB938] to-[#FFA000] text-[#7E4E31] hover:from-[#ffc661] hover:to-[#FFB938] hover:scale-105 hover:shadow-lg"
+                  }`}
                 >
                   Redeem
                 </button>
