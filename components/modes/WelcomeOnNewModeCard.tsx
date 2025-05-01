@@ -1,11 +1,11 @@
-import { Card, CardContent } from "../ui/card";
 import { useGame } from "@/context/GameContext";
-import { useEffect, useState } from "react";
 import { MODE_DEFINITIONS } from "@/lib/modes/constants";
+import { useEffect, useState } from "react";
 import { Countdown } from "../Countdown";
+import { Card, CardContent } from "../ui/card";
 
 export function WelcomeOnNewModeCard() {
-  const { initializeMode, mode } = useGame();
+  const { initializeMode, mode, isActionInProgress } = useGame();
 
   const [modeDefinition, setModeDefinition] = useState(MODE_DEFINITIONS[mode]);
   useEffect(() => {
@@ -36,11 +36,12 @@ export function WelcomeOnNewModeCard() {
               mode,
             });
           }}
+          disabled={isActionInProgress}
           className="group flex items-center gap-2 bg-gradient-to-r from-[#FFB938] to-[#FFA000] text-[#7E4E31] 
       px-6 py-3 rounded-lg font-bold hover:from-[#ffc661] hover:to-[#FFB938] transition-all duration-300 
       transform hover:scale-105 hover:shadow-lg my-8"
         >
-          Participate
+          {isActionInProgress ? "Joining..." : "Participate"}
           {/* <span className="group-hover:translate-x-1 transition-transform duration-300">
             →
           </span> */}
