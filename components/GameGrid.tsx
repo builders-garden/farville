@@ -71,7 +71,7 @@ export default function GameGrid() {
         <MintCollectibleModal onCancel={() => setShowMintCollectible(false)} />
       )}
 
-      {mode !== Mode.Classic && showNotActiveMode && (
+      {showNotActiveMode && (
         <NotActiveModeModal
           onClose={() => {
             setShowNotActiveMode(false);
@@ -105,7 +105,7 @@ export default function GameGrid() {
           </div>
         </>
       ) : (
-        !showNotActiveMode && <WelcomeOnNewModeCard />
+        !showNotActiveMode && mode !== Mode.Classic && <WelcomeOnNewModeCard />
       )}
     </div>
   );
