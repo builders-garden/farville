@@ -151,6 +151,7 @@ export enum ItemCategory {
   Seed = "seed",
   Perk = "perk",
   Special = "special",
+  SpecialCrop = "special-crop",
 }
 
 export enum Mode {

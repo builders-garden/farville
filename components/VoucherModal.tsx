@@ -10,15 +10,15 @@ import { useVoucher } from "@/hooks/use-voucer";
 import { useRedeemVoucher } from "@/hooks/game-actions/use-redeem-voucher";
 import { useGame } from "@/context/GameContext";
 import { useUserVouchers } from "@/hooks/use-user-vouchers";
-import { useUserXp } from "@/hooks/use-user-xp";
 
 import { Skeleton } from "@/components/ui/skeleton";
 import FloatingNumber from "./animations/FloatingNumber";
 
-import { XP_PER_DONATED_ITEM } from "@/lib/game-constants";
 import { FARCON_ATTENDEES_FIDS } from "@/lib/modes/farcon";
 import { MODE_DEFINITIONS } from "@/lib/modes/constants";
-import { Mode } from "@/lib/types/game";
+import { ItemCategory, Mode } from "@/lib/types/game";
+import { GAME_ITEMS } from "@/lib/game-constants";
+import { CropType, PerkType } from "@/scripts/constants";
 
 export default function VoucherModal({
   onClose,
@@ -56,8 +56,6 @@ export default function VoucherModal({
     setIsActionInProgress,
   });
   const [showFloatingNumber, setShowFloatingNumber] = useState(false);
-  const [rewardedXp, setRewardedXp] = useState(0);
-  const { addUserXpsAndCheckLevelUp } = useUserXp();
 
   useEffect(() => {
     if (!voucher || !userModes || userModesIsLoading) return;
@@ -96,8 +94,6 @@ export default function VoucherModal({
     (userVoucher && userVoucher.claimedAmount <= userVoucher.voucher.quantity);
 
   const handleRedeemVoucher = (slug: string) => {
-    const rewardedXp = 1 * XP_PER_DONATED_ITEM;
-    setRewardedXp(rewardedXp);
     redeemVoucher({
       voucherSlug: slug,
       mode: Mode.Farcon,
@@ -106,13 +102,14 @@ export default function VoucherModal({
       updateUserItems([
         {
           itemId: voucher.itemId,
-          quantity: voucher.quantity,
+          quantity:
+            (state.inventory.find((item) => item.itemId === voucher.itemId)
+              ?.quantity || 0) + voucher.quantity,
           item: voucher.item,
         },
       ]);
     }
     setShowFloatingNumber(true);
-    addUserXpsAndCheckLevelUp(rewardedXp);
     setTimeout(() => {
       onClose();
     }, 1000);
@@ -308,7 +305,11 @@ export default function VoucherModal({
                 </button>
 
                 <button
-                  disabled={remainingQuantity === 0 || isUserVouchersLoading}
+                  disabled={
+                    remainingQuantity === 0 ||
+                    isUserVouchersLoading ||
+                    isActionInProgress
+                  }
                   onClick={() => handleRedeemVoucher(slug)}
                   className="px-4 xs:px-6 py-2 group flex items-center gap-2 bg-gradient-to-r from-[#FFB938] to-[#FFA000] text-[#7E4E31] 
                     rounded-lg font-bold hover:from-[#ffc661] hover:to-[#FFB938] transition-all duration-300 disabled:bg-[#FFB938]/20 disabled:cursor-not-allowed
@@ -320,12 +321,20 @@ export default function VoucherModal({
             </div>
           ) : null}
 
-          {showFloatingNumber && rewardedXp > 0 && (
+          {showFloatingNumber && (
             <FloatingNumber
-              number={rewardedXp}
-              x={window.innerWidth / 2}
+              number={voucher.quantity}
+              x={window.innerWidth / 2 - 160}
               y={window.innerHeight / 2}
-              type="xp"
+              type={
+                GAME_ITEMS.find((item) => item.id === voucher.itemId)
+                  ?.category as ItemCategory
+              }
+              slug={
+                GAME_ITEMS.find((item) => item.id === voucher.itemId)?.slug as
+                  | CropType
+                  | PerkType
+              }
             />
           )}
         </div>
