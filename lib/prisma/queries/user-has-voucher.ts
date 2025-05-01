@@ -29,13 +29,11 @@ export const getUserHasVouchers = async (
       createdAt: "desc",
     },
   });
-  console.log("user vouchers", vouchers);
 
   // filter by activeToday if true
   if (activeToday) {
     const endDate = MODE_DEFINITIONS[mode].endDate;
     const today = new Date();
-    console.log("endDate", endDate, today);
     if (endDate && endDate <= today) {
       return [];
     }

@@ -298,7 +298,7 @@ export default function VoucherModal({
             </button>
           ) : userCanRedeem ? (
             <div className="flex-none p-3 xs:p-4">
-              <div className="flex justify-center gap-2 xs:gap-3">
+              <div className="flex flex-col-reverse justify-center gap-2 xs:gap-3">
                 <button
                   onClick={onClose}
                   className="px-4 xs:px-6 py-2 xs:py-2.5 bg-black/10 hover:bg-black/30 rounded-lg text-white/90 
@@ -310,9 +310,9 @@ export default function VoucherModal({
                 <button
                   disabled={remainingQuantity === 0 || isUserVouchersLoading}
                   onClick={() => handleRedeemVoucher(slug)}
-                  className="px-4 xs:px-6 py-2 xs:py-2.5 bg-green-600/80 hover:bg-green-600 disabled:bg-green-600/20 
-                           disabled:text-white/50 disabled:cursor-not-allowed rounded-lg text-white transition-colors 
-                           font-medium text-xs xs:text-sm"
+                  className="px-4 xs:px-6 py-2 group flex items-center gap-2 bg-gradient-to-r from-[#FFB938] to-[#FFA000] text-[#7E4E31] 
+                    rounded-lg font-bold hover:from-[#ffc661] hover:to-[#FFB938] transition-all duration-300 disabled:bg-[#FFB938]/20 disabled:cursor-not-allowed
+                    transform hover:scale-105 hover:shadow-lg text-xs xs:text-sm justify-center"
                 >
                   Redeem
                 </button>
