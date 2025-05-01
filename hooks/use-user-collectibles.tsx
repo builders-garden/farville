@@ -5,7 +5,7 @@ export const useUserCollectibles = (targetFid?: number) => {
   const url = targetFid ? `/api/users/${targetFid}/collectibles` : "";
 
   const { data, isLoading, refetch } = useApiQuery<
-    (Collectible & { userHasCollectibles: UserHasCollectible | null })[]
+    (Collectible & { userHasCollectible: UserHasCollectible | null })[]
   >({
     url,
     queryKey: ["collectibles", targetFid],

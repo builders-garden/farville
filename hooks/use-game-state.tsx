@@ -73,7 +73,7 @@ export interface GameState {
     league: number;
   };
   collectibles: (Collectible & {
-    userHasCollectibles: UserHasCollectible | null;
+    userHasCollectible: UserHasCollectible | null;
   })[];
   showGridCellsTutorial: boolean;
   showMarketplaceTutorial: boolean;
@@ -595,7 +595,7 @@ export const useGameState = (mode: Mode) => {
   const updateUserCollectibles = useCallback(
     (
       updatedCollectibles: (Collectible & {
-        userHasCollectibles: UserHasCollectible | null;
+        userHasCollectible: UserHasCollectible | null;
       })[]
     ) => {
       setState((prevState) => {

@@ -196,7 +196,7 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
         users: weeklyLeaderboard?.users?.map((user) => ({
           ...user.user,
           ...user,
-          mode: user.mode as Mode,
+          mode: user.user.mode as Mode,
           questCount: undefined,
         })),
         questCount: undefined,

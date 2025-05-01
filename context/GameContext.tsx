@@ -135,7 +135,7 @@ interface GameContextType {
   }) => void;
   updateUserCollectibles: (
     updatedCollectibles: (Collectible & {
-      userHasCollectibles: UserHasCollectible | null;
+      userHasCollectible: UserHasCollectible | null;
     })[]
   ) => void;
   initializeMode: (params: { mode: Mode }) => void;

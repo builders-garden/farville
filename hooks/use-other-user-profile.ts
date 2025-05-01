@@ -85,9 +85,13 @@ export function useOtherUserProfile(
 
   useEffect(() => {
     if (userCollectibles) {
+      const mappedCollectibles = userCollectibles.map((collectible) => ({
+        ...collectible,
+        userHasCollectibles: collectible.userHasCollectible,
+      }));
       setUserData((prev) => ({
         ...prev,
-        collectibles: userCollectibles,
+        collectibles: mappedCollectibles,
       }));
     }
   }, [userCollectibles]);

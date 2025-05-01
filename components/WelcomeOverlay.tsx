@@ -3,7 +3,12 @@
 import { motion } from "framer-motion";
 import { useAudio } from "../context/AudioContext";
 import { useState, useEffect } from "react";
-import { GridCell as GridCellType, Crop, CropType } from "../lib/types/game";
+import {
+  GridCell as GridCellType,
+  Crop,
+  CropType,
+  ItemCategory,
+} from "../lib/types/game";
 import CropSprite from "./CropSprite";
 import Image from "next/image";
 import sdk from "@farcaster/frame-sdk";
@@ -19,7 +24,10 @@ import { User } from "@prisma/client";
 function DemoCropSprite({ crop }: { crop?: Crop }) {
   return (
     <>
-      <CropSprite crop={crop} isDemo={true} />
+      <CropSprite
+        crop={crop}
+        isDemo={true}
+      />
     </>
   );
 }
@@ -324,8 +332,8 @@ export default function WelcomeOverlay({
                   number={cell.harvestAnimation.amount}
                   x={cell.harvestAnimation.x}
                   y={cell.harvestAnimation.y}
-                  type="crop"
-                  cropType={cell.harvestAnimation.type}
+                  type={ItemCategory.Crop}
+                  slug={cell.harvestAnimation.type}
                 />
               )}
             </motion.div>

@@ -382,17 +382,16 @@ export default function ProfileModal({
                           ? collectiblesData
                           : collectiblesData?.slice(0, 4)
                         )?.map((collectible, index) => {
-                          const status =
-                            collectible.userHasCollectibles?.status;
+                          const status = collectible.userHasCollectible?.status;
                           const collectibleImage =
-                            collectible.userHasCollectibles
+                            collectible.userHasCollectible
                               ? (status === CollectibleStatus.Minted ||
                                   status === CollectibleStatus.Uploaded) &&
-                                collectible.userHasCollectibles.mintedImageUrl
-                                ? collectible.userHasCollectibles.mintedImageUrl
+                                collectible.userHasCollectible.mintedImageUrl
+                                ? collectible.userHasCollectible.mintedImageUrl
                                 : status === CollectibleStatus.Generated
                                 ? (
-                                    collectible.userHasCollectibles
+                                    collectible.userHasCollectible
                                       .generatedImageUrls as string[]
                                   )?.[0] ?? collectible.imageUrl
                                 : collectible.imageUrl

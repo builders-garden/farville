@@ -100,12 +100,14 @@ export default function MintCollectibleModal({
   const { chainId } = useAccount();
   const { switchChain } = useSwitchChain();
 
-  const isPaused = true;
-
   const selectedCollectible = useMemo(
     () => state.collectibles.find((collectible) => collectible.id === 1),
     [state.collectibles]
   );
+
+  const isPaused =
+    selectedCollectible?.userHasCollectible?.status !==
+    CollectibleStatus.Minted;
 
   const userPfp = useMemo(() => {
     let avatarUrl = state.user.avatarUrl;
@@ -133,15 +135,15 @@ export default function MintCollectibleModal({
   }, [state.user.avatarUrl]);
 
   function handleUpdateStateCollectibles(
-    userHasCollectibles: UserHasCollectible
+    userHasCollectible: UserHasCollectible
   ) {
     const collectible = state.collectibles.find(
-      (collectible) => collectible.id === userHasCollectibles.collectibleId
+      (collectible) => collectible.id === userHasCollectible.collectibleId
     );
     if (collectible) {
       const updatedCollectible = {
         ...collectible,
-        userHasCollectibles,
+        userHasCollectible,
       };
       const updatedCollectibles = state.collectibles.map((c) =>
         c.id === collectible.id ? updatedCollectible : c
@@ -265,20 +267,20 @@ export default function MintCollectibleModal({
 
   // On page load, update image generation state
   useEffect(() => {
-    if (selectedCollectible && selectedCollectible.userHasCollectibles) {
-      switch (selectedCollectible.userHasCollectibles.status) {
+    if (selectedCollectible && selectedCollectible.userHasCollectible) {
+      switch (selectedCollectible.userHasCollectible.status) {
         case CollectibleStatus.Minted:
-          if (selectedCollectible.userHasCollectibles.txHash) {
-            setFinalTxHash(selectedCollectible.userHasCollectibles.txHash);
+          if (selectedCollectible.userHasCollectible.txHash) {
+            setFinalTxHash(selectedCollectible.userHasCollectible.txHash);
             setPaymentCompleted(true);
           }
         case CollectibleStatus.Uploaded:
-          if (selectedCollectible.userHasCollectibles.mintedMetadataUrl) {
+          if (selectedCollectible.userHasCollectible.mintedMetadataUrl) {
             setSelectedImageUrl(
-              selectedCollectible.userHasCollectibles.mintedImageUrl
+              selectedCollectible.userHasCollectible.mintedImageUrl
             );
             const metadataCID =
-              selectedCollectible.userHasCollectibles.mintedMetadataUrl.split(
+              selectedCollectible.userHasCollectible.mintedMetadataUrl.split(
                 "https://gateway.pinata.cloud/ipfs/"
               )[1];
             if (metadataCID) {
@@ -287,23 +289,22 @@ export default function MintCollectibleModal({
             }
           }
         case CollectibleStatus.Generated:
-          const generatedImageUrls = JSON.parse(
-            selectedCollectible.userHasCollectibles.generatedImageUrls as string
-          ) as string[];
+          const generatedImageUrls = selectedCollectible.userHasCollectible
+            .generatedImageUrls as string[];
           if (generatedImageUrls && generatedImageUrls.length > 0) {
             setMidjourneyImageUrl(generatedImageUrls[0]);
             setMidjourneyImageUrls(generatedImageUrls.slice(1));
           }
         case CollectibleStatus.Pending:
-          if (selectedCollectible.userHasCollectibles.generatedTaskId) {
+          if (selectedCollectible.userHasCollectible.generatedTaskId) {
             setMidjourneyTaskId(
-              selectedCollectible.userHasCollectibles.generatedTaskId
+              selectedCollectible.userHasCollectible.generatedTaskId
             );
           }
         case CollectibleStatus.Description:
-          if (selectedCollectible.userHasCollectibles.pfpDescription) {
+          if (selectedCollectible.userHasCollectible.pfpDescription) {
             setPfpDescription(
-              selectedCollectible.userHasCollectibles.pfpDescription
+              selectedCollectible.userHasCollectible.pfpDescription
             );
           }
       }
@@ -312,29 +313,29 @@ export default function MintCollectibleModal({
 
   // Check if select mint price should be shown
   const showSelectMintPrice = useMemo(() => {
-    if (!selectedCollectible || !selectedCollectible.userHasCollectibles)
+    if (!selectedCollectible || !selectedCollectible.userHasCollectible)
       return false;
-    const status = selectedCollectible.userHasCollectibles.status;
+    const status = selectedCollectible.userHasCollectible.status;
     return (
       selectedCollectible &&
-      selectedCollectible.userHasCollectibles &&
+      selectedCollectible.userHasCollectible &&
       status === CollectibleStatus.Uploaded
     );
   }, [selectedCollectible]);
 
   const errorOnDescription =
     errorMessage === "API Error: 500" &&
-    selectedCollectible?.userHasCollectibles?.status ===
+    selectedCollectible?.userHasCollectible?.status ===
       CollectibleStatus.Description;
 
   // Update the showGenerateButton logic to also check for API error state
   const showGenerateButton = useMemo(() => {
-    if (!selectedCollectible || !selectedCollectible.userHasCollectibles)
+    if (!selectedCollectible || !selectedCollectible.userHasCollectible)
       return true;
-    const status = selectedCollectible?.userHasCollectibles?.status;
+    const status = selectedCollectible?.userHasCollectible?.status;
     return (
       selectedCollectible &&
-      selectedCollectible.userHasCollectibles &&
+      selectedCollectible.userHasCollectible &&
       (status === CollectibleStatus.Pending ||
         status === CollectibleStatus.Description) &&
       !midjourneyTaskId &&
@@ -348,18 +349,18 @@ export default function MintCollectibleModal({
       pfpDescription &&
       address &&
       selectedCollectible &&
-      selectedCollectible.userHasCollectibles &&
-      selectedCollectible.userHasCollectibles.status ===
+      selectedCollectible.userHasCollectible &&
+      selectedCollectible.userHasCollectible.status ===
         CollectibleStatus.Description
     );
   }, [pfpDescription, address, selectedCollectible]);
 
   // Check if get image button should be shown
   const showGetImageButton = useMemo(() => {
-    if (!selectedCollectible || !selectedCollectible.userHasCollectibles)
+    if (!selectedCollectible || !selectedCollectible.userHasCollectible)
       return false;
     return (
-      selectedCollectible.userHasCollectibles.status ===
+      selectedCollectible.userHasCollectible.status ===
         CollectibleStatus.Pending &&
       midjourneyTaskId &&
       !midjourneyImageUrl
@@ -368,9 +369,9 @@ export default function MintCollectibleModal({
 
   // Check if confirm selection button should be shown
   const showConfirmSelectionButton = useMemo(() => {
-    if (!selectedCollectible || !selectedCollectible.userHasCollectibles)
+    if (!selectedCollectible || !selectedCollectible.userHasCollectible)
       return false;
-    const status = selectedCollectible.userHasCollectibles.status;
+    const status = selectedCollectible.userHasCollectible.status;
     return (
       address &&
       (status === CollectibleStatus.Generated ||
@@ -381,9 +382,9 @@ export default function MintCollectibleModal({
 
   // Check if user can mint
   const canMint = useMemo(() => {
-    if (!selectedCollectible || !selectedCollectible.userHasCollectibles)
+    if (!selectedCollectible || !selectedCollectible.userHasCollectible)
       return false;
-    const status = selectedCollectible.userHasCollectibles.status;
+    const status = selectedCollectible.userHasCollectible.status;
     return (
       address &&
       (status === CollectibleStatus.Generated ||
@@ -428,7 +429,7 @@ export default function MintCollectibleModal({
       !pfpDescription &&
       userPfp &&
       selectedCollectible &&
-      !selectedCollectible.userHasCollectibles
+      !selectedCollectible.userHasCollectible
     ) {
       loadPfpDescription();
     }
@@ -466,9 +467,8 @@ export default function MintCollectibleModal({
 
   // Step 3. handle get image
   useEffect(() => {
-    if (!selectedCollectible || !selectedCollectible.userHasCollectibles)
-      return;
-    const status = selectedCollectible.userHasCollectibles.status;
+    if (!selectedCollectible || !selectedCollectible.userHasCollectible) return;
+    const status = selectedCollectible.userHasCollectible.status;
     if (
       status === CollectibleStatus.Pending &&
       midjourneyTaskId &&
@@ -570,14 +570,14 @@ export default function MintCollectibleModal({
 
   // Check if select collectible should be shown
   const showSelectCollectibleAsAvatar = useMemo(() => {
-    if (!selectedCollectible || !selectedCollectible.userHasCollectibles)
+    if (!selectedCollectible || !selectedCollectible.userHasCollectible)
       return false;
-    const status = selectedCollectible.userHasCollectibles.status;
+    const status = selectedCollectible.userHasCollectible.status;
     return (
       selectedCollectible &&
-      selectedCollectible.userHasCollectibles &&
+      selectedCollectible.userHasCollectible &&
       status === CollectibleStatus.Minted &&
-      !!selectedCollectible.userHasCollectibles.mintedImageUrl
+      !!selectedCollectible.userHasCollectible.mintedImageUrl
     );
   }, [selectedCollectible]);
 
@@ -611,11 +611,11 @@ export default function MintCollectibleModal({
 
   const handleDownloadImage = async () => {
     // handle the download of the image from url to user storage
-    if (!selectedCollectible || !selectedCollectible.userHasCollectibles) {
+    if (!selectedCollectible || !selectedCollectible.userHasCollectible) {
       setErrorMessage("Failed to download image. Please try again.");
       return;
     }
-    const imageUrl = selectedCollectible.userHasCollectibles.mintedImageUrl;
+    const imageUrl = selectedCollectible.userHasCollectible.mintedImageUrl;
     if (imageUrl) {
       try {
         await sdk.actions.openUrl(imageUrl);
@@ -630,7 +630,7 @@ export default function MintCollectibleModal({
 
   const isFinalState =
     finalTxHash ||
-    selectedCollectible?.userHasCollectibles?.status ===
+    selectedCollectible?.userHasCollectible?.status ===
       CollectibleStatus.Uploaded;
 
   return (
@@ -796,7 +796,7 @@ export default function MintCollectibleModal({
                   </span>
                 )}
                 {errorMessage === "API Error: 500" &&
-                selectedCollectible?.userHasCollectibles?.status ===
+                selectedCollectible?.userHasCollectible?.status ===
                   CollectibleStatus.Description ? (
                   <Button
                     onClick={() => {
