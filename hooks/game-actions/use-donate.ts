@@ -5,7 +5,7 @@ interface DonateVariables {
   itemId: number | null;
   quantity?: number;
   toFid: number;
-  requestId?: number;
+  requestId?: string;
 }
 
 interface DonateResponse {

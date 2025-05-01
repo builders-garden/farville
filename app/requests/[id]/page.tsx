@@ -12,7 +12,7 @@ export async function generateMetadata({
   params: Promise<{ id: string }>;
 }): Promise<Metadata> {
   const requestId = (await params).id;
-  const request = await getRequestById(Number(requestId));
+  const request = await getRequestById(requestId);
   if (!request) {
     const frame = {
       version: "next",

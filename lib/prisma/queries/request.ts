@@ -20,7 +20,7 @@ export const createRequest = async (request: {
 };
 
 export const getRequestById = async (
-  id: number
+  id: string
 ): Promise<(Request & { item: Item | null; user: User }) | null> => {
   const request = await prisma.request.findUnique({
     where: { id },
@@ -34,7 +34,7 @@ export const getRequestById = async (
 };
 
 export const incrementRequestFilledQuantity = async (
-  id: number,
+  id: string,
   amount: number = 1
 ): Promise<Request> => {
   const request = await prisma.request.findUnique({
@@ -62,7 +62,7 @@ export const incrementRequestFilledQuantity = async (
   return updatedRequest;
 };
 
-export const deleteRequest = async (id: number): Promise<void> => {
+export const deleteRequest = async (id: string): Promise<void> => {
   await prisma.request.delete({
     where: { id },
   });

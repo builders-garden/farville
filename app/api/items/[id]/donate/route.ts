@@ -22,7 +22,7 @@ import { z } from "zod";
 const requestSchema = z.object({
   quantity: z.number().min(1).max(10),
   toFid: z.number().min(1),
-  requestId: z.number(),
+  requestId: z.string(),
 });
 
 export const POST = async (
@@ -130,7 +130,7 @@ export const POST = async (
     mode
   );
 
-  await incrementRequestFilledQuantity(Number(requestId), quantity);
+  await incrementRequestFilledQuantity(requestId, quantity);
 
   // POST: the user can donate
   // create or update here the user donation history

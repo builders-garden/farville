@@ -41,7 +41,7 @@ export async function GET(
   try {
     const { id } = await params;
 
-    const request = await getRequestById(Number(id));
+    const request = await getRequestById(id);
 
     if (!request) {
       return new Response("Request not found", {

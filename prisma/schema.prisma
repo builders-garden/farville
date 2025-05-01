@@ -80,13 +80,13 @@ model Referral {
 }
 
 model Request {
-  id             Int      @id @default(autoincrement())
+  id             String   @id @default(dbgenerated("gen_random_uuid()"))
   fid            Int
   itemId         Int?
-  quantity       Int?
+  quantity       Int
   filledQuantity Int
   createdAt      DateTime @default(now()) @db.Timestamptz(6)
-  mode           String
+  mode           String   @default("classic")
   user           User     @relation(fields: [fid], references: [fid], onDelete: NoAction, onUpdate: NoAction)
   item           Item?    @relation(fields: [itemId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "request_itemid_fkey")
 
