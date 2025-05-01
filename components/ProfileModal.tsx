@@ -328,7 +328,7 @@ export default function ProfileModal({
                           )}
                         </h3>
                         <p className="text-white/70 text-[9px] xs:text-xs">
-                          ({state.collectibles.length || 0}/??)
+                          ({collectiblesData.length || 0}/??)
                         </p>
                         <button
                           className="text-white/70 hover:text-white/90 transition-colors cursor-pointer -mt-1"
@@ -379,8 +379,8 @@ export default function ProfileModal({
                     >
                       <CardContent className="grid grid-cols-4 gap-3 p-3">
                         {(showMoreCollectibles
-                          ? state.collectibles
-                          : state.collectibles?.slice(0, 4)
+                          ? collectiblesData
+                          : collectiblesData?.slice(0, 4)
                         )?.map((collectible, index) => {
                           const status =
                             collectible.userHasCollectibles?.status;

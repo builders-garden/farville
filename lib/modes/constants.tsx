@@ -135,8 +135,8 @@ export const MODE_DEFINITIONS: Record<Mode, ModeDefinition> = {
     boosterTimeDivisor: 4,
     dailyLimitDonationsToUsers: 10,
     dailyLimitDonationsToSameUser: 3,
-    startDate: new Date("2025-04-30T00:00:00Z"),
-    endDate: new Date("2025-05-04T23:59:59Z"),
+    startDate: new Date("2025-05-01T12:30:00Z"),
+    endDate: new Date("2025-05-05T23:59:59Z"),
   },
   [Mode.Sonic]: {
     name: "Sonic",
@@ -167,8 +167,8 @@ export const MODE_DEFINITIONS: Record<Mode, ModeDefinition> = {
     },
     growthTimeDivisor: 48,
     boosterTimeDivisor: 8,
-    startDate: new Date("2025-05-02T00:00:00Z"),
-    endDate: new Date("2025-05-02T23:59:59Z"),
+    startDate: new Date("2025-05-02T19:00:00Z"), // 15 ET
+    endDate: new Date("2025-05-02T20:59:59Z"), // 17 ET
   },
 };
 

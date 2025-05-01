@@ -30,13 +30,12 @@ export const getUserCollectibles = async (
 > => {
   const collectibles = await prisma.collectible.findMany({
     where: {
-      collectibles: {
-        some: { fid },
-      },
       ...(category ? { category } : {}),
     },
     include: {
-      collectibles: true,
+      collectibles: {
+        where: { fid },
+      },
     },
     orderBy: {
       createdAt: "desc",
@@ -45,7 +44,7 @@ export const getUserCollectibles = async (
 
   return collectibles.map((collectible) => ({
     ...collectible,
-    userHasCollectible: collectible.collectibles?.[0] || null,
+    userHasCollectible: collectible.collectibles[0] || null,
   }));
 };
 
