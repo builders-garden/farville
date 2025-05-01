@@ -3,7 +3,7 @@ import { User, Request as DbRequest, Item } from "@prisma/client";
 
 type Request = DbRequest & { item: Item; user: User };
 
-export const useRequest = (id: number) => {
+export const useRequest = (id: string) => {
   const { data: request, isLoading } = useApiQuery<Request>({
     queryKey: ["request", id],
     url: `/api/requests/${id}`,

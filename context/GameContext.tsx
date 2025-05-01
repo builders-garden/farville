@@ -37,7 +37,7 @@ import { useInitializeMode } from "@/hooks/game-actions/use-initialize-mode";
 // Update the OverlayType to be more flexible with parameters
 export type OverlayConfig =
   | { type: "welcome" }
-  | { type: "requests"; id: number }
+  | { type: "requests"; id: string }
   | { type: "voucher"; slug: string }
   | null;
 

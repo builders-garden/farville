@@ -95,5 +95,5 @@ export default async function RequestsPage({
 }) {
   const requestId = (await params).id;
 
-  return <App initialOverlay={{ type: "requests", id: Number(requestId) }} />;
+  return <App initialOverlay={{ type: "requests", id: requestId }} />;
 }

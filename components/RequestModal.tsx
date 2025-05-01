@@ -24,10 +24,11 @@ export default function RequestModal({
   id,
 }: {
   onClose: () => void;
-  id: number;
+  id: string;
 }) {
   const { safeAreaInsets } = useFrameContext();
   const { request, isLoading } = useRequest(id);
+  console.log("request", request, id);
   const { donate } = useDonate();
   const {
     state,
