@@ -1,5 +1,5 @@
-import { Mode } from "../types/game";
 import { Separator } from "@/components/ui/separator";
+import { Mode } from "../types/game";
 
 interface StarterPack {
   itemId: number;
@@ -108,9 +108,7 @@ export const MODE_DEFINITIONS: Record<Mode, ModeDefinition> = {
       <>
         <p>Compete with fellow Farcon attendees</p>
         <Separator className="w-[80%] m-auto" />
-        <p>
-          whoever has the most XP by May 4th at 11:59PM takes home $100 USDC 💸
-        </p>
+        <p>Top 3 players by May 4th at 11:59PM will win $60, $30, and $10 💸</p>
       </>
     ),
     starterPack: STARTER_PACKS.farcon,
@@ -142,9 +140,9 @@ export const MODE_DEFINITIONS: Record<Mode, ModeDefinition> = {
     name: "Sonic",
     description: (
       <>
-        <p>2 hours. ultra fast growth. pure chaos.</p>
+        <p>2 hours. Ultra fast growth. Pure chaos.</p>
         <Separator className="w-[80%] m-auto" />
-        <p>whoever racks up the most XP before time&apos;s up wins $50 USDC.</p>
+        <p>Whoever racks up the most XP before time&apos;s up wins $50 USDC.</p>
       </>
     ),
     starterPack: STARTER_PACKS.sonic,
