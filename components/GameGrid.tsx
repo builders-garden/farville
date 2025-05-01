@@ -71,7 +71,7 @@ export default function GameGrid() {
         <MintCollectibleModal onCancel={() => setShowMintCollectible(false)} />
       )}
 
-      {showNotActiveMode && (
+      {mode !== Mode.Classic && showNotActiveMode && (
         <NotActiveModeModal
           onClose={() => {
             setShowNotActiveMode(false);
@@ -93,7 +93,10 @@ export default function GameGrid() {
           >
             {grid.map((row) =>
               row.map((cell) => (
-                <GridCell key={`${cell.fid}-${cell.x}-${cell.y}`} cell={cell} />
+                <GridCell
+                  key={`${cell.fid}-${cell.x}-${cell.y}`}
+                  cell={cell}
+                />
               ))
             )}
           </div>
