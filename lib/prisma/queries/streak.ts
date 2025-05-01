@@ -65,7 +65,7 @@ interface StreaksCountResult {
 export const getActiveStreaksCount = async (): Promise<number> => {
   const result = await prisma.$queryRaw<StreaksCountResult[]>`
     SELECT COUNT(*) AS active_streaks_count
-    FROM public.streaks s
+    FROM public.streak s
     WHERE s."endedAt" IS NULL
       AND s."lastActionAt" >= CURRENT_DATE - INTERVAL '3 days';
   `;
@@ -95,8 +95,8 @@ export const getTopStreaks = async () => {
           (s."lastActionAt" - s."startedAt") + 1, 
           (CURRENT_DATE - s."startedAt") + 1 - COUNT(f."frozenAt")
         ) AS streak_length
-      FROM public.streaks s
-      LEFT JOIN public.user_frosts f ON s.id = f."streakId"
+      FROM public.streak s
+      LEFT JOIN public.user_frost f ON s.id = f."streakId"
       WHERE s."endedAt" IS NULL
       GROUP BY s.id, s.fid, s."startedAt", s."lastActionAt"
     )

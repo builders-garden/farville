@@ -59,7 +59,8 @@ export default function InventoryModal({ onClose }: { onClose: () => void }) {
             const { castUrl, requestUrl } = requestItemComposeCastUrl(
               data.id,
               item,
-              requestQuantity
+              requestQuantity,
+              mode
             );
             setCastUrl(castUrl);
             setRequestUrl(requestUrl);

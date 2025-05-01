@@ -17,8 +17,9 @@ export async function generateMetadata({
   const searchParamsObj = await searchParams;
   const friends = searchParamsObj.friends === "true";
   const quests = searchParamsObj.quests === "true";
+  const mode = (searchParamsObj.mode as Mode) || Mode.Classic;
 
-  const user = await getUserByMode(Number(fid), Mode.Classic);
+  const user = await getUserByMode(Number(fid), mode);
 
   if (!user || !timestamp) {
     return {
@@ -31,7 +32,7 @@ export async function generateMetadata({
   }
 
   const imageUrl = new URL(
-    `${appUrl}/api/og/flex-card/leaderboard/${fid}/${timestamp}/short?friends=${friends}&quests=${quests}`
+    `${appUrl}/api/og/flex-card/leaderboard/${fid}/${timestamp}/short?friends=${friends}&quests=${quests}&mode=${mode}`
   );
 
   const frame = {

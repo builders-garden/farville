@@ -88,7 +88,8 @@ export default function MarketplaceModal({
             const { castUrl, requestUrl } = requestItemComposeCastUrl(
               data.id,
               selectedItemForRequest,
-              requestQuantity
+              requestQuantity,
+              mode
             );
             setCastUrl(castUrl);
             setRequestUrl(requestUrl);

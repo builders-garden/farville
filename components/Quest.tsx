@@ -178,7 +178,8 @@ export default function Quest({
             const { castUrl, requestUrl } = requestItemComposeCastUrl(
               data.id,
               selectedItem,
-              requestQuantity
+              requestQuantity,
+              mode
             );
             setCastUrl(castUrl);
             setRequestUrl(requestUrl);
