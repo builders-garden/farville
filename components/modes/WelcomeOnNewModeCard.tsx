@@ -12,7 +12,7 @@ export function WelcomeOnNewModeCard() {
     setModeDefinition(MODE_DEFINITIONS[mode]);
   }, [mode]);
 
-  return !state.userModes.includes(mode) ? (
+  return state.userModes.length >= 1 && !state.userModes.includes(mode) ? (
     <Card
       className="w-full max-w-[400px] p-4 bg-[#7e4e31] xs:mt-8 mt-1
       hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 backdrop-blur-sm border-none"
