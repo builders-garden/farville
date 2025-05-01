@@ -19,8 +19,10 @@ import { getItemsByCategory } from "./item";
 import {
   CROP_DATA,
   CropData,
+  DAILY_QUESTS_NUMBER,
   EXPANSION_COSTS,
   millisecondsInHour,
+  WEEKLY_QUESTS_NUMBER,
 } from "@/lib/game-constants";
 
 export const getActiveQuests = async (): Promise<
@@ -84,7 +86,8 @@ export const getQuestsByTypeAndLevel = async (
 
 export const initDailyUserQuests = async (
   fid: number,
-  mode: Mode
+  mode: Mode,
+  quantity: number
 ): Promise<void> => {
   // get user level
   const user = await getUserByMode(fid, mode);
@@ -102,8 +105,8 @@ export const initDailyUserQuests = async (
     mode
   );
 
-  if (!dailyQuests || dailyQuests.length === 0) {
-    dailyQuests = await generateDailyQuests(thresholdLevel, mode);
+  if (!dailyQuests || dailyQuests.length < DAILY_QUESTS_NUMBER) {
+    dailyQuests = await generateDailyQuests(thresholdLevel, mode, quantity);
   }
 
   await Promise.all(
@@ -121,7 +124,8 @@ export const initDailyUserQuests = async (
 
 export const initWeeklyUserQuests = async (
   fid: number,
-  mode: Mode
+  mode: Mode,
+  quantity: number
 ): Promise<void> => {
   // get user level
   const user = await getUserByMode(fid, mode);
@@ -139,8 +143,8 @@ export const initWeeklyUserQuests = async (
     mode
   );
 
-  if (!weeklyQuests || weeklyQuests.length === 0) {
-    weeklyQuests = await generateWeeklyQuests(thresholdLevel, mode);
+  if (!weeklyQuests || weeklyQuests.length < WEEKLY_QUESTS_NUMBER) {
+    weeklyQuests = await generateWeeklyQuests(thresholdLevel, mode, quantity);
   }
 
   await Promise.all(
@@ -156,7 +160,11 @@ export const initWeeklyUserQuests = async (
   );
 };
 
-export const generateDailyQuests = async (level: number, mode: Mode) => {
+export const generateDailyQuests = async (
+  level: number,
+  mode: Mode,
+  quantity: number
+) => {
   let questCategories = ["sell", "receive", "donate", "plant", "harvest"];
 
   // TODO: optimize this to not access the database multiple times
@@ -170,7 +178,7 @@ export const generateDailyQuests = async (level: number, mode: Mode) => {
   const amounts = [3, 4, 5, 6, 7, 8];
 
   const dailyQuests: Prisma.QuestCreateArgs["data"][] = [];
-  for (let i = 0; i < 3; i++) {
+  for (let i = 0; i < quantity; i++) {
     const category = chooseRandomItem(questCategories);
     questCategories = questCategories.filter((c) => c !== category);
     let item: Item;
@@ -284,7 +292,11 @@ const calculateValidAmount = (crop: CropData, level: number, mode: Mode) => {
   return maxAmount;
 };
 
-export const generateWeeklyQuests = async (level: number, mode: Mode) => {
+export const generateWeeklyQuests = async (
+  level: number,
+  mode: Mode,
+  quantity: number
+) => {
   let questCategories = ["sell", "plant", "harvest"];
 
   let seedItems = (await getItemsByCategory("seed")).filter(
@@ -298,7 +310,7 @@ export const generateWeeklyQuests = async (level: number, mode: Mode) => {
   // const amounts = [10, 15, 20, 25, 30];
 
   const weeklyQuests: Prisma.QuestCreateArgs["data"][] = [];
-  for (let i = 0; i < 3; i++) {
+  for (let i = 0; i < quantity; i++) {
     const category = chooseRandomItem(questCategories);
     questCategories = questCategories.filter((c) => c !== category);
     let item: Item;

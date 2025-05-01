@@ -1062,3 +1062,6 @@ export const XP_PER_DONATED_ITEM = 5;
 export const OG_XP_THRESHOLD = 100;
 
 export const CREATOR_FIDS = [4461, 5698, 262800];
+
+export const DAILY_QUESTS_NUMBER = 3;
+export const WEEKLY_QUESTS_NUMBER = 3;

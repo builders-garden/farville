@@ -5,8 +5,10 @@ import {
   ACHIEVEMENTS_THRESHOLDS,
   BASE_GOLD_CROP_PERCENTAGE,
   CROP_DATA,
+  DAILY_QUESTS_NUMBER,
   LEVEL_XP_THRESHOLDS,
   SPEED_BOOST,
+  WEEKLY_QUESTS_NUMBER,
 } from "./game-constants";
 import { CropType, Mode, PerkType, QuestType } from "@/lib/types/game";
 import { fetchUsersFollowedBy } from "./neynar";
@@ -671,11 +673,19 @@ export const initQuestsAndLeaderboardEntryByMode = async (
       type: [QuestType.Weekly],
       activeToday: true,
     });
-    if (!dailyQuests || dailyQuests?.length === 0) {
-      await initDailyUserQuests(Number(fid), mode);
+    if (!dailyQuests || dailyQuests?.length < DAILY_QUESTS_NUMBER) {
+      await initDailyUserQuests(
+        Number(fid),
+        mode,
+        DAILY_QUESTS_NUMBER - (dailyQuests?.length || 0)
+      );
     }
-    if (!weeklyQuests || weeklyQuests?.length === 0) {
-      await initWeeklyUserQuests(Number(fid), mode);
+    if (!weeklyQuests || weeklyQuests?.length < WEEKLY_QUESTS_NUMBER) {
+      await initWeeklyUserQuests(
+        Number(fid),
+        mode,
+        WEEKLY_QUESTS_NUMBER - (weeklyQuests?.length || 0)
+      );
     }
   }
 };
