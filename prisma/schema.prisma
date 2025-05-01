@@ -87,7 +87,6 @@ model Request {
   filledQuantity Int
   createdAt      DateTime @default(now()) @db.Timestamptz(6)
   mode           String
-  mode           String
   user           User     @relation(fields: [fid], references: [fid], onDelete: NoAction, onUpdate: NoAction)
   item           Item?    @relation(fields: [itemId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "request_itemid_fkey")
 
@@ -141,7 +140,6 @@ model UserDonationHistory {
   receiverFid  Int
   times        Int?     @default(0)
   lastDonation DateTime @default(now()) @db.Timestamptz(6)
-  mode         String
   mode         String
   donatorUser  User     @relation("user_donation_history_donatorFidTouser", fields: [donatorFid], references: [fid], onDelete: NoAction, onUpdate: NoAction, map: "user_donation_history_donatorfid_fkey")
   receiverUser User     @relation("user_donation_history_receiverFidTouser", fields: [receiverFid], references: [fid], onDelete: NoAction, onUpdate: NoAction, map: "user_donation_history_receiverfid_fkey")

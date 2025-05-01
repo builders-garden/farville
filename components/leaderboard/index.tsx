@@ -148,7 +148,8 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
     const { castUrl } = leaderboardFlexCardComposeCastUrl(
       state.user.fid,
       leaderboardType,
-      activeTab === "friends"
+      activeTab === "friends",
+      mode
     );
     await sdk.actions.openUrl(castUrl);
   };
@@ -714,7 +715,9 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
               </div>
             </div>
           </motion.div>
-          {state.level >= 5 && <FloatingShareButton onClick={handleShare} />}
+          {(activeTab !== "weekly" || state.level >= 5) && (
+            <FloatingShareButton onClick={handleShare} />
+          )}
         </>
       )}
     </div>

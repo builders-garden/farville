@@ -1,4 +1,5 @@
 import { env } from "@/lib/env";
+import { MODE_DEFINITIONS } from "@/lib/modes/constants";
 import { getActiveStreaksCount, getUserByMode } from "@/lib/prisma/queries";
 import { UserWithStatistic } from "@/lib/prisma/types";
 import { Mode } from "@/lib/types/game";
@@ -298,28 +299,62 @@ export async function GET(
                     gap: "10px",
                     fontSize: "8px",
                     marginBottom: "4px",
+                    alignItems: "center",
                   }}
                 >
-                  <div
-                    style={{
-                      backgroundColor: "#FFB938",
-                      color: "#5c4121",
-                      borderRadius: "9999px",
-                      padding: "4px 12px",
-                      fontWeight: "bold",
-                    }}
-                  >
-                    {quests ? "Quests" : "Experience"}
-                  </div>
-                  <div
-                    style={{
-                      backgroundColor: "#8B5A38",
-                      borderRadius: "9999px",
-                      padding: "4px 12px",
-                    }}
-                  >
-                    {"Global"}
-                  </div>
+                  {mode !== Mode.Classic ? (
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "6px",
+                        backgroundColor: "rgba(139, 90, 56, 0.8)",
+                        borderRadius: "9999px",
+                        padding: "4px 12px",
+                        boxShadow: "0 2px 8px rgba(139, 90, 56, 0.4)",
+                        border: "1px solid rgba(255, 185, 56, 0.2)",
+                        color: "#FFE0B2",
+                        fontSize: "10px",
+                      }}
+                    >
+                      {MODE_DEFINITIONS[mode].name}
+                      <img
+                        src={`${appUrl}/images/modes/${mode}.png`}
+                        width="18"
+                        height="18"
+                        style={{
+                          objectFit: "contain",
+                          borderRadius: "3px",
+                          marginLeft: "2px",
+                          transform: "translateY(-1px)",
+                          filter: "brightness(1.2)",
+                        }}
+                      />
+                    </div>
+                  ) : (
+                    <>
+                      <div
+                        style={{
+                          backgroundColor: "#FFB938",
+                          color: "#5c4121",
+                          borderRadius: "9999px",
+                          padding: "4px 12px",
+                          fontWeight: "bold",
+                        }}
+                      >
+                        {quests ? "Quests" : "Experience"}
+                      </div>
+                      <div
+                        style={{
+                          backgroundColor: "#8B5A38",
+                          borderRadius: "9999px",
+                          padding: "4px 12px",
+                        }}
+                      >
+                        {"Global"}
+                      </div>
+                    </>
+                  )}
                 </div>
                 {/* Leaderboard position text */}
                 <div
@@ -543,8 +578,8 @@ export async function GET(
       }
     );
   } catch (e) {
-    console.log(`Failed to generate streak image`, e);
-    return new Response(`Failed to generate streak image`, {
+    console.log(`Failed to generate leaderboard image`, e);
+    return new Response(`Failed to generate leaderboard image`, {
       status: 500,
     });
   }

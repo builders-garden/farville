@@ -74,10 +74,14 @@ export const warpcastComposeCastUrl = () => {
 export const requestItemComposeCastUrl = (
   requestId: number,
   item: Item,
-  quantity: number
+  quantity: number,
+  mode: Mode
 ) => {
   const frameUrl = `${env.NEXT_PUBLIC_URL}/requests/${requestId}`;
-  const text = `I'm looking for ${quantity} ${item.name} on /farville 🧑‍🌾`;
+  const text =
+    mode !== Mode.Classic
+      ? `I'm looking for ${quantity} ${item.name} on /farville ${MODE_DEFINITIONS[mode].name} mode 🧑‍🌾`
+      : `I'm looking for ${quantity} ${item.name} on /farville 🧑‍🌾`;
   const urlFriendlyText = encodeURIComponent(text);
   return {
     requestUrl: frameUrl,
@@ -189,7 +193,8 @@ export const achievementBadgeFlexCardComposeCastUrl = (
 export const leaderboardFlexCardComposeCastUrl = (
   fid: number,
   type: "quests" | "xp",
-  isFriends: boolean
+  isFriends: boolean,
+  mode: Mode
 ) => {
   const timestamp = Date.now();
   const frameUrl = `${
@@ -202,10 +207,12 @@ export const leaderboardFlexCardComposeCastUrl = (
     type === "quests"
       ? `yo farmers! crushing ${
           isFriends ? "friends" : "global"
-        } quests on /farville! 🧑‍🌾 LFF 🚜💨`
-      : `peep my XP gains on /farville! 🌱 ${
-          isFriends ? "friends" : "global"
-        } leaderboard flex! LFF 🚜💨`;
+        } quests on /farville${
+          mode !== Mode.Classic ? ` ${MODE_DEFINITIONS[mode].name} mode` : ""
+        }! 🧑‍🌾 LFF 🚜💨`
+      : `peep my XP gains on /farville${
+          mode !== Mode.Classic ? ` ${MODE_DEFINITIONS[mode].name} mode` : ""
+        }! 🌱 ${isFriends ? "friends" : "global"} leaderboard flex! LFF 🚜💨`;
 
   const urlFriendlyText = encodeURIComponent(text);
 

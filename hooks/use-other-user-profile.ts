@@ -26,7 +26,7 @@ export function useOtherUserProfile(
   userData: OtherUserProfileData;
   isLoading: boolean;
 } {
-  const { user, isLoading: userLoading } = useUser({ fid });
+  const { user, isLoading: userLoading } = useUser({ mode, fid });
   const { userItems, isLoading: userItemsLoading } = useUserItems(mode, fid);
   const { userHarvestedCrops, isLoading: isUserHarvestedCropsLoading } =
     useUserHarvestedCrops(fid);

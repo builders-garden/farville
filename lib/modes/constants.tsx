@@ -135,7 +135,7 @@ export const MODE_DEFINITIONS: Record<Mode, ModeDefinition> = {
     boosterTimeDivisor: 4,
     dailyLimitDonationsToUsers: 10,
     dailyLimitDonationsToSameUser: 3,
-    startDate: new Date("2025-05-30T00:00:00Z"),
+    startDate: new Date("2025-04-30T00:00:00Z"),
     endDate: new Date("2025-05-04T23:59:59Z"),
   },
   [Mode.Sonic]: {
