@@ -5,7 +5,7 @@ import { Countdown } from "../Countdown";
 import { Card, CardContent } from "../ui/card";
 
 export function WelcomeOnNewModeCard() {
-  const { initializeMode, mode, isActionInProgress } = useGame();
+  const { initializeMode, mode, isActionInProgress, refetchState } = useGame();
 
   const [modeDefinition, setModeDefinition] = useState(MODE_DEFINITIONS[mode]);
   useEffect(() => {
@@ -35,6 +35,7 @@ export function WelcomeOnNewModeCard() {
             initializeMode({
               mode,
             });
+            refetchState();
           }}
           disabled={isActionInProgress}
           className="group flex items-center gap-2 bg-gradient-to-r from-[#FFB938] to-[#FFA000] text-[#7E4E31] 

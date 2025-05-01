@@ -28,7 +28,6 @@ export default function GameGrid() {
     setShowMintCollectible,
     showNotActiveMode,
     setShowNotActiveMode,
-    setMode,
   } = useGame();
 
   // Create a 2D grid from the flat array
@@ -41,7 +40,10 @@ export default function GameGrid() {
       mode !== Mode.Classic &&
       MODE_DEFINITIONS[mode].startDate! > new Date()
     ) {
-      setShowNotActiveMode(true);
+      setShowNotActiveMode({
+        show: true,
+        mode: mode,
+      });
     }
   }, [mode, setShowNotActiveMode]);
 
@@ -71,11 +73,13 @@ export default function GameGrid() {
         <MintCollectibleModal onCancel={() => setShowMintCollectible(false)} />
       )}
 
-      {showNotActiveMode && (
+      {showNotActiveMode.show && (
         <NotActiveModeModal
           onClose={() => {
-            setShowNotActiveMode(false);
-            setMode(Mode.Classic);
+            setShowNotActiveMode({
+              show: false,
+              mode: Mode.Classic,
+            });
           }}
         />
       )}
@@ -93,10 +97,7 @@ export default function GameGrid() {
           >
             {grid.map((row) =>
               row.map((cell) => (
-                <GridCell
-                  key={`${cell.fid}-${cell.x}-${cell.y}`}
-                  cell={cell}
-                />
+                <GridCell key={`${cell.fid}-${cell.x}-${cell.y}`} cell={cell} />
               ))
             )}
           </div>

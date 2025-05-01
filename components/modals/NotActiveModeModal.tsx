@@ -7,8 +7,9 @@ interface NotActiveModeProps {
 }
 
 export const NotActiveModeModal = ({ onClose }: NotActiveModeProps) => {
-  const { mode } = useGame();
+  const { showNotActiveMode } = useGame();
 
+  const mode = showNotActiveMode.mode;
   const modeDefinition = MODE_DEFINITIONS[mode];
 
   return (
@@ -35,7 +36,7 @@ export const NotActiveModeModal = ({ onClose }: NotActiveModeProps) => {
             className={`flex-1 py-2 px-4 rounded bg-white/10 text-white/90 hover:bg-white/20 
                     transition-all duration-500 text-sm font-medium`}
           >
-            Back to Classic
+            Close
           </button>
         </div>
       </div>
