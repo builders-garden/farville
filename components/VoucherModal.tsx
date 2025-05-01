@@ -1,9 +1,11 @@
 "use client";
 
 import Image from "next/image";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
+
 import { useFrameContext } from "@/context/FrameContext";
+import { useUserModes } from "@/hooks/use-user-modes";
 import { useVoucher } from "@/hooks/use-voucer";
 import { useRedeemVoucher } from "@/hooks/game-actions/use-redeem-voucher";
 import { useGame } from "@/context/GameContext";
@@ -14,6 +16,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import FloatingNumber from "./animations/FloatingNumber";
 
 import { XP_PER_DONATED_ITEM } from "@/lib/game-constants";
+import { FARCON_ATTENDEES_FIDS } from "@/lib/modes/farcon";
+import { MODE_DEFINITIONS } from "@/lib/modes/constants";
 import { Mode } from "@/lib/types/game";
 
 export default function VoucherModal({
@@ -24,8 +28,22 @@ export default function VoucherModal({
   slug: string;
 }) {
   const { safeAreaInsets } = useFrameContext();
-  const { redeemVoucher } = useRedeemVoucher();
-  const { state, updateUserItems } = useGame();
+  const {
+    state,
+    updateUserItems,
+    mode,
+    setMode,
+    initializeMode,
+    isActionInProgress,
+    setIsActionInProgress,
+  } = useGame();
+  const [userNotInMode, setUserNotInMode] = useState(false);
+  const [isInitializingMode, setIsInitializingMode] = useState(false);
+  const {
+    userModes,
+    isLoading: userModesIsLoading,
+    refetch: refetchUserModes,
+  } = useUserModes(state.user.fid);
 
   const { voucher, isLoading: isVoucherLoading } = useVoucher(slug);
   const {
@@ -33,9 +51,36 @@ export default function VoucherModal({
     isLoading: isUserVouchersLoading,
     error: errorUserVouchers,
   } = useUserVouchers(state.user?.fid, true, Mode.Farcon);
+  const { mutate: redeemVoucher } = useRedeemVoucher({
+    isActionInProgress,
+    setIsActionInProgress,
+  });
   const [showFloatingNumber, setShowFloatingNumber] = useState(false);
   const [rewardedXp, setRewardedXp] = useState(0);
   const { addUserXpsAndCheckLevelUp } = useUserXp();
+
+  useEffect(() => {
+    if (!voucher || !userModes || userModesIsLoading) return;
+    if (!userModes.includes(voucher.mode as Mode)) {
+      setUserNotInMode(true);
+    } else if (
+      userModes.includes(voucher.mode as Mode) &&
+      voucher.mode &&
+      mode !== voucher.mode
+    ) {
+      setMode(voucher.mode as Mode);
+      setUserNotInMode(false);
+    }
+  }, [voucher, setMode, mode, state.user.fid, userModes, userModesIsLoading]);
+
+  useEffect(() => {
+    if (isActionInProgress) {
+      setIsInitializingMode(true);
+    } else if (!isActionInProgress && isInitializingMode) {
+      setIsInitializingMode(false);
+      refetchUserModes();
+    }
+  }, [isActionInProgress, isInitializingMode, refetchUserModes]);
 
   // Calculate remaining quantity needed
   const userVoucher = userVouchers
@@ -55,7 +100,7 @@ export default function VoucherModal({
     setRewardedXp(rewardedXp);
     redeemVoucher({
       voucherSlug: slug,
-      toFid: state.user?.fid,
+      mode: Mode.Farcon,
     });
     if (voucher?.itemId && voucher.item) {
       updateUserItems([
@@ -72,14 +117,6 @@ export default function VoucherModal({
       onClose();
     }, 1000);
   };
-
-  console.log(
-    "voucher modal",
-    voucher,
-    isVoucherLoading,
-    userVoucher,
-    isUserVouchersLoading
-  );
 
   if (
     (!voucher && isVoucherLoading) ||
@@ -118,6 +155,9 @@ export default function VoucherModal({
         Error: Voucher not found
       </div>
     );
+  }
+  if (!voucher) {
+    return <></>;
   }
 
   return (
@@ -231,8 +271,7 @@ export default function VoucherModal({
                       </>
                     ) : (
                       <p className="text-amber-500/90 text-xs xs:text-sm text-center">
-                        You don&apos;t have any {userVoucher?.voucher.name} in
-                        your inventory
+                        You already claimed this voucher x{voucher?.quantity}!
                       </p>
                     )}
                   </div>
@@ -242,7 +281,22 @@ export default function VoucherModal({
           </div>
 
           {/* Action Buttons */}
-          {userCanRedeem && (
+          {userNotInMode && FARCON_ATTENDEES_FIDS.includes(state.user.fid) ? (
+            <button
+              onClick={() => {
+                initializeMode({
+                  mode: voucher.mode as Mode,
+                });
+              }}
+              disabled={isActionInProgress}
+              className="px-4 xs:px-6 py-2 xs:py-2.5 bg-green-600/80 hover:bg-green-600 rounded-lg text-white/90 
+                   transition-colors font-medium text-xs xs:text-sm disabled:bg-green-600/20"
+            >
+              {!isInitializingMode
+                ? `Join the ${MODE_DEFINITIONS[voucher.mode as Mode].name} mode`
+                : "Joining..."}
+            </button>
+          ) : userCanRedeem ? (
             <div className="flex-none p-3 xs:p-4">
               <div className="flex justify-center gap-2 xs:gap-3">
                 <button
@@ -264,7 +318,7 @@ export default function VoucherModal({
                 </button>
               </div>
             </div>
-          )}
+          ) : null}
 
           {showFloatingNumber && rewardedXp > 0 && (
             <FloatingNumber

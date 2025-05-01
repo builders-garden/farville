@@ -178,8 +178,6 @@ export default function GameWrapper() {
   const { startBackgroundMusic } = useAudio();
   const { mode, state, activeOverlay, setActiveOverlay } = useGame();
 
-  console.log("activeOverlay", activeOverlay);
-
   const { safeAreaInsets } = useFrameContext();
   // const [showPatchNotes, setShowPatchNotes] = useState(false);
   // const toastShownRef = useRef(false);

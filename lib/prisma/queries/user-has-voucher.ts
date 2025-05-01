@@ -29,12 +29,14 @@ export const getUserHasVouchers = async (
       createdAt: "desc",
     },
   });
+  console.log("user vouchers", vouchers);
 
   // filter by activeToday if true
   if (activeToday) {
     const endDate = MODE_DEFINITIONS[mode].endDate;
     const today = new Date();
-    if (endDate && endDate >= today) {
+    console.log("endDate", endDate, today);
+    if (endDate && endDate <= today) {
       return [];
     }
   }
@@ -65,4 +67,29 @@ export const getUserHasVouchersBySlug = async (
   });
 
   return voucher;
+};
+
+/**
+ * Add a user voucher
+ * @param fid - The fid of the user
+ * @param voucherId - The id of the voucher
+ * @returns The user voucher
+ */
+export const addUserVoucher = async (fid: number, voucherId: number) => {
+  return await prisma.userHasVoucher.upsert({
+    where: {
+      fid_voucherId: {
+        fid,
+        voucherId,
+      },
+    },
+    update: {
+      claimedAmount: { increment: 1 },
+    },
+    create: {
+      fid,
+      voucherId,
+      claimedAmount: 1,
+    },
+  });
 };

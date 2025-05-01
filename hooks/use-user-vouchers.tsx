@@ -7,11 +7,9 @@ export const useUserVouchers = (
   activeToday: boolean,
   mode: Mode
 ) => {
-  const url = fid
-    ? `/api/users/me/vouchers?mode=${mode}&activeToday=${
-        !!activeToday ? "true" : "false"
-      }`
-    : "";
+  const url = `/api/users/me/vouchers?mode=${mode}&activeToday=${
+    !!activeToday ? "true" : "false"
+  }`;
 
   const {
     data: vouchers,

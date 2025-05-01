@@ -25,7 +25,6 @@ export async function GET(request: NextRequest) {
 
     // check user fid is valid for mode voucher
     const isFarconUser = modeAvailableForUser(mode as Mode, Number(fid));
-    console.log("isFarconUser", isFarconUser);
     if (!isFarconUser) {
       return NextResponse.json(
         { error: "User is not in farcon" },
@@ -38,6 +37,7 @@ export async function GET(request: NextRequest) {
       mode as Mode,
       activeToday === "true"
     );
+    console.log("user vouchers", vouchers);
 
     return NextResponse.json(vouchers);
   } catch (error) {
