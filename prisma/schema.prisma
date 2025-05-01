@@ -265,6 +265,248 @@ model leagues_snapshot {
   createdAt DateTime @default(now()) @db.Timestamptz(6)
 }
 
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model user {
+  fid                                                           Int                      @id
+  username                                                      String
+  displayName                                                   String
+  avatarUrl                                                     String?
+  walletAddress                                                 String
+  notificationDetails                                           Json?                    @db.Json
+  mintedOG                                                      Boolean                  @default(false)
+  createdAt                                                     DateTime                 @default(now()) @db.Timestamptz(6)
+  selectedAvatarUrl                                             String?
+  referral                                                      referral[]
+  request                                                       request[]
+  streak                                                        streak[]
+  user_donation_history_user_donation_history_donatorFidTouser  user_donation_history[]  @relation("user_donation_history_donatorFidTouser")
+  user_donation_history_user_donation_history_receiverFidTouser user_donation_history[]  @relation("user_donation_history_receiverFidTouser")
+  user_grid_cell                                                user_grid_cell[]
+  user_harvested_crop                                           user_harvested_crop[]
+  user_has_collectible                                          user_has_collectible[]
+  user_has_item                                                 user_has_item[]
+  user_has_quest                                                user_has_quest[]
+  user_leaderboard_entry                                        user_leaderboard_entry[]
+  user_statistic                                                user_statistic[]
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model user_statistic {
+  fid        Int
+  mode       String
+  xp         Int
+  coins      Int
+  expansions Int
+  createdAt  DateTime @default(now()) @db.Timestamptz(6)
+  user       user     @relation(fields: [fid], references: [fid], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([fid, mode])
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model collectible {
+  id                   Int                    @id @default(autoincrement())
+  name                 String?
+  description          String?
+  imageUrl             String
+  createdAt            DateTime               @default(now()) @db.Timestamptz(6)
+  category             String?
+  user_has_collectible user_has_collectible[]
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model item {
+  id                  Int                   @id @default(autoincrement())
+  name                String
+  description         String?
+  icon                String
+  category            String
+  buyPrice            Int?
+  sellPrice           Int?
+  requiredLevel       Int
+  createdAt           DateTime              @default(now()) @db.Timestamptz(6)
+  slug                String                @unique
+  quest               quest[]
+  request             request[]
+  user_grid_cell      user_grid_cell[]
+  user_harvested_crop user_harvested_crop[]
+  user_has_item       user_has_item[]
+  voucher             voucher[]
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model quest {
+  id             Int              @id @default(autoincrement())
+  category       String
+  itemId         Int?
+  amount         Int              @default(1)
+  xp             Int?
+  coins          Int?
+  startAt        DateTime         @db.Timestamptz(6)
+  endAt          DateTime?        @db.Timestamptz(6)
+  createdAt      DateTime         @default(now()) @db.Timestamptz(6)
+  type           String
+  level          Int
+  mode           String           @default("classic")
+  item           item?            @relation(fields: [itemId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "quest_itemid_fkey")
+  user_has_quest user_has_quest[]
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model referral {
+  id          Int      @id @default(autoincrement())
+  fid         Int
+  referredFid Int
+  createdAt   DateTime @default(now()) @db.Timestamptz(6)
+  user        user     @relation(fields: [fid], references: [fid], onDelete: NoAction, onUpdate: NoAction)
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model request {
+  id             Int      @id @default(autoincrement())
+  fid            Int
+  itemId         Int?
+  quantity       Int?
+  filledQuantity Int
+  createdAt      DateTime @default(now()) @db.Timestamptz(6)
+  mode           String
+  user           user     @relation(fields: [fid], references: [fid], onDelete: NoAction, onUpdate: NoAction)
+  item           item?    @relation(fields: [itemId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "request_itemid_fkey")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model streak {
+  id           Int          @id @default(autoincrement())
+  fid          Int
+  startedAt    DateTime     @db.Date
+  endedAt      DateTime?    @db.Date
+  lastActionAt DateTime     @db.Date
+  lastClaimed  Int          @default(0)
+  user         user         @relation(fields: [fid], references: [fid], onDelete: NoAction, onUpdate: NoAction)
+  user_frost   user_frost[]
+
+  @@unique([fid, startedAt], map: "streak_fid_started_at_unique")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model user_donation_history {
+  donatorFid                                   Int      @default(autoincrement())
+  receiverFid                                  Int
+  times                                        Int?     @default(0)
+  lastDonation                                 DateTime @default(now()) @db.Timestamptz(6)
+  mode                                         String
+  user_user_donation_history_donatorFidTouser  user     @relation("user_donation_history_donatorFidTouser", fields: [donatorFid], references: [fid], onDelete: NoAction, onUpdate: NoAction, map: "user_donation_history_donatorfid_fkey")
+  user_user_donation_history_receiverFidTouser user     @relation("user_donation_history_receiverFidTouser", fields: [receiverFid], references: [fid], onDelete: NoAction, onUpdate: NoAction, map: "user_donation_history_receiverfid_fkey")
+
+  @@id([donatorFid, receiverFid, mode])
+}
+
+model user_frost {
+  id       Int      @id @default(autoincrement())
+  streakId Int
+  frozenAt DateTime @db.Date
+  streak   streak   @relation(fields: [streakId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "user_frost_streakid_fkey")
+
+  @@unique([streakId, frozenAt], map: "user_frost_streak_frozen_unique")
+}
+
+model user_grid_cell {
+  fid              Int
+  x                Int
+  y                Int
+  mode             String
+  cropType         String?
+  plantedAt        DateTime? @db.Timestamptz(6)
+  createdAt        DateTime  @default(now()) @db.Timestamptz(6)
+  speedBoostedAt   DateTime? @db.Timestamptz(6)
+  harvestAt        DateTime? @db.Timestamptz(6)
+  isReadyToHarvest Boolean   @default(false)
+  item             item?     @relation(fields: [cropType], references: [slug], onDelete: NoAction, onUpdate: NoAction, map: "user_grid_cell_croptype_fkey")
+  user             user      @relation(fields: [fid], references: [fid], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([fid, x, y, mode])
+}
+
+model user_harvested_crop {
+  fid       Int
+  crop      String
+  quantity  Int      @default(0)
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  item      item     @relation(fields: [crop], references: [slug], onDelete: NoAction, onUpdate: NoAction)
+  user      user     @relation(fields: [fid], references: [fid], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([fid, crop])
+}
+
+model user_has_collectible {
+  fid                Int
+  collectibleId      Int
+  createdAt          DateTime    @default(now()) @db.Timestamptz(6)
+  mintedImageUrl     String?
+  mintedMetadataUrl  String?
+  txHash             String?
+  status             String      @default("description")
+  generatedImageUrls Json?       @db.Json
+  updatedAt          DateTime    @default(now()) @db.Timestamptz(6)
+  generatedTaskId    String?
+  pfpDescription     String?
+  collectible        collectible @relation(fields: [collectibleId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "user_has_collectible_collectibleid_fkey")
+  user               user        @relation(fields: [fid], references: [fid], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([fid, collectibleId])
+}
+
+model user_has_item {
+  fid       Int
+  itemId    Int
+  mode      String
+  quantity  Int
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  user      user     @relation(fields: [fid], references: [fid], onDelete: NoAction, onUpdate: NoAction)
+  item      item     @relation(fields: [itemId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "user_has_item_itemid_fkey")
+
+  @@id([fid, itemId, mode])
+}
+
+model user_has_quest {
+  fid         Int
+  questId     Int
+  completedAt DateTime? @db.Timestamptz(6)
+  createdAt   DateTime  @default(dbgenerated("timezone('utc'::text, now())")) @db.Timestamptz(6)
+  progress    Int
+  status      String    @default("incomplete")
+  user        user      @relation(fields: [fid], references: [fid], onDelete: NoAction, onUpdate: NoAction)
+  quest       quest     @relation(fields: [questId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "user_has_quest_questid_fkey")
+
+  @@id([fid, questId])
+}
+
+model user_leaderboard_entry {
+  fid          Int
+  mode         String
+  currentScore Int      @default(0)
+  lastScore    Int      @default(0)
+  league       Int      @default(0)
+  lastLeague   Int      @default(0)
+  createdAt    DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt    DateTime @default(now()) @db.Timestamptz(6)
+  user         user     @relation(fields: [fid], references: [fid], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([fid, mode])
+}
+
+model voucher {
+  id          Int      @id @default(autoincrement())
+  slug        String   @unique
+  name        String
+  description String
+  mode        String
+  quantity    Int
+  itemId      Int
+  createdAt   DateTime @default(now()) @db.Timestamptz(6)
+  item        item     @relation(fields: [itemId], references: [id], onDelete: Cascade, map: "voucher_itemid_fkey")
+}
+
 enum UserHasQuestStatus {
   incomplete
   completed

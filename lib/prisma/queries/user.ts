@@ -3,6 +3,16 @@ import { Prisma } from "@prisma/client";
 import { DbUser } from "../types";
 import { LEVEL_REWARDS, LEVEL_XP_THRESHOLDS } from "@/lib/game-constants";
 
+export const getUsers = async (
+  limit: number = 100,
+  offset: number = 0
+): Promise<DbUser[]> => {
+  return await prisma.user.findMany({
+    take: limit,
+    skip: offset,
+  });
+};
+
 export const getUser = async (fid: number) => {
   const user = await prisma.user.findUnique({
     where: {
