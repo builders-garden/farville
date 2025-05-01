@@ -85,7 +85,7 @@ export default function GameGrid() {
       )}
 
       {/* Render the grid */}
-      {grid.length > 0 ? (
+      {state.userModes.includes(mode) && grid.length > 0 ? (
         <>
           <div
             className="grid gap-1 aspect-square w-full"
@@ -106,7 +106,8 @@ export default function GameGrid() {
           </div>
         </>
       ) : (
-        !showNotActiveMode && mode !== Mode.Classic && <WelcomeOnNewModeCard />
+        !showNotActiveMode.show &&
+        mode !== Mode.Classic && <WelcomeOnNewModeCard />
       )}
     </div>
   );

@@ -510,6 +510,7 @@ export function GameProvider({
     refetchUser: refetch.user,
     refetchUserItems: refetch.userItems,
     refetchUserGrid: refetch.grid,
+    refetchUserModes: refetch.userModes,
     isActionInProgress,
     setIsActionInProgress,
   });

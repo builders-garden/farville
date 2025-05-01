@@ -21,6 +21,7 @@ import {
   Item,
 } from "@prisma/client";
 import { Mode } from "@/lib/types/game";
+import { useUserModes } from "./use-user-modes";
 
 export interface RefetchType {
   all: () => Promise<void>;
@@ -31,6 +32,7 @@ export interface RefetchType {
   claimableQuests: () => Promise<void>;
   streaks: () => Promise<void>;
   frosts: () => Promise<void>;
+  userModes: () => Promise<void>;
 }
 
 export interface AllQuests {
@@ -77,6 +79,7 @@ export interface GameState {
   })[];
   showGridCellsTutorial: boolean;
   showMarketplaceTutorial: boolean;
+  userModes: Mode[];
 }
 
 export const useGameState = (mode: Mode) => {
@@ -120,6 +123,7 @@ export const useGameState = (mode: Mode) => {
     collectibles: [],
     showGridCellsTutorial: false,
     showMarketplaceTutorial: false,
+    userModes: [],
   });
   const {
     userItems,
@@ -177,6 +181,12 @@ export const useGameState = (mode: Mode) => {
     refetch: refetchUserCollectibles,
   } = useUserCollectibles(state?.user?.fid);
 
+  const {
+    userModes,
+    isLoading: isLoadingUserModes,
+    refetch: refetchUserModes,
+  } = useUserModes(state?.user?.fid);
+
   const updateUserState = useCallback(() => {
     if (user) {
       const { currentLevel } = getCurrentLevelAndProgress(user.xp);
@@ -221,6 +231,15 @@ export const useGameState = (mode: Mode) => {
       }));
     }
   }, [gridCells]);
+
+  useEffect(() => {
+    if (userModes) {
+      setState((prevState) => ({
+        ...prevState!,
+        userModes: userModes,
+      }));
+    }
+  }, [userModes]);
 
   const updateItemsState = useCallback(() => {
     if (items) {
@@ -418,6 +437,7 @@ export const useGameState = (mode: Mode) => {
       refetchUserHarvestedCrops(),
       refetchWeeklyStats(),
       refetchUserCollectibles(),
+      refetchUserModes(),
     ]);
   }, [
     refetchUserItems,
@@ -429,6 +449,7 @@ export const useGameState = (mode: Mode) => {
     refetchUserHarvestedCrops,
     refetchWeeklyStats,
     refetchUserCollectibles,
+    refetchUserModes,
   ]);
 
   useEffect(() => {
@@ -650,7 +671,8 @@ export const useGameState = (mode: Mode) => {
       frostsLoading ||
       isUserHarvestedCropsLoading ||
       weeklyStatsLoading ||
-      userCollectiblesLoading,
+      userCollectiblesLoading ||
+      isLoadingUserModes,
     refetch: {
       all: refetchAll,
       userItems: async () => {
@@ -676,6 +698,9 @@ export const useGameState = (mode: Mode) => {
       },
       frosts: async () => {
         await refetchFrosts();
+      },
+      userModes: async () => {
+        await refetchUserModes();
       },
     } as RefetchType,
     updateGridCells,
