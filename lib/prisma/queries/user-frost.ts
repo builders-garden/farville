@@ -61,7 +61,6 @@ export const applyUserFrost = async (
     await prisma.userFrost.createMany({
       data: records,
     });
-    // TODO: remember to manage this mode pass
     await removeUserItem(fid, frostItemId, amount, Mode.Classic);
   } catch (error) {
     console.error("Error creating user frosts:", error);

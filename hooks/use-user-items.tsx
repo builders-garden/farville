@@ -13,6 +13,7 @@ export const useUserItems = (mode: Mode, fid?: number) => {
       ? `/api/users/me/items?mode=${mode}`
       : `/api/users/${fid}/items?mode=${mode}`,
     isProtected: true,
+    enabled: !!mode,
   });
 
   return { userItems: data, isLoading, refetch };

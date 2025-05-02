@@ -66,7 +66,6 @@ export const POST = async (req: NextRequest) => {
     await initializeGrid(fid, Mode.Classic);
     // Give them a starter pack
     await giftStarterPack(fid, Mode.Classic);
-    // await initializeUserQuest(fid);
   }
 
   const userModes = await getUserModes(fid);
