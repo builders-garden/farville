@@ -147,7 +147,7 @@ export const MODE_DEFINITIONS: Record<Mode, ModeDefinition> = {
     ),
     starterPack: STARTER_PACKS.sonic,
     features: Array<ModeFeature>(),
-    displayable: true,
+    displayable: false,
     background: {
       pattern: `
         linear-gradient(45deg, #2B4C7E 25%, transparent 25%),
