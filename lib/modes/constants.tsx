@@ -165,8 +165,8 @@ export const MODE_DEFINITIONS: Record<Mode, ModeDefinition> = {
     },
     growthTimeDivisor: 48,
     boosterTimeDivisor: 8,
-    startDate: new Date("2025-05-02T19:00:00Z"), // 15 ET
-    endDate: new Date("2025-05-02T20:59:59Z"), // 17 ET
+    startDate: new Date("2025-05-02T18:30:00Z"), // 14:30 ET
+    endDate: new Date("2025-05-02T20:30:00Z"), // 16:30 ET
   },
 };
 
