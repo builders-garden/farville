@@ -445,7 +445,11 @@ export const useGameState = (mode: Mode) => {
       const carrotsXp = CROP_DATA["carrot"].rewardXP;
 
       // check if the user should see the marketplace tutorial
-      if (totalXP < carrotsXp && totalCoins === 0) {
+      if (
+        totalXP < carrotsXp * 4 &&
+        totalCoins === 0 &&
+        state.user.coins === 0
+      ) {
         setState((prevState) => ({
           ...prevState!,
           showMarketplaceTutorial: true,
