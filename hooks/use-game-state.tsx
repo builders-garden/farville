@@ -410,20 +410,23 @@ export const useGameState = (mode: Mode) => {
   const { userGlobalStats } = useUserGlobalStats(state.user?.fid);
 
   useEffect(() => {
-    if (state.user) {
+    if (
+      state.user &&
+      state.user.expansions &&
+      userGlobalStats &&
+      userGlobalStats?.classic.expansions
+    ) {
       // for each mode inside userGlobalStats calculate the global xps
       let totalXP = 0;
       let totalCoins = 0;
       console.log("User Global Stats:", userGlobalStats);
-      if (userGlobalStats) {
-        Object.keys(userGlobalStats).forEach((key) => {
-          const userStat = userGlobalStats[key as Mode];
-          if (userStat) {
-            totalXP += userStat.xp;
-            totalCoins += userStat.coins;
-          }
-        });
-      }
+      Object.keys(userGlobalStats).forEach((key) => {
+        const userStat = userGlobalStats[key as Mode];
+        if (userStat) {
+          totalXP += userStat.xp;
+          totalCoins += userStat.coins;
+        }
+      });
 
       console.log("Total XP:", totalXP, "Total Coins:", totalCoins);
 
