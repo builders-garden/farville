@@ -12,10 +12,9 @@ export async function sendDelayedNotification(
   mode: Mode,
   delay?: number | `${bigint}s` | `${bigint}m` | `${bigint}h` | `${bigint}d`
 ) {
-  // disable notifications
-  // if (env.NEXT_PUBLIC_URL === "http://localhost:3000") {
-  return;
-  // }
+  if (env.NEXT_PUBLIC_URL === "http://localhost:3000") {
+    return;
+  }
   const res = await qstashPublishJSON({
     url: `${env.NEXT_PUBLIC_URL}/api/qstash/send-notification`,
     body: {
