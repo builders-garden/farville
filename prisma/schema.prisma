@@ -94,7 +94,7 @@ model Request {
 }
 
 model Streak {
-  id           Int         @id @default(autoincrement())
+  id           String      @id @default(dbgenerated("gen_random_uuid()"))
   fid          Int
   startedAt    DateTime    @db.Date
   endedAt      DateTime?   @db.Date
@@ -149,8 +149,8 @@ model UserDonationHistory {
 }
 
 model UserFrost {
-  id       Int      @id @default(autoincrement())
-  streakId Int
+  id       String   @id @default(dbgenerated("gen_random_uuid()"))
+  streakId String
   frozenAt DateTime @db.Date
   streak   Streak   @relation(fields: [streakId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "user_frost_streakid_fkey")
 

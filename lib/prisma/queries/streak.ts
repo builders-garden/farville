@@ -25,7 +25,7 @@ export const createUserStreak = async (fid: number) => {
 };
 
 export const updateUserStreak = async (
-  streakId: number,
+  streakId: string,
   data: Partial<Streak>
 ) => {
   return await prisma.streak.update({
@@ -34,7 +34,7 @@ export const updateUserStreak = async (
   });
 };
 
-export const updateStreakLastClaimed = async (streakId: number) => {
+export const updateStreakLastClaimed = async (streakId: string) => {
   return await prisma.streak.update({
     where: { id: streakId },
     data: {

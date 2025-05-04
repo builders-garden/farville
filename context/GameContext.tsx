@@ -115,7 +115,7 @@ interface GameContextType {
     coins?: number;
     mintedOG?: boolean;
   }) => void;
-  claimRewards: (variables: { streakId: number }) => void;
+  claimRewards: (variables: { streakId: string }) => void;
   updateUserHarvestedCrops: (
     updatedUserHarvestedCrops: UserHarvestedCrop[]
   ) => void;

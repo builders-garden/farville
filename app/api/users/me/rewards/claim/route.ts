@@ -11,7 +11,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
 const requestSchema = z.object({
-  streakId: z.number().min(1),
+  streakId: z.string().min(1),
 });
 
 export const POST = async (req: NextRequest) => {
