@@ -33,7 +33,7 @@ import {
   UserHasCollectible,
 } from "@prisma/client";
 import { useInitializeMode } from "@/hooks/game-actions/use-initialize-mode";
-import { validMode } from "@/lib/validators/mode";
+// import { validMode } from "@/lib/validators/mode";
 
 // Update the OverlayType to be more flexible with parameters
 export type OverlayConfig =
@@ -161,10 +161,11 @@ export function GameProvider({
   children: React.ReactNode;
   initialOverlay?: OverlayConfig;
 }) {
-  const [mode, setMode] = useState<Mode>(() => {
-    const storedMode = localStorage.getItem("mode");
-    return validMode(storedMode || "") ? (storedMode as Mode) : Mode.Classic;
-  });
+  // const [mode, setMode] = useState<Mode>(() => {
+  //   const storedMode = localStorage.getItem("mode");
+  //   return validMode(storedMode || "") ? (storedMode as Mode) : Mode.Classic;
+  // });
+  const [mode, setMode] = useState<Mode>(Mode.Classic);
   const [showInventory, setShowInventory] = useState(false);
   const [showMarket, setShowMarket] = useState(false);
   const [showLeaderboard, setShowLeaderboard] = useState(false);

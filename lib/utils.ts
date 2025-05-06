@@ -716,6 +716,13 @@ export const modeAvailableForUser = (mode: Mode, fid: number) => {
   }
 
   if (
+    MODE_DEFINITIONS[mode].endDate &&
+    MODE_DEFINITIONS[mode].endDate < new Date()
+  ) {
+    return false;
+  }
+
+  if (
     [Mode.Farcon, Mode.Sonic].includes(mode) &&
     FARCON_ATTENDEES_FIDS.indexOf(fid) === -1
   ) {
