@@ -7,6 +7,7 @@ export const useGridCells = (mode: Mode) => {
     queryKey: ["gridCells", mode],
     url: `/api/grid-cells?mode=${mode}`,
     isProtected: true,
+    enabled: !!mode,
   });
 
   return { gridCells: data, isLoading, refetch };

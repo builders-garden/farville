@@ -248,10 +248,7 @@ export default function MarketplaceModal({
           </div>
 
           {/* Tabs */}
-          <MarketplaceTabs
-            activeTab={activeTab}
-            setActiveTab={setActiveTab}
-          />
+          <MarketplaceTabs activeTab={activeTab} setActiveTab={setActiveTab} />
 
           {/* Sub tabs */}
           {activeTab === "buy" && (

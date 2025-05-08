@@ -7,6 +7,7 @@ export const useUserMe = (mode: Mode) => {
     queryKey: ["user", mode],
     url: `/api/users/me?mode=${mode}`,
     isProtected: true,
+    enabled: !!mode,
   });
 
   return { user: data, isLoading, refetch };

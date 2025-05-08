@@ -34,6 +34,7 @@ export const POST = async (req: NextRequest) => {
       await checkUserActivityAndApplyFrost(streaks[0], userFrost, true);
     }
   } catch (error) {
+    console.error("Error creating streak", error);
     if (error instanceof Error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }

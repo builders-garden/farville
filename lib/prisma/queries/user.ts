@@ -18,7 +18,7 @@ export const getUserNotificationDetails = async (
   return typeof user.notificationDetails === "string" &&
     user.notificationDetails !== ""
     ? JSON.parse(user.notificationDetails)
-    : undefined;
+    : (user.notificationDetails as FrameNotificationDetails);
 };
 
 export const createUserAndMode = async (

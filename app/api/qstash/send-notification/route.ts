@@ -39,13 +39,15 @@ export async function POST(req: NextRequest) {
   const minutes = 30;
   const xMinutesAgo = new Date(timestamp.getTime() - minutes * 60 * 1000);
 
-  // Run initial checks in parallel
-  const [notificationDetails, lastNotification] = await Promise.all([
-    getUserNotificationDetails(parsedFid),
-    getUserNotificationsByCategory(parsedFid, category, 1, {
+  const notificationDetails = await getUserNotificationDetails(parsedFid);
+  const lastNotification = await getUserNotificationsByCategory(
+    parsedFid,
+    category,
+    1,
+    {
       createdAfter: xMinutesAgo,
-    }),
-  ]);
+    }
+  );
 
   if (!notificationDetails) {
     return Response.json(

@@ -33,6 +33,7 @@ import {
   UserHasCollectible,
 } from "@prisma/client";
 import { useInitializeMode } from "@/hooks/game-actions/use-initialize-mode";
+// import { validMode } from "@/lib/validators/mode";
 
 // Update the OverlayType to be more flexible with parameters
 export type OverlayConfig =
@@ -114,7 +115,7 @@ interface GameContextType {
     coins?: number;
     mintedOG?: boolean;
   }) => void;
-  claimRewards: (variables: { streakId: number }) => void;
+  claimRewards: (variables: { streakId: string }) => void;
   updateUserHarvestedCrops: (
     updatedUserHarvestedCrops: UserHarvestedCrop[]
   ) => void;
@@ -160,9 +161,11 @@ export function GameProvider({
   children: React.ReactNode;
   initialOverlay?: OverlayConfig;
 }) {
-  const [mode, setMode] = useState<Mode>(
-    (localStorage.getItem("mode") as Mode) || Mode.Classic
-  );
+  // const [mode, setMode] = useState<Mode>(() => {
+  //   const storedMode = localStorage.getItem("mode");
+  //   return validMode(storedMode || "") ? (storedMode as Mode) : Mode.Classic;
+  // });
+  const [mode, setMode] = useState<Mode>(Mode.Classic);
   const [showInventory, setShowInventory] = useState(false);
   const [showMarket, setShowMarket] = useState(false);
   const [showLeaderboard, setShowLeaderboard] = useState(false);

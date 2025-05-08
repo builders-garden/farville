@@ -22,6 +22,7 @@ import {
 } from "@prisma/client";
 import { Mode } from "@/lib/types/game";
 import { useUserModes } from "./use-user-modes";
+import { useUserGlobalStats } from "./use-user-global-stats";
 
 export interface RefetchType {
   all: () => Promise<void>;
@@ -406,25 +407,61 @@ export const useGameState = (mode: Mode) => {
     updateUserCollectiblesState,
   ]);
 
+  const { userGlobalStats } = useUserGlobalStats(state.user?.fid);
+
   useEffect(() => {
-    if (state.user) {
+    if (
+      state.user &&
+      state.user.expansions &&
+      userGlobalStats &&
+      userGlobalStats?.classic.expansions
+    ) {
+      // for each mode inside userGlobalStats calculate the global xps
+      let totalXP = 0;
+      let totalCoins = 0;
+      console.log("User Global Stats:", userGlobalStats);
+      Object.keys(userGlobalStats).forEach((key) => {
+        const userStat = userGlobalStats[key as Mode];
+        if (userStat) {
+          totalXP += userStat.xp;
+          totalCoins += userStat.coins;
+        }
+      });
+
+      console.log("Total XP:", totalXP, "Total Coins:", totalCoins);
+
       // check if the user should see the grid cells tutorial
-      if (state.user.xp === 0) {
+      if (totalXP === 0) {
         setState((prevState) => ({
           ...prevState!,
           showGridCellsTutorial: true,
         }));
+      } else {
+        setState((prevState) => ({
+          ...prevState!,
+          showGridCellsTutorial: false,
+        }));
       }
       const carrotsXp = CROP_DATA["carrot"].rewardXP;
+
       // check if the user should see the marketplace tutorial
-      if (state.user.xp <= carrotsXp * 4 && state.coins === 0) {
+      if (
+        totalXP < carrotsXp * 4 &&
+        totalCoins === 0 &&
+        state.user.coins === 0
+      ) {
         setState((prevState) => ({
           ...prevState!,
           showMarketplaceTutorial: true,
         }));
+      } else {
+        setState((prevState) => ({
+          ...prevState!,
+          showMarketplaceTutorial: false,
+        }));
       }
     }
-  }, [state.user.xp]);
+  }, [state.user, userGlobalStats]);
 
   const refetchAll = useCallback(async () => {
     await Promise.all([

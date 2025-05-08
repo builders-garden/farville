@@ -44,7 +44,7 @@ export const getUserFrosts = async (fid: number) => {
 
 export const applyUserFrost = async (
   fid: number,
-  streakId: number,
+  streakId: string,
   from: Date,
   amount: number,
   frostItemId: number
@@ -61,7 +61,6 @@ export const applyUserFrost = async (
     await prisma.userFrost.createMany({
       data: records,
     });
-    // TODO: remember to manage this mode pass
     await removeUserItem(fid, frostItemId, amount, Mode.Classic);
   } catch (error) {
     console.error("Error creating user frosts:", error);
@@ -69,7 +68,7 @@ export const applyUserFrost = async (
   }
 };
 
-export const getUserFrostsByStreakId = async (streakId: number) => {
+export const getUserFrostsByStreakId = async (streakId: string) => {
   return await prisma.userFrost.findMany({
     where: {
       streakId,

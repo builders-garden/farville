@@ -7,7 +7,7 @@ export async function GET(
   { params }: { params: Promise<{ fid: string; mode: Mode }> }
 ) {
   const fid = (await params).fid;
-  const mode = (await params).mode;
+  const mode = _request.nextUrl.searchParams.get("mode") as Mode;
   const user = await getUserByMode(Number(fid), mode);
   if (!user) {
     return NextResponse.json({ error: "User not found" }, { status: 404 });
