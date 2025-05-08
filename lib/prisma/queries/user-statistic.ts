@@ -38,7 +38,7 @@ export const getUserByMode = async (
             user.user.notificationDetails
           ) as FrameNotificationDetails)
         : null,
-    createdAt: user.createdAt,
+    createdAt: user.user.createdAt,
   };
 };
 
@@ -288,7 +288,7 @@ export const getUsersByXp = async (
       ...user,
       ...user.user,
       mode: user.mode as Mode,
-      createdAt: user.createdAt,
+      createdAt: user.user.createdAt,
       notificationDetails:
         typeof user.user.notificationDetails === "string" &&
         user.user.notificationDetails !== ""
@@ -358,7 +358,7 @@ export const updateUserXP = async (
           ...user,
           ...user.user,
           mode: user.mode as Mode,
-          createdAt: user.createdAt,
+          createdAt: user.user.createdAt,
           notificationDetails:
             typeof user.user.notificationDetails === "string" &&
             user.user.notificationDetails !== ""
