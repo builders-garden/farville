@@ -1,5 +1,5 @@
-import { QRCodeSVG } from "qrcode.react";
 import Image from "next/image";
+import { QRCodeSVG } from "qrcode.react";
 import { useState } from "react";
 
 export const Website = () => {
@@ -69,7 +69,7 @@ export const Website = () => {
             <div className="flex flex-col gap-0 sm:gap-4">
               <div className="hidden sm:block w-fit rounded-xl p-2 bg-white/10 backdrop-blur-sm border-2 border-white/20">
                 <QRCodeSVG
-                  value="https://warpcast.com/~/frames/launch?domain=farville.farm"
+                  value="https://warpcast.com/miniapps/WoLihpyQDh7w/farville"
                   className="w-fit rounded-sm"
                 />
               </div>
@@ -77,7 +77,7 @@ export const Website = () => {
 
             <div className="flex flex-col gap-4 w-full sm:w-fit">
               <a
-                href="https://warpcast.com/~/frames/launch?domain=farville.farm"
+                href="https://warpcast.com/miniapps/WoLihpyQDh7w/farville"
                 target="_blank"
                 className="w-full p-4 bg-[#8A63D2] text-white rounded-xl flex flex-row gap-4 items-center justify-start transition-transform hover:scale-105"
               >
