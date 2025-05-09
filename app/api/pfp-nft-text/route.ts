@@ -47,16 +47,18 @@ export async function POST(request: Request) {
     }
 
     console.log("saving description to db", description);
+    /*
     const res = await updateUserCollectible(fid, collectibleId, {
       status: CollectibleStatus.Description,
       pfpDescription: description,
     });
+    */
 
     return NextResponse.json({
       success: true,
       data: {
         description,
-        userHasCollectible: res,
+        //userHasCollectible: res,
       },
     });
   } catch (error) {
