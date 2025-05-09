@@ -26,6 +26,7 @@ import { Mode } from "@/lib/types/game";
 import VoucherModal from "./VoucherModal";
 import MarketplaceModal from "./marketplace";
 import LeaderboardModal from "./leaderboard";
+import DonationsModal from "./DonationsModal";
 import { MODE_DEFINITIONS } from "@/lib/modes/constants";
 
 // const WelcomeOverlay = dynamic(() => import("./../components/WelcomeOverlay"), {
@@ -57,6 +58,17 @@ function StreaksModalContainer() {
   return (
     <AnimatePresence>
       {showStreaks && <StreaksModal onClose={() => setShowStreaks(false)} />}
+    </AnimatePresence>
+  );
+}
+
+// Wrapper component for the donations modal
+function DonationsModalContainer() {
+  const { showDonations, setShowDonations } = useGame();
+
+  return (
+    <AnimatePresence>
+      {showDonations && <DonationsModal onClose={() => setShowDonations(false)} />}
     </AnimatePresence>
   );
 }
@@ -280,6 +292,7 @@ export default function GameWrapper() {
           <PlantingIndicator />
           <InventoryModalContainer />
           <StreaksModalContainer />
+          <DonationsModalContainer />
           <MarketplaceModalContainer />
           <HelpModalContainer />
           <ProfileModalContainer />

@@ -2,6 +2,7 @@ import { Item, UserHasItem } from "@prisma/client";
 import { prisma } from "../client";
 import { Mode } from "@/lib/types/game";
 import { STARTER_PACKS } from "@/lib/modes/constants";
+import { getUsersByMode } from "./user-statistic";
 
 export const getUserItemByItemId = async (
   fid: number,
@@ -137,6 +138,42 @@ export const addUserItem = async (
       mode,
     },
   });
+};
+
+export const addUserItemToAll = async (
+  itemId: number,
+  quantity: number,
+  mode: Mode
+) => {
+  // Get all users
+  const users = await getUsersByMode(mode);
+  if (!users || users.length === 0) {
+    throw new Error("No users found");
+  }
+
+  // Distribute items to all users without using addUserItem
+  const promises = users.map((user) =>
+    prisma.userHasItem.upsert({
+      where: {
+        fid_itemId_mode: {
+          fid: user.fid,
+          itemId,
+          mode,
+        },
+      },
+      update: {
+        quantity: { increment: quantity },
+      },
+      create: {
+        fid: user.fid,
+        itemId,
+        quantity,
+        mode,
+      },
+    })
+  );
+  await Promise.all(promises);
+  return users;
 };
 
 export const giftStarterPack = async (fid: number, mode: Mode) => {

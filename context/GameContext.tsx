@@ -87,6 +87,7 @@ interface GameContextType {
   showRequests: boolean;
   showStreaks: boolean;
   showProfile: boolean;
+  showDonations: boolean;
   setShowInventory: (show: boolean) => void;
   setShowMarket: (show: boolean) => void;
   setShowLeaderboard: (show: boolean) => void;
@@ -97,6 +98,7 @@ interface GameContextType {
   setShowRequests: (show: boolean) => void;
   setShowStreaks: (show: boolean) => void;
   setShowProfile: (show: boolean) => void;
+  setShowDonations: (show: boolean) => void;
   isActionInProgress: boolean;
   setIsActionInProgress: (value: boolean) => void;
   activeOverlay: OverlayConfig;
@@ -182,6 +184,7 @@ export function GameProvider({
     show: boolean;
     mode: Mode;
   }>({ show: false, mode: Mode.Classic });
+  const [showDonations, setShowDonations] = useState(false);
   const {
     state,
     refetch,
@@ -559,6 +562,7 @@ export function GameProvider({
         showRequests,
         showStreaks,
         showProfile,
+        showDonations,
         setShowInventory,
         setShowMarket,
         setShowLeaderboard,
@@ -569,6 +573,7 @@ export function GameProvider({
         setShowRequests,
         setShowStreaks,
         setShowProfile,
+        setShowDonations,
         isActionInProgress,
         setIsActionInProgress,
         activeOverlay,

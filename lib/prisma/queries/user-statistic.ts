@@ -42,6 +42,44 @@ export const getUserByMode = async (
   };
 };
 
+export const getUsersByMode = async (
+  mode: Mode,
+  limit?: number,
+  offset?: number
+): Promise<UserWithStatistic[]> => {
+  const users = await prisma.userStatistic.findMany({
+    where: {
+      mode,
+      xp: {
+        gt: 0,
+      },
+    },
+    orderBy: {
+      xp: "desc",
+    },
+    include: {
+      user: true,
+    },
+    ...(limit ? { take: limit } : {}),
+    ...(offset ? { skip: offset } : {}),
+  });
+
+  return users.map((user) => ({
+    ...user.user,
+    xp: user.xp,
+    coins: user.coins,
+    mode: user.mode as Mode,
+    expansions: user.expansions,
+    notificationDetails:
+      typeof user.user.notificationDetails === "string" &&
+      user.user.notificationDetails !== ""
+        ? (JSON.parse(
+            user.user.notificationDetails
+          ) as FrameNotificationDetails)
+        : null,
+  }));
+};
+
 export const getUserModes = async (fid: number): Promise<Mode[]> => {
   const user = await prisma.userStatistic.findMany({
     where: {

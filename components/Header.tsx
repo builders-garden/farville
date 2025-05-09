@@ -24,11 +24,9 @@ export default function Header() {
     setShowTimeline,
     setShowStreaks,
     setShowNotActiveMode,
-    // setShowMintOGBadge
+    setShowDonations,
   } = useGame();
   const { progress } = getCurrentLevelAndProgress(state.experience);
-
-  // const showOgButton = OG_FIDS_LIST.indexOf(state.user.fid) !== -1;
 
   const availableUserModes = Object.values(Mode).filter((modeValue) =>
     modeAvailableForUser(modeValue, state.user.fid)
@@ -120,6 +118,21 @@ export default function Header() {
 
         {/* Currency elements container - column on mobile, row on desktop */}
         <div className="flex flex-col xs:flex-row xs:items-center xs:gap-4 items-end">
+          {/* Gift fertilizers */}
+          <motion.div
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            onClick={() => setShowDonations(true)}
+          >
+            <Image
+              src="/images/special/gift.png"
+              alt="gift"
+              width={22}
+              height={22}
+              className="mt-[-2px] cursor-pointer"
+            />
+          </motion.div>
+
           {/* streak counter button */}
           <motion.div
             className={`h-auto xs:h-[42px] flex flex-row gap-1 items-center text-white/90 tracking-wide font-bold cursor-pointer relative
