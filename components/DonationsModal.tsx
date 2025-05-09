@@ -149,7 +149,7 @@ export default function DonationsModal({ onClose }: DonationsModalProps) {
         }}
         className="bg-[#7e4e31] w-full h-full flex flex-col overflow-y-auto"
       >
-        <div className="flex items-start justify-between mb-4 p-3 xs:p-4 mt-2 border-b border-[#8B5c3C]">
+        <div className="flex items-start justify-between p-3 xs:p-4 mt-2 border-b border-[#8B5c3C]">
           <div className="flex flex-col gap-1">
             <motion.h2
               className="text-white/90 font-bold text-xl xs:text-2xl mb-1 flex items-center gap-2"
@@ -186,7 +186,7 @@ export default function DonationsModal({ onClose }: DonationsModalProps) {
           </button>
         </div>
 
-        <div className="flex-1 flex flex-col items-center gap-8 max-w-md mx-auto w-full px-4 pb-8">
+        <div className="flex-1 flex flex-col items-center gap-8 max-w-md mx-auto w-full px-4 pb-8 overflow-y-auto no-scrollbar pt-4">
           {/* Gift container with fixed aspect ratio */}
           <div className="relative w-[280px] aspect-square">
             {/* Golden gradient background */}
