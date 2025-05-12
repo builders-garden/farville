@@ -76,7 +76,7 @@ export default function SeedMenu() {
       id="seed-menu"
     >
       <motion.div
-        className="bg-[#7E4E31]/40 p-1 xs:px-4 xs:py-2 rounded-lg shadow-lg border-2 border-[#8B5E3C]/60 w-full relative"
+        className="bg-[#7E4E31]/40 p-1 xs:px-4 py-2 xs:py-1 rounded-lg shadow-lg border-2 border-[#8B5E3C]/60 w-full relative"
         whileHover={{ scale: 1.02 }}
       >
         <button
@@ -181,9 +181,9 @@ export default function SeedMenu() {
               );
             })}
         </div>
-        <div className="text-white/90 text-[8px] text-center">
+        {/* <div className="text-white/90 text-[8px] text-center">
           Select a seed or perk to use
-        </div>
+        </div> */}
       </motion.div>
     </motion.div>
   );

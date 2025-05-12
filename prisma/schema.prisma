@@ -108,20 +108,20 @@ model Streak {
 }
 
 model User {
-  fid                 Int                    @id
+  fid                 Int                     @id
   username            String
   displayName         String
   avatarUrl           String?
   walletAddress       String
-  notificationDetails Json?                  @db.Json
-  mintedOG            Boolean                @default(false)
-  createdAt           DateTime               @default(now()) @db.Timestamptz(6)
+  notificationDetails Json?                   @db.Json
+  mintedOG            Boolean                 @default(false)
+  createdAt           DateTime                @default(now()) @db.Timestamptz(6)
   selectedAvatarUrl   String?
   referrals           Referral[]
   requests            Request[]
   streaks             Streak[]
-  donationsAsDonator  UserDonationHistory[]  @relation("user_donation_history_donatorFidTouser")
-  donationsAsReceiver UserDonationHistory[]  @relation("user_donation_history_receiverFidTouser")
+  donationsAsDonator  UserDonationHistory[]   @relation("user_donation_history_donatorFidTouser")
+  donationsAsReceiver UserDonationHistory[]   @relation("user_donation_history_receiverFidTouser")
   gridCells           UserGridCell[]
   harvestedCrops      UserHarvestedCrop[]
   collectibles        UserHasCollectible[]
@@ -131,6 +131,7 @@ model User {
   leaderboardEntry    UserLeaderboardEntry[]
   user_notification   UserNotification[]
   statistics          UserStatistic[]
+  UserGroupFunding    UserCommunityDonation[]
 
   @@map("user")
 }
@@ -302,4 +303,17 @@ model UserHasVoucher {
 
   @@id([fid, voucherId])
   @@map("user_has_voucher")
+}
+
+model UserCommunityDonation {
+  txHash    String   @id
+  mode      String   @default("classic")
+  fid       Int
+  amount    Float
+  message   String?
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+
+  user User @relation(fields: [fid], references: [fid], onDelete: NoAction, onUpdate: NoAction)
+
+  @@map("user_community_donation")
 }

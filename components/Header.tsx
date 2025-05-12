@@ -33,7 +33,7 @@ export default function Header() {
   ).length;
 
   return (
-    <div className="bg-[#8B5E3C]/40 px-4 py-2 shadow-lg bg-opacity-95 backdrop-blur-sm border-b-2 border-[#6d4c2c]/50 z-30">
+    <div className="px-4 py-2 z-30">
       <div className="flex justify-between items-center max-w-4xl mx-auto">
         <div
           className="h-[42px] rounded-xl flex items-center cursor-pointer"
