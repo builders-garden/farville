@@ -26,6 +26,7 @@ import { Mode } from "@/lib/types/game";
 import VoucherModal from "./VoucherModal";
 import MarketplaceModal from "./marketplace";
 import LeaderboardModal from "./leaderboard";
+import FarmersPowerModal from "./FarmersPowerModal";
 import { MODE_DEFINITIONS } from "@/lib/modes/constants";
 
 // const WelcomeOverlay = dynamic(() => import("./../components/WelcomeOverlay"), {
@@ -57,6 +58,19 @@ function StreaksModalContainer() {
   return (
     <AnimatePresence>
       {showStreaks && <StreaksModal onClose={() => setShowStreaks(false)} />}
+    </AnimatePresence>
+  );
+}
+
+// Wrapper component for the donations modal
+function FarmersPowerModalContainer() {
+  const { showFarmersPower, setShowFarmersPower } = useGame();
+
+  return (
+    <AnimatePresence>
+      {showFarmersPower && (
+        <FarmersPowerModal onClose={() => setShowFarmersPower(false)} />
+      )}
     </AnimatePresence>
   );
 }
@@ -248,7 +262,10 @@ export default function GameWrapper() {
 
       {activeOverlay?.type === "requests" ? (
         <AnimatePresence>
-          <RequestModal onClose={handleOverlayComplete} id={activeOverlay.id} />
+          <RequestModal
+            onClose={handleOverlayComplete}
+            id={activeOverlay.id}
+          />
         </AnimatePresence>
       ) : activeOverlay?.type === "voucher" ? (
         <AnimatePresence>
@@ -272,7 +289,10 @@ export default function GameWrapper() {
           className="flex flex-col h-[100dvh] w-full overflow-hidden"
         >
           <Header />
-          <div className="flex-1 relative min-h-0" id="game-grid">
+          <div
+            className="flex-1 relative min-h-0"
+            id="game-grid"
+          >
             <GameGrid />
           </div>
           <Toolbar safeAreaInsets={safeAreaInsets} />
@@ -280,6 +300,7 @@ export default function GameWrapper() {
           <PlantingIndicator />
           <InventoryModalContainer />
           <StreaksModalContainer />
+          <FarmersPowerModalContainer />
           <MarketplaceModalContainer />
           <HelpModalContainer />
           <ProfileModalContainer />
