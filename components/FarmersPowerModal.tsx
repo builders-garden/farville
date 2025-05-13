@@ -20,7 +20,6 @@ import { useEffect, useState, useRef } from "react";
 import sdk from "@farcaster/frame-sdk";
 import { toast } from "react-hot-toast";
 import { useFrameContext } from "@/context/FrameContext";
-import { Progress } from "@/components/ui/progress";
 import {
   Accordion,
   AccordionContent,
@@ -31,6 +30,15 @@ import { useDonationLeaderboard } from "@/hooks/use-donation-leadeboard";
 import { LeaderboardUserAvatar } from "./leaderboard/LeaderboardUserAvatar";
 import ProfileModal from "./ProfileModal";
 import { FloatingShareButton } from "./FloatingShareButton";
+import { Clock } from "lucide-react";
+import { AnimatedCircularProgressBar } from "./ui/animated-circular-progress-bar";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Slider } from "@/components/ui/slider";
 
 interface FarmersPowerModalProps {
   onClose: () => void;
@@ -77,10 +85,23 @@ export default function FarmersPowerModal({ onClose }: FarmersPowerModalProps) {
   // New state for power mechanics
   const [currentFP, setCurrentFP] = useState<number>(3250);
   const [powerCombo, setPowerCombo] = useState<number>(6);
-  const [lastDonationTime, setLastDonationTime] = useState<Date | null>(null);
+  const [lastDonationTime, setLastDonationTime] = useState<Date | null>(
+    new Date(Date.now() - 5 * 60 * 1000)
+  );
   const [nextDecayTime, setNextDecayTime] = useState<Date>(
     new Date(Date.now() + DECAY_INTERVAL * 60 * 1000)
   );
+
+  const [timerNow, setTimerNow] = useState(Date.now());
+
+  // Effect for rapid timer updates
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTimerNow(Date.now());
+    }, 16); // ~60fps update rate
+
+    return () => clearInterval(interval);
+  }, []);
 
   // UI state
   const [showConfetti, setShowConfetti] = useState(false);
@@ -89,6 +110,8 @@ export default function FarmersPowerModal({ onClose }: FarmersPowerModalProps) {
   const [paymentStarted, setPaymentStarted] = useState(false);
   const [paymentCompleted, setPaymentCompleted] = useState(false);
   const [finalTxHash, setFinalTxHash] = useState<string>("");
+  const [showContributeDialog, setShowContributeDialog] = useState(false);
+  const [showCustomSlider, setShowCustomSlider] = useState(false);
 
   // User Donations Leaderboard
   const { data: leaderboardData } = useDonationLeaderboard(
@@ -105,11 +128,6 @@ export default function FarmersPowerModal({ onClose }: FarmersPowerModalProps) {
   // Calculate next stage requirements
   const currentStageInfo = POWER_STAGES[currentPowerStage - 1];
   const nextStageInfo = POWER_STAGES[currentPowerStage];
-  const fpProgress = nextStageInfo
-    ? ((currentFP - currentStageInfo.fpRequired) /
-        (nextStageInfo.fpRequired - currentStageInfo.fpRequired)) *
-      100
-    : 100;
 
   // Calculate time until next decay
   const timeUntilDecay = Math.max(0, nextDecayTime.getTime() - Date.now());
@@ -269,7 +287,10 @@ export default function FarmersPowerModal({ onClose }: FarmersPowerModalProps) {
   return (
     <div className="fixed inset-0 bg-black/50 flex items-start z-50">
       {selectedUserFid ? (
-        <ProfileModal onClose={handleCloseProfile} userFid={selectedUserFid} />
+        <ProfileModal
+          onClose={handleCloseProfile}
+          userFid={selectedUserFid}
+        />
       ) : (
         <>
           {showConfetti && <Confetti title="POWER STAGE UP!" />}
@@ -369,36 +390,220 @@ export default function FarmersPowerModal({ onClose }: FarmersPowerModalProps) {
                   <div className="w-full bg-[#5C4121]/50 rounded-xl p-6 border border-yellow-400/20">
                     <div className="flex flex-col gap-4">
                       <div className="flex justify-between items-center">
-                        <div className="flex items-center gap-2">
-                          <span className="text-2xl">⚡</span>
-                          <span className="text-xl text-yellow-400">
-                            {currentFP} FP
-                          </span>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-white/90 text-sm">Next Stage</p>
-                          <p className="text-yellow-400 text-xs">
-                            {nextStageInfo
-                              ? `${
-                                  nextStageInfo.fpRequired - currentFP
-                                } FP needed`
-                              : "Max Stage"}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="w-full">
-                        <Progress value={fpProgress} className="h-3" />
-                        <div className="flex justify-between text-xs text-white/70 mt-1">
-                          <span>Stage {currentPowerStage}</span>
-                          <span>
-                            {nextStageInfo
-                              ? `Stage ${nextStageInfo.stage}`
-                              : "MAX"}
-                          </span>
+                        <div className="flex items-center justify-between w-full">
+                          <AnimatedCircularProgressBar
+                            max={
+                              nextStageInfo
+                                ? nextStageInfo.fpRequired
+                                : currentStageInfo.fpRequired
+                            }
+                            min={currentStageInfo.fpRequired}
+                            value={currentFP}
+                            gaugePrimaryColor="#FFB938"
+                            gaugeSecondaryColor="rgba(0, 0, 0, 0.1)"
+                            className="w-[90px] h-[90px] rounded-full bg-[#4A341A] shadow-lg"
+                          >
+                            <div className="flex flex-col items-center justify-center h-full text-white/90 font-semibold">
+                              <span className="text-base leading-none">
+                                {currentPowerStage}
+                              </span>
+                              <span className="text-base text-yellow-400 mt-0.5">
+                                ⚡
+                              </span>
+                            </div>
+                          </AnimatedCircularProgressBar>
+
+                          <div className="flex flex-col gap-1.5 items-end">
+                            <div className="flex items-baseline gap-1.5">
+                              <span className="text-[1.65rem] font-bold text-yellow-400">
+                                {currentFP}
+                              </span>
+                              <span className="text-white/60 text-sm">
+                                /{" "}
+                                {nextStageInfo
+                                  ? nextStageInfo.fpRequired
+                                  : "MAX"}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-white/70 text-sm">
+                                Game goes at
+                              </span>
+                              <span className="text-amber-500 text-base font-bold">
+                                {currentStageInfo.boost}×
+                              </span>
+                            </div>
+                          </div>
                         </div>
                       </div>
 
-                      <Accordion type="single" collapsible className="w-full">
+                      {/* Combo Timer */}
+                      {lastDonationTime && (
+                        <div className="bg-[#4A341A] rounded-lg p-3">
+                          <div className="flex flex-col xs:flex-row xs:items-center justify-between gap-1">
+                            <div className="flex items-center gap-2 text-white/80">
+                              <Clock
+                                size={16}
+                                className="text-[#FFB938]"
+                              />
+                              <span className="text-[10px]">
+                                Combo expires in:
+                              </span>
+                            </div>
+                            <motion.div
+                              className="flex gap-1 text-white font-bold"
+                              animate={{ opacity: [1, 0.8, 1] }}
+                              transition={{ duration: 0.5, repeat: Infinity }}
+                            >
+                              <div className="bg-[#5C4121] px-2 py-1 rounded-md text-xs min-w-[30px] flex items-center justify-center">
+                                {Math.max(
+                                  0,
+                                  Math.floor(
+                                    (COMBO_WINDOW -
+                                      (timerNow - lastDonationTime.getTime())) /
+                                      (1000 * 60)
+                                  )
+                                )
+                                  .toString()
+                                  .padStart(2, "0")}
+                              </div>
+                              <span className="text-[#FFB938] flex items-center">
+                                :
+                              </span>
+                              <div className="bg-[#5C4121] px-2 py-1 rounded-md text-xs min-w-[30px] flex items-center justify-center">
+                                {Math.max(
+                                  0,
+                                  Math.floor(
+                                    ((COMBO_WINDOW -
+                                      (timerNow - lastDonationTime.getTime())) %
+                                      (1000 * 60)) /
+                                      1000
+                                  )
+                                )
+                                  .toString()
+                                  .padStart(2, "0")}
+                              </div>
+                              <span className="text-[#FFB938] flex items-center">
+                                :
+                              </span>
+                              <div className="bg-[#5C4121] px-2 py-1 rounded-md text-xs min-w-[40px] flex items-center justify-center">
+                                {Math.max(
+                                  0,
+                                  Math.floor(
+                                    (COMBO_WINDOW -
+                                      (timerNow - lastDonationTime.getTime())) %
+                                      1000
+                                  )
+                                )
+                                  .toString()
+                                  .padStart(3, "0")}
+                              </div>
+                            </motion.div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Burning Fuse Timer */}
+                      {lastDonationTime && (
+                        <div className="bg-[#4A341A] rounded-lg p-3 mt-3 relative overflow-hidden">
+                          {/* Fuse Track */}
+                          <div className="h-2 bg-[#2A1E12] rounded-full relative">
+                            {/* Burning Fuse */}
+                            <motion.div
+                              className="absolute left-0 top-0 h-full bg-gradient-to-r from-yellow-500 via-orange-500 to-red-500"
+                              style={{
+                                width: `${Math.max(
+                                  0,
+                                  ((COMBO_WINDOW -
+                                    (Date.now() - lastDonationTime.getTime())) /
+                                    COMBO_WINDOW) *
+                                    100
+                                )}%`,
+                              }}
+                              animate={{
+                                width: "0%",
+                              }}
+                              transition={{
+                                duration: Math.max(
+                                  0,
+                                  (COMBO_WINDOW -
+                                    (Date.now() - lastDonationTime.getTime())) /
+                                    1000
+                                ),
+                                ease: "linear",
+                              }}
+                            >
+                              {/* Spark Animation */}
+                              <div className="absolute right-[-5px] top-1/2 -translate-y-1/2">
+                                <motion.div
+                                  className="w-3 h-3 rounded-full bg-yellow-400 shadow-lg shadow-yellow-400/50"
+                                  animate={{
+                                    scale: [1, 1.2, 1],
+                                    opacity: [1, 0.7, 1],
+                                  }}
+                                  transition={{
+                                    duration: 0.5,
+                                    repeat: Infinity,
+                                    ease: "easeInOut",
+                                  }}
+                                />
+                                {/* Spark Particles */}
+                                <motion.div
+                                  className="absolute top-1/2 right-1/2 w-1 h-1 rounded-full bg-yellow-400"
+                                  animate={{
+                                    y: [-4, 4],
+                                    x: [0, 4],
+                                    opacity: [1, 0],
+                                  }}
+                                  transition={{
+                                    duration: 0.4,
+                                    repeat: Infinity,
+                                    ease: "easeOut",
+                                  }}
+                                />
+                                <motion.div
+                                  className="absolute top-1/2 right-1/2 w-1 h-1 rounded-full bg-orange-400"
+                                  animate={{
+                                    y: [-2, 2],
+                                    x: [0, 3],
+                                    opacity: [1, 0],
+                                  }}
+                                  transition={{
+                                    duration: 0.3,
+                                    repeat: Infinity,
+                                    ease: "easeOut",
+                                    delay: 0.1,
+                                  }}
+                                />
+                              </div>
+                            </motion.div>
+                          </div>
+
+                          {/* Explosion Animation */}
+                          {COMBO_WINDOW -
+                            (Date.now() - lastDonationTime.getTime()) <=
+                            0 && (
+                            <motion.div
+                              className="absolute inset-0 bg-yellow-400"
+                              initial={{ opacity: 0 }}
+                              animate={{
+                                opacity: [0, 0.8, 0],
+                                scale: [1, 1.2, 1],
+                              }}
+                              transition={{
+                                duration: 0.5,
+                                ease: "easeOut",
+                              }}
+                            />
+                          )}
+                        </div>
+                      )}
+
+                      <Accordion
+                        type="single"
+                        collapsible
+                        className="w-full"
+                      >
                         <AccordionItem
                           value="stages"
                           className="border-0 bg-[#4A341A] rounded-lg px-2"
@@ -471,132 +676,164 @@ export default function FarmersPowerModal({ onClose }: FarmersPowerModalProps) {
                     </div>
                   </div>
 
-                  {/* Contribution Section */}
-                  <div className="flex flex-col w-full bg-[#5C4121]/50 rounded-xl p-6 border border-yellow-400/20 gap-2">
-                    <span className="text-white/90 font-semibold">
-                      Do your part!
-                    </span>
+                  <Button
+                    variant="default"
+                    className="w-full py-3 text-base font-medium text-[#5C4121] bg-yellow-500 hover:bg-yellow-500/80 hover:text-[#5C4121]"
+                    onClick={() => setShowContributeDialog(true)}
+                  >
+                    Contribute Power 🌟
+                  </Button>
+                  {/* Contribution Dialog */}
+                  <Dialog
+                    open={showContributeDialog}
+                    onOpenChange={setShowContributeDialog}
+                  >
+                    <DialogContent className="bg-[#7e4e31] border-yellow-400/20 max-w-[90%] text-white rounded-lg">
+                      <DialogHeader>
+                        <DialogTitle className="text-white/90">
+                          Contribute Power
+                        </DialogTitle>
+                      </DialogHeader>
 
-                    <div className="flex flex-col gap-4">
-                      <div className="flex gap-4 items-center bg-[#4A341A] p-4 rounded-lg border border-yellow-400/10">
-                        <input
-                          type="number"
-                          min="1"
-                          value={contributionAmount}
-                          onChange={(e) =>
-                            setContributionAmount(
-                              Math.max(1, parseInt(e.target.value) || 1)
-                            )
-                          }
-                          className="bg-[#5C4121] text-white rounded px-3 py-2 w-16 border border-yellow-400/20 text-center text-lg [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                        />
-                        <div className="flex flex-col">
-                          <span className="text-white/90 text-xs">
-                            Current Combo: ×{powerCombo}
-                          </span>
-                          <span className="text-yellow-400 text-sm font-bold">
-                            = {contributionAmount * powerCombo} FP
-                          </span>
+                      <div className="flex flex-col gap-4">
+                        {/* Preset Amount Buttons */}
+                        <div className="grid grid-cols-5 gap-2">
+                          {[1, 2, 5, 10].map((amount) => (
+                            <Button
+                              key={amount}
+                              variant="default"
+                              className={cn(
+                                "py-3 text-base font-medium",
+                                contributionAmount === amount
+                                  ? "text-[#5C4121] bg-yellow-500 hover:bg-yellow-500"
+                                  : "text-yellow-400/90 bg-[#5C4121] hover:bg-[#5C4121]/70"
+                              )}
+                              onClick={() => {
+                                setContributionAmount(amount);
+                                setShowCustomSlider(false);
+                              }}
+                            >
+                              ${amount}
+                            </Button>
+                          ))}
+                          <Button
+                            variant="default"
+                            className={cn(
+                              "py-3 text-base font-medium",
+                              showCustomSlider
+                                ? "text-[#5C4121] bg-yellow-500"
+                                : "text-yellow-400/90 bg-[#5C4121] hover:bg-[#5C4121]/80"
+                            )}
+                            onClick={() =>
+                              setShowCustomSlider(!showCustomSlider)
+                            }
+                          >
+                            More
+                          </Button>
                         </div>
-                      </div>
-                      <span className="text-white/70 text-xs">
-                        Balance: $
-                        {tokenBalancesData?.totalBalanceUSD.toFixed(2) ?? "0"}
-                      </span>
-                    </div>
 
-                    <DaimoPayButton.Custom
-                      appId={env.NEXT_PUBLIC_DAIMO_PAY_ID}
-                      metadata={{
-                        userId: state.user.fid.toString(),
-                      }}
-                      preferredChains={[base.id]}
-                      preferredTokens={[
-                        { chain: base.id, address: BASE_USDC_ADDRESS },
-                      ]}
-                      toAddress={BG_MULTISIG_ADDRESS}
-                      toUnits={contributionAmount.toString()}
-                      toToken={BASE_USDC_ADDRESS}
-                      toChain={base.id}
-                      closeOnSuccess
-                      onPaymentStarted={handlePaymentStarted}
-                      onPaymentCompleted={handlePaymentCompleted}
-                      onPaymentBounced={handlePaymentBounced}
-                    >
-                      {({ show }) => (
-                        <Button
-                          variant="default"
-                          className={cn(
-                            "w-full py-3 text-base font-medium",
-                            !hasEnoughEthBalance || !hasEnoughUSDBalance
-                              ? "text-yellow-400/50 cursor-not-allowed bg-yellow-500/10"
-                              : "text-[#5C4121] bg-yellow-500 hover:bg-yellow-500/80 hover:text-[#5C4121]",
-                            paymentCompleted &&
-                              "bg-green-500 text-green-200 cursor-not-allowed"
-                          )}
-                          onClick={show}
-                          disabled={
-                            !hasEnoughEthBalance ||
-                            !hasEnoughUSDBalance ||
-                            paymentStarted ||
-                            paymentCompleted
-                          }
-                        >
-                          {paymentStarted
-                            ? "Contributing..."
-                            : paymentCompleted
-                            ? "Contributed Successfully!"
-                            : "Contribute Power"}
-                        </Button>
-                      )}
-                    </DaimoPayButton.Custom>
-                  </div>
+                        {/* Custom Amount Slider */}
+                        {showCustomSlider && (
+                          <div className="flex flex-col gap-2 bg-[#5C4121] p-4 rounded-lg">
+                            <div className="flex justify-between items-center mb-2">
+                              <span className="text-white/70 text-sm">
+                                Custom amount:
+                              </span>
+                              <span className="text-yellow-400 font-bold">
+                                ${contributionAmount}
+                              </span>
+                            </div>
+                            <Slider
+                              variant="yellow-brown"
+                              value={[contributionAmount]}
+                              onValueChange={(value) =>
+                                setContributionAmount(value[0])
+                              }
+                              max={50}
+                              min={1}
+                              step={1}
+                            />
+                          </div>
+                        )}
 
-                  {/* Power Combo Section */}
-                  <div className="bg-[#5C4121]/50 rounded-xl p-4 w-full border border-yellow-400/20">
-                    <div className="flex justify-between items-center mb-3">
-                      <span className="text-white/90 text-sm font-semibold">
-                        Power Combo
-                      </span>
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs text-white/60">Current</span>
-                        <span className="text-yellow-400 font-bold text-base">
-                          ×{powerCombo}
+                        {/* Power Info */}
+                        <div className="flex gap-4 items-center bg-[#4A341A] p-4 rounded-lg border border-yellow-400/10">
+                          <div className="text-2xl font-bold text-yellow-400 w-16 text-center">
+                            ${contributionAmount}
+                          </div>
+                          <div className="flex flex-col">
+                            <span className="text-white/90 text-xs">
+                              Current Combo: ×{powerCombo}
+                            </span>
+                            <span className="text-yellow-400 text-sm font-bold">
+                              = {contributionAmount * powerCombo} FP
+                            </span>
+                          </div>
+                        </div>
+
+                        <span className="text-white/70 text-xs">
+                          Balance: $
+                          {tokenBalancesData?.totalBalanceUSD.toFixed(2) ?? "0"}
                         </span>
-                      </div>
-                    </div>
-                    <div className="flex flex-col gap-1">
-                      <div className="w-full h-1 bg-white/10 rounded overflow-hidden">
-                        <motion.div
-                          className="h-full bg-yellow-400"
-                          initial={{ width: "100%" }}
-                          animate={{
-                            width: lastDonationTime
-                              ? `${Math.max(
-                                  0,
-                                  ((COMBO_WINDOW -
-                                    (Date.now() - lastDonationTime.getTime())) /
-                                    COMBO_WINDOW) *
-                                    100
-                                )}%`
-                              : "100%",
+
+                        {/* Payment Button */}
+                        <DaimoPayButton.Custom
+                          appId={env.NEXT_PUBLIC_DAIMO_PAY_ID}
+                          metadata={{
+                            userId: state.user.fid.toString(),
                           }}
-                        />
+                          preferredChains={[base.id]}
+                          preferredTokens={[
+                            { chain: base.id, address: BASE_USDC_ADDRESS },
+                          ]}
+                          toAddress={BG_MULTISIG_ADDRESS}
+                          toUnits={contributionAmount.toString()}
+                          toToken={BASE_USDC_ADDRESS}
+                          toChain={base.id}
+                          closeOnSuccess
+                          onPaymentStarted={handlePaymentStarted}
+                          onPaymentCompleted={(e) => {
+                            handlePaymentCompleted(e);
+                            setShowContributeDialog(false);
+                          }}
+                          onPaymentBounced={handlePaymentBounced}
+                        >
+                          {({ show }) => (
+                            <Button
+                              variant="default"
+                              className={cn(
+                                "w-full py-3 text-base font-medium",
+                                !hasEnoughEthBalance || !hasEnoughUSDBalance
+                                  ? "text-yellow-400/50 cursor-not-allowed bg-yellow-500/10"
+                                  : "text-[#5C4121] bg-yellow-500 hover:bg-yellow-500/80 hover:text-[#5C4121]",
+                                paymentCompleted &&
+                                  "bg-green-500 text-green-200 cursor-not-allowed"
+                              )}
+                              onClick={show}
+                              disabled={
+                                !hasEnoughEthBalance ||
+                                !hasEnoughUSDBalance ||
+                                paymentStarted ||
+                                paymentCompleted
+                              }
+                            >
+                              {paymentStarted
+                                ? "Contributing..."
+                                : paymentCompleted
+                                ? "Contributed Successfully!"
+                                : "Confirm Contribution"}
+                            </Button>
+                          )}
+                        </DaimoPayButton.Custom>
+
+                        {errorMessage && (
+                          <div className="bg-red-500/20 border border-red-500/40 text-red-200 text-sm p-3 rounded">
+                            {errorMessage}
+                          </div>
+                        )}
                       </div>
-                      <p className="text-white/60 text-xs mt-1">
-                        {lastDonationTime
-                          ? `${Math.max(
-                              0,
-                              Math.ceil(
-                                (COMBO_WINDOW -
-                                  (Date.now() - lastDonationTime.getTime())) /
-                                  1000
-                              )
-                            )}s until combo reset`
-                          : "Donate to start combo multiplier"}
-                      </p>
-                    </div>
-                  </div>
+                    </DialogContent>
+                  </Dialog>
 
                   {/* Decay Info */}
                   <div className="bg-[#5C4121]/50 rounded-xl p-4 w-full border border-red-400/20">
