@@ -75,9 +75,6 @@ export interface CropData {
   goldId: number;
 }
 
-export const MAX_DAILY_ALLOWED_DONATION_BETWEEN_USERS = 2;
-export const MAX_DAILY_ALLOWED_DONATION_TO_USERS = 5;
-
 export const millisecondsInHour =
   process.env.NEXT_PUBLIC_APP_ENV === "production" ? 3600000 : 1000;
 
@@ -92,7 +89,7 @@ export const CROP_DATA: { [key: string]: CropData } = {
     goldId: 31,
   },
   carrot: {
-    growthTime: 4 * millisecondsInHour, // 6h
+    growthTime: 4 * millisecondsInHour, // 4h
     deathTime: 3.3 * millisecondsInHour, // 3.3h
     rewardXP: 8,
     power: 1.2,
@@ -1065,3 +1062,6 @@ export const XP_PER_DONATED_ITEM = 5;
 export const OG_XP_THRESHOLD = 100;
 
 export const CREATOR_FIDS = [4461, 5698, 262800];
+
+export const DAILY_QUESTS_NUMBER = 3;
+export const WEEKLY_QUESTS_NUMBER = 3;

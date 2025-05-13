@@ -1,31 +1,45 @@
-import { DbItem, DbStreak, DbUserHarvestedCrop } from "@/supabase/types";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import {
   ACHIEVEMENTS_GOLD_MULTIPLIER,
   ACHIEVEMENTS_THRESHOLDS,
   BASE_GOLD_CROP_PERCENTAGE,
+  CROP_DATA,
+  DAILY_QUESTS_NUMBER,
   LEVEL_XP_THRESHOLDS,
-  MAX_DAILY_ALLOWED_DONATION_BETWEEN_USERS,
-  MAX_DAILY_ALLOWED_DONATION_TO_USERS,
   SPEED_BOOST,
+  WEEKLY_QUESTS_NUMBER,
 } from "./game-constants";
-import { CropType, PerkType } from "@/lib/types/game";
+import { CropType, Mode, PerkType, QuestType } from "@/lib/types/game";
 import { fetchUsersFollowedBy } from "./neynar";
 import {
-  getPartialLeaderboardFromFids,
-  getPartialLeaderboardFromUserPosition,
+  getModePartialLeaderboardFromFids,
+  getModePartialLeaderboardFromUserPosition,
   getQuestLeaderboard,
   getQuestPartialLeaderboard,
   getQuestPartialLeaderboardFromFids,
-  getUser,
-  getUserPosition,
+  getUserByMode,
+  getLeaderboardUserPositionByMode,
   getUsersByXp,
+  getUserLeaderboardEntry,
+  createUserLeaderboardEntry,
+  getUserHasQuests,
+  initDailyUserQuests,
+  initWeeklyUserQuests,
 } from "./prisma/queries";
 import { encodeFunctionData, Address, Hex } from "viem";
 import { PFP_NFT_ABI } from "./contracts/pfp-nft/abi";
 import { env } from "@/lib/env";
-import { DbUserDonation } from "@/lib/prisma/types";
+import { UserHasVoucherWithVoucher } from "@/lib/prisma/types";
+import {
+  Item,
+  Streak,
+  UserDonationHistory,
+  UserHarvestedCrop,
+} from "@prisma/client";
+import { MODE_DEFINITIONS, ModeFeature } from "./modes/constants";
+import { NextResponse } from "next/server";
+import { FARCON_ATTENDEES_FIDS } from "./modes/farcon";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -61,11 +75,15 @@ export const warpcastComposeCastUrl = () => {
 
 export const requestItemComposeCastUrl = (
   requestId: number,
-  item: DbItem,
-  quantity: number
+  item: Item,
+  quantity: number,
+  mode: Mode
 ) => {
   const frameUrl = `${env.NEXT_PUBLIC_URL}/requests/${requestId}`;
-  const text = `I'm looking for ${quantity} ${item.name} on /farville 🧑‍🌾`;
+  const text =
+    mode !== Mode.Classic
+      ? `I'm looking for ${quantity} ${item.name} on /farville ${MODE_DEFINITIONS[mode].name} mode 🧑‍🌾`
+      : `I'm looking for ${quantity} ${item.name} on /farville 🧑‍🌾`;
   const urlFriendlyText = encodeURIComponent(text);
   return {
     requestUrl: frameUrl,
@@ -177,7 +195,8 @@ export const achievementBadgeFlexCardComposeCastUrl = (
 export const leaderboardFlexCardComposeCastUrl = (
   fid: number,
   type: "quests" | "xp",
-  isFriends: boolean
+  isFriends: boolean,
+  mode: Mode
 ) => {
   const timestamp = Date.now();
   const frameUrl = `${
@@ -190,10 +209,12 @@ export const leaderboardFlexCardComposeCastUrl = (
     type === "quests"
       ? `yo farmers! crushing ${
           isFriends ? "friends" : "global"
-        } quests on /farville! 🧑‍🌾 LFF 🚜💨`
-      : `peep my XP gains on /farville! 🌱 ${
-          isFriends ? "friends" : "global"
-        } leaderboard flex! LFF 🚜💨`;
+        } quests on /farville${
+          mode !== Mode.Classic ? ` ${MODE_DEFINITIONS[mode].name} mode` : ""
+        }! 🧑‍🌾 LFF 🚜💨`
+      : `peep my XP gains on /farville${
+          mode !== Mode.Classic ? ` ${MODE_DEFINITIONS[mode].name} mode` : ""
+        }! 🌱 ${isFriends ? "friends" : "global"} leaderboard flex! LFF 🚜💨`;
 
   const urlFriendlyText = encodeURIComponent(text);
 
@@ -250,16 +271,6 @@ export const getLevelThresholdLeagueByLeague = (league: number) => {
   return 15;
 };
 
-export const getUserNowDate = () => {
-  // This implementation is incorrect because:
-  // 1. toLocaleString() output format is locale-dependent and unreliable
-  // 2. Creating date string manually can lead to timezone issues
-  // 3. The .000Z suffix forces UTC which may not match user's timezone
-
-  // Instead, we should just return the current date:
-  return new Date();
-};
-
 export const chooseRandomItem = <T>(items: T[]): T => {
   return items[Math.floor(Math.random() * items.length)];
 };
@@ -280,11 +291,31 @@ export const formatTime = (seconds: number) => {
     .join(" ");
 };
 
-export const getBoostTime = (perkSlug: PerkType) => {
-  return SPEED_BOOST[perkSlug].duration * (1 - 1 / SPEED_BOOST[perkSlug].boost);
+export const getBoostTime = (perkSlug: PerkType, mode: Mode) => {
+  return (
+    Math.floor(
+      SPEED_BOOST[perkSlug].duration / MODE_DEFINITIONS[mode].growthTimeDivisor
+    ) *
+    (1 - 1 / SPEED_BOOST[perkSlug].boost)
+  );
 };
 
-export const getStreakDates = (streaks: DbStreak[]) => {
+// TODO: duration needs to be calculated based on the mode using a different operation
+export const isBoostable = (
+  itemSlug: string,
+  mode: Mode,
+  lastBoostTime: Date
+) => {
+  const timeSinceBoost = Date.now() - lastBoostTime.getTime();
+  return (
+    timeSinceBoost <
+    Math.floor(
+      SPEED_BOOST[itemSlug].duration / MODE_DEFINITIONS[mode].boosterTimeDivisor
+    )
+  );
+};
+
+export const getStreakDates = (streaks: Streak[]) => {
   const dates: Date[] = [];
 
   streaks.forEach((streak) => {
@@ -306,7 +337,7 @@ export const getStreakDates = (streaks: DbStreak[]) => {
   return dates;
 };
 
-export const getCurrentDayStreak = (streak?: DbStreak, frostsDays?: Date[]) => {
+export const getCurrentDayStreak = (streak?: Streak, frostsDays?: Date[]) => {
   if (!streak || streak.endedAt) {
     return 0;
   }
@@ -327,7 +358,7 @@ export const getCurrentDayStreak = (streak?: DbStreak, frostsDays?: Date[]) => {
 };
 
 export const calculateHarvestAchievements = (
-  userHarvestedCrops: DbUserHarvestedCrop[]
+  userHarvestedCrops: UserHarvestedCrop[]
 ) => {
   let totalAchievements = 0;
   let totalAchievementsCompleted = 0;
@@ -363,7 +394,7 @@ export const calculateHarvestAchievements = (
 };
 
 export const getAchievementProgressByCrop = (
-  userHarvestedCrops: DbUserHarvestedCrop[],
+  userHarvestedCrops: UserHarvestedCrop[],
   crop: CropType
 ) => {
   const cropAchievement = ACHIEVEMENTS_THRESHOLDS.find(
@@ -420,13 +451,14 @@ export const calculateGoldCropsInBatch = (
 
 export const getPartialLeaderboardBasedOnFid = async (
   targetFid: string,
+  mode: Mode,
   options: {
     friends: boolean;
     type: "quests" | "xp";
     limit: number;
   }
 ) => {
-  const user = await getUser(Number(targetFid));
+  const user = await getUserByMode(Number(targetFid), mode);
 
   if (!user) {
     throw new Error("Failed to fetch leaderboard: user not found");
@@ -446,15 +478,17 @@ export const getPartialLeaderboardBasedOnFid = async (
       const users = await getQuestPartialLeaderboardFromFids({
         fids: userFids,
         targetFid,
+        mode,
         limit: Number(options.limit),
       });
       return users;
     }
 
-    const users = await getPartialLeaderboardFromFids(
+    const users = await getModePartialLeaderboardFromFids(
       userFids,
       targetFid,
-      Number(options.limit)
+      Number(options.limit),
+      mode
     );
     return users;
   }
@@ -463,16 +497,18 @@ export const getPartialLeaderboardBasedOnFid = async (
   if (options.type === "quests") {
     const users = await getQuestPartialLeaderboard({
       targetFid: targetFid,
+      mode,
       limit: Number(options.limit),
     });
     return users;
   }
 
-  const userPosition = await getUserPosition(user.xp);
+  const userPosition = await getLeaderboardUserPositionByMode(user.xp, mode);
   console.log(`User ${targetFid} position is: ${userPosition}`);
-  const partialLeaderboard = await getPartialLeaderboardFromUserPosition(
+  const partialLeaderboard = await getModePartialLeaderboardFromUserPosition(
     userPosition,
-    Number(options.limit)
+    Number(options.limit),
+    mode
   );
 
   return partialLeaderboard;
@@ -480,6 +516,7 @@ export const getPartialLeaderboardBasedOnFid = async (
 
 export const getGlobalLeaderboard = async (
   targetFid: string,
+  mode: Mode,
   type: "quests" | "xp" = "xp",
   limit: number = 20
 ) => {
@@ -488,9 +525,11 @@ export const getGlobalLeaderboard = async (
     users = await getQuestLeaderboard({
       limit,
       targetFid: targetFid ? targetFid : undefined,
+      mode,
     });
   } else {
     users = await getUsersByXp(
+      mode,
       limit,
       targetFid ? Number(targetFid) : undefined
     );
@@ -545,22 +584,150 @@ export const getPfpNftTxCalldata = (params: {
 };
 
 export const userCanDonate = (
-  donationsLast24h: DbUserDonation[],
-  receiver: number
+  donationsLast24h: UserDonationHistory[],
+  receiver: number,
+  mode: Mode
 ) => {
   const lastDonationToReceiver = donationsLast24h.find(
     (d) => d.receiverFid === receiver
   );
+  const dailyLimitDonationsToSameUser =
+    MODE_DEFINITIONS[mode].dailyLimitDonationsToSameUser;
+  const dailyLimitDonationsToUsers =
+    MODE_DEFINITIONS[mode].dailyLimitDonationsToUsers;
   const canDonateToReceiver =
+    !dailyLimitDonationsToSameUser ||
     !lastDonationToReceiver ||
     (lastDonationToReceiver &&
       lastDonationToReceiver?.times !== null &&
-      lastDonationToReceiver.times < MAX_DAILY_ALLOWED_DONATION_BETWEEN_USERS);
+      lastDonationToReceiver.times < dailyLimitDonationsToSameUser);
   const canDonateToAnotherUser =
-    donationsLast24h.length < MAX_DAILY_ALLOWED_DONATION_TO_USERS;
+    !dailyLimitDonationsToUsers ||
+    donationsLast24h.length < dailyLimitDonationsToUsers;
   return {
     canDonateToReceiver,
     canDonateToAnotherUser,
     lastDonationToReceiver,
   };
+};
+
+export const userCanRedeem = (
+  newVoucherSlug: string,
+  userVouchers: UserHasVoucherWithVoucher[]
+) => {
+  const userHasVoucher = userVouchers.find(
+    (d) => d.voucher.slug === newVoucherSlug
+  );
+  const canRedeemVoucher =
+    !userHasVoucher ||
+    (userHasVoucher &&
+      userHasVoucher?.voucher.quantity !== null &&
+      userHasVoucher.claimedAmount <= userHasVoucher.voucher.quantity);
+  return {
+    canRedeemVoucher,
+  };
+};
+
+export const getGrowthTimeBasedOnMode = (crop: CropType, mode: Mode) => {
+  const baseGrowthTime = CROP_DATA[crop].growthTime;
+  return Math.floor(baseGrowthTime / MODE_DEFINITIONS[mode].growthTimeDivisor);
+};
+
+export const initQuestsAndLeaderboardEntryByMode = async (
+  fid: number,
+  mode: Mode
+) => {
+  const modeFeatures = MODE_DEFINITIONS[mode].features;
+
+  if (modeFeatures.includes(ModeFeature.Leagues)) {
+    // generate new entry inside the user leaderboard if it doesn't exist
+    let userLeaderboardEntry = await getUserLeaderboardEntry(Number(fid), mode);
+
+    if (!userLeaderboardEntry) {
+      const user = await getUserByMode(Number(fid), mode);
+      if (!user) {
+        return NextResponse.json(
+          { message: "User not found" },
+          { status: 404 }
+        );
+      }
+      const userLeague = getUserLeague(user.xp);
+      userLeaderboardEntry = await createUserLeaderboardEntry(
+        Number(fid),
+        {
+          league: userLeague,
+        },
+        mode
+      );
+    }
+  }
+
+  if (modeFeatures.includes(ModeFeature.Quests)) {
+    // Check if the user has daily, weekly and monthly quests
+    // If not, initialize them
+    const dailyQuests = await getUserHasQuests(Number(fid), mode, {
+      type: [QuestType.Daily],
+      activeToday: true,
+    });
+    const weeklyQuests = await getUserHasQuests(Number(fid), mode, {
+      type: [QuestType.Weekly],
+      activeToday: true,
+    });
+    if (!dailyQuests || dailyQuests?.length < DAILY_QUESTS_NUMBER) {
+      await initDailyUserQuests(
+        Number(fid),
+        mode,
+        DAILY_QUESTS_NUMBER - (dailyQuests?.length || 0)
+      );
+    }
+    if (!weeklyQuests || weeklyQuests?.length < WEEKLY_QUESTS_NUMBER) {
+      await initWeeklyUserQuests(
+        Number(fid),
+        mode,
+        WEEKLY_QUESTS_NUMBER - (weeklyQuests?.length || 0)
+      );
+    }
+  }
+};
+
+export const initQuestsAndLeaderboardEntry = async (
+  fid: number,
+  modes: Mode[]
+) => {
+  for (const mode of modes) {
+    const now = new Date();
+    const modeStartDate = MODE_DEFINITIONS[mode].startDate;
+    const modeEndDate = MODE_DEFINITIONS[mode].endDate;
+    if (
+      modeStartDate &&
+      modeEndDate &&
+      // mode !== Mode.Classic &&
+      (now < modeStartDate || now > modeEndDate)
+    ) {
+      continue;
+    }
+    await initQuestsAndLeaderboardEntryByMode(fid, mode);
+  }
+};
+
+export const modeAvailableForUser = (mode: Mode, fid: number) => {
+  if (MODE_DEFINITIONS[mode].displayable === false) {
+    return false;
+  }
+
+  if (
+    MODE_DEFINITIONS[mode].endDate &&
+    MODE_DEFINITIONS[mode].endDate < new Date()
+  ) {
+    return false;
+  }
+
+  if (
+    [Mode.Farcon, Mode.Sonic].includes(mode) &&
+    FARCON_ATTENDEES_FIDS.indexOf(fid) === -1
+  ) {
+    return false;
+  }
+
+  return true;
 };

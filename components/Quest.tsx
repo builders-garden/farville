@@ -1,11 +1,6 @@
 import { useGame } from "@/context/GameContext";
 import { useUpdateUserQuest } from "@/hooks/game-actions/use-update-user-quest";
-import { getUserNowDate, requestItemComposeCastUrl } from "@/lib/utils";
-import {
-  DbQuest,
-  DbQuestWithItem,
-  DbUserHasQuestWithQuest,
-} from "@/supabase/types";
+import { requestItemComposeCastUrl } from "@/lib/utils";
 import { QuestStatus } from "@/lib/types/game";
 import { motion } from "framer-motion";
 import Image from "next/image";
@@ -15,9 +10,11 @@ import { useFrameContext } from "@/context/FrameContext";
 import { useCreateRequest } from "@/hooks/game-actions/use-create-request";
 import sdk from "@farcaster/frame-sdk";
 import RequestButton from "./ui/request-button";
+import { QuestWithItem, UserHasQuestWithQuest } from "@/lib/prisma/types";
+import { type Quest } from "@prisma/client";
 
 interface QuestProps {
-  quest: DbUserHasQuestWithQuest;
+  quest: UserHasQuestWithQuest;
   claimable: boolean;
   onClaim?: (
     questId: number,
@@ -28,7 +25,7 @@ interface QuestProps {
 }
 
 const renderQuestRewards = (
-  quest: DbQuest,
+  quest: Quest,
   showRequestButton = false,
   onRequestClick: () => void
 ) => (
@@ -58,12 +55,15 @@ const renderQuestRewards = (
     </div>
 
     {showRequestButton && (
-      <RequestButton variant="secondary" onClick={onRequestClick} />
+      <RequestButton
+        variant="secondary"
+        onClick={onRequestClick}
+      />
     )}
   </div>
 );
 
-const renderQuestProgress = (quest: DbUserHasQuestWithQuest) => {
+const renderQuestProgress = (quest: UserHasQuestWithQuest) => {
   const progress = quest.progress || 0;
   const target = quest.quest.amount || 1;
 
@@ -81,7 +81,7 @@ const renderQuestProgress = (quest: DbUserHasQuestWithQuest) => {
   );
 };
 
-const questDescription = (quest: DbQuestWithItem) => {
+const questDescription = (quest: QuestWithItem) => {
   let start = "";
   let end = "";
   switch (quest.category) {
@@ -115,7 +115,7 @@ const questDescription = (quest: DbQuestWithItem) => {
       break;
   }
   if (quest.amount && quest.itemId) {
-    end = quest.items?.name.toLowerCase() || end;
+    end = quest.item?.name.toLowerCase() || end;
   }
   return `${start} ${quest.amount} ${end}`;
 };
@@ -125,7 +125,7 @@ export default function Quest({
   claimable = false,
   onClaim,
 }: QuestProps) {
-  const { isActionInProgress, setIsActionInProgress, state } = useGame();
+  const { isActionInProgress, setIsActionInProgress, state, mode } = useGame();
   const { context } = useFrameContext();
   const { mutate: updateUserQuest, isPending } = useUpdateUserQuest({
     isActionInProgress,
@@ -133,7 +133,7 @@ export default function Quest({
   });
   const { mutate: createRequest } = useCreateRequest();
   const [selectedItem, setSelectedItem] = useState<
-    DbQuestWithItem["items"] | null
+    QuestWithItem["item"] | null
   >(null);
   const [requestQuantity, setRequestQuantity] = useState(
     quest.quest.amount || 1
@@ -143,8 +143,8 @@ export default function Quest({
 
   // Handle showing item details
   const handleShowItemDetails = () => {
-    if (quest.quest.items) {
-      setSelectedItem(quest.quest.items);
+    if (quest.quest.item) {
+      setSelectedItem(quest.quest.item);
     }
   };
 
@@ -171,13 +171,15 @@ export default function Quest({
         {
           itemId: selectedItem.id,
           quantity: requestQuantity,
+          mode,
         },
         {
           onSuccess: async (data) => {
             const { castUrl, requestUrl } = requestItemComposeCastUrl(
               data.id,
               selectedItem,
-              requestQuantity
+              requestQuantity,
+              mode
             );
             setCastUrl(castUrl);
             setRequestUrl(requestUrl);
@@ -206,7 +208,7 @@ export default function Quest({
 
   return (
     <motion.div
-      key={quest.id}
+      key={quest.quest.id}
       initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}
       className={`bg-[#6d4c2c] px-4 py-3 rounded-lg flex flex-col gap-2
@@ -224,7 +226,7 @@ export default function Quest({
             {(quest.quest.category === "plant" ||
               quest.quest.category === "harvest") && (
               <Image
-                src={`/images${quest.quest.items?.icon}` || "🧑‍🌾"}
+                src={`/images${quest.quest.item?.icon}` || "🧑‍🌾"}
                 width={40}
                 height={40}
                 alt={`Quest icon for ${quest.quest.category}`}
@@ -251,7 +253,7 @@ export default function Quest({
             quest.quest,
             !claimable &&
               quest.quest.category === "receive" &&
-              !!quest.quest.items,
+              !!quest.quest.item,
             handleShowItemDetails
           )}
         </div>
@@ -265,7 +267,7 @@ export default function Quest({
                 Ends in:{" "}
                 {(() => {
                   const endTime = new Date(quest.quest.endAt).getTime();
-                  const timeRemaining = endTime - getUserNowDate().getTime();
+                  const timeRemaining = endTime - new Date().getTime();
                   if (timeRemaining <= 0) return "";
 
                   const SECOND = 1000;
@@ -303,7 +305,7 @@ export default function Quest({
               const y = rect.y + rect.height / 2;
 
               updateUserQuest(
-                { questId: quest.questId, status: QuestStatus.Claimed },
+                { questId: quest.questId, status: QuestStatus.Claimed, mode },
                 {
                   onSuccess: (data) => {
                     onClaim?.(quest.questId, x, y, data.didLevelUp);

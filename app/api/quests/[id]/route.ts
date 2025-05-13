@@ -1,14 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
+import { Mode, QuestStatus } from "@/lib/types/game";
 import {
   getQuestById,
+  getUserByMode,
   getUserQuestById,
-  updateUserQuest,
-} from "@/supabase/queries";
-import { z } from "zod";
-import { QuestStatus } from "@/lib/types/game";
-import {
-  getUser,
   updateUserCoins,
+  updateUserQuest,
   updateUserWeeklyScore,
   updateUserXP,
 } from "@/lib/prisma/queries";
@@ -41,6 +39,7 @@ export async function GET(
 
 const requestSchema = z.object({
   status: z.nativeEnum(QuestStatus),
+  mode: z.nativeEnum(Mode),
 });
 
 export async function POST(
@@ -62,9 +61,9 @@ export async function POST(
     );
   }
 
-  const { status } = requestBody.data;
+  const { status, mode } = requestBody.data;
 
-  const user = await getUser(Number(fid));
+  const user = await getUserByMode(Number(fid), mode);
   if (!user) {
     return NextResponse.json({ error: "User not found" }, { status: 404 });
   }
@@ -111,10 +110,14 @@ export async function POST(
   let didLevelUp = false;
   if (status === "claimed") {
     if (userQuest.quest.coins) {
-      await updateUserCoins(Number(fid), user.coins + userQuest.quest.coins);
+      await updateUserCoins(
+        Number(fid),
+        user.coins + userQuest.quest.coins,
+        mode
+      );
     }
     if (userQuest.quest.xp) {
-      const xp = await updateUserXP(Number(fid), userQuest.quest.xp);
+      const xp = await updateUserXP(Number(fid), userQuest.quest.xp, mode);
       const thisWeekMonday = getThisWeekMonday();
       if (
         userQuest.quest.startAt &&
@@ -125,7 +128,8 @@ export async function POST(
           userQuest.quest.xp,
           xp.newLevel,
           user.xp,
-          xp.didLevelUp
+          xp.didLevelUp,
+          mode
         );
       }
       didLevelUp = xp.didLevelUp;

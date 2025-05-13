@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getPartialLeaderboardBasedOnFid } from "@/lib/utils";
+import { Mode } from "@/lib/types/game";
 
 export async function GET(
   request: Request,
@@ -23,6 +24,7 @@ export async function GET(
   const friends = searchParams.get("friends") === "true";
   const type = searchParams.get("type") || "xp";
   const limit = searchParams.get("limit") || 20;
+  const mode = (searchParams.get("mode") as Mode) || Mode.Classic;
 
   // Add cache headers
   const headers = {
@@ -32,6 +34,7 @@ export async function GET(
   try {
     const partialLeaderboard = await getPartialLeaderboardBasedOnFid(
       targetFid,
+      mode,
       {
         friends,
         type: type as "quests" | "xp",

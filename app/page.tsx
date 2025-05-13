@@ -4,22 +4,37 @@ import App from "./app";
 
 const appUrl = env.NEXT_PUBLIC_URL;
 
-const frame = {
-  version: "next",
-  imageUrl: `${appUrl}/images/feed.png`,
-  button: {
-    title: "Play Farville 🧑‍🌾",
-    action: {
-      type: "launch_frame",
-      name: "Farville",
-      url: appUrl,
-      splashImageUrl: `${appUrl}/images/splash.png`,
-      splashBackgroundColor: "#f7f7f7",
+const frame = (_searchParams: {
+  [key: string]: string | string[] | undefined;
+}) => {
+  const searchParamsString = Object.entries(_searchParams)
+    .map(([key, value]) => `${key}=${value}`)
+    .join("&");
+  return {
+    version: "next",
+    imageUrl: `${appUrl}/images/feed.png`,
+    button: {
+      title: "Play Farville 🧑‍🌾",
+      action: {
+        type: "launch_frame",
+        name: "Farville",
+        url: searchParamsString ? `${appUrl}/?${searchParamsString}` : appUrl,
+        splashImageUrl: `${appUrl}/images/splash.png`,
+        splashBackgroundColor: "#f7f7f7",
+      },
     },
-  },
+  };
 };
 
-export async function generateMetadata(): Promise<Metadata> {
+type Props = {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+};
+
+export async function generateMetadata({
+  searchParams,
+}: Props): Promise<Metadata> {
+  const _searchParams = await searchParams;
   return {
     title: "Farville",
     openGraph: {
@@ -34,7 +49,7 @@ export async function generateMetadata(): Promise<Metadata> {
       ],
     },
     other: {
-      "fc:frame": JSON.stringify(frame),
+      "fc:frame": JSON.stringify(frame(_searchParams)),
     },
   };
 }

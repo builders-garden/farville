@@ -1,7 +1,8 @@
 import { Metadata } from "next";
 import App from "@/app/app";
 import { env } from "@/lib/env";
-import { getUser } from "@/lib/prisma/queries";
+import { getUserByMode } from "@/lib/prisma/queries";
+import { Mode } from "@/lib/types/game";
 
 const appUrl = env.NEXT_PUBLIC_URL;
 
@@ -16,8 +17,9 @@ export async function generateMetadata({
   const searchParamsObj = await searchParams;
   const friends = searchParamsObj.friends === "true";
   const quests = searchParamsObj.quests === "true";
+  const mode = (searchParamsObj.mode as Mode) || Mode.Classic;
 
-  const user = await getUser(Number(fid));
+  const user = await getUserByMode(Number(fid), mode);
 
   if (!user || !timestamp) {
     return {
@@ -30,7 +32,7 @@ export async function generateMetadata({
   }
 
   const imageUrl = new URL(
-    `${appUrl}/api/og/flex-card/leaderboard/${fid}/${timestamp}?friends=${friends}&quests=${quests}`
+    `${appUrl}/api/og/flex-card/leaderboard/${fid}/${timestamp}?friends=${friends}&quests=${quests}&mode=${mode}`
   );
 
   const frame = {

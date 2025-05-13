@@ -1,4 +1,3 @@
-import { updateUserCollectible } from "@/supabase/queries";
 import { NextRequest, NextResponse } from "next/server";
 import { PFP_NFT_BASE_ADDRESS } from "@/lib/contracts/constants";
 
@@ -6,6 +5,7 @@ import { z } from "zod";
 import { publicClient } from "@/lib/viem";
 import { PFP_NFT_ABI } from "@/lib/contracts/pfp-nft/abi";
 import { CollectibleStatus } from "@/lib/types/game";
+import { updateUserCollectible } from "@/lib/prisma/queries";
 
 const requestSchema = z.object({
   txHash: z.string().min(1),

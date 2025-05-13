@@ -2,12 +2,13 @@ import { sendQuestsCalculation } from "@/app/api/grid-cells/utils";
 import { NextRequest, NextResponse } from "next/server";
 import { buyItem, sellItem } from "./utils";
 import { z } from "zod";
-import { MarketActionType } from "@/lib/types/game";
+import { MarketActionType, Mode } from "@/lib/types/game";
 
 const requestSchema = z.object({
   action: z.nativeEnum(MarketActionType),
   itemId: z.number().min(1),
   quantity: z.number().min(1),
+  mode: z.nativeEnum(Mode).default(Mode.Classic),
 });
 
 export const POST = async (req: NextRequest) => {
@@ -26,13 +27,13 @@ export const POST = async (req: NextRequest) => {
     );
   }
 
-  const { action, itemId, quantity } = requestBody.data;
+  const { action, itemId, quantity, mode } = requestBody.data;
 
   try {
     // buy and sell functions below checks user and item
     switch (action) {
       case MarketActionType.Buy:
-        const buyResult = await buyItem(Number(fid), itemId, quantity);
+        const buyResult = await buyItem(Number(fid), itemId, quantity, mode);
         if (!buyResult.success) {
           return NextResponse.json(
             { error: buyResult.message },
@@ -41,14 +42,20 @@ export const POST = async (req: NextRequest) => {
         }
         return NextResponse.json({ message: "Item bought" });
       case MarketActionType.Sell:
-        const sellResult = await sellItem(Number(fid), itemId, quantity);
+        const sellResult = await sellItem(Number(fid), itemId, quantity, mode);
         if (!sellResult.success) {
           return NextResponse.json(
             { error: sellResult.message },
             { status: sellResult.status }
           );
         }
-        await sendQuestsCalculation(Number(fid), "sell", itemId, quantity);
+        await sendQuestsCalculation(
+          Number(fid),
+          "sell",
+          mode,
+          itemId,
+          quantity
+        );
         return NextResponse.json({ message: "Item sold" });
       default:
         return NextResponse.json({ error: "Invalid action" }, { status: 400 });

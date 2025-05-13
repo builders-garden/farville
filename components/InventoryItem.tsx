@@ -1,8 +1,8 @@
+import { Item } from "@prisma/client";
 import { motion } from "framer-motion";
-import { DbItem } from "@/supabase/types";
 
 interface InventoryItemProps {
-  item: DbItem;
+  item: Item;
   quantity: number;
   onClick: () => void;
 }

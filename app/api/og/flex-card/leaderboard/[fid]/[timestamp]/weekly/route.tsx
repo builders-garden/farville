@@ -1,10 +1,11 @@
 import { env } from "@/lib/env";
 import {
-  getUser,
+  getUserByMode,
   getUserLeaderboardEntry,
   getWeeklyLeaderboardUsersByLeague,
   getWeeklyUserLeaderboardByLeague,
 } from "@/lib/prisma/queries";
+import { Mode } from "@/lib/types/game";
 import { ImageResponse } from "next/og";
 
 export const dynamic = "force-dynamic";
@@ -48,6 +49,7 @@ export async function GET(
     const { searchParams } = new URL(request.url);
 
     const currentWeek = searchParams.get("currentWeek") || "true";
+    const mode = Mode.Classic;
 
     const appUrl = env.NEXT_PUBLIC_URL;
 
@@ -57,7 +59,7 @@ export async function GET(
       });
     }
 
-    const user = await getUser(Number(fid));
+    const user = await getUserByMode(Number(fid), mode);
 
     if (!user) {
       return new Response("User not found", {
@@ -65,7 +67,7 @@ export async function GET(
       });
     }
 
-    const userWeeklyStats = await getUserLeaderboardEntry(Number(fid));
+    const userWeeklyStats = await getUserLeaderboardEntry(Number(fid), mode);
 
     if (!userWeeklyStats) {
       return new Response("User weekly stats not found", {
@@ -77,11 +79,12 @@ export async function GET(
       userWeeklyStats.league,
       currentWeek === "true",
       10,
+      mode,
       Number(fid)
     );
 
     const currentWeeklyLeaderboardUsers =
-      await getWeeklyLeaderboardUsersByLeague(userWeeklyStats.league);
+      await getWeeklyLeaderboardUsersByLeague(userWeeklyStats.league, mode);
 
     const userPosition = usersWeekSummaries.targetPosition as number;
 

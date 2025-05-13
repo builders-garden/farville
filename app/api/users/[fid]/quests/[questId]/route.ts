@@ -1,8 +1,8 @@
+import { getUserQuestById } from "@/lib/prisma/queries";
 import { NextRequest, NextResponse } from "next/server";
-import { getUserQuestById } from "@/supabase/queries";
 
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ fid: string; questId: string }> }
 ) {
   try {

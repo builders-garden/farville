@@ -1,15 +1,15 @@
+import { User, UserDonationHistory } from "@prisma/client";
 import { prisma } from "../client";
-import {
-  DbUser,
-  DbUserDonation,
-  DbUserDonation as DbUserDonationPrisma,
-} from "../types";
+import { UserWithStatistic } from "../types";
+import { Mode } from "@/lib/types/game";
 
 export const getUserDonationsHistory = async ({
+  mode,
   donatorFid,
   receiverFid,
   limit = 1,
 }: {
+  mode: Mode;
   donatorFid: number;
   receiverFid?: number;
   limit?: number;
@@ -18,6 +18,7 @@ export const getUserDonationsHistory = async ({
     where: {
       donatorFid,
       ...(receiverFid && { receiverFid }),
+      mode,
     },
     orderBy: {
       lastDonation: "desc",
@@ -29,12 +30,14 @@ export const getUserDonationsHistory = async ({
 // this function is used to return the last donation made by a user to a specific receiver
 export const getUserDonationByReceiver = async (
   donator: number,
-  receiver: number
+  receiver: number,
+  mode: Mode
 ) => {
   return await prisma.userDonationHistory.findFirst({
     where: {
       donatorFid: donator,
       receiverFid: receiver,
+      mode,
     },
     orderBy: {
       lastDonation: "desc",
@@ -42,22 +45,29 @@ export const getUserDonationByReceiver = async (
   });
 };
 
-export interface DbUserDonationWithUsers extends DbUserDonationPrisma {
-  donator: DbUser;
-  receiver: DbUser;
+export interface DbUserDonationWithUsers extends UserDonationHistory {
+  donatorUser: UserWithStatistic;
+  receiverUser: UserWithStatistic;
 }
 
 export const getUserDonationsOfToday = async (
-  donatorFid: number
-): Promise<DbUserDonationWithUsers[]> => {
+  donatorFid: number,
+  mode: Mode
+): Promise<
+  (UserDonationHistory & {
+    donatorUser: User;
+    receiverUser: User;
+  })[]
+> => {
   const today = new Date();
   const startOfDay = new Date(
     today.getFullYear(),
     today.getMonth(),
     today.getDate()
   );
-  const donations = await prisma.userDonationHistory.findMany({
+  return await prisma.userDonationHistory.findMany({
     where: {
+      mode,
       donatorFid,
       lastDonation: {
         gte: startOfDay,
@@ -67,38 +77,21 @@ export const getUserDonationsOfToday = async (
       lastDonation: "desc",
     },
     include: {
-      users_user_donations_history_donatorFidTousers: true,
-      users_user_donations_history_receiverFidTousers: true,
+      donatorUser: true,
+      receiverUser: true,
     },
   });
-
-  return donations.map(
-    ({
-      users_user_donations_history_donatorFidTousers,
-      users_user_donations_history_receiverFidTousers,
-      ...donation
-    }) => ({
-      ...donation,
-      donator: {
-        ...users_user_donations_history_donatorFidTousers,
-        createdAt: users_user_donations_history_donatorFidTousers.createdAt,
-      },
-      receiver: {
-        ...users_user_donations_history_receiverFidTousers,
-        createdAt: users_user_donations_history_receiverFidTousers.createdAt,
-      },
-    })
-  );
 };
 
 export const updateUserDonationHistory = async (
-  userDonation: DbUserDonation
+  userDonation: UserDonationHistory
 ) => {
   return await prisma.userDonationHistory.upsert({
     where: {
-      donatorFid_receiverFid: {
+      donatorFid_receiverFid_mode: {
         donatorFid: userDonation.donatorFid,
         receiverFid: userDonation.receiverFid,
+        mode: userDonation.mode,
       },
     },
     update: userDonation,

@@ -1,8 +1,10 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getUserLeaderboardEntry } from "@/lib/prisma/queries";
+import { validMode } from "@/lib/validators/mode";
+import { Mode } from "@/lib/types/game";
 
 export async function GET(
-  _request: Request,
+  request: NextRequest,
   {
     params,
   }: {
@@ -19,8 +21,19 @@ export async function GET(
     );
   }
 
+  const mode = request.nextUrl.searchParams.get("mode") || undefined;
+  if (mode && !validMode(mode)) {
+    return NextResponse.json(
+      { error: "Failed to fetch leaderboard: invalid mode" },
+      { status: 400 }
+    );
+  }
+
   try {
-    const userWeeklyStats = await getUserLeaderboardEntry(Number(targetFid));
+    const userWeeklyStats = await getUserLeaderboardEntry(
+      Number(targetFid),
+      mode as Mode
+    );
 
     return NextResponse.json(userWeeklyStats);
   } catch (error) {

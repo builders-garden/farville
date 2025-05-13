@@ -1,10 +1,11 @@
-import { getPlayerCount, getUser } from "@/lib/prisma/queries";
+import { getPlayerCountByMode, getUserByMode } from "@/lib/prisma/queries";
 import { getGlobalLeaderboard } from "@/lib/utils";
-import { DbUser } from "@/supabase/types";
 import { ImageResponse } from "next/og";
 import { fetchUser } from "@/lib/neynar";
 import { merkleValues } from "@/lib/contracts/og-nft/merkle-root/merkleValues";
 import { env } from "@/lib/env";
+import { UserWithStatistic } from "@/lib/prisma/types";
+import { Mode } from "@/lib/types/game";
 
 export const dynamic = "force-dynamic";
 const size = {
@@ -58,6 +59,7 @@ export async function GET(
     const { fid } = await params;
 
     const appUrl = env.NEXT_PUBLIC_URL;
+    const mode = Mode.Classic;
 
     if (!fid) {
       return new Response("Farmer ID is required", {
@@ -65,7 +67,7 @@ export async function GET(
       });
     }
 
-    const user = await getUser(Number(fid));
+    const user = await getUserByMode(Number(fid), mode);
     const userData = await fetchUser(fid);
 
     if (!user?.mintedOG) {
@@ -74,17 +76,18 @@ export async function GET(
       });
     }
 
-    const playerCount = await getPlayerCount();
+    const playerCount = await getPlayerCountByMode(mode);
 
     const leaderboardData = (await getGlobalLeaderboard(
       fid,
+      mode,
       "xp",
       5
     )) as LeaderboardData;
 
-    const topLeaderboardUsers: DbUser[] = [];
+    const topLeaderboardUsers: UserWithStatistic[] = [];
     for (const leaderboardUser of leaderboardData.users) {
-      const user = await getUser(leaderboardUser.fid);
+      const user = await getUserByMode(leaderboardUser.fid, mode);
       if (user) {
         topLeaderboardUsers.push(user);
       }

@@ -2,10 +2,10 @@ import { useGame } from "@/context/GameContext";
 import { useApiMutation } from "../use-api-mutation";
 
 interface DonateVariables {
-  itemId?: number;
+  itemId: number | null;
   quantity?: number;
   toFid: number;
-  requestId?: number;
+  requestId?: string;
 }
 
 interface DonateResponse {

@@ -1,4 +1,6 @@
 import { getUserItems } from "@/lib/prisma/queries";
+import { Mode } from "@/lib/types/game";
+import { validMode } from "@/lib/validators/mode";
 import { NextRequest, NextResponse } from "next/server";
 
 export const GET = async (
@@ -16,7 +18,11 @@ export const GET = async (
       return NextResponse.json({ error: "Invalid FID" }, { status: 400 });
     }
     const category = req.nextUrl.searchParams.get("category") || undefined;
-    const items = await getUserItems(fid, category);
+    const mode = req.nextUrl.searchParams.get("mode");
+    if (mode && !validMode(mode)) {
+      return NextResponse.json({ error: "Invalid mode" }, { status: 400 });
+    }
+    const items = await getUserItems(fid, mode as Mode, category);
     return NextResponse.json(items);
   } catch (error) {
     console.error("Error fetching user items:", error);

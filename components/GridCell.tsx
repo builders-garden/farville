@@ -6,20 +6,24 @@ import { ActionType, CropType, PerkType, SeedType } from "../lib/types/game";
 import CropSprite from "./CropSprite";
 import FloatingNumber from "./animations/FloatingNumber";
 import { useState, useRef, useEffect, useMemo, Fragment } from "react";
-import { DbGridCell } from "@/supabase/types";
 import { CROP_DATA, SPEED_BOOST } from "@/lib/game-constants";
 import Confetti from "./animations/Confetti";
 import { createPortal } from "react-dom";
-import { formatTime, getBoostTime } from "@/lib/utils";
+import {
+  formatTime,
+  getBoostTime,
+  getGrowthTimeBasedOnMode,
+} from "@/lib/utils";
 import { useAudio } from "@/context/AudioContext";
 import { useUserXp } from "@/hooks/use-user-xp";
+import { UserGridCell } from "@prisma/client";
 
 interface GridCellProps {
-  cell: DbGridCell;
+  cell: UserGridCell;
 }
 
 interface SeedDetailPopupProps {
-  cell: DbGridCell;
+  cell: UserGridCell;
   onFertilize: () => void;
   hasFertilizer: boolean;
   onBoost: (boostType: PerkType) => void;
@@ -33,11 +37,11 @@ function SeedDetailPopup({
   onBoost,
   onClose,
 }: SeedDetailPopupProps) {
-  const { state, remainingUses } = useGame();
+  const { state, remainingUses, mode } = useGame();
   const seedData = state.items.find(
     (seed) => seed.slug === `${cell.cropType}-seeds`
   );
-  const cropData = CROP_DATA[cell.cropType as CropType];
+
   const plantedAt = new Date(cell.plantedAt!);
   const harvestAt = useMemo(() => new Date(cell.harvestAt!), [cell.harvestAt]);
   const timeLeft = Math.max(0, (harvestAt.getTime() - Date.now()) / 1000);
@@ -92,7 +96,9 @@ function SeedDetailPopup({
       )
     : 0;
 
-  const formattedGrowthTime = formatTime(cropData.growthTime / 1000);
+  const formattedGrowthTime = formatTime(
+    getGrowthTimeBasedOnMode(cell.cropType as CropType, mode) / 1000
+  );
   const formattedPlantAt =
     plantedAt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) +
     " " +
@@ -180,6 +186,7 @@ function SeedDetailPopup({
 
 export default function GridCell({ cell }: GridCellProps) {
   const {
+    mode,
     addGridOperation,
     // fertilize,
     selectedSeed,
@@ -244,6 +251,7 @@ export default function GridCell({ cell }: GridCellProps) {
         action: ActionType.ApplyPerk,
         itemSlug: boostType,
         cells: [{ x: cell.x, y: cell.y }],
+        mode,
       });
 
       updateGridCells([
@@ -252,15 +260,16 @@ export default function GridCell({ cell }: GridCellProps) {
           y: cell.y,
           harvestAt: new Date(
             new Date(cell.harvestAt!).getTime() -
-              getBoostTime(boostType as PerkType)
+              getBoostTime(boostType as PerkType, mode)
           ),
           speedBoostedAt: new Date(),
+          mode,
         },
       ]);
 
       updateUserItems([
         {
-          itemId: boostItem.id,
+          itemId: boostItem.item.id,
           quantity: remainingUses - 1,
           item: {
             ...boostItem.item,
@@ -302,10 +311,11 @@ export default function GridCell({ cell }: GridCellProps) {
           action: ActionType.ApplyPerk,
           itemSlug: selectedPerk.item.slug as SeedType | PerkType,
           cells: [{ x: cell.x, y: cell.y }],
+          mode,
         });
 
         const itemSlug = selectedPerk.item.slug as PerkType;
-        const boostTime = getBoostTime(itemSlug);
+        const boostTime = getBoostTime(itemSlug, mode);
 
         updateGridCells([
           {
@@ -315,6 +325,7 @@ export default function GridCell({ cell }: GridCellProps) {
               new Date(cell.harvestAt!).getTime() - boostTime
             ),
             speedBoostedAt: new Date(),
+            mode,
           },
         ]);
 
@@ -346,6 +357,7 @@ export default function GridCell({ cell }: GridCellProps) {
         addGridOperation({
           action: ActionType.Fertilize,
           cells: [{ x: cell.x, y: cell.y }],
+          mode,
         });
 
         updateGridCells([
@@ -354,6 +366,7 @@ export default function GridCell({ cell }: GridCellProps) {
             y: cell.y,
             harvestAt: new Date(),
             speedBoostedAt: new Date(),
+            mode,
           },
         ]);
 
@@ -387,6 +400,7 @@ export default function GridCell({ cell }: GridCellProps) {
           addGridOperation({
             action: ActionType.Harvest,
             cells: [{ x: cell.x, y: cell.y }],
+            mode,
           });
 
           updateGridCells([
@@ -398,6 +412,7 @@ export default function GridCell({ cell }: GridCellProps) {
               harvestAt: null,
               speedBoostedAt: null,
               isReadyToHarvest: false,
+              mode,
             },
           ]);
 
@@ -434,6 +449,7 @@ export default function GridCell({ cell }: GridCellProps) {
           action: ActionType.Plant,
           itemSlug: selectedSeed,
           cells: [{ x: cell.x, y: cell.y }],
+          mode,
         });
 
         updateGridCells([
@@ -444,15 +460,19 @@ export default function GridCell({ cell }: GridCellProps) {
             plantedAt: new Date(),
             harvestAt: new Date(
               Date.now() +
-                CROP_DATA[selectedSeed.replace("-seeds", "")].growthTime
+                getGrowthTimeBasedOnMode(
+                  selectedSeed.replace("-seeds", "") as CropType,
+                  mode
+                )
             ),
             isReadyToHarvest: false,
+            mode,
           },
         ]);
 
         updateUserItems([
           {
-            itemId: item.id,
+            itemId: item.item.id,
             quantity: item.quantity - 1,
             item: {
               ...item.item,
@@ -483,6 +503,7 @@ export default function GridCell({ cell }: GridCellProps) {
       addGridOperation({
         action: ActionType.Fertilize,
         cells: [{ x: cell.x, y: cell.y }],
+        mode,
       });
 
       updateGridCells([
@@ -491,12 +512,13 @@ export default function GridCell({ cell }: GridCellProps) {
           y: cell.y,
           harvestAt: new Date(),
           speedBoostedAt: new Date(),
+          mode,
         },
       ]);
 
       updateUserItems([
         {
-          itemId: fertilizerItem.id,
+          itemId: fertilizerItem.item.id,
           quantity: remainingUses - 1,
           item: {
             ...fertilizerItem.item,
@@ -592,7 +614,6 @@ export default function GridCell({ cell }: GridCellProps) {
                   speedBoostedAt: cell.speedBoostedAt
                     ? new Date(cell.speedBoostedAt).getTime()
                     : 0,
-                  yieldBoost: cell.yieldBoost || 0,
                 }
               : undefined
           }

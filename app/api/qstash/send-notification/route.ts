@@ -1,11 +1,12 @@
 import { env } from "@/lib/env";
 import {
   createUserNotification,
+  getExpiredBoostCellsCount,
+  getHarvestableCellsCount,
   getUserNotificationDetails,
   getUserNotificationsByCategory,
-  getHarvestableCellsCount,
-  getExpiredBoostCellsCount,
-} from "@/supabase/queries";
+} from "@/lib/prisma/queries";
+import { Mode } from "@/lib/types/game";
 import {
   SendNotificationRequest,
   sendNotificationResponseSchema,
@@ -18,6 +19,7 @@ const requestSchema = z.object({
   title: z.string().min(1),
   text: z.string().min(1),
   category: z.string().min(1),
+  mode: z.nativeEnum(Mode),
 });
 
 export async function POST(req: NextRequest) {
@@ -31,19 +33,21 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const { fid, title, text, category } = requestBody.data;
+  const { fid, title, text, category, mode } = requestBody.data;
   const parsedFid = parseInt(fid);
   const timestamp = new Date();
   const minutes = 30;
   const xMinutesAgo = new Date(timestamp.getTime() - minutes * 60 * 1000);
 
-  // Run initial checks in parallel
-  const [notificationDetails, lastNotification] = await Promise.all([
-    getUserNotificationDetails(parsedFid),
-    getUserNotificationsByCategory(parsedFid, category, 1, {
+  const notificationDetails = await getUserNotificationDetails(parsedFid);
+  const lastNotification = await getUserNotificationsByCategory(
+    parsedFid,
+    category,
+    1,
+    {
       createdAfter: xMinutesAgo,
-    }),
-  ]);
+    }
+  );
 
   if (!notificationDetails) {
     return Response.json(
@@ -65,8 +69,8 @@ export async function POST(req: NextRequest) {
   // Check category-specific conditions
   if (category === "harvest" || category === "boost-expired") {
     const count = await (category === "harvest"
-      ? getHarvestableCellsCount(parsedFid)
-      : getExpiredBoostCellsCount(parsedFid));
+      ? getHarvestableCellsCount(parsedFid, mode)
+      : getExpiredBoostCellsCount(parsedFid, mode));
 
     if (count === 0) {
       console.warn(

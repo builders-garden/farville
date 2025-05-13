@@ -22,8 +22,11 @@ import HelpModal from "./help";
 import StreaksModal from "./StreaksModal";
 import TimelineModal from "./TimelineModal";
 import Toolbar from "./Toolbar";
+import { Mode } from "@/lib/types/game";
+import VoucherModal from "./VoucherModal";
 import MarketplaceModal from "./marketplace";
 import LeaderboardModal from "./leaderboard";
+import { MODE_DEFINITIONS } from "@/lib/modes/constants";
 
 // const WelcomeOverlay = dynamic(() => import("./../components/WelcomeOverlay"), {
 //   ssr: false,
@@ -114,17 +117,10 @@ function SeedMenuContainer() {
   return <AnimatePresence>{showSeedsMenu && <SeedMenu />}</AnimatePresence>;
 }
 
-// Add this constant at the top of the file after imports
-const BACKGROUND_PATTERN = `
-  linear-gradient(45deg, #386A48 25%, transparent 25%),
-  linear-gradient(-45deg, #386A48 25%, transparent 25%),
-  linear-gradient(45deg, transparent 75%, #386A48 75%),
-  linear-gradient(-45deg, transparent 75%, #386A48 75%)
-`;
-
 // Add new container component
 function QuestsModalContainer() {
   const {
+    mode,
     state,
     showQuests,
     setShowQuests,
@@ -136,7 +132,7 @@ function QuestsModalContainer() {
     quests: incompleteQuests,
     isLoading: isLoadingIncompleteQuests,
     refetch: refetchIncompleteQuests,
-  } = useUserQuests(state?.user?.fid, "incomplete");
+  } = useUserQuests(state?.user?.fid, "incomplete", mode);
 
   useEffect(() => {
     if (showQuests) {
@@ -180,7 +176,8 @@ function TimelineModalContainer() {
 
 export default function GameWrapper() {
   const { startBackgroundMusic } = useAudio();
-  const { state, activeOverlay, setActiveOverlay } = useGame();
+  const { mode, state, activeOverlay, setActiveOverlay } = useGame();
+
   const { safeAreaInsets } = useFrameContext();
   // const [showPatchNotes, setShowPatchNotes] = useState(false);
   // const toastShownRef = useRef(false);
@@ -193,10 +190,10 @@ export default function GameWrapper() {
   const { startNextStep } = useNextStep();
 
   useEffect(() => {
-    if (state.showGridCellsTutorial) {
+    if (!activeOverlay && state.showGridCellsTutorial) {
       startNextStep("mainTour");
     }
-  }, [startNextStep, state.showGridCellsTutorial]);
+  }, [startNextStep, state.showGridCellsTutorial, activeOverlay]);
 
   // useEffect(() => {
   //   if (!toastShownRef.current) {
@@ -226,23 +223,44 @@ export default function GameWrapper() {
   //   }
   // }, []);
 
+  let BACKGROUND_PATTERN: string;
+  let BACKGROUND_COLOR: string;
+  switch (mode) {
+    case Mode.Farcon:
+      BACKGROUND_COLOR = MODE_DEFINITIONS[Mode.Farcon].background.color;
+      BACKGROUND_PATTERN = MODE_DEFINITIONS[Mode.Farcon].background.pattern;
+      break;
+    case Mode.Sonic:
+      BACKGROUND_COLOR = MODE_DEFINITIONS[Mode.Sonic].background.color;
+      BACKGROUND_PATTERN = MODE_DEFINITIONS[Mode.Sonic].background.pattern;
+      break;
+    default:
+      BACKGROUND_COLOR = MODE_DEFINITIONS[Mode.Classic].background.color;
+      BACKGROUND_PATTERN = MODE_DEFINITIONS[Mode.Classic].background.pattern;
+      break;
+  }
+
   return (
     <div className="relative z-10">
-      {activeOverlay?.type === "requests" && (
-        <AnimatePresence>
-          <RequestModal onClose={handleOverlayComplete} id={activeOverlay.id} />
-        </AnimatePresence>
-      )}
-
       {/* {showPatchNotes && (
         <PatchNotesModal onClose={() => setShowPatchNotes(false)} />
       )} */}
 
-      {/* Main game content */}
-      {!activeOverlay && (
+      {activeOverlay?.type === "requests" ? (
+        <AnimatePresence>
+          <RequestModal onClose={handleOverlayComplete} id={activeOverlay.id} />
+        </AnimatePresence>
+      ) : activeOverlay?.type === "voucher" ? (
+        <AnimatePresence>
+          <VoucherModal
+            onClose={handleOverlayComplete}
+            slug={activeOverlay.slug}
+          />
+        </AnimatePresence>
+      ) : !activeOverlay ? (
         <div
           style={{
-            backgroundColor: "#255F37",
+            backgroundColor: BACKGROUND_COLOR,
             backgroundImage: BACKGROUND_PATTERN,
             backgroundSize: "160px 160px",
             backgroundPosition: "0 0, 0 80px, 80px -80px, -80px 0px",
@@ -270,7 +288,7 @@ export default function GameWrapper() {
           <QuestsModalContainer />
           <TimelineModalContainer />
         </div>
-      )}
+      ) : null}
     </div>
   );
 }

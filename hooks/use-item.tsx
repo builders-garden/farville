@@ -1,8 +1,8 @@
-import { DbItem } from "@/supabase/types";
+import { Item } from "@prisma/client";
 import { useApiQuery } from "./use-api-query";
 
 export const useItem = (itemId: number) => {
-  const { data, isLoading, error } = useApiQuery<DbItem>({
+  const { data, isLoading, error } = useApiQuery<Item>({
     url: `/api/items/${itemId}`,
     queryKey: ["item", itemId],
     isProtected: true,

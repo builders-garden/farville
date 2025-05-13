@@ -53,6 +53,7 @@ export default function ProfileModal({
     setShowMintCollectible,
     newGoldCropsFound,
     setNewGoldCropsFound,
+    mode,
   } = useGame();
   const [isWhatIsThisOpen, setIsWhatIsThisOpen] = useState(false);
   const [isWhatIsThisCollectibleOpen, setIsWhatIsCollectibleThisOpen] =
@@ -64,7 +65,7 @@ export default function ProfileModal({
     null
   );
 
-  const { userData, isLoading } = useOtherUserProfile(userFid);
+  const { userData, isLoading } = useOtherUserProfile(mode, userFid);
 
   const isCurrentUser = !userFid || userFid === state.user.fid;
   const user = isCurrentUser ? state.user : userData?.user;
@@ -327,7 +328,7 @@ export default function ProfileModal({
                           )}
                         </h3>
                         <p className="text-white/70 text-[9px] xs:text-xs">
-                          ({state.collectibles.length || 0}/??)
+                          ({collectiblesData.length || 0}/??)
                         </p>
                         <button
                           className="text-white/70 hover:text-white/90 transition-colors cursor-pointer -mt-1"
@@ -378,21 +379,21 @@ export default function ProfileModal({
                     >
                       <CardContent className="grid grid-cols-4 gap-3 p-3">
                         {(showMoreCollectibles
-                          ? state.collectibles
-                          : state.collectibles?.slice(0, 4)
+                          ? collectiblesData
+                          : collectiblesData?.slice(0, 4)
                         )?.map((collectible, index) => {
-                          const status =
-                            collectible.userHasCollectibles?.status;
+                          const status = collectible.userHasCollectible?.status;
                           const collectibleImage =
-                            collectible.userHasCollectibles
+                            collectible.userHasCollectible
                               ? (status === CollectibleStatus.Minted ||
                                   status === CollectibleStatus.Uploaded) &&
-                                collectible.userHasCollectibles.mintedImageUrl
-                                ? collectible.userHasCollectibles.mintedImageUrl
+                                collectible.userHasCollectible.mintedImageUrl
+                                ? collectible.userHasCollectible.mintedImageUrl
                                 : status === CollectibleStatus.Generated
-                                ? collectible.userHasCollectibles
-                                    .generatedImageUrls?.[0] ??
-                                  collectible.imageUrl
+                                ? (
+                                    collectible.userHasCollectible
+                                      .generatedImageUrls as string[]
+                                  )?.[0] ?? collectible.imageUrl
                                 : collectible.imageUrl
                               : collectible.imageUrl;
                           return collectible ? (
@@ -424,7 +425,7 @@ export default function ProfileModal({
 
                               <Image
                                 src={collectibleImage}
-                                alt={collectible.name}
+                                alt={collectible.name || "Collectible"}
                                 fill
                                 className={`rounded-md transition-transform duration-300 group-hover:scale-110 ${
                                   showMintCollectible ? "filter blur-[3px]" : ""
@@ -725,9 +726,10 @@ export default function ProfileModal({
                                       ? collectible.userHasCollectibles
                                           .mintedImageUrl
                                       : status === CollectibleStatus.Generated
-                                      ? collectible.userHasCollectibles
-                                          .generatedImageUrls?.[0] ??
-                                        collectible.imageUrl
+                                      ? (
+                                          collectible.userHasCollectibles
+                                            .generatedImageUrls as string[]
+                                        )?.[0] ?? collectible.imageUrl
                                       : collectible.imageUrl
                                     : collectible.imageUrl;
                                 return status &&
@@ -747,7 +749,7 @@ export default function ProfileModal({
                                   >
                                     <Image
                                       src={collectibleImage}
-                                      alt={collectible.name}
+                                      alt={collectible.name || "Collectible"}
                                       fill
                                       className={`rounded-md transition-transform duration-300 ${
                                         isCurrentUser ? "group" : ""

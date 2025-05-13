@@ -1,6 +1,6 @@
 import { Dispatch, SetStateAction } from "react";
 import { useApiMutation } from "./use-api-mutation";
-import { DbUserHasCollectible } from "@/supabase/types";
+import { UserHasCollectible } from "@prisma/client";
 
 export const usePinata = ({
   setPinataMetadataCID,
@@ -10,7 +10,7 @@ export const usePinata = ({
   setPinataMetadataCID: Dispatch<SetStateAction<string | null>>;
   setConfirmedSelection: Dispatch<SetStateAction<boolean>>;
   handleUpdateStateCollectibles: (
-    userHasCollectibles: DbUserHasCollectible
+    userHasCollectibles: UserHasCollectible
   ) => void;
 }) => {
   return useApiMutation({
@@ -37,7 +37,7 @@ export const usePinata = ({
         imageCID: string;
         metadataUrl: string;
         metadataCID: string;
-        userHasCollectible: DbUserHasCollectible;
+        userHasCollectible: UserHasCollectible;
       };
     }) => {
       console.log("data", data);

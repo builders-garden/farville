@@ -1,4 +1,5 @@
-import { getUser } from "@/lib/prisma/queries";
+import { getUserByMode } from "@/lib/prisma/queries";
+import { Mode } from "@/lib/types/game";
 import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
@@ -10,7 +11,7 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "Invalid farmer ID" }, { status: 400 });
     }
 
-    const farmer = await getUser(fid);
+    const farmer = await getUserByMode(fid, Mode.Classic);
 
     if (!farmer) {
       return NextResponse.json({ error: "Farmer not found" }, { status: 404 });

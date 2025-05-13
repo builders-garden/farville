@@ -1,8 +1,8 @@
 import { Metadata } from "next";
-import { getRequestById } from "@/supabase/queries";
 import App from "@/app/app";
 import { env } from "@/lib/env";
-import { getUser } from "@/lib/prisma/queries";
+import { getRequestById, getUserByMode } from "@/lib/prisma/queries";
+import { Mode } from "@/lib/types/game";
 
 const appUrl = env.NEXT_PUBLIC_URL;
 
@@ -12,7 +12,7 @@ export async function generateMetadata({
   params: Promise<{ id: string }>;
 }): Promise<Metadata> {
   const requestId = (await params).id;
-  const request = await getRequestById(Number(requestId));
+  const request = await getRequestById(requestId);
   if (!request) {
     const frame = {
       version: "next",
@@ -41,7 +41,7 @@ export async function generateMetadata({
     };
   }
   const fid = request.fid;
-  const user = await getUser(Number(fid));
+  const user = await getUserByMode(Number(fid), request.mode as Mode);
 
   // Construct the dynamic image URL
   const imageUrl = new URL(`${appUrl}/api/og/requests/${requestId}`);
@@ -95,5 +95,5 @@ export default async function RequestsPage({
 }) {
   const requestId = (await params).id;
 
-  return <App initialOverlay={{ type: "requests", id: Number(requestId) }} />;
+  return <App initialOverlay={{ type: "requests", id: requestId }} />;
 }

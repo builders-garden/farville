@@ -1,16 +1,6 @@
 import { useUserItems, UserItem } from "./use-user-items";
 import { useEffect, useState, useCallback } from "react";
 import { useGridCells } from "./use-grid-cells";
-import {
-  DbCollectible,
-  DbGridCell,
-  DbItem,
-  DbStreak,
-  DbUser,
-  DbUserHarvestedCrop,
-  DbUserHasCollectible,
-  DbUserHasQuestWithQuest,
-} from "@/supabase/types";
 import { useItems } from "./use-items";
 import { getCurrentDayStreak, getCurrentLevelAndProgress } from "@/lib/utils";
 import { useUserMe } from "./use-user-me";
@@ -21,6 +11,18 @@ import { useUserHarvestedCrops } from "./use-user-harvested-crops";
 import { useWeeklyStats } from "./use-weekly-stats";
 import { useUserCollectibles } from "./use-user-collectibles";
 import { CROP_DATA } from "../lib/game-constants";
+import { UserHasQuestWithQuest, UserWithStatistic } from "@/lib/prisma/types";
+import {
+  Collectible,
+  UserGridCell,
+  Streak,
+  UserHarvestedCrop,
+  UserHasCollectible,
+  Item,
+} from "@prisma/client";
+import { Mode } from "@/lib/types/game";
+import { useUserModes } from "./use-user-modes";
+import { useUserGlobalStats } from "./use-user-global-stats";
 
 export interface RefetchType {
   all: () => Promise<void>;
@@ -31,11 +33,12 @@ export interface RefetchType {
   claimableQuests: () => Promise<void>;
   streaks: () => Promise<void>;
   frosts: () => Promise<void>;
+  userModes: () => Promise<void>;
 }
 
 export interface AllQuests {
-  daily: DbUserHasQuestWithQuest[];
-  weekly: DbUserHasQuestWithQuest[];
+  daily: UserHasQuestWithQuest[];
+  weekly: UserHasQuestWithQuest[];
 }
 
 export interface GameState {
@@ -44,20 +47,20 @@ export interface GameState {
   experience: number;
   seeds: UserItem[];
   crops: UserItem[];
-  grid: DbGridCell[];
+  grid: UserGridCell[];
   gridSize: {
     width: number;
     height: number;
   };
   perks: UserItem[];
   expansionLevel: number;
-  items: DbItem[];
+  items: Item[];
   inventory: UserItem[];
-  user: DbUser;
+  user: UserWithStatistic;
   completedQuests: AllQuests;
   claimableQuests: boolean;
   streakUpdated: boolean;
-  streaks: DbStreak[];
+  streaks: Streak[];
   currentStreakDays: number;
   specialItems: UserItem[];
   specialCrops: UserItem[];
@@ -66,20 +69,21 @@ export interface GameState {
     lastStreakDates: Date[];
   };
   claimableStreakReward: boolean;
-  harvestedCropsSummary: DbUserHarvestedCrop[];
+  harvestedCropsSummary: UserHarvestedCrop[];
   weeklyStats: {
     currentScore: number;
     lastScore: number;
     league: number;
   };
-  collectibles: (DbCollectible & {
-    userHasCollectibles: DbUserHasCollectible | null;
+  collectibles: (Collectible & {
+    userHasCollectible: UserHasCollectible | null;
   })[];
   showGridCellsTutorial: boolean;
   showMarketplaceTutorial: boolean;
+  userModes: Mode[];
 }
 
-export const useGameState = () => {
+export const useGameState = (mode: Mode) => {
   const [state, setState] = useState<GameState>({
     coins: 0,
     level: 0,
@@ -95,7 +99,7 @@ export const useGameState = () => {
     expansionLevel: 0,
     items: [],
     inventory: [],
-    user: {} as DbUser,
+    user: {} as UserWithStatistic,
     completedQuests: {
       daily: [],
       weekly: [],
@@ -120,24 +124,29 @@ export const useGameState = () => {
     collectibles: [],
     showGridCellsTutorial: false,
     showMarketplaceTutorial: false,
+    userModes: [],
   });
   const {
     userItems,
     isLoading: userItemsLoading,
     refetch: refetchUserItems,
-  } = useUserItems();
-  const { user, isLoading: userLoading, refetch: refetchUser } = useUserMe();
+  } = useUserItems(mode);
+  const {
+    user,
+    isLoading: userLoading,
+    refetch: refetchUser,
+  } = useUserMe(mode);
   const {
     gridCells,
     isLoading: gridCellsLoading,
     refetch: refetchGrid,
-  } = useGridCells();
+  } = useGridCells(mode);
   const { items, isLoading: itemsLoading, refetch: refetchItems } = useItems();
   const {
     quests: completedQuests,
     isLoading: completedQuestsLoading,
     refetch: refetchClaimableQuests,
-  } = useUserQuests(state?.user?.fid, "completed");
+  } = useUserQuests(state?.user?.fid, "completed", mode);
   const {
     userStreaks,
     isLoading: streaksLoading,
@@ -165,13 +174,19 @@ export const useGameState = () => {
     userWeeklyStats,
     isLoading: weeklyStatsLoading,
     refetch: refetchWeeklyStats,
-  } = useWeeklyStats(state?.user?.fid);
+  } = useWeeklyStats(mode, state?.user?.fid);
 
   const {
     userCollectibles,
     isLoading: userCollectiblesLoading,
     refetch: refetchUserCollectibles,
   } = useUserCollectibles(state?.user?.fid);
+
+  const {
+    userModes,
+    isLoading: isLoadingUserModes,
+    refetch: refetchUserModes,
+  } = useUserModes(state?.user?.fid);
 
   const updateUserState = useCallback(() => {
     if (user) {
@@ -217,6 +232,15 @@ export const useGameState = () => {
       }));
     }
   }, [gridCells]);
+
+  useEffect(() => {
+    if (userModes) {
+      setState((prevState) => ({
+        ...prevState!,
+        userModes: userModes,
+      }));
+    }
+  }, [userModes]);
 
   const updateItemsState = useCallback(() => {
     if (items) {
@@ -383,25 +407,61 @@ export const useGameState = () => {
     updateUserCollectiblesState,
   ]);
 
+  const { userGlobalStats } = useUserGlobalStats(state.user?.fid);
+
   useEffect(() => {
-    if (state.user) {
+    if (
+      state.user &&
+      state.user.expansions &&
+      userGlobalStats &&
+      userGlobalStats?.classic.expansions
+    ) {
+      // for each mode inside userGlobalStats calculate the global xps
+      let totalXP = 0;
+      let totalCoins = 0;
+      console.log("User Global Stats:", userGlobalStats);
+      Object.keys(userGlobalStats).forEach((key) => {
+        const userStat = userGlobalStats[key as Mode];
+        if (userStat) {
+          totalXP += userStat.xp;
+          totalCoins += userStat.coins;
+        }
+      });
+
+      console.log("Total XP:", totalXP, "Total Coins:", totalCoins);
+
       // check if the user should see the grid cells tutorial
-      if (state.user.xp === 0) {
+      if (totalXP === 0) {
         setState((prevState) => ({
           ...prevState!,
           showGridCellsTutorial: true,
         }));
+      } else {
+        setState((prevState) => ({
+          ...prevState!,
+          showGridCellsTutorial: false,
+        }));
       }
       const carrotsXp = CROP_DATA["carrot"].rewardXP;
+
       // check if the user should see the marketplace tutorial
-      if (state.user.xp <= carrotsXp * 4 && state.coins === 0) {
+      if (
+        totalXP < carrotsXp * 4 &&
+        totalCoins === 0 &&
+        state.user.coins === 0
+      ) {
         setState((prevState) => ({
           ...prevState!,
           showMarketplaceTutorial: true,
         }));
+      } else {
+        setState((prevState) => ({
+          ...prevState!,
+          showMarketplaceTutorial: false,
+        }));
       }
     }
-  }, [state.user.xp]);
+  }, [state.user, userGlobalStats]);
 
   const refetchAll = useCallback(async () => {
     await Promise.all([
@@ -414,6 +474,7 @@ export const useGameState = () => {
       refetchUserHarvestedCrops(),
       refetchWeeklyStats(),
       refetchUserCollectibles(),
+      refetchUserModes(),
     ]);
   }, [
     refetchUserItems,
@@ -425,30 +486,41 @@ export const useGameState = () => {
     refetchUserHarvestedCrops,
     refetchWeeklyStats,
     refetchUserCollectibles,
+    refetchUserModes,
   ]);
 
+  useEffect(() => {
+    refetchAll();
+  }, [mode, refetchAll]);
+
   // Add new method to update grid cells directly
-  const updateGridCells = useCallback((updatedCells: Partial<DbGridCell>[]) => {
-    setState((prevState) => {
-      if (!prevState) return prevState;
+  const updateGridCells = useCallback(
+    (updatedCells: Partial<UserGridCell>[]) => {
+      setState((prevState) => {
+        if (!prevState) return prevState;
 
-      const newGrid = [...prevState.grid];
+        const newGrid = [...prevState.grid];
 
-      updatedCells.forEach((updatedCell) => {
-        const index = newGrid.findIndex(
-          (cell) => cell.x === updatedCell.x && cell.y === updatedCell.y
-        );
-        if (index !== -1) {
-          newGrid[index] = { ...newGrid[index], ...updatedCell };
-        }
+        updatedCells.forEach((updatedCell) => {
+          const index = newGrid.findIndex(
+            (cell) =>
+              cell.x === updatedCell.x &&
+              cell.y === updatedCell.y &&
+              cell.mode === updatedCell.mode
+          );
+          if (index !== -1) {
+            newGrid[index] = { ...newGrid[index], ...updatedCell };
+          }
+        });
+
+        return {
+          ...prevState,
+          grid: newGrid,
+        };
       });
-
-      return {
-        ...prevState,
-        grid: newGrid,
-      };
-    });
-  }, []);
+    },
+    []
+  );
 
   // Add new method to update user items directly
   const updateUserItems = useCallback((updatedItems: Partial<UserItem>[]) => {
@@ -530,7 +602,7 @@ export const useGameState = () => {
   }, []);
 
   const updateUserHarvestedCrops = useCallback(
-    (updatedUserHarvestedCrops: DbUserHarvestedCrop[]) => {
+    (updatedUserHarvestedCrops: UserHarvestedCrop[]) => {
       setState((prevState) => {
         if (!prevState) return prevState;
 
@@ -580,8 +652,8 @@ export const useGameState = () => {
 
   const updateUserCollectibles = useCallback(
     (
-      updatedCollectibles: (DbCollectible & {
-        userHasCollectibles: DbUserHasCollectible | null;
+      updatedCollectibles: (Collectible & {
+        userHasCollectible: UserHasCollectible | null;
       })[]
     ) => {
       setState((prevState) => {
@@ -601,7 +673,7 @@ export const useGameState = () => {
       xp?: number;
       level?: number;
       coins?: number;
-      streaks?: DbStreak[];
+      streaks?: Streak[];
       streakUpdated?: boolean;
       mintedOG?: boolean;
     }) => {
@@ -636,7 +708,8 @@ export const useGameState = () => {
       frostsLoading ||
       isUserHarvestedCropsLoading ||
       weeklyStatsLoading ||
-      userCollectiblesLoading,
+      userCollectiblesLoading ||
+      isLoadingUserModes,
     refetch: {
       all: refetchAll,
       userItems: async () => {
@@ -662,6 +735,9 @@ export const useGameState = () => {
       },
       frosts: async () => {
         await refetchFrosts();
+      },
+      userModes: async () => {
+        await refetchUserModes();
       },
     } as RefetchType,
     updateGridCells,

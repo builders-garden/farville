@@ -1,14 +1,17 @@
-import { UserHasItem } from "@prisma/client";
+import { Item, UserHasItem } from "@prisma/client";
 import { prisma } from "../client";
-import { DbItem, DbUserHasItem } from "../types";
+import { Mode } from "@/lib/types/game";
+import { STARTER_PACKS } from "@/lib/modes/constants";
 
 export const getUserItemByItemId = async (
-  userFid: number,
-  itemId: number
-): Promise<(DbUserHasItem & { item: DbItem }) | null> => {
+  fid: number,
+  itemId: number,
+  mode: Mode
+): Promise<(UserHasItem & { item: Item }) | null> => {
   const userItem = await prisma.userHasItem.findFirst({
     where: {
-      userFid,
+      fid,
+      mode,
       itemId,
       quantity: {
         gte: 1,
@@ -23,17 +26,31 @@ export const getUserItemByItemId = async (
 };
 
 export const getUserItems = async (
-  userFid: number,
+  fid: number,
+  mode: Mode,
   category?: string
-): Promise<(DbUserHasItem & { item: DbItem })[]> => {
+): Promise<(UserHasItem & { item: Item })[]> => {
   const userItems = await prisma.userHasItem.findMany({
     where: {
-      userFid,
-      ...(category && {
-        item: {
-          category,
+      fid,
+      OR: [
+        {
+          mode,
+          ...(category && {
+            item: {
+              category,
+            },
+          }),
         },
-      }),
+        {
+          mode: Mode.Classic,
+          item: {
+            category: {
+              in: ["special", "special-crop"],
+            },
+          },
+        },
+      ],
     },
     include: {
       item: true,
@@ -45,11 +62,13 @@ export const getUserItems = async (
 
 export const getUserItemBySlug = async (
   fid: number,
-  slug: string
+  slug: string,
+  mode: Mode
 ): Promise<UserHasItem | null> => {
   const userItem = await prisma.userHasItem.findFirst({
     where: {
-      userFid: fid,
+      fid,
+      mode,
       item: {
         slug: slug,
       },
@@ -67,24 +86,27 @@ export const getUserItemBySlug = async (
 };
 
 export const updateUserItem = async (
-  userFid: number,
+  fid: number,
   itemId: number,
-  quantity: number
-): Promise<DbUserHasItem> => {
+  quantity: number,
+  mode: Mode
+): Promise<UserHasItem> => {
   const updatedItem = await prisma.userHasItem.upsert({
     where: {
-      userFid_itemId: {
-        userFid,
+      fid_itemId_mode: {
+        fid,
         itemId,
+        mode,
       },
     },
     update: {
       quantity,
     },
     create: {
-      userFid,
+      fid,
       itemId,
       quantity,
+      mode,
     },
   });
 
@@ -94,35 +116,48 @@ export const updateUserItem = async (
 export const addUserItem = async (
   fid: number,
   itemId: number,
-  quantity: number
+  quantity: number,
+  mode: Mode
 ) => {
   return await prisma.userHasItem.upsert({
     where: {
-      userFid_itemId: {
-        userFid: fid,
+      fid_itemId_mode: {
+        fid,
         itemId,
+        mode,
       },
     },
     update: {
       quantity: { increment: quantity },
     },
     create: {
-      userFid: fid,
+      fid,
       itemId,
       quantity,
+      mode,
     },
   });
 };
 
-export const giftStarterPack = async (userFid: number) => {
-  await addUserItem(userFid, 1, 4);
-  await addUserItem(userFid, 9, 4);
+export const giftStarterPack = async (fid: number, mode: Mode) => {
+  const starterPack = STARTER_PACKS[mode];
+  if (!starterPack) {
+    throw new Error(`No starter pack found for mode: ${mode}`);
+  }
+
+  // add user items based on the starter pack
+  for (const item of starterPack) {
+    await addUserItem(fid, item.itemId, item.quantity, mode);
+  }
+  // await addUserItem(fid, 1, 4, mode);
+  // await addUserItem(fid, 9, 4, mode);
 };
 
 export const removeUserItem = async (
   fid: number,
   itemId: number,
-  quantity: number
+  quantity: number,
+  mode: Mode
 ) => {
   // Use a transaction to prevent race conditions
   return await prisma.$transaction(
@@ -130,9 +165,10 @@ export const removeUserItem = async (
       // Decrement the quantity directly
       const updatedItem = await tx.userHasItem.update({
         where: {
-          userFid_itemId: {
-            userFid: fid,
+          fid_itemId_mode: {
+            fid,
             itemId,
+            mode,
           },
         },
         data: {
@@ -144,9 +180,10 @@ export const removeUserItem = async (
       if (updatedItem.quantity <= 0) {
         await tx.userHasItem.delete({
           where: {
-            userFid_itemId: {
-              userFid: fid,
+            fid_itemId_mode: {
+              fid,
               itemId,
+              mode,
             },
           },
         });

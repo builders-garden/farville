@@ -7,6 +7,7 @@ import {
   getUserStreaks,
 } from "@/lib/prisma/queries";
 import { checkUserActivityAndApplyFrost } from "../streaks/utils";
+import { Mode } from "@/lib/types/game";
 
 export const POST = async (req: NextRequest) => {
   const fid = req.headers.get("x-user-fid");
@@ -14,10 +15,14 @@ export const POST = async (req: NextRequest) => {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   try {
-    const userFrost = await getUserItemBySlug(Number(fid), "frost");
+    const userFrost = await getUserItemBySlug(
+      Number(fid),
+      "frost",
+      Mode.Classic
+    );
     const streaks = await getUserStreaks(Number(fid));
     if (streaks.length === 0 && (!userFrost || userFrost.quantity === 0)) {
-      await addUserItem(Number(fid), 29, FIRST_FROST_QUANTITY);
+      await addUserItem(Number(fid), 29, FIRST_FROST_QUANTITY, Mode.Classic);
     } else if (streaks.length > 0) {
       await checkUserActivityAndApplyFrost(streaks[0], userFrost, false);
     }

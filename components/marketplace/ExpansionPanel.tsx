@@ -1,11 +1,13 @@
+import { useGame } from "@/context/GameContext";
 import { EXPANSION_COSTS } from "@/lib/game-constants";
+import { Mode } from "@/lib/types/game";
 import { motion } from "framer-motion";
 
 interface ExpansionPanelProps {
   expansionLevel: number;
   userLevel: number;
   userCoins: number;
-  onExpand: () => void;
+  onExpand: (params: { mode: Mode }) => void;
 }
 
 export default function ExpansionPanel({
@@ -14,6 +16,8 @@ export default function ExpansionPanel({
   userCoins,
   onExpand,
 }: ExpansionPanelProps) {
+  const { mode } = useGame();
+
   const hasMoreExpansions = expansionLevel < EXPANSION_COSTS.length;
 
   if (!hasMoreExpansions) {
@@ -70,7 +74,11 @@ export default function ExpansionPanel({
       <motion.button
         whileHover={{ scale: 1.03 }}
         whileTap={{ scale: 0.97 }}
-        onClick={onExpand}
+        onClick={() => {
+          onExpand({
+            mode,
+          });
+        }}
         disabled={!canExpand}
         className="w-full py-1.5 bg-[#FFB938] text-[#7E4E31] rounded hover:bg-[#ffc65c] 
                  transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium

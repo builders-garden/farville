@@ -2,8 +2,8 @@ import {
   SendNotificationRequest,
   sendNotificationResponseSchema,
 } from "@farcaster/frame-sdk";
-import { getUserNotificationDetails } from "../supabase/queries";
 import { env } from "@/lib/env";
+import { getUserNotificationDetails } from "./prisma/queries";
 
 const appUrl = env.NEXT_PUBLIC_URL;
 

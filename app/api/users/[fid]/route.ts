@@ -1,12 +1,14 @@
-import { getUser } from "@/lib/prisma/queries";
+import { getUserByMode } from "@/lib/prisma/queries";
+import { Mode } from "@/lib/types/game";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ fid: string }> }
+  _request: NextRequest,
+  { params }: { params: Promise<{ fid: string; mode: Mode }> }
 ) {
   const fid = (await params).fid;
-  const user = await getUser(Number(fid));
+  const mode = _request.nextUrl.searchParams.get("mode") as Mode;
+  const user = await getUserByMode(Number(fid), mode);
   if (!user) {
     return NextResponse.json({ error: "User not found" }, { status: 404 });
   }

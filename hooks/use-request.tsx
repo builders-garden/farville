@@ -1,11 +1,9 @@
-import { DbItem } from "@/supabase/types";
-import { DbRequest } from "@/supabase/types";
-import { DbUser } from "@/supabase/types";
 import { useApiQuery } from "./use-api-query";
+import { User, Request as DbRequest, Item } from "@prisma/client";
 
-type Request = DbRequest & { item: DbItem; user: DbUser };
+type Request = DbRequest & { item: Item; user: User };
 
-export const useRequest = (id: number) => {
+export const useRequest = (id: string) => {
   const { data: request, isLoading } = useApiQuery<Request>({
     queryKey: ["request", id],
     url: `/api/requests/${id}`,

@@ -1,8 +1,3 @@
-import {
-  DbUser,
-  DbUserHarvestedCrop,
-  UserCompleteCollectible,
-} from "@/supabase/types";
 import { UserItem, useUserItems } from "./use-user-items";
 import { useUser } from "./use-user";
 import { useUserHarvestedCrops } from "./use-user-harvested-crops";
@@ -11,22 +6,28 @@ import { useUserStreaks } from "./use-user-streaks";
 import { useUserFrosts } from "./use-user-frosts";
 import { useEffect, useState } from "react";
 import { useUserCollectibles } from "./use-user-collectibles";
+import { UserHarvestedCrop } from "@prisma/client";
+import { UserCompleteCollectible, UserWithStatistic } from "@/lib/prisma/types";
+import { Mode } from "@/lib/types/game";
 
 interface OtherUserProfileData {
-  user: DbUser | undefined;
+  user: UserWithStatistic | undefined;
   specialCrops: UserItem[] | undefined;
-  harvestedCropsSummary: DbUserHarvestedCrop[] | undefined;
+  harvestedCropsSummary: UserHarvestedCrop[] | undefined;
   level: number;
   currentStreakDays: number;
   collectibles: UserCompleteCollectible[] | undefined;
 }
 
-export function useOtherUserProfile(fid?: number): {
+export function useOtherUserProfile(
+  mode: Mode,
+  fid?: number
+): {
   userData: OtherUserProfileData;
   isLoading: boolean;
 } {
-  const { user, isLoading: userLoading } = useUser({ fid });
-  const { userItems, isLoading: userItemsLoading } = useUserItems(fid);
+  const { user, isLoading: userLoading } = useUser({ mode, fid });
+  const { userItems, isLoading: userItemsLoading } = useUserItems(mode, fid);
   const { userHarvestedCrops, isLoading: isUserHarvestedCropsLoading } =
     useUserHarvestedCrops(fid);
   const { userStreaks, isLoading: streaksLoading } = useUserStreaks(fid);
@@ -84,9 +85,13 @@ export function useOtherUserProfile(fid?: number): {
 
   useEffect(() => {
     if (userCollectibles) {
+      const mappedCollectibles = userCollectibles.map((collectible) => ({
+        ...collectible,
+        userHasCollectibles: collectible.userHasCollectible,
+      }));
       setUserData((prev) => ({
         ...prev,
-        collectibles: userCollectibles,
+        collectibles: mappedCollectibles,
       }));
     }
   }, [userCollectibles]);

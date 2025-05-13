@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { useFrameContext } from "../context/FrameContext";
 import Image from "next/image";
@@ -9,36 +9,74 @@ import { useDonate } from "@/hooks/game-actions/use-donate";
 import { useGame } from "@/context/GameContext";
 import { useRequest } from "@/hooks/use-request";
 import { useDonationHistory } from "@/hooks/use-donation-history";
-import {
-  MAX_DAILY_ALLOWED_DONATION_BETWEEN_USERS,
-  MAX_DAILY_ALLOWED_DONATION_TO_USERS,
-  XP_PER_DONATED_ITEM,
-} from "@/lib/game-constants";
+import { XP_PER_DONATED_ITEM } from "@/lib/game-constants";
 import FloatingNumber from "./animations/FloatingNumber";
 import { useUserXp } from "@/hooks/use-user-xp";
 import { DbUserDonationWithUsers } from "@/lib/prisma/queries";
 import sdk from "@farcaster/frame-sdk";
+import { Mode } from "@/lib/types/game";
+import { MODE_DEFINITIONS } from "@/lib/modes/constants";
+import { FARCON_ATTENDEES_FIDS } from "@/lib/modes/farcon";
+import { useUserModes } from "@/hooks/use-user-modes";
 
 export default function RequestModal({
   onClose,
   id,
 }: {
   onClose: () => void;
-  id: number;
+  id: string;
 }) {
   const { safeAreaInsets } = useFrameContext();
   const { request, isLoading } = useRequest(id);
+  console.log("request", request, id);
   const { donate } = useDonate();
-  const { state, updateUserItems } = useGame();
+  const {
+    state,
+    updateUserItems,
+    mode,
+    setMode,
+    initializeMode,
+    isActionInProgress,
+  } = useGame();
   const {
     todayDonations,
     canDonateToReceiver,
     canDonateToAnotherUser,
     isLoading: isDonationHistoryLoading,
-  } = useDonationHistory(state.user?.fid, request?.fid);
+  } = useDonationHistory(mode, state.user?.fid, request?.fid);
   const [showFloatingNumber, setShowFloatingNumber] = useState(false);
   const [rewardedXp, setRewardedXp] = useState(0);
+  const [userNotInMode, setUserNotInMode] = useState(false);
+  const {
+    userModes,
+    isLoading: userModesIsLoading,
+    refetch: refetchUserModes,
+  } = useUserModes(state.user.fid);
+  const [isInitializingMode, setIsInitializingMode] = useState(false);
   const { addUserXpsAndCheckLevelUp } = useUserXp();
+
+  useEffect(() => {
+    if (!request || !userModes || userModesIsLoading) return;
+    if (!userModes.includes(request.mode as Mode)) {
+      setUserNotInMode(true);
+    } else if (
+      userModes.includes(request.mode as Mode) &&
+      request.mode &&
+      mode !== request.mode
+    ) {
+      setMode(request.mode as Mode);
+      setUserNotInMode(false);
+    }
+  }, [request, setMode, mode, state.user.fid, userModes, userModesIsLoading]);
+
+  useEffect(() => {
+    if (isActionInProgress) {
+      setIsInitializingMode(true);
+    } else if (!isActionInProgress && isInitializingMode) {
+      setIsInitializingMode(false);
+      refetchUserModes();
+    }
+  }, [isActionInProgress, isInitializingMode, refetchUserModes]);
 
   // Add check for user's own request
   const isOwnRequest = request?.fid === state.user?.fid;
@@ -48,9 +86,10 @@ export default function RequestModal({
     0;
 
   // Calculate remaining quantity needed
-  const remainingQuantity = request
-    ? request.quantity - (request.filledQuantity || 0)
-    : 0;
+  const remainingQuantity =
+    request && request.quantity
+      ? request.quantity - (request.filledQuantity || 0)
+      : 0;
 
   const [selectedQuantity, setSelectedQuantity] = useState(() => {
     if (currentQuantity > 0) {
@@ -94,8 +133,10 @@ export default function RequestModal({
   };
 
   const receiverIsInTodayDonations = todayDonations?.some(
-    (donation) => donation.receiver.fid === request?.fid
+    (donation) => donation.receiverUser?.fid === request?.fid
   );
+
+  console.log("todayDonations", todayDonations);
 
   const userCannotDonate =
     !canDonateToReceiver ||
@@ -137,36 +178,41 @@ export default function RequestModal({
 
   const DonationHistoryList = ({
     donations,
+    mode,
   }: {
     donations: DbUserDonationWithUsers[];
+    mode: Mode;
   }) => (
     <div className="flex flex-col gap-1.5 w-full max-w-[250px] xs:max-w-[300px] mt-2">
       {donations?.map((donation) => (
         <div
-          key={donation.receiver.fid}
+          key={donation.receiverUser.fid}
           className="flex items-center gap-2 bg-black/10 rounded-lg p-2 py-1 cursor-pointer"
           onClick={async () =>
-            sdk.actions.viewProfile({ fid: donation.receiver.fid })
+            sdk.actions.viewProfile({ fid: donation.receiverUser.fid })
           }
         >
           <div className="relative w-6 h-6">
             <Image
               src={
-                donation.receiver.selectedAvatarUrl ||
-                donation.receiver.avatarUrl ||
+                donation.receiverUser.selectedAvatarUrl ||
+                donation.receiverUser.avatarUrl ||
                 ""
               }
-              alt={donation.receiver.username}
+              alt={donation.receiverUser.username}
               fill
               className="rounded-full object-cover"
             />
           </div>
           <span className="text-white/80 text-[10px] xs:text-xs flex-1">
-            {donation.receiver.username}
+            {donation.receiverUser.username}
           </span>
-          <span className="text-amber-500/90 text-xs font-medium">
-            {donation.times}/{MAX_DAILY_ALLOWED_DONATION_BETWEEN_USERS}
-          </span>
+          {MODE_DEFINITIONS[mode].dailyLimitDonationsToSameUser && (
+            <span className="text-amber-500/90 text-xs font-medium">
+              {donation.times}/
+              {MODE_DEFINITIONS[mode].dailyLimitDonationsToSameUser}
+            </span>
+          )}
         </div>
       ))}
     </div>
@@ -271,13 +317,12 @@ export default function RequestModal({
                     <div className="flex flex-col items-center gap-1.5 xs:gap-3 mt-1.5 xs:mt-2">
                       <p className="text-amber-500/90 text-xs text-center">
                         You can only donate to the same user{" "}
-                        {MAX_DAILY_ALLOWED_DONATION_BETWEEN_USERS} times every
-                        24 hours
+                        {MODE_DEFINITIONS[mode].dailyLimitDonationsToSameUser}{" "}
+                        times every 24 hours
                       </p>
                       <p className="text-xs text-white/60">
                         Resets in: {countdown()}
                       </p>
-                      <DonationHistoryList donations={todayDonations} />
                       {remainingQuantity === 0 && (
                         <p className="text-green-400/90 text-xs xs:text-sm text-center">
                           This request has been fully filled!
@@ -288,12 +333,12 @@ export default function RequestModal({
                     <div className="flex flex-col items-center gap-1.5 xs:gap-3 mt-1.5 xs:mt-2">
                       <p className="text-amber-500/90 text-xs text-center max-w-[300px]">
                         You can only donate to{" "}
-                        {MAX_DAILY_ALLOWED_DONATION_TO_USERS} farmers a day
+                        {MODE_DEFINITIONS[mode].dailyLimitDonationsToUsers}{" "}
+                        farmers a day
                       </p>
                       <p className="text-xs text-white/60">
                         Resets in: {countdown()}
                       </p>
-                      <DonationHistoryList donations={todayDonations} />
                       {remainingQuantity === 0 && (
                         <p className="text-green-400/90 text-xs xs:text-sm text-center">
                           This request has been fully filled!
@@ -302,7 +347,15 @@ export default function RequestModal({
                     </div>
                   ) : (
                     <div className="flex flex-col items-center gap-1.5 xs:gap-2 mt-1.5 xs:mt-2">
-                      {isOwnRequest ? (
+                      {userNotInMode ? (
+                        <div className="flex flex-col items-center gap-1.5 xs:gap-2 mt-1.5 xs:mt-2">
+                          <p className="text-amber-500/90 text-xs xs:text-sm text-center">
+                            You can&apos;t donate to this user because
+                            you&apos;re not part of the{" "}
+                            {MODE_DEFINITIONS[request.mode as Mode].name} mode
+                          </p>
+                        </div>
+                      ) : isOwnRequest ? (
                         <p className="text-amber-500/90 text-xs xs:text-sm text-center">
                           You can&apos;t donate to yourself
                         </p>
@@ -360,71 +413,94 @@ export default function RequestModal({
                       )}
                     </div>
                   )}
+                  <DonationHistoryList
+                    donations={todayDonations}
+                    mode={mode}
+                  />
                 </>
               )
             )}
           </div>
 
           {/* Action Buttons */}
-          {!userCannotDonate && (
-            <div className="flex-none p-3 xs:p-4">
-              <div className="flex justify-center gap-2 xs:gap-3">
-                <button
-                  onClick={onClose}
-                  className="px-4 xs:px-6 py-2 xs:py-2.5 bg-black/10 hover:bg-black/30 rounded-lg text-white/90 
-                         transition-colors font-medium text-xs xs:text-sm"
-                >
-                  Cancel
-                </button>
-                {!isOwnRequest && (
+          {userNotInMode && FARCON_ATTENDEES_FIDS.includes(state.user.fid) ? (
+            <button
+              onClick={() => {
+                initializeMode({
+                  mode: request.mode as Mode,
+                });
+              }}
+              disabled={isActionInProgress}
+              className="px-4 xs:px-6 py-2 xs:py-2.5 bg-green-600/80 hover:bg-green-600 rounded-lg text-white/90 
+                   transition-colors font-medium text-xs xs:text-sm disabled:bg-green-600/20"
+            >
+              {!isInitializingMode
+                ? `Join the ${MODE_DEFINITIONS[request.mode as Mode].name} mode`
+                : "Joining..."}
+            </button>
+          ) : (
+            !userCannotDonate && (
+              <div className="flex-none p-3 xs:p-4">
+                <div className="flex justify-center gap-2 xs:gap-3">
                   <button
-                    disabled={
-                      selectedQuantity === 0 ||
-                      selectedQuantity > currentQuantity ||
-                      selectedQuantity > remainingQuantity ||
-                      remainingQuantity === 0 ||
-                      showFloatingNumber ||
-                      isDonationHistoryLoading
-                    }
-                    onClick={() => {
-                      // Add safety check here as well
-                      const safeQuantity = Math.min(
-                        selectedQuantity,
-                        remainingQuantity,
-                        currentQuantity
-                      );
-                      const rewardedXp = safeQuantity * XP_PER_DONATED_ITEM;
-                      setRewardedXp(rewardedXp);
-                      donate({
-                        itemId: request?.itemId,
-                        quantity: safeQuantity,
-                        toFid: request?.fid,
-                        requestId: request?.id,
-                      });
-                      updateUserItems([
-                        {
-                          itemId: request?.itemId,
-                          quantity: currentQuantity - safeQuantity,
-                          item: request?.item,
-                        },
-                      ]);
-                      setShowFloatingNumber(true);
-                      addUserXpsAndCheckLevelUp(rewardedXp);
-                      setTimeout(() => {
-                        onClose();
-                      }, 1000);
-                    }}
-                    className="px-4 xs:px-6 py-2 xs:py-2.5 bg-green-600/80 hover:bg-green-600 disabled:bg-green-600/20 
+                    onClick={onClose}
+                    className="px-4 xs:px-6 py-2 xs:py-2.5 bg-black/10 hover:bg-black/30 rounded-lg text-white/90 
+                         transition-colors font-medium text-xs xs:text-sm"
+                  >
+                    Cancel
+                  </button>
+                  {!isOwnRequest && (
+                    <button
+                      disabled={
+                        selectedQuantity === 0 ||
+                        selectedQuantity > currentQuantity ||
+                        selectedQuantity > remainingQuantity ||
+                        remainingQuantity === 0 ||
+                        showFloatingNumber ||
+                        isDonationHistoryLoading
+                      }
+                      onClick={() => {
+                        // Add safety check here as well
+                        const safeQuantity = Math.min(
+                          selectedQuantity,
+                          remainingQuantity,
+                          currentQuantity
+                        );
+                        const rewardedXp = safeQuantity * XP_PER_DONATED_ITEM;
+                        setRewardedXp(rewardedXp);
+                        donate({
+                          itemId: request.itemId,
+                          quantity: safeQuantity,
+                          toFid: request.fid,
+                          requestId: request.id,
+                        });
+                        if (request.itemId) {
+                          updateUserItems([
+                            {
+                              itemId: request.itemId,
+                              quantity: currentQuantity - safeQuantity,
+                              item: request.item,
+                            },
+                          ]);
+                        }
+                        setShowFloatingNumber(true);
+                        addUserXpsAndCheckLevelUp(rewardedXp);
+                        setTimeout(() => {
+                          onClose();
+                        }, 1000);
+                      }}
+                      className="px-4 xs:px-6 py-2 xs:py-2.5 bg-green-600/80 hover:bg-green-600 disabled:bg-green-600/20 
                            disabled:text-white/50 disabled:cursor-not-allowed rounded-lg text-white transition-colors 
                            font-medium text-xs xs:text-sm"
-                  >
-                    {remainingQuantity === 0
-                      ? "Request Filled"
-                      : `Donate ${selectedQuantity}`}
-                  </button>
-                )}
+                    >
+                      {remainingQuantity === 0
+                        ? "Request Filled"
+                        : `Donate ${selectedQuantity}`}
+                    </button>
+                  )}
+                </div>
               </div>
-            </div>
+            )
           )}
 
           {showFloatingNumber && rewardedXp > 0 && (

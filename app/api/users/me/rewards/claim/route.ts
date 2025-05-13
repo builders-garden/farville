@@ -6,11 +6,12 @@ import {
   updateStreakLastClaimed,
   updateUserItem,
 } from "@/lib/prisma/queries";
+import { Mode } from "@/lib/types/game";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
 const requestSchema = z.object({
-  streakId: z.number().min(1),
+  streakId: z.string().min(1),
 });
 
 export const POST = async (req: NextRequest) => {
@@ -62,7 +63,7 @@ export const POST = async (req: NextRequest) => {
     return NextResponse.json({ error: "Rewards not found" }, { status: 500 });
   }
 
-  const userItems = await getUserItems(Number(fid));
+  const userItems = await getUserItems(Number(fid), Mode.Classic);
 
   // Update the items in the database
   for (const item of rewards) {
@@ -71,7 +72,8 @@ export const POST = async (req: NextRequest) => {
     await updateUserItem(
       Number(fid),
       item.itemId,
-      userItem ? userItem.quantity + item.quantity : item.quantity
+      userItem ? userItem.quantity + item.quantity : item.quantity,
+      Mode.Classic
     );
   }
 

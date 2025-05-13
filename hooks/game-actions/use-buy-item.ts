@@ -1,9 +1,11 @@
 import { useAudio } from "@/context/AudioContext";
 import { useApiMutation } from "@/hooks/use-api-mutation";
+import { MarketActionType, Mode } from "@/lib/types/game";
 
 interface BuyItemVariables {
   itemId: number;
   quantity: number;
+  mode: Mode;
 }
 
 export const useBuyItem = ({
@@ -21,7 +23,12 @@ export const useBuyItem = ({
 
   return useApiMutation<unknown, BuyItemVariables>({
     url: ({ itemId }) => `/api/users/me/items/${itemId}`,
-    body: ({ itemId, quantity }) => ({ action: "buy", itemId, quantity }),
+    body: ({ itemId, quantity, mode }) => ({
+      action: MarketActionType.Buy,
+      itemId,
+      quantity,
+      mode,
+    }),
     onMutate: () => {
       if (isActionInProgress) return;
       setIsActionInProgress(true);

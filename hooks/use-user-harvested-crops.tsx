@@ -1,10 +1,12 @@
-import { DbUserHarvestedCrop } from "@/supabase/types";
+import { UserHarvestedCrop } from "@prisma/client";
 import { useApiQuery } from "./use-api-query";
 
 export const useUserHarvestedCrops = (fid: number | undefined) => {
-  const { data, isLoading, refetch } = useApiQuery<DbUserHarvestedCrop[]>({
+  const url = fid ? `/api/users/${fid}/harvested-crops` : "";
+
+  const { data, isLoading, refetch } = useApiQuery<UserHarvestedCrop[]>({
     queryKey: ["user-harevested-crops", fid],
-    url: `/api/users/${fid}/harvested-crops`,
+    url,
     isProtected: true,
     enabled: !!fid,
   });

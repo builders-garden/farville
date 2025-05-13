@@ -1,8 +1,8 @@
+import { getUserCollectibleByCollectibleId } from "@/lib/prisma/queries";
 import { NextRequest, NextResponse } from "next/server";
-import { getUserCollectibleByCollectibleId } from "@/supabase/queries";
 
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ fid: string; collectibleId: string }> }
 ) {
   try {

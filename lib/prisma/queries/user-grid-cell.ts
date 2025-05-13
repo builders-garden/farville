@@ -1,13 +1,40 @@
+import { Mode } from "@/lib/types/game";
 import { prisma } from "../client";
-import { GridCell } from "@prisma/client";
+import { UserGridCell } from "@prisma/client";
 
-export const updateGridCellsBulk = async (fid: number, cells: GridCell[]) => {
+export const getUserGridCells = async (
+  fid: number,
+  mode: Mode
+): Promise<UserGridCell[]> => {
+  const cells = await prisma.userGridCell.findMany({
+    where: {
+      fid,
+      mode,
+    },
+    orderBy: [
+      {
+        x: "asc",
+      },
+      {
+        y: "asc",
+      },
+    ],
+  });
+  return cells;
+};
+
+export const updateGridCellsBulk = async (
+  fid: number,
+  cells: UserGridCell[]
+) => {
   return await prisma.$transaction(
     async (tx) => {
-      const updatedCells: GridCell[] = [];
+      const updatedCells: UserGridCell[] = [];
       for (const cell of cells) {
-        const updatedCell = await tx.gridCell.update({
-          where: { fid_x_y: { fid, x: cell.x, y: cell.y } },
+        const updatedCell = await tx.userGridCell.update({
+          where: {
+            fid_x_y_mode: { fid, x: cell.x, y: cell.y, mode: cell.mode },
+          },
           data: cell,
         });
         updatedCells.push({
@@ -25,4 +52,104 @@ export const updateGridCellsBulk = async (fid: number, cells: GridCell[]) => {
       timeout: 14000,
     }
   );
+};
+
+export const initializeGrid = async (
+  fid: number,
+  mode: Mode
+): Promise<void> => {
+  const initialSize = {
+    width: 2,
+    height: 2,
+  };
+
+  // Create a grid of cells based on the initial size
+  const cells = [];
+  for (let x = 1; x <= initialSize.width; x++) {
+    for (let y = 1; y <= initialSize.height; y++) {
+      cells.push({
+        fid,
+        mode,
+        x,
+        y,
+      });
+    }
+  }
+
+  // Use Prisma to insert all cells at once
+  await prisma.userGridCell.createMany({
+    data: cells,
+    skipDuplicates: true, // Ensures no conflicts on unique constraints
+  });
+};
+
+export const createGridCell = async (
+  fid: number,
+  x: number,
+  y: number,
+  mode: Mode
+): Promise<void> => {
+  await prisma.userGridCell.upsert({
+    where: {
+      fid_x_y_mode: {
+        fid,
+        x,
+        y,
+        mode,
+      },
+    },
+    update: {}, // No updates needed since it's an upsert
+    create: {
+      fid,
+      x,
+      y,
+      mode,
+    },
+  });
+};
+
+export const getHarvestableCellsCount = async (
+  fid: number,
+  mode: Mode,
+  withinMinutes: number = 3
+): Promise<number> => {
+  const threeMinutesFromNow = new Date(Date.now() + withinMinutes * 60 * 1000);
+
+  const count = await prisma.userGridCell.count({
+    where: {
+      fid,
+      mode,
+      harvestAt: {
+        not: null,
+        lte: threeMinutesFromNow,
+      },
+    },
+  });
+
+  return count;
+};
+
+export const getExpiredBoostCellsCount = async (
+  fid: number,
+  mode: Mode,
+  withinMinutes: number = 3
+): Promise<number> => {
+  const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000);
+  const twoHoursPlusMinutesAgo = new Date(
+    Date.now() - (2 * 60 * 60 * 1000 + withinMinutes * 60 * 1000)
+  );
+
+  const count = await prisma.userGridCell.count({
+    where: {
+      fid,
+      mode,
+      speedBoostedAt: {
+        not: null,
+        gte: twoHoursPlusMinutesAgo,
+        lt: twoHoursAgo,
+      },
+    },
+  });
+
+  return count;
 };

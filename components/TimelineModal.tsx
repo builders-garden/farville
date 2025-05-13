@@ -10,7 +10,6 @@ import {
   TimelineItem,
   TimelineSeparator,
 } from "@/components/ui/timeline";
-import { DbItem } from "@/supabase/types";
 import {
   EXPANSION_COSTS,
   LEVEL_REWARDS,
@@ -22,6 +21,7 @@ import { Card, CardContent } from "./ui/card";
 import { useUserMe } from "@/hooks/use-user-me";
 import { getCurrentLevelAndProgress } from "@/lib/utils";
 import { useGame } from "@/context/GameContext";
+import { Item } from "@prisma/client";
 
 interface TimelineData {
   level: number;
@@ -33,7 +33,7 @@ interface TimelineData {
   };
 }
 
-function extractTimelineData(items: DbItem[]): TimelineData[] {
+function extractTimelineData(items: Item[]): TimelineData[] {
   // build here the timeline data using items, EXPANSION_COSTS, LEVEL_REWARDS, LEVEL_XP_THRESHOLDS
   const itemsOnlyCrops = items.filter(
     (item) => item.category !== "perk" && item.category !== "seed"
@@ -61,7 +61,8 @@ function extractTimelineData(items: DbItem[]): TimelineData[] {
 export default function TimelineModal({ onClose }: { onClose: () => void }) {
   const { safeAreaInsets } = useFrameContext();
   const [timelineData, setTimelineData] = useState<TimelineData[]>([]);
-  const { user, isLoading: isLoadingUser } = useUserMe();
+  const { state, mode } = useGame();
+  const { user, isLoading: isLoadingUser } = useUserMe(mode);
   const [userStats, setUserStats] = useState<
     | {
         level: number;
@@ -69,8 +70,6 @@ export default function TimelineModal({ onClose }: { onClose: () => void }) {
       }
     | undefined
   >(undefined);
-
-  const { state } = useGame();
 
   useEffect(() => {
     if (state.items) {

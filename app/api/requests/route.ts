@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createRequest } from "@/supabase/queries";
 import { z } from "zod";
 import { GAME_ITEMS } from "@/lib/game-constants";
-import { getItemById } from "@/lib/prisma/queries";
+import { createRequest, getItemById } from "@/lib/prisma/queries";
+import { Mode } from "@/lib/types/game";
 
 const requestSchema = z.object({
   itemId: z.number().min(1),
   quantity: z.number().min(1).max(10),
+  mode: z.nativeEnum(Mode),
 });
 
 export const POST = async (request: NextRequest) => {
@@ -20,7 +21,7 @@ export const POST = async (request: NextRequest) => {
     );
   }
 
-  const { itemId, quantity } = requestBody.data;
+  const { itemId, quantity, mode } = requestBody.data;
   const fid = request.headers.get("x-user-fid");
 
   if (!fid) {
@@ -51,9 +52,10 @@ export const POST = async (request: NextRequest) => {
 
   try {
     const newRequest = await createRequest({
-      fid: Number(fid),
-      itemId,
       quantity,
+      itemId,
+      fid: parseInt(fid),
+      mode,
     });
     return NextResponse.json(newRequest);
   } catch (error) {

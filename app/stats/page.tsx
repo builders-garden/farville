@@ -1,8 +1,8 @@
 import { AnimatePresence } from "framer-motion";
 import { Metadata } from "next";
-import { getReferralLeaderboard, getStats } from "../../supabase/queries";
 import StatsPage from "../../components/StatsPage";
 import { env } from "@/lib/env";
+import { getReferralLeaderboard, getStats } from "@/lib/prisma/queries";
 
 const appUrl = env.NEXT_PUBLIC_URL;
 

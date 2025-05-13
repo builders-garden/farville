@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { SeedType, PerkType, ActionType } from "@/lib/types/game";
+import { SeedType, PerkType, ActionType, Mode } from "@/lib/types/game";
 import { fertilizeBulk, harvestBulk, perkBulk, plantBulk } from "./utils";
 import { z } from "zod";
-import { getUser } from "@/lib/prisma/queries";
+import { getUserByMode } from "@/lib/prisma/queries";
 
 export interface GridBulkRequest {
   action: ActionType;
@@ -11,6 +11,7 @@ export interface GridBulkRequest {
     x: number;
     y: number;
   }[];
+  mode: Mode;
 }
 
 const requestSchema = z.object({
@@ -24,6 +25,7 @@ const requestSchema = z.object({
       y: z.number(),
     })
   ),
+  mode: z.nativeEnum(Mode),
 });
 
 export const POST = async (req: NextRequest) => {
@@ -31,12 +33,6 @@ export const POST = async (req: NextRequest) => {
 
   if (!fid) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  const user = await getUser(Number(fid));
-
-  if (!user) {
-    return NextResponse.json({ error: "User not found" }, { status: 404 });
   }
 
   const requestJson = await req.json();
@@ -49,7 +45,13 @@ export const POST = async (req: NextRequest) => {
     );
   }
 
-  const { action, itemSlug, cells } = requestBody.data;
+  const { action, itemSlug, cells, mode } = requestBody.data;
+
+  const user = await getUserByMode(Number(fid), mode);
+
+  if (!user) {
+    return NextResponse.json({ error: "User not found" }, { status: 404 });
+  }
 
   try {
     switch (action) {
@@ -69,14 +71,15 @@ export const POST = async (req: NextRequest) => {
         const plantResult = await plantBulk(
           Number(fid),
           cells,
-          itemSlug as SeedType
+          itemSlug as SeedType,
+          mode
         );
         return NextResponse.json({
           success: true,
           data: plantResult,
         });
       case ActionType.Harvest:
-        const harvestResult = await harvestBulk(Number(fid), cells);
+        const harvestResult = await harvestBulk(Number(fid), cells, mode);
         return NextResponse.json({
           success: true,
           data: harvestResult,
@@ -97,14 +100,15 @@ export const POST = async (req: NextRequest) => {
         const perkResult = await perkBulk(
           Number(fid),
           cells,
-          itemSlug as PerkType
+          itemSlug as PerkType,
+          mode
         );
         return NextResponse.json({
           success: true,
           data: perkResult,
         });
       case ActionType.Fertilize:
-        const fertilizeResult = await fertilizeBulk(Number(fid), cells);
+        const fertilizeResult = await fertilizeBulk(Number(fid), cells, mode);
         return NextResponse.json({
           success: true,
           data: fertilizeResult,

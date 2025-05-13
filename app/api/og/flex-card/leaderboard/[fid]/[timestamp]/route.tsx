@@ -4,8 +4,10 @@ import {
 } from "@/lib/utils";
 import { ImageResponse } from "next/og";
 import { getActiveStreaksCount } from "@/lib/prisma/queries";
-import { User } from "@prisma/client";
 import { env } from "@/lib/env";
+import { UserWithStatistic } from "@/lib/prisma/types";
+import { Mode } from "@/lib/types/game";
+import { MODE_DEFINITIONS } from "@/lib/modes/constants";
 
 export const dynamic = "force-dynamic";
 const size = {
@@ -13,7 +15,7 @@ const size = {
   height: 400,
 };
 
-interface PartialLeaderboard extends User {
+interface PartialLeaderboard extends UserWithStatistic {
   questCount?: number;
   position: number;
 }
@@ -53,6 +55,7 @@ export async function GET(
     const { searchParams } = new URL(request.url);
     const friends = searchParams.get("friends") === "true";
     const quests = searchParams.get("quests") === "true";
+    const mode = (searchParams.get("mode") as Mode) || Mode.Classic;
 
     const appUrl = env.NEXT_PUBLIC_URL;
 
@@ -64,7 +67,7 @@ export async function GET(
 
     const totActiveStreaks = await getActiveStreaksCount();
 
-    const leaderboardData = (await getPartialLeaderboardBasedOnFid(fid, {
+    const leaderboardData = (await getPartialLeaderboardBasedOnFid(fid, mode, {
       friends,
       type: quests ? "quests" : "xp",
       limit: 5,
@@ -210,36 +213,67 @@ export async function GET(
                 </span>
               </div>
 
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "flex-end",
-                  gap: "4px",
-                  fontSize: "8px",
-                }}
-              >
+              {mode !== Mode.Classic ? (
                 <div
                   style={{
-                    backgroundColor: "#FFB938",
-                    color: "#5c4121",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "6px",
+                    backgroundColor: "rgba(139, 90, 56, 0.8)",
                     borderRadius: "9999px",
                     padding: "4px 12px",
-                    fontWeight: "bold",
+                    boxShadow: "0 2px 8px rgba(139, 90, 56, 0.4)",
+                    border: "1px solid rgba(255, 185, 56, 0.2)",
+                    color: "#FFE0B2",
+                    fontSize: "12px",
                   }}
                 >
-                  {quests ? "Quests" : "Experience"}
+                  {MODE_DEFINITIONS[mode].name}
+                  <img
+                    src={`${appUrl}/images/modes/${mode}.png`}
+                    width="22"
+                    height="22"
+                    style={{
+                      objectFit: "contain",
+                      borderRadius: "3px",
+                      marginLeft: "2px",
+                      transform: "translateY(-1px)",
+                      filter: "brightness(1.2)",
+                    }}
+                  />
                 </div>
+              ) : (
                 <div
                   style={{
-                    backgroundColor: "#6D4C2C",
-                    borderRadius: "9999px",
-                    padding: "4px 12px",
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "flex-end",
+                    gap: "4px",
+                    fontSize: "8px",
                   }}
                 >
-                  {friends ? "Friends" : "Global"}
+                  <div
+                    style={{
+                      backgroundColor: "#FFB938",
+                      color: "#5c4121",
+                      borderRadius: "9999px",
+                      padding: "4px 12px",
+                      fontWeight: "bold",
+                    }}
+                  >
+                    {quests ? "Quests" : "Experience"}
+                  </div>
+                  <div
+                    style={{
+                      backgroundColor: "#6D4C2C",
+                      borderRadius: "9999px",
+                      padding: "4px 12px",
+                    }}
+                  >
+                    {friends ? "Friends" : "Global"}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
 
             {/* Leaderboard entries */}

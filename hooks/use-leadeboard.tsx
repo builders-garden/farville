@@ -1,35 +1,39 @@
-import { DbUser } from "@/supabase/types";
 import { useApiQuery } from "./use-api-query";
+import { Mode } from "@/lib/types/game";
+import { UserWithStatistic } from "@/lib/prisma/types";
 
 export interface LeaderboardResponse {
-  users: (DbUser & { questCount?: number })[];
+  users: (UserWithStatistic & { questCount?: number })[];
   targetPosition?: number;
   questCount?: number;
 }
 
 export const useLeaderboard = (
   friends: boolean,
+  mode: Mode,
   targetFid?: number,
-  quests = false
+  quests = false,
+  enabled = true
 ) => {
   const queryParams = new URLSearchParams();
   if (targetFid) queryParams.append("targetFid", targetFid.toString());
   if (friends) queryParams.append("friends", "true");
   if (quests) queryParams.append("type", "quests");
+  queryParams.append("mode", mode);
 
   const url = `/api/leaderboard${
     queryParams.toString() ? `?${queryParams.toString()}` : ""
   }`;
 
   return useApiQuery<{
-    users: (DbUser & { questCount?: number })[];
+    users: (UserWithStatistic & { questCount?: number })[];
     targetPosition?: number;
     questCount?: number;
   }>({
     url,
-    queryKey: ["leaderboard", targetFid, friends, quests],
+    queryKey: ["leaderboard", targetFid, friends, quests, mode],
     isProtected: true,
-    enabled: friends ? !!targetFid : true,
+    enabled: enabled && (friends ? !!targetFid : true),
     staleTime: 60 * 1000,
   });
 };

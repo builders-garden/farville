@@ -2,7 +2,7 @@ import { useAudio } from "@/context/AudioContext";
 import { useApiMutation } from "@/hooks/use-api-mutation";
 
 interface ClaimRewardVariables {
-  streakId: number;
+  streakId: string;
 }
 
 export const useClaimReward = ({

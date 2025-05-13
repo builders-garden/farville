@@ -1,8 +1,8 @@
 "use client";
+import { GameStats, ReferralLeaderboardEntry } from "@/lib/prisma/queries";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
-import { GameStats, ReferralLeaderboardEntry } from "../supabase/queries";
 
 interface StatsPageProps {
   referralLeaderboard: ReferralLeaderboardEntry[];
@@ -81,7 +81,7 @@ export default function StatsPage({
                 <tr className="text-white/70 text-[10px] border-b border-white/20">
                   <th className="pb-2 text-left px-[6px]">Rank</th>
                   <th className="pb-2 text-left px-[6px]">User</th>
-                  <th className="pb-2 text-right px-[6px]">XP</th>
+                  {/* <th className="pb-2 text-right px-[6px]">XP</th> */}
                   <th className="pb-2 text-right px-[6px]">Referred</th>
                 </tr>
               </thead>
@@ -136,9 +136,10 @@ export default function StatsPage({
                         </p>
                       </div>
                     </td>
-                    <td className="py-2 text-right px-[6px] text-xs">
+                    {/* Add XP column if needed */}
+                    {/* <td className="py-2 text-right px-[6px] text-xs">
                       {entry.xp}
-                    </td>
+                    </td> */}
                     <td className="py-2 text-right px-[6px] text-xs">
                       {entry.referralCount}
                     </td>

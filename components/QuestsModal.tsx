@@ -254,7 +254,7 @@ export default function QuestsModal({
                         {completedQuests?.daily.map((quest) => (
                           <Quest
                             quest={quest}
-                            key={quest.id}
+                            key={`${quest.fid}${quest.questId}`}
                             claimable={true}
                             onClaim={handleQuestClaim}
                           />
@@ -262,7 +262,7 @@ export default function QuestsModal({
                         {incompleteQuests?.daily.map((quest) => (
                           <Quest
                             quest={quest}
-                            key={quest.id}
+                            key={`${quest.fid}${quest.questId}`}
                             claimable={false}
                           />
                         ))}
@@ -278,7 +278,7 @@ export default function QuestsModal({
                         {completedQuests?.weekly.map((quest) => (
                           <Quest
                             quest={quest}
-                            key={quest.id}
+                            key={`${quest.fid}${quest.questId}`}
                             claimable={true}
                             onClaim={handleQuestClaim}
                           />
@@ -286,7 +286,7 @@ export default function QuestsModal({
                         {incompleteQuests?.weekly.map((quest) => (
                           <Quest
                             quest={quest}
-                            key={quest.id}
+                            key={`${quest.fid}${quest.questId}`}
                             claimable={false}
                           />
                         ))}

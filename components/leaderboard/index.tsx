@@ -17,23 +17,36 @@ import { LeaderboardUserAvatar } from "./LeaderboardUserAvatar";
 import ProfileModal from "../ProfileModal";
 import { Card, CardContent } from "@/components/ui/card";
 import { useWeeklyLeaderboard } from "@/hooks/use-weekly-leadeboard";
-import { DbUser } from "@/supabase/types";
 import InfoModal from "@/components/modals/InfoModal";
 import { FloatingShareButton } from "@/components/FloatingShareButton";
 import { LeaderboardPrizeCard } from "./LeaderboardPrizeCard";
+import { MODE_DEFINITIONS, ModeFeature } from "@/lib/modes/constants";
+import { UserWithStatistic } from "@/lib/prisma/types";
+import { Mode } from "@/lib/types/game";
 
 export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
-  const { state } = useGame();
-  const { data: globalData } = useLeaderboard(false, state?.user.fid);
-  const { data: friendsData } = useLeaderboard(true, state?.user.fid);
-  const { data: questsData } = useLeaderboard(false, state?.user.fid, true);
+  const { state, mode } = useGame();
+  const { data: globalData } = useLeaderboard(false, mode, state?.user.fid);
+  const { data: friendsData } = useLeaderboard(true, mode, state?.user.fid);
+  console.log("globalData", globalData);
+  const { data: questsData } = useLeaderboard(
+    false,
+    mode,
+    state?.user.fid,
+    true,
+    MODE_DEFINITIONS[mode]?.features?.includes(ModeFeature.Quests)
+  );
   const { data: questsFriendsData } = useLeaderboard(
     true,
+    mode,
     state?.user.fid,
-    true
+    true,
+    MODE_DEFINITIONS[mode]?.features?.includes(ModeFeature.Quests)
   );
   const [activeTab, setActiveTab] = useState<"global" | "friends" | "weekly">(
-    "weekly"
+    MODE_DEFINITIONS[mode]?.features?.includes(ModeFeature.Leagues)
+      ? "weekly"
+      : "global"
   );
   const [leaderboardType, setLeaderboardType] = useState<"xp" | "quests">("xp");
   const [leagueType, setLeagueType] = useState<number>(
@@ -46,21 +59,24 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
       state.weeklyStats.league === 3 ? state?.user.fid : undefined,
       isShowingCurrentWeek,
       3,
-      50
+      50,
+      MODE_DEFINITIONS[mode]?.features?.includes(ModeFeature.Leagues)
     );
   const { weeklyLeaderboard: silverWeeklyLeaderboard, refetch: refetchSilver } =
     useWeeklyLeaderboard(
       state.weeklyStats.league === 2 ? state?.user.fid : undefined,
       isShowingCurrentWeek,
       2,
-      50
+      50,
+      MODE_DEFINITIONS[mode]?.features?.includes(ModeFeature.Leagues)
     );
   const { weeklyLeaderboard: bronzeWeeklyLeaderboard, refetch: refetchBronze } =
     useWeeklyLeaderboard(
       state.weeklyStats.league === 1 ? state?.user.fid : undefined,
       isShowingCurrentWeek,
       1,
-      50
+      50,
+      MODE_DEFINITIONS[mode]?.features?.includes(ModeFeature.Leagues)
     );
 
   useEffect(() => {
@@ -132,7 +148,8 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
     const { castUrl } = leaderboardFlexCardComposeCastUrl(
       state.user.fid,
       leaderboardType,
-      activeTab === "friends"
+      activeTab === "friends",
+      mode
     );
     await sdk.actions.openUrl(castUrl);
   };
@@ -156,7 +173,7 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
 
   type LeaderboardData = {
     targetPosition?: number;
-    users?: (DbUser & {
+    users?: (UserWithStatistic & {
       currentScore?: number;
       lastScore?: number;
       league?: number;
@@ -176,9 +193,10 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
           : bronzeWeeklyLeaderboard;
       return {
         targetPosition: weeklyLeaderboard?.targetPosition,
-        users: weeklyLeaderboard?.users.map((user) => ({
+        users: weeklyLeaderboard?.users?.map((user) => ({
           ...user.user,
           ...user,
+          mode: user.user.mode as Mode,
           questCount: undefined,
         })),
         questCount: undefined,
@@ -243,7 +261,11 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
                 {/* Tabs */}
                 <div className="grid grid-cols-3 gap-1 xs:gap-2 mb-3 xs:mb-4">
                   {[
-                    { id: "weekly", label: "Weekly", icon: "🏆" },
+                    ...(MODE_DEFINITIONS[mode]?.features?.includes(
+                      ModeFeature.Leagues
+                    )
+                      ? [{ id: "weekly", label: "Weekly", icon: "🏆" }]
+                      : []),
                     { id: "global", label: "Global", icon: "🌍" },
                     { id: "friends", label: "Friends", icon: "👥" },
                   ].map((tab) => (
@@ -291,7 +313,11 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
                     <div className="flex gap-2 xs:gap-3">
                       {[
                         { id: "xp", label: "XP", icon: "⭐" },
-                        { id: "quests", label: "Quests", icon: "🎯" },
+                        ...(MODE_DEFINITIONS[mode]?.features?.includes(
+                          ModeFeature.Quests
+                        )
+                          ? [{ id: "quests", label: "Quests", icon: "🎯" }]
+                          : []),
                       ].map((tab) => (
                         <motion.button
                           key={tab.id}
@@ -333,49 +359,53 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
                 )}
 
                 {/* Weekly Card summary */}
-                {activeTab === "weekly" && (
-                  <div className="flex flex-col gap-1 xs:gap-2 mb-2">
-                    <div className="flex flex-row justify-between gap-1 xs:gap-2">
-                      {[
-                        { id: 3, label: "Gold", icon: "🏆" },
-                        { id: 2, label: "Iron", icon: "🥈" },
-                        { id: 1, label: "Wood", icon: "🥉" },
-                      ].map((tab) => (
-                        <motion.button
-                          key={tab.id}
-                          initial={{ opacity: 0, y: -20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          onClick={() => setLeagueType(tab.id)}
-                          className={`flex-1 px-2 xs:px-3 rounded-full flex items-center justify-center gap-1 xs:gap-1.5 transition-all duration-200 text-[10px] xs:text-xs
+                {activeTab === "weekly" &&
+                  MODE_DEFINITIONS[mode]?.features?.includes(
+                    ModeFeature.Leagues
+                  ) && (
+                    <div className="flex flex-col gap-1 xs:gap-2 mb-2">
+                      <div className="flex flex-row justify-between gap-1 xs:gap-2">
+                        {[
+                          { id: 3, label: "Gold", icon: "🏆" },
+                          { id: 2, label: "Iron", icon: "🥈" },
+                          { id: 1, label: "Wood", icon: "🥉" },
+                        ].map((tab) => (
+                          <motion.button
+                            key={tab.id}
+                            initial={{ opacity: 0, y: -20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            onClick={() => setLeagueType(tab.id)}
+                            className={`flex-1 px-2 xs:px-3 rounded-full flex items-center justify-center gap-1 xs:gap-1.5 transition-all duration-200 text-[10px] xs:text-xs
                         ${
                           leagueType === tab.id
                             ? "bg-[#FFB938] text-[#5c4121] font-semibold shadow-md"
                             : "text-white/70 hover:bg-white/10 border border-white/20"
                         }`}
-                          whileHover={{
-                            scale: leagueType === tab.id ? 1.05 : 1.02,
-                          }}
-                          whileTap={{ scale: 0.98 }}
-                        >
-                          <motion.span
-                            animate={{
-                              rotate: leagueType === tab.id ? [0, -5, 5, 0] : 0,
+                            whileHover={{
+                              scale: leagueType === tab.id ? 1.05 : 1.02,
                             }}
-                            transition={{
-                              duration: 0.5,
-                              repeat: Infinity,
-                              repeatDelay: 2,
-                            }}
-                            className="text-sm mb-1"
+                            whileTap={{ scale: 0.98 }}
                           >
-                            {tab.icon}
-                          </motion.span>
-                          <span>{tab.label}</span>
-                        </motion.button>
-                      ))}
+                            <motion.span
+                              animate={{
+                                rotate:
+                                  leagueType === tab.id ? [0, -5, 5, 0] : 0,
+                              }}
+                              transition={{
+                                duration: 0.5,
+                                repeat: Infinity,
+                                repeatDelay: 2,
+                              }}
+                              className="text-sm mb-1"
+                            >
+                              {tab.icon}
+                            </motion.span>
+                            <span>{tab.label}</span>
+                          </motion.button>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
               </div>
 
               {/* Scrollable leaderboard list */}
@@ -679,7 +709,9 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
               </div>
             </div>
           </motion.div>
-          {state.level >= 5 && <FloatingShareButton onClick={handleShare} />}
+          {(activeTab !== "weekly" || state.level >= 5) && (
+            <FloatingShareButton onClick={handleShare} />
+          )}
         </>
       )}
     </div>

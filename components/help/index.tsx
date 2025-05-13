@@ -62,9 +62,7 @@ export default function HelpModal({ onClose }: { onClose: () => void }) {
               title="Any issues?"
               description="Send a DM to the developers"
               onClick={() =>
-                sdk.actions.openUrl(
-                  "https://warpcast.com/~/inbox/create/5698?text=Hey%21%20I%20have%20this%20issue%20on%20Farville%3A"
-                )
+                sdk.actions.openUrl("https://warpcast.com/~/inbox/create/5698")
               }
             />
 

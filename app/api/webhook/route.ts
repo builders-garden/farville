@@ -1,11 +1,13 @@
 import { fetchUser } from "@/lib/neynar";
 import { sendFrameNotification } from "@/lib/notifs";
 import { trackEvent } from "@/lib/posthog/server";
-import { createUser, getUser } from "@/lib/prisma/queries";
 import {
-  setUserNotificationDetails,
+  createUserAndMode,
   deleteUserNotificationDetails,
-} from "@/supabase/queries";
+  getUserByMode,
+  setUserNotificationDetails,
+} from "@/lib/prisma/queries";
+import { Mode } from "@/lib/types/game";
 import {
   ParseWebhookEvent,
   parseWebhookEvent,
@@ -51,18 +53,23 @@ export async function POST(request: NextRequest) {
   switch (event.event) {
     case "frame_added":
       if (event.notificationDetails) {
-        const user = await getUser(fid);
+        const user = await getUserByMode(fid, Mode.Classic);
         if (!user) {
           const neynarUser = await fetchUser(fid.toString());
-          await createUser({
+          await createUserAndMode({
             fid,
             username: neynarUser.username,
             displayName: neynarUser.display_name,
             avatarUrl: neynarUser.pfp_url,
             walletAddress: neynarUser.custody_address,
-            xp: 0,
-            coins: 0,
-            expansions: 1,
+            statistics: {
+              create: {
+                mode: Mode.Classic,
+                xp: 0,
+                coins: 0,
+                expansions: 1,
+              },
+            },
             notificationDetails: JSON.stringify(event.notificationDetails),
             mintedOG: false,
             selectedAvatarUrl: null,

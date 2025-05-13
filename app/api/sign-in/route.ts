@@ -2,46 +2,41 @@ import { fetchUser } from "@/lib/neynar";
 import { NextRequest, NextResponse } from "next/server";
 import { verifyMessage } from "viem";
 import * as jose from "jose";
-import {
-  addReferral,
-  getGridCells,
-  initializeGrid,
-  initDailyUserQuests,
-  initWeeklyUserQuests,
-  // initMonthlyUserQuests,
-} from "@/supabase/queries";
 import { trackEvent } from "@/lib/posthog/server";
 import {
-  createUser,
-  createUserLeaderboardEntry,
-  getUser,
-  getUserLeaderboardEntry,
+  addReferral,
+  createUserAndMode,
+  getUserByMode,
+  getUserGridCells,
+  getUserModes,
   giftStarterPack,
+  initializeGrid,
 } from "@/lib/prisma/queries";
-import { getUserLeague } from "@/lib/utils";
+import { initQuestsAndLeaderboardEntry } from "@/lib/utils";
 import { env } from "@/lib/env";
-import { getUserHasQuests } from "@/lib/prisma/queries";
-import { QuestType } from "@/lib/types/game";
+import { Mode } from "@/lib/types/game";
 
 export const POST = async (req: NextRequest) => {
-  const { fid, referrerFid, signature, message, userNow } = await req.json();
+  const { fid, referrerFid, signature, message } = await req.json();
 
-  let user = await getUser(fid);
+  let user = await getUserByMode(fid, Mode.Classic);
 
   if (!user) {
     const newUser = await fetchUser(fid);
-    user = await createUser({
+    user = await createUserAndMode({
       fid: fid,
       username: newUser.username,
       displayName: newUser.display_name,
       avatarUrl: newUser.pfp_url,
       walletAddress: newUser.custody_address,
-      xp: 0,
-      coins: 0,
-      expansions: 1,
-      notificationDetails: "",
-      mintedOG: false,
-      selectedAvatarUrl: null,
+      statistics: {
+        create: {
+          mode: Mode.Classic,
+          xp: 0,
+          coins: 0,
+          expansions: 1,
+        },
+      },
     });
 
     if (referrerFid) {
@@ -66,40 +61,15 @@ export const POST = async (req: NextRequest) => {
 
   // check if the user has already the grid cells
   // if not, initialize the grid
-  const gridCells = await getGridCells(fid);
+  const gridCells = await getUserGridCells(fid, Mode.Classic);
   if (gridCells.length === 0) {
-    await initializeGrid(fid);
+    await initializeGrid(fid, Mode.Classic);
     // Give them a starter pack
-    await giftStarterPack(fid);
-    // await initializeUserQuest(fid);
+    await giftStarterPack(fid, Mode.Classic);
   }
 
-  // generate new entry inside the user leaderboard if it doesn't exist
-  let weeklyUserLeaderboard = await getUserLeaderboardEntry(fid);
-
-  if (!weeklyUserLeaderboard) {
-    const userLeague = getUserLeague(user.xp);
-    weeklyUserLeaderboard = await createUserLeaderboardEntry(fid, {
-      league: userLeague,
-    });
-  }
-
-  // Check if the user has daily, weekly and monthly quests
-  // If not, initialize them
-  const dailyQuests = await getUserHasQuests(fid, {
-    type: [QuestType.Daily],
-    activeToday: true,
-    timeToCompare: userNow,
-  });
-  const weeklyQuests = await getUserHasQuests(Number(fid), {
-    type: [QuestType.Weekly],
-  });
-  if (!dailyQuests || dailyQuests?.length === 0) {
-    await initDailyUserQuests(Number(fid));
-  }
-  if (!weeklyQuests || weeklyQuests?.length === 0) {
-    await initWeeklyUserQuests(Number(fid));
-  }
+  const userModes = await getUserModes(fid);
+  await initQuestsAndLeaderboardEntry(fid, userModes);
 
   // Generate a session token using fid and current timestamp
   const jwtToken = await new jose.SignJWT({

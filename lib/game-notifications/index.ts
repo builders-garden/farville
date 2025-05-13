@@ -1,4 +1,4 @@
-import { SeedType } from "@/lib/types/game";
+import { Mode, SeedType } from "@/lib/types/game";
 import { qstashPublishJSON } from "../qstash";
 import { CROP_DATA } from "@/lib/game-constants";
 import { env } from "@/lib/env";
@@ -9,6 +9,7 @@ export async function sendDelayedNotification(
   title: string,
   text: string,
   category: string,
+  mode: Mode,
   delay?: number | `${bigint}s` | `${bigint}m` | `${bigint}h` | `${bigint}d`
 ) {
   if (env.NEXT_PUBLIC_URL === "http://localhost:3000") {
@@ -21,6 +22,7 @@ export async function sendDelayedNotification(
       title,
       text,
       category,
+      mode,
     },
     delay,
   });

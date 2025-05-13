@@ -1,4 +1,3 @@
-import { DbItem } from "@/supabase/types";
 import { motion } from "framer-motion";
 import { useState } from "react";
 import {
@@ -8,9 +7,10 @@ import {
   AccordionTrigger,
 } from "../ui/accordion";
 import { Input } from "../ui/input";
+import { Item } from "@prisma/client";
 
 interface PerkItemProps {
-  perk: DbItem;
+  perk: Item;
   ownedQuantity: number;
   onBuyClick: (itemId: number, quantity: number) => void;
   gridSize: number;

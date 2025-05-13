@@ -1,4 +1,6 @@
-import { getUser } from "@/lib/prisma/queries";
+import { getUserByMode } from "@/lib/prisma/queries";
+import { Mode } from "@/lib/types/game";
+import { validMode } from "@/lib/validators/mode";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
@@ -7,6 +9,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const user = await getUser(Number(fid));
+  const mode = request.nextUrl.searchParams.get("mode") || undefined;
+  if (mode && !validMode(mode)) {
+    return NextResponse.json({ error: "Invalid mode" }, { status: 400 });
+  }
+  const user = await getUserByMode(Number(fid), mode as Mode | Mode.Classic);
   return NextResponse.json(user);
 }

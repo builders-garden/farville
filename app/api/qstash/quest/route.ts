@@ -2,9 +2,11 @@ import { NextRequest } from "next/server";
 import { z } from "zod";
 import { calculateUserQuestsProgress } from "./utils";
 import Logger from "@/lib/logger";
+import { Mode } from "@/lib/types/game";
 
 const requestSchema = z.object({
   fid: z.number().min(1),
+  mode: z.nativeEnum(Mode),
   category: z.string().min(1),
   itemId: z.number().optional(),
   itemAmount: z.number().default(1),
@@ -21,7 +23,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const { fid, category, itemId, itemAmount } = requestBody.data;
+  const { fid, mode, category, itemId, itemAmount } = requestBody.data;
 
   try {
     Logger.log(
@@ -29,6 +31,7 @@ export async function POST(req: NextRequest) {
     );
     const updatedQuests = await calculateUserQuestsProgress(
       fid,
+      mode,
       category,
       itemId,
       itemAmount
@@ -40,8 +43,10 @@ export async function POST(req: NextRequest) {
       );
     } else {
       Logger.log(
-        `qstash call updated ${updatedQuests?.length} quests (${updatedQuests
-          ?.map((q) => `${q.id}[progress: ${q.progress}, status: ${q.status}]`)
+        `qstash updated ${updatedQuests?.length} quests (${updatedQuests
+          ?.map(
+            (q) => `${q.questId}[progress: ${q.progress}, status: ${q.status}]`
+          )
           .join(
             ", "
           )}) for user ${fid} with data: category="${category}", itemId=${itemId}, amount=${itemAmount}`

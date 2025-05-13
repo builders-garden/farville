@@ -1,7 +1,8 @@
+import { Mode } from "@/lib/types/game";
 import { prisma } from "../client";
 import { getUserStreaks } from "./streak";
-import { removeUserItem } from "./user-has-items";
-import { UserFrosts } from "@prisma/client";
+import { removeUserItem } from "./user-has-item";
+import { UserFrost } from "@prisma/client";
 
 export const getUserFrosts = async (fid: number) => {
   const streaks = await getUserStreaks(fid);
@@ -14,7 +15,7 @@ export const getUserFrosts = async (fid: number) => {
     };
   }
 
-  const userFrosts: UserFrosts[] = await prisma.userFrosts.findMany({
+  const userFrosts: UserFrost[] = await prisma.userFrost.findMany({
     where: {
       streakId: {
         in: streakIds,
@@ -43,7 +44,7 @@ export const getUserFrosts = async (fid: number) => {
 
 export const applyUserFrost = async (
   fid: number,
-  streakId: number,
+  streakId: string,
   from: Date,
   amount: number,
   frostItemId: number
@@ -57,12 +58,23 @@ export const applyUserFrost = async (
     };
   });
   try {
-    await prisma.userFrosts.createMany({
+    await prisma.userFrost.createMany({
       data: records,
     });
-    await removeUserItem(fid, frostItemId, amount);
+    await removeUserItem(fid, frostItemId, amount, Mode.Classic);
   } catch (error) {
     console.error("Error creating user frosts:", error);
     throw new Error("Failed to apply user frost");
   }
+};
+
+export const getUserFrostsByStreakId = async (streakId: string) => {
+  return await prisma.userFrost.findMany({
+    where: {
+      streakId,
+    },
+    orderBy: {
+      frozenAt: "desc",
+    },
+  });
 };

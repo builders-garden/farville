@@ -7,16 +7,16 @@ import { UserItem } from "@/hooks/use-user-items";
 import Image from "next/image";
 import ItemDetailsPopup from "./ItemDetailsPopup";
 import { useState } from "react";
-import { DbItem } from "@/supabase/types";
 import { requestItemComposeCastUrl } from "@/lib/utils";
 import sdk from "@farcaster/frame-sdk";
 import { useCreateRequest } from "@/hooks/game-actions/use-create-request";
 import InventoryItem from "./InventoryItem";
+import { Item } from "@prisma/client";
 
 export default function InventoryModal({ onClose }: { onClose: () => void }) {
-  const { state, setSelectedSeed, setSelectedPerk } = useGame();
+  const { state, setSelectedSeed, setSelectedPerk, mode } = useGame();
   const { safeAreaInsets, context } = useFrameContext();
-  const [selectedItem, setSelectedItem] = useState<DbItem | null>(null);
+  const [selectedItem, setSelectedItem] = useState<Item | null>(null);
   const [requestQuantity, setRequestQuantity] = useState(1);
   const { mutate: createRequest } = useCreateRequest();
   const [castUrl, setCastUrl] = useState<string | null>(null);
@@ -30,11 +30,11 @@ export default function InventoryModal({ onClose }: { onClose: () => void }) {
     }
   };
 
-  const handleItemClick = (item: DbItem) => {
+  const handleItemClick = (item: Item) => {
     setSelectedItem(item);
   };
 
-  const handleUseItem = (item: DbItem) => {
+  const handleUseItem = (item: Item) => {
     if (item.category === "perk") {
       const userPerk = state.perks.find((p) => p.item.slug === item.slug);
       if (userPerk) {
@@ -44,21 +44,23 @@ export default function InventoryModal({ onClose }: { onClose: () => void }) {
     setSelectedItem(null);
   };
 
-  const handleRequestItem = async (item: DbItem) => {
+  const handleRequestItem = async (item: Item) => {
     if (!context?.user.fid) return;
 
     try {
-      await createRequest(
+      createRequest(
         {
           itemId: item.id,
           quantity: requestQuantity,
+          mode,
         },
         {
           onSuccess: async (data) => {
             const { castUrl, requestUrl } = requestItemComposeCastUrl(
               data.id,
               item,
-              requestQuantity
+              requestQuantity,
+              mode
             );
             setCastUrl(castUrl);
             setRequestUrl(requestUrl);

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { pinata } from "@/lib/pinata";
-import { updateUserCollectible } from "@/supabase/queries";
 import { CollectibleStatus } from "@/lib/types/game";
+import { updateUserCollectible } from "@/lib/prisma/queries";
 
 export async function POST(request: Request) {
   try {

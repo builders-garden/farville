@@ -9,7 +9,12 @@ import {
   useRef,
   useState,
 } from "react";
-import { ActionType, type CropType, type SeedType } from "../lib/types/game";
+import {
+  ActionType,
+  Mode,
+  type CropType,
+  type SeedType,
+} from "../lib/types/game";
 import { GameState, useGameState } from "@/hooks/use-game-state";
 import { useBuyItem } from "@/hooks/game-actions/use-buy-item";
 import { useExpandGrid } from "@/hooks/game-actions/use-expand-grid";
@@ -17,21 +22,24 @@ import { useSellItem } from "@/hooks/game-actions/use-sell-item";
 import { UserItem } from "@/hooks/use-user-items";
 import { GridBulkRequest } from "@/app/api/grid-bulk/route";
 import { useGridBulkOperations } from "@/hooks/game-actions/use-grid-bulk-operations";
-import {
-  DbCollectible,
-  DbGridCell,
-  DbUserHarvestedCrop,
-  DbUserHasCollectible,
-} from "@/supabase/types";
 import { GridBulkResult } from "@/app/api/grid-bulk/utils";
 import toast from "react-hot-toast";
 import { useClaimReward } from "@/hooks/game-actions/use-claim-reward";
 import { useUpdateUserStreaks } from "@/hooks/use-user-streaks";
+import {
+  Collectible,
+  UserGridCell,
+  UserHarvestedCrop,
+  UserHasCollectible,
+} from "@prisma/client";
+import { useInitializeMode } from "@/hooks/game-actions/use-initialize-mode";
+// import { validMode } from "@/lib/validators/mode";
 
 // Update the OverlayType to be more flexible with parameters
 export type OverlayConfig =
   | { type: "welcome" }
-  | { type: "requests"; id: number }
+  | { type: "requests"; id: string }
+  | { type: "voucher"; slug: string }
   | null;
 
 // Update the floatingNumbers type to be an array
@@ -48,6 +56,8 @@ export interface FloatingNumberData {
 
 // Update the context type
 interface GameContextType {
+  mode: Mode;
+  setMode: Dispatch<SetStateAction<Mode>>;
   state: GameState;
   selectedSeed: SeedType | null;
   setSelectedSeed: (seed: SeedType | null) => void;
@@ -60,9 +70,9 @@ interface GameContextType {
   //   y: number;
   //   setIsLoading: Dispatch<SetStateAction<boolean>>;
   // }) => void;
-  buyItem: (params: { itemId: number; quantity: number }) => void;
-  sellItem: (params: { itemId: number; quantity: number }) => void;
-  expandGrid: () => void;
+  buyItem: (params: { itemId: number; quantity: number; mode: Mode }) => void;
+  sellItem: (params: { itemId: number; quantity: number; mode: Mode }) => void;
+  expandGrid: (params: { mode: Mode }) => void;
   refetchState: () => Promise<void>;
   refetchUser: () => Promise<void>;
   refetchClaimableQuests: () => Promise<void>;
@@ -97,7 +107,7 @@ interface GameContextType {
   setFloatingNumbers: Dispatch<SetStateAction<FloatingNumberData[]>>;
   remainingUses: number;
   setRemainingUses: (uses: number) => void;
-  updateGridCells: (updatedCells: Partial<DbGridCell>[]) => void;
+  updateGridCells: (updatedCells: Partial<UserGridCell>[]) => void;
   updateUserItems: (updatedItems: Partial<UserItem>[]) => void;
   updateUser: (newParams: {
     xp?: number;
@@ -105,9 +115,9 @@ interface GameContextType {
     coins?: number;
     mintedOG?: boolean;
   }) => void;
-  claimRewards: (variables: { streakId: number }) => void;
+  claimRewards: (variables: { streakId: string }) => void;
   updateUserHarvestedCrops: (
-    updatedUserHarvestedCrops: DbUserHarvestedCrop[]
+    updatedUserHarvestedCrops: UserHarvestedCrop[]
   ) => void;
   showHarvestedNewGoldCrops: boolean;
   setShowHarvestedNewGoldCrops: Dispatch<SetStateAction<boolean>>;
@@ -125,10 +135,21 @@ interface GameContextType {
     league?: number;
   }) => void;
   updateUserCollectibles: (
-    updatedCollectibles: (DbCollectible & {
-      userHasCollectibles: DbUserHasCollectible | null;
+    updatedCollectibles: (Collectible & {
+      userHasCollectible: UserHasCollectible | null;
     })[]
   ) => void;
+  initializeMode: (params: { mode: Mode }) => void;
+  showNotActiveMode: {
+    show: boolean;
+    mode: Mode;
+  };
+  setShowNotActiveMode: Dispatch<
+    SetStateAction<{
+      show: boolean;
+      mode: Mode;
+    }>
+  >;
 }
 
 export const GameContext = createContext<GameContextType | null>(null);
@@ -140,6 +161,11 @@ export function GameProvider({
   children: React.ReactNode;
   initialOverlay?: OverlayConfig;
 }) {
+  // const [mode, setMode] = useState<Mode>(() => {
+  //   const storedMode = localStorage.getItem("mode");
+  //   return validMode(storedMode || "") ? (storedMode as Mode) : Mode.Classic;
+  // });
+  const [mode, setMode] = useState<Mode>(Mode.Classic);
   const [showInventory, setShowInventory] = useState(false);
   const [showMarket, setShowMarket] = useState(false);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
@@ -152,6 +178,10 @@ export function GameProvider({
   const [showProfile, setShowProfile] = useState(false);
   const [showMintOGBadge, setShowMintOGBadge] = useState(false);
   const [showMintCollectible, setShowMintCollectible] = useState(false);
+  const [showNotActiveMode, setShowNotActiveMode] = useState<{
+    show: boolean;
+    mode: Mode;
+  }>({ show: false, mode: Mode.Classic });
   const {
     state,
     refetch,
@@ -161,7 +191,7 @@ export function GameProvider({
     updateUserHarvestedCrops,
     updateUserWeeklyStats,
     updateUserCollectibles,
-  } = useGameState();
+  } = useGameState(mode);
   const [selectedSeed, setSelectedSeed] = useState<SeedType | null>(null);
   const [selectedPerk, setSelectedPerk] = useState<UserItem | null>(null);
   const [isActionInProgress, setIsActionInProgress] = useState(false);
@@ -257,6 +287,7 @@ export function GameProvider({
     }
   }, [gridBulkOperations, sendGridBulkOperations, toastIds]);
 
+  // TODO: need to update this to use the Mode
   const updateUserItemsStateFromReward = (
     rewards: {
       crop: string;
@@ -273,10 +304,10 @@ export function GameProvider({
           crop = {
             item: cropItem,
             quantity: 0,
-            id: cropItem.id,
-            userFid: state.user.fid,
+            fid: state.user.fid,
+            mode,
             itemId: cropItem.id,
-            createdAt: new Date().toISOString(),
+            createdAt: new Date(),
           };
         } else {
           console.error("Crop item not found", reward.crop);
@@ -291,13 +322,13 @@ export function GameProvider({
       } else {
         updatedItems.push({
           item: {
-            ...crop.item,
+            ...crop?.item,
             category: "crop",
           },
-          quantity: crop?.quantity + reward.amount,
-          itemId: crop.item.id,
-          userFid: state.user.fid,
-          createdAt: new Date().toISOString(),
+          quantity: (crop?.quantity ?? 0) + reward.amount,
+          itemId: crop?.item.id,
+          fid: state.user.fid,
+          createdAt: new Date(),
         });
       }
     }
@@ -311,7 +342,7 @@ export function GameProvider({
     }[],
     state: GameState
   ) => {
-    const updatedUserHarvestedCrops: DbUserHarvestedCrop[] = [];
+    const updatedUserHarvestedCrops: UserHarvestedCrop[] = [];
     for (const reward of rewards) {
       let userHarvestedCropSummary = state.harvestedCropsSummary.find(
         (item) => item.crop === reward.crop
@@ -321,7 +352,7 @@ export function GameProvider({
           fid: state.user.fid,
           crop: reward.crop,
           quantity: 0,
-          createdAt: new Date().toISOString(),
+          createdAt: new Date(),
         };
       }
       const updatedUserHarvestedCrop = updatedUserHarvestedCrops.findIndex(
@@ -360,10 +391,10 @@ export function GameProvider({
           specialCrop = {
             item: cropItem,
             quantity: 0,
-            id: cropItem.id,
-            userFid: state.user.fid,
+            fid: state.user.fid,
             itemId: cropItem.id,
-            createdAt: new Date().toISOString(),
+            mode,
+            createdAt: new Date(),
           };
         } else {
           console.error("Special crop item not found", newGoldCrop.crop);
@@ -378,13 +409,13 @@ export function GameProvider({
       } else {
         updatedSpecialCrops.push({
           item: {
-            ...specialCrop.item,
+            ...specialCrop?.item,
             category: "special-crop",
           },
-          quantity: specialCrop?.quantity + newGoldCrop.amount,
-          itemId: specialCrop.item.id,
-          userFid: state.user.fid,
-          createdAt: new Date().toISOString(),
+          quantity: (specialCrop?.quantity ?? 0) + newGoldCrop.amount,
+          itemId: specialCrop?.item.id,
+          fid: state.user.fid,
+          createdAt: new Date(),
         });
       }
     }
@@ -478,6 +509,19 @@ export function GameProvider({
     setIsActionInProgress,
   });
 
+  const { mutate: initializeMode } = useInitializeMode({
+    refetchUser: refetch.user,
+    refetchUserItems: refetch.userItems,
+    refetchUserGrid: refetch.grid,
+    refetchUserModes: refetch.userModes,
+    isActionInProgress,
+    setIsActionInProgress,
+  });
+
+  useEffect(() => {
+    localStorage.setItem("mode", mode);
+  }, [mode]);
+
   if (!state) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -489,6 +533,8 @@ export function GameProvider({
   return (
     <GameContext.Provider
       value={{
+        mode,
+        setMode,
         state,
         selectedSeed,
         setSelectedSeed,
@@ -550,6 +596,9 @@ export function GameProvider({
         setNewGoldCropsFound,
         updateUserWeeklyStats,
         updateUserCollectibles,
+        initializeMode,
+        showNotActiveMode,
+        setShowNotActiveMode,
       }}
     >
       {children}

@@ -1,6 +1,6 @@
 import { Dispatch, SetStateAction } from "react";
 import { useApiMutation } from "./use-api-mutation";
-import { DbUserHasCollectible } from "@/supabase/types";
+import { UserHasCollectible } from "@prisma/client";
 
 export const useGetMidjourneyImage = ({
   setMidjourneyImageUrl,
@@ -13,7 +13,7 @@ export const useGetMidjourneyImage = ({
   setMidjourneyImageUrls: Dispatch<SetStateAction<string[] | null>>;
   setIsLoading: Dispatch<SetStateAction<boolean>>;
   handleUpdateStateCollectibles: (
-    userHasCollectibles: DbUserHasCollectible
+    userHasCollectibles: UserHasCollectible
   ) => void;
   setErrorOnGeneration: Dispatch<SetStateAction<boolean>>;
 }) => {
@@ -37,7 +37,7 @@ export const useGetMidjourneyImage = ({
       status: string;
       imageUrl: string;
       imageUrls: string[];
-      userHasCollectible?: DbUserHasCollectible;
+      userHasCollectible?: UserHasCollectible;
     }) => {
       // set stuff only if it's not still polling
       if (data.status !== "pending") {

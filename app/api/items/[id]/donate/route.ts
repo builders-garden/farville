@@ -4,26 +4,25 @@ import { sendDelayedNotification } from "@/lib/game-notifications";
 import {
   addUserItem,
   getItemById,
-  getUser,
+  getUserByMode,
   getUserDonationsOfToday,
   getUserItemByItemId,
+  removeUserItem,
   updateUserDonationHistory,
   updateUserWeeklyScore,
   updateUserXP,
+  incrementRequestFilledQuantity,
+  getRequestById,
 } from "@/lib/prisma/queries";
 import { userCanDonate } from "@/lib/utils";
-import {
-  removeUserItem,
-  incrementRequestFilledQuantity,
-} from "@/supabase/queries";
-import { PerkType, SpecialItemType } from "@/lib/types/game";
+import { Mode, PerkType, SpecialItemType } from "@/lib/types/game";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
 const requestSchema = z.object({
   quantity: z.number().min(1).max(10),
   toFid: z.number().min(1),
-  requestId: z.number().optional(),
+  requestId: z.string(),
 });
 
 export const POST = async (
@@ -51,7 +50,15 @@ export const POST = async (
 
   const { quantity, toFid, requestId } = requestBody.data;
 
-  const user = await getUser(Number(fid));
+  const request = await getRequestById(requestId);
+
+  if (!request) {
+    return NextResponse.json({ message: "Request not found" }, { status: 404 });
+  }
+
+  const mode = request.mode as Mode;
+
+  const user = await getUserByMode(Number(fid), mode);
   if (!user) {
     return NextResponse.json({ message: "User not found" }, { status: 404 });
   }
@@ -82,7 +89,7 @@ export const POST = async (
   }
 
   // check if the user has enough items
-  const userItem = await getUserItemByItemId(Number(fid), itemId);
+  const userItem = await getUserItemByItemId(Number(fid), itemId, mode);
   if (!userItem || userItem.quantity < quantity) {
     return NextResponse.json(
       { message: "Not enough items to donate" },
@@ -90,13 +97,13 @@ export const POST = async (
     );
   }
 
-  const todayDonations = await getUserDonationsOfToday(Number(fid));
+  const todayDonations = await getUserDonationsOfToday(Number(fid), mode);
 
   const {
     canDonateToReceiver,
     canDonateToAnotherUser,
     lastDonationToReceiver,
-  } = userCanDonate(todayDonations, Number(toFid));
+  } = userCanDonate(todayDonations, Number(toFid), mode);
 
   if (!canDonateToReceiver && !canDonateToAnotherUser) {
     return NextResponse.json(
@@ -107,23 +114,23 @@ export const POST = async (
     );
   }
 
-  await removeUserItem(Number(fid), itemId, quantity);
-  await addUserItem(Number(toFid), itemId, quantity);
+  await removeUserItem(Number(fid), itemId, quantity, mode);
+  await addUserItem(Number(toFid), itemId, quantity, mode);
   const userAfterUpdate = await updateUserXP(
     Number(fid),
-    quantity * XP_PER_DONATED_ITEM
+    quantity * XP_PER_DONATED_ITEM,
+    mode
   );
   await updateUserWeeklyScore(
     Number(fid),
     quantity * XP_PER_DONATED_ITEM,
     userAfterUpdate.newLevel,
     user.xp,
-    userAfterUpdate.didLevelUp
+    userAfterUpdate.didLevelUp,
+    mode
   );
 
-  if (requestId) {
-    await incrementRequestFilledQuantity(Number(requestId), quantity);
-  }
+  await incrementRequestFilledQuantity(requestId, quantity);
 
   // POST: the user can donate
   // create or update here the user donation history
@@ -137,16 +144,18 @@ export const POST = async (
         ? 1
         : (lastDonationToReceiver?.times ?? 0) + 1,
     lastDonation: new Date(),
+    mode,
   });
 
   await Promise.all([
-    sendQuestsCalculation(Number(fid), "donate", itemId, quantity),
-    sendQuestsCalculation(Number(toFid), "receive", itemId, quantity),
+    sendQuestsCalculation(Number(fid), "donate", mode, itemId, quantity),
+    sendQuestsCalculation(Number(toFid), "receive", mode, itemId, quantity),
     sendDelayedNotification(
       toFid.toString(),
       "New Donation!",
       `${user?.username} donated ${quantity} ${item.name} to you!`,
       "donation",
+      mode,
       0
     ),
   ]);

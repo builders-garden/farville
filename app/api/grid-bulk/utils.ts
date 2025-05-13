@@ -7,32 +7,39 @@ import {
 import { sendBatchToPostHog } from "@/lib/posthog/server";
 import {
   addUserItem,
+  getUserGridCells,
+  getUserHarvestedCrops,
   getUserItemBySlug,
   removeUserItem,
   updateGridCellsBulk,
   updateUserWeeklyScore,
   updateUserXP,
+  upsertUserHarvestedCrop,
 } from "@/lib/prisma/queries";
 import {
   calculateGoldCropsInBatch,
   getAchievementProgressByCrop,
   getBoostTime,
+  getGrowthTimeBasedOnMode,
+  isBoostable,
 } from "@/lib/utils";
 import {
-  getGridCells,
-  getUserHarvestedCrops,
-  upsertUserHarvestedCrop,
-} from "@/supabase/queries";
-import { DbGridCell } from "@/supabase/types";
-import { ActionType, CropType, PerkType, SeedType } from "@/lib/types/game";
+  ActionType,
+  CropType,
+  Mode,
+  PerkType,
+  SeedType,
+} from "@/lib/types/game";
 import { NextResponse } from "next/server";
 import { sendQuestsCalculation } from "../grid-cells/utils";
+import { UserGridCell, UserHarvestedCrop } from "@prisma/client";
+import { MODE_DEFINITIONS, ModeFeature } from "@/lib/modes/constants";
 
 export interface GridBulkResult {
   type: ActionType;
   cells: {
-    ok: DbGridCell[];
-    nok: (DbGridCell | undefined)[];
+    ok: UserGridCell[];
+    nok: (UserGridCell | undefined)[];
   };
   // harvest only
   rewards?: {
@@ -58,17 +65,23 @@ export interface GridBulkResult {
 export const plantBulk = async (
   fid: number,
   cells: { x: number; y: number }[],
-  seedType: SeedType
+  seedType: SeedType,
+  mode: Mode
 ) => {
-  const userSeeds = await getUserItemBySlug(fid, seedType);
+  const userSeeds = await getUserItemBySlug(fid, seedType, mode);
 
   if (!userSeeds || userSeeds.quantity < cells.length) {
-    return NextResponse.json({ error: "User does not have enough seeds" });
+    return NextResponse.json(
+      { error: "User does not have enough seeds" },
+      {
+        status: 400,
+      }
+    );
   }
-  const gridCells = await getGridCells(fid);
+  const gridCells = await getUserGridCells(fid, mode);
 
-  const notPlantedCells: (DbGridCell | undefined)[] = [];
-  const plantableCells: DbGridCell[] = [];
+  const notPlantedCells: (UserGridCell | undefined)[] = [];
+  const plantableCells: UserGridCell[] = [];
   // check if the cells are already planted
   for (const cell of cells) {
     const gridCell = gridCells.find((gc) => gc.x === cell.x && gc.y === cell.y);
@@ -78,31 +91,42 @@ export const plantBulk = async (
       plantableCells.push(gridCell);
     }
   }
-  const cropType = seedType.replace("-seeds", "");
+  const cropType = seedType.replace("-seeds", "") as CropType;
   const updatedGridCellsBulk = await updateGridCellsBulk(
     fid,
     plantableCells.map((cell) => ({
       ...cell,
+      mode,
       cropType,
       plantedAt: new Date(),
-      harvestAt: new Date(Date.now() + CROP_DATA[cropType].growthTime),
+      harvestAt: new Date(
+        Date.now() + getGrowthTimeBasedOnMode(cropType, mode)
+      ),
     }))
   );
 
   // TODO: add different track
   if (updatedGridCellsBulk.length > 0) {
-    await removeUserItem(fid, userSeeds.itemId, updatedGridCellsBulk.length);
+    await removeUserItem(
+      fid,
+      userSeeds.itemId,
+      updatedGridCellsBulk.length,
+      mode
+    );
 
     await sendDelayedNotification(
       fid.toString(),
       `Harvest time! 🌾`,
       `Your ${getCropNameFromSeeds(seedType)} are ready to harvest!`,
       "harvest",
+      mode,
       getGrowthTime(seedType)
     );
+
     await sendQuestsCalculation(
       fid,
       "plant",
+      mode,
       userSeeds.itemId,
       updatedGridCellsBulk.length
     );
@@ -128,9 +152,10 @@ export const plantBulk = async (
 
 export const harvestBulk = async (
   fid: number,
-  cells: { x: number; y: number }[]
+  cells: { x: number; y: number }[],
+  mode: Mode
 ) => {
-  const gridCells = await getGridCells(fid);
+  const gridCells = await getUserGridCells(fid, mode);
   const harvestableCells = [];
   const notHarvestableCells = [];
 
@@ -161,6 +186,7 @@ export const harvestBulk = async (
     fid,
     harvestableCells.map((cell) => ({
       ...cell,
+      mode,
       cropType: null,
       plantedAt: null,
       isReadyToHarvest: false,
@@ -168,20 +194,12 @@ export const harvestBulk = async (
       speedBoostedAt: null,
     }))
   );
-  const rewards = await rewardUserBulk(fid, crops);
+  const rewards = await rewardUserBulk(fid, crops, mode);
 
   // update user items based on the rewards for each type of crop
   const harvestCropSummary: {
     [x: string]: number;
   } = {};
-
-  rewards.cropsWithRewards.forEach((crop) => {
-    if (harvestCropSummary[crop.crop]) {
-      harvestCropSummary[crop.crop] += crop.amount;
-    } else {
-      harvestCropSummary[crop.crop] = crop.amount;
-    }
-  });
 
   const goldCrops: {
     crop: string;
@@ -191,52 +209,76 @@ export const harvestBulk = async (
     crop: string;
     step: number;
   }[] = [];
-  const userHarvestedCrops = await getUserHarvestedCrops(fid);
+
+  rewards.cropsWithRewards.forEach((crop) => {
+    if (harvestCropSummary[crop.crop]) {
+      harvestCropSummary[crop.crop] += crop.amount;
+    } else {
+      harvestCropSummary[crop.crop] = crop.amount;
+    }
+  });
+
+  // check if Harverst Honours is enabled inside this mode
+  const isHarvestHonoursAndGoldEnabled = MODE_DEFINITIONS[
+    mode
+  ].features.includes(ModeFeature.HarvestHonours);
+
+  let userHarvestedCrops: UserHarvestedCrop[] = [];
+  if (isHarvestHonoursAndGoldEnabled) {
+    userHarvestedCrops = await getUserHarvestedCrops(fid);
+  }
 
   // Process each crop type in a single pass
   for (const cropType in harvestCropSummary) {
     const amount = harvestCropSummary[cropType];
-    const achievementProgress = getAchievementProgressByCrop(
-      userHarvestedCrops,
-      cropType as CropType
-    );
+    let goldCropCount = 0;
 
-    // Check if the user has reached a new badge
-    if (
-      achievementProgress.step < 4 &&
-      achievementProgress.count + amount >= achievementProgress.currentGoal
-    ) {
-      newBadges.push({
-        crop: cropType,
-        step: achievementProgress.step,
-      });
-    }
-
-    const goldCropCount = calculateGoldCropsInBatch(
-      amount,
-      achievementProgress.step
-    );
-
-    if (goldCropCount > 0) {
-      console.log(
-        `User ${fid} harvested ${goldCropCount} gold ${cropType}! 🌟`
+    if (isHarvestHonoursAndGoldEnabled) {
+      const achievementProgress = getAchievementProgressByCrop(
+        userHarvestedCrops,
+        cropType as CropType
       );
-      await addUserItem(fid, CROP_DATA[cropType].goldId, goldCropCount);
-      goldCrops.push({
-        crop: "gold-" + cropType,
-        amount: goldCropCount,
-      });
+
+      // Check if the user has reached a new badge
+      if (
+        achievementProgress.step < 4 &&
+        achievementProgress.count + amount >= achievementProgress.currentGoal
+      ) {
+        newBadges.push({
+          crop: cropType,
+          step: achievementProgress.step,
+        });
+      }
+
+      // Check if the user has found gold crops
+      goldCropCount = calculateGoldCropsInBatch(
+        amount,
+        achievementProgress.step
+      );
+
+      if (goldCropCount > 0) {
+        console.log(
+          `User ${fid} harvested ${goldCropCount} gold ${cropType}! 🌟`
+        );
+        await addUserItem(fid, CROP_DATA[cropType].goldId, goldCropCount, mode);
+        goldCrops.push({
+          crop: "gold-" + cropType,
+          amount: goldCropCount,
+        });
+      }
+
+      await upsertUserHarvestedCrop(fid, cropType, amount);
     }
 
     const regularCropAmount = amount - goldCropCount;
     if (regularCropAmount > 0) {
-      await addUserItem(fid, CROP_DATA[cropType].id, regularCropAmount);
+      await addUserItem(fid, CROP_DATA[cropType].id, regularCropAmount, mode);
     }
 
-    await upsertUserHarvestedCrop(fid, cropType, amount);
     await sendQuestsCalculation(
       fid,
       ActionType.Harvest,
+      mode,
       CROP_DATA[cropType].id,
       amount
     );
@@ -270,7 +312,8 @@ export const harvestBulk = async (
 
 const rewardUserBulk = async (
   fid: number,
-  crops: { crop: string; x: number; y: number; xp: number }[]
+  crops: { crop: string; x: number; y: number; xp: number }[],
+  mode: Mode
 ) => {
   const cropsWithRewards = crops.map((crop) => {
     const roll = Math.random();
@@ -281,13 +324,14 @@ const rewardUserBulk = async (
     };
   });
   const totalXp = cropsWithRewards.reduce((acc, crop) => acc + crop.xp, 0);
-  const updateResult = await updateUserXP(fid, totalXp);
+  const updateResult = await updateUserXP(fid, totalXp, mode);
   await updateUserWeeklyScore(
     fid,
     totalXp,
     updateResult.newLevel,
     updateResult.oldXp,
-    updateResult.didLevelUp
+    updateResult.didLevelUp,
+    mode
   );
 
   return {
@@ -300,15 +344,16 @@ const rewardUserBulk = async (
 export const perkBulk = async (
   fid: number,
   cells: { x: number; y: number }[],
-  itemSlug: PerkType
+  itemSlug: PerkType,
+  mode: Mode
 ) => {
-  const userPerks = await getUserItemBySlug(fid, itemSlug);
+  const userPerks = await getUserItemBySlug(fid, itemSlug, mode);
 
   if (!userPerks || userPerks.quantity < cells.length) {
     return NextResponse.json({ error: "User does not have enough perks" });
   }
 
-  const gridCells = await getGridCells(fid);
+  const gridCells = await getUserGridCells(fid, mode);
 
   const nonPerkableCells = [];
   const perkableCells = [];
@@ -325,18 +370,18 @@ export const perkBulk = async (
       // Check if enough time has passed since last speed boost
       if (gridCell.speedBoostedAt) {
         const lastBoostTime = new Date(gridCell.speedBoostedAt);
-        const timeSinceBoost = Date.now() - lastBoostTime.getTime();
-        if (timeSinceBoost < SPEED_BOOST[itemSlug].duration) {
+        if (isBoostable(itemSlug, mode, lastBoostTime)) {
           nonPerkableCells.push(gridCell);
           continue;
         }
       }
-      const boostTime = getBoostTime(itemSlug);
+      const boostTime = getBoostTime(itemSlug, mode);
       await sendDelayedNotification(
         fid.toString(),
         `Harvest time! 🌾`,
         `Your ${gridCell.cropType} are ready to harvest!`,
         "harvest",
+        mode,
         (new Date(gridCell.harvestAt).getTime() - boostTime - Date.now()) / 1000
       );
       perkableCells.push({
@@ -351,7 +396,7 @@ export const perkBulk = async (
 
   // track with posthog
   if (updatedGridCells.length > 0) {
-    await removeUserItem(fid, userPerks.itemId, updatedGridCells.length);
+    await removeUserItem(fid, userPerks.itemId, updatedGridCells.length, mode);
 
     // TODO: handle this if we want to add Perk Quests
     // await sendQuestsCalculation(
@@ -366,6 +411,7 @@ export const perkBulk = async (
       `Speed boost expired! ⚡️`,
       `The speed boost has worn off. Check your crops!`,
       "boost-expired",
+      mode,
       SPEED_BOOST[itemSlug].duration / 1000
     );
 
@@ -391,15 +437,16 @@ export const perkBulk = async (
 
 export const fertilizeBulk = async (
   fid: number,
-  cells: { x: number; y: number }[]
+  cells: { x: number; y: number }[],
+  mode: Mode
 ) => {
-  const userPerks = await getUserItemBySlug(fid, PerkType.Fertilizer);
+  const userPerks = await getUserItemBySlug(fid, PerkType.Fertilizer, mode);
 
   if (!userPerks || userPerks.quantity < cells.length) {
     return NextResponse.json({ error: "User does not have enough perks" });
   }
 
-  const gridCells = await getGridCells(fid);
+  const gridCells = await getUserGridCells(fid, mode);
 
   const nonPerkableCells = [];
   const perkableCells = [];
@@ -424,7 +471,7 @@ export const fertilizeBulk = async (
   const updatedGridCells = await updateGridCellsBulk(fid, perkableCells);
 
   if (updatedGridCells.length > 0) {
-    await removeUserItem(fid, userPerks.itemId, updatedGridCells.length);
+    await removeUserItem(fid, userPerks.itemId, updatedGridCells.length, mode);
 
     await sendBatchToPostHog(
       fid,

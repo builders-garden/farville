@@ -1,10 +1,11 @@
-import { DbUserHasQuestStatus } from "@/supabase/types";
+import { Mode, QuestStatus } from "@/lib/types/game";
 import { useApiMutation } from "../use-api-mutation";
 import { useAudio } from "@/context/AudioContext";
 
 type UpdateUserQuestVariables = {
   questId: number;
-  status: DbUserHasQuestStatus;
+  status: QuestStatus;
+  mode: Mode;
 };
 
 export const useUpdateUserQuest = ({
@@ -16,12 +17,12 @@ export const useUpdateUserQuest = ({
 }) => {
   const { playSound } = useAudio();
   return useApiMutation<
-    { success: boolean; status: DbUserHasQuestStatus; didLevelUp: boolean },
+    { success: boolean; status: QuestStatus; didLevelUp: boolean },
     UpdateUserQuestVariables
   >({
     url: (variables) => `/api/quests/${variables.questId}`,
     method: "POST",
-    body: (variables) => ({ status: variables.status }),
+    body: (variables) => ({ status: variables.status, mode: variables.mode }),
     onMutate: () => {
       if (isActionInProgress) return;
       setIsActionInProgress(true);

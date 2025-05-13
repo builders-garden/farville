@@ -1,13 +1,13 @@
 import { Dispatch, SetStateAction } from "react";
 import { useApiMutation } from "./use-api-mutation";
-import { DbUserHasCollectible } from "@/supabase/types";
+import { UserHasCollectible } from "@prisma/client";
 
 interface UseGenerateMidjourneyImageProps {
   setMidjourneyTaskId: Dispatch<SetStateAction<string | null>>;
   setIsLoading: Dispatch<SetStateAction<boolean>>;
   setErrorMessage: Dispatch<SetStateAction<string | null>>;
   handleUpdateStateCollectibles: (
-    userHasCollectibles: DbUserHasCollectible
+    userHasCollectibles: UserHasCollectible
   ) => void;
 }
 
@@ -37,7 +37,7 @@ export const useGenerateMidjourneyImage = ({
       success: boolean;
       data: {
         taskId: string;
-        userHasCollectible: DbUserHasCollectible;
+        userHasCollectible: UserHasCollectible;
       };
     }) => {
       setMidjourneyTaskId(data.data.taskId);

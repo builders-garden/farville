@@ -6,18 +6,22 @@ import { useGame } from "@/context/GameContext";
 import { CROP_DATA } from "@/lib/game-constants";
 import Image from "next/image";
 import ConfirmationModal from "@/components/modals/ConfirmationModal";
-import { DbItem } from "@/supabase/types";
 import ItemDetailsPopup from "@/components/ItemDetailsPopup";
 import { useFrameContext } from "@/context/FrameContext";
 import { useCreateRequest } from "@/hooks/game-actions/use-create-request";
 import sdk from "@farcaster/frame-sdk";
-import { requestItemComposeCastUrl } from "@/lib/utils";
+import {
+  getGrowthTimeBasedOnMode,
+  requestItemComposeCastUrl,
+} from "@/lib/utils";
 import MarketplaceTabs, { Tab } from "./MarketplaceTabs";
 import MarketplaceItem from "./MarketplaceItem";
 import PerkItem from "./PerkItem";
 import ExpansionPanel from "./ExpansionPanel";
 import ItemDetailsModal from "./ItemDetailsModal";
 import { useNextStep } from "nextstepjs";
+import { Item } from "@prisma/client";
+import { CropType } from "@/lib/types/game";
 
 // Add new type for selected item details
 type SelectedItemDetails = {
@@ -28,7 +32,7 @@ type SelectedItemDetails = {
   harvestXp?: number;
   description: string | null;
   growthTime?: number;
-  cropData: DbItem;
+  cropData: Item;
 } | null;
 
 export default function MarketplaceModal({
@@ -38,7 +42,7 @@ export default function MarketplaceModal({
   onClose: () => void;
   safeAreaInsets: { top: number; bottom: number; left: number; right: number };
 }) {
-  const { state, buyItem, sellItem, expandGrid, isActionInProgress } =
+  const { mode, state, buyItem, sellItem, expandGrid, isActionInProgress } =
     useGame();
   const { context } = useFrameContext();
   const { mutate: createRequest } = useCreateRequest();
@@ -53,7 +57,7 @@ export default function MarketplaceModal({
   } | null>(null);
   const [selectedItem, setSelectedItem] = useState<SelectedItemDetails>(null);
   const [selectedItemForRequest, setSelectedItemForRequest] =
-    useState<DbItem | null>(null);
+    useState<Item | null>(null);
   const [requestQuantity, setRequestQuantity] = useState(1);
   const [castUrl, setCastUrl] = useState<string | null>(null);
   const [requestUrl, setRequestUrl] = useState<string | null>(null);
@@ -77,13 +81,15 @@ export default function MarketplaceModal({
         {
           itemId: selectedItemForRequest.id,
           quantity: requestQuantity,
+          mode,
         },
         {
           onSuccess: async (data) => {
             const { castUrl, requestUrl } = requestItemComposeCastUrl(
               data.id,
               selectedItemForRequest,
-              requestQuantity
+              requestQuantity,
+              mode
             );
             setCastUrl(castUrl);
             setRequestUrl(requestUrl);
@@ -125,7 +131,7 @@ export default function MarketplaceModal({
   };
 
   // Handle item selection for viewing details
-  const handleItemSelect = (item: DbItem) => {
+  const handleItemSelect = (item: Item) => {
     if (item.category === "seed") {
       const crop = state.items.find(
         (i) => i.slug === item.slug.replace("-seeds", "")
@@ -139,7 +145,11 @@ export default function MarketplaceModal({
         harvestXp: CROP_DATA[item.slug.replace("-seeds", "")]?.rewardXP,
         description: item.description,
         growthTime:
-          CROP_DATA[item.slug.replace("-seeds", "")]?.growthTime / (60000 * 60),
+          getGrowthTimeBasedOnMode(
+            item.slug.replace("-seeds", "") as CropType,
+            mode
+          ) /
+          (60000 * 60),
       };
       setSelectedItem(itemDetails);
     }
@@ -166,7 +176,7 @@ export default function MarketplaceModal({
           price: (item.sellPrice || 0) * actualQuantity,
         });
       } else {
-        sellItem({ itemId, quantity: 1 });
+        sellItem({ itemId, quantity: 1, mode });
       }
     } else {
       // For seeds and perks (buying)
@@ -179,7 +189,7 @@ export default function MarketplaceModal({
           price: (item.buyPrice || 0) * quantity,
         });
       } else {
-        buyItem({ itemId, quantity });
+        buyItem({ itemId, quantity, mode });
       }
     }
   };
@@ -415,11 +425,13 @@ export default function MarketplaceModal({
               buyItem({
                 itemId: confirmAction.itemId,
                 quantity: confirmAction.quantity,
+                mode,
               });
             } else {
               sellItem({
                 itemId: confirmAction.itemId,
                 quantity: confirmAction.quantity,
+                mode,
               });
             }
             setConfirmAction(null);

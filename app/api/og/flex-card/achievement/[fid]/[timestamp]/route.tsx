@@ -3,10 +3,11 @@ import { ACHIEVEMENTS_THRESHOLDS } from "@/lib/game-constants";
 import {
   getActiveStreaksCount,
   getTopStreaks,
-  getUser,
+  getUserByMode,
   TopStreaksResult,
 } from "@/lib/prisma/queries";
-import { DbUser } from "@/supabase/types";
+import { UserWithStatistic } from "@/lib/prisma/types";
+import { Mode } from "@/lib/types/game";
 import { ImageResponse } from "next/og";
 
 export const dynamic = "force-dynamic";
@@ -50,11 +51,18 @@ export async function GET(
     const { searchParams } = new URL(request.url);
     const crop = searchParams.get("crop");
     const step = searchParams.get("step");
+    const mode = searchParams.get("mode") as Mode;
 
     const appUrl = env.NEXT_PUBLIC_URL;
 
     if (!fid) {
       return new Response("Farmer ID is required", {
+        status: 400,
+      });
+    }
+
+    if (!mode) {
+      return new Response("Mode is required", {
         status: 400,
       });
     }
@@ -65,14 +73,14 @@ export async function GET(
       });
     }
 
-    const user = await getUser(Number(fid));
+    const user = await getUserByMode(Number(fid), mode);
 
     const topStreaks: TopStreaksResult[] = await getTopStreaks();
     const totActiveStreaks = await getActiveStreaksCount();
 
-    const topStreaksUsers: DbUser[] = [];
+    const topStreaksUsers: UserWithStatistic[] = [];
     for (const streak of topStreaks) {
-      const user = await getUser(streak.fid);
+      const user = await getUserByMode(streak.fid, mode);
       if (user) {
         topStreaksUsers.push(user);
       }

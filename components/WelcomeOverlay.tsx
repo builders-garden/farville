@@ -3,7 +3,12 @@
 import { motion } from "framer-motion";
 import { useAudio } from "../context/AudioContext";
 import { useState, useEffect } from "react";
-import { GridCell as GridCellType, Crop, CropType } from "../lib/types/game";
+import {
+  GridCell as GridCellType,
+  Crop,
+  CropType,
+  ItemCategory,
+} from "../lib/types/game";
 import CropSprite from "./CropSprite";
 import Image from "next/image";
 import sdk from "@farcaster/frame-sdk";
@@ -11,9 +16,9 @@ import { useFrameContext } from "../context/FrameContext";
 import { CROPS } from "../lib/game-constants";
 import FloatingNumber from "./animations/FloatingNumber";
 import { warpcastComposeCastUrl } from "../lib/utils";
-import { DbUser } from "../supabase/types";
 import Link from "next/link";
 import { WHITELISTED_FIDS } from "../lib/whitelist";
+import { User } from "@prisma/client";
 
 // Demo version of CropSprite that shows seconds instead of minutes/hours
 function DemoCropSprite({ crop }: { crop?: Crop }) {
@@ -66,7 +71,7 @@ export default function WelcomeOverlay({
   const [isMuted, setIsMuted] = useState(false);
 
   const { isSDKLoaded, context } = useFrameContext();
-  const [user, setUser] = useState<DbUser | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [showPreview, setShowPreview] = useState(false);
 
   useEffect(() => {
@@ -324,8 +329,8 @@ export default function WelcomeOverlay({
                   number={cell.harvestAnimation.amount}
                   x={cell.harvestAnimation.x}
                   y={cell.harvestAnimation.y}
-                  type="crop"
-                  cropType={cell.harvestAnimation.type}
+                  type={ItemCategory.Crop}
+                  slug={cell.harvestAnimation.type}
                 />
               )}
             </motion.div>

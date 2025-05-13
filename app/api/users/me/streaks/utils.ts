@@ -4,8 +4,7 @@ import {
   getUserFrostsByStreakId,
   updateUserStreak,
 } from "@/lib/prisma/queries";
-import { DbStreak } from "@/supabase/types";
-import { UserHasItem } from "@prisma/client";
+import { Streak, UserHasItem } from "@prisma/client";
 
 /**
  * Check user activity and apply frost
@@ -14,7 +13,7 @@ import { UserHasItem } from "@prisma/client";
  * @param updateStreaks flag to determine whether to update the streaks in the database (not needed on sign-in)
  */
 export const checkUserActivityAndApplyFrost = async (
-  streak: DbStreak,
+  streak: Streak,
   userFrost: UserHasItem | null,
   updateStreaks: boolean
 ) => {
