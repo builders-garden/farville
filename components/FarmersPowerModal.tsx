@@ -16,21 +16,48 @@ import {
 } from "@/lib/contracts/constants";
 import { cn } from "@/lib/utils";
 import { env } from "@/lib/env";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import sdk from "@farcaster/frame-sdk";
 import { toast } from "react-hot-toast";
 import { useFrameContext } from "@/context/FrameContext";
 import { Progress } from "@/components/ui/progress";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 interface FarmersPowerModalProps {
   onClose: () => void;
 }
 
-const POWER_STAGES = Array.from({ length: 24 }, (_, i) => ({
-  stage: i + 1,
-  fpRequired: Math.floor(1000 * Math.pow(1.2, i)),
-  boost: (i + 1) * 0.5,
-}));
+const POWER_STAGES = [
+  { stage: 1, fpRequired: 0, boost: 1 },
+  { stage: 2, fpRequired: 50, boost: 2 },
+  { stage: 3, fpRequired: 150, boost: 3 },
+  { stage: 4, fpRequired: 300, boost: 4 },
+  { stage: 5, fpRequired: 500, boost: 5 },
+  { stage: 6, fpRequired: 800, boost: 6 },
+  { stage: 7, fpRequired: 1200, boost: 7 },
+  { stage: 8, fpRequired: 1700, boost: 8 },
+  { stage: 9, fpRequired: 2300, boost: 9 },
+  { stage: 10, fpRequired: 3050, boost: 10 },
+  { stage: 11, fpRequired: 3950, boost: 11 },
+  { stage: 12, fpRequired: 5050, boost: 12 },
+  { stage: 13, fpRequired: 6350, boost: 13 },
+  { stage: 14, fpRequired: 7850, boost: 14 },
+  { stage: 15, fpRequired: 9550, boost: 15 },
+  { stage: 16, fpRequired: 11550, boost: 16 },
+  { stage: 17, fpRequired: 13850, boost: 17 },
+  { stage: 18, fpRequired: 16450, boost: 18 },
+  { stage: 19, fpRequired: 19350, boost: 19 },
+  { stage: 20, fpRequired: 22550, boost: 20 },
+  { stage: 21, fpRequired: 26050, boost: 21 },
+  { stage: 22, fpRequired: 29850, boost: 22 },
+  { stage: 23, fpRequired: 33950, boost: 23 },
+  { stage: 24, fpRequired: 38350, boost: 24 },
+];
 
 const MAX_COMBO = 10;
 const COMBO_WINDOW = 10 * 60 * 1000; // 10 minutes in milliseconds
@@ -44,20 +71,25 @@ export default function FarmersPowerModal({ onClose }: FarmersPowerModalProps) {
   const { safeAreaInsets } = useFrameContext();
 
   // New state for power mechanics
-  const [currentPowerStage, setCurrentPowerStage] = useState(8);
-  const [currentFP, setCurrentFP] = useState(3250);
-  const [powerCombo, setPowerCombo] = useState(6);
+  const [currentFP, setCurrentFP] = useState<number>(3250);
+  const [powerCombo, setPowerCombo] = useState<number>(6);
   const [lastDonationTime, setLastDonationTime] = useState<Date | null>(null);
   const [nextDecayTime, setNextDecayTime] = useState<Date>(
     new Date(Date.now() + DECAY_INTERVAL * 60 * 1000)
   );
 
+  // UI state
+  const [showConfetti, setShowConfetti] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string>("");
+  const [contributionAmount, setContributionAmount] = useState(1);
   const [paymentStarted, setPaymentStarted] = useState(false);
   const [paymentCompleted, setPaymentCompleted] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [finalTxHash, setFinalTxHash] = useState<string | null>(null);
-  const [showConfetti, setShowConfetti] = useState(false);
-  const [contributionAmount, setContributionAmount] = useState(1);
+  const [finalTxHash, setFinalTxHash] = useState<string>("");
+
+  // Calculate current stage based on FP
+  const currentPowerStage =
+    POWER_STAGES.findIndex((stage) => stage.fpRequired > currentFP) ||
+    POWER_STAGES.length;
 
   // Calculate next stage requirements
   const currentStageInfo = POWER_STAGES[currentPowerStage - 1];
@@ -141,11 +173,10 @@ export default function FarmersPowerModal({ onClose }: FarmersPowerModalProps) {
       const newFP = currentFP + fpToAdd;
       setCurrentFP(newFP);
 
-      // Check for stage up
       const newStage =
-        POWER_STAGES.findIndex((stage) => stage.fpRequired > newFP) + 1;
+        POWER_STAGES.findIndex((stage) => stage.fpRequired > newFP) ||
+        POWER_STAGES.length;
       if (newStage > currentPowerStage) {
-        setCurrentPowerStage(newStage);
         setShowConfetti(true);
       }
 
@@ -181,12 +212,21 @@ export default function FarmersPowerModal({ onClose }: FarmersPowerModalProps) {
     const decayInterval = setInterval(() => {
       setNextDecayTime(new Date(Date.now() + DECAY_INTERVAL * 60 * 1000));
       if (currentPowerStage > 1) {
-        setCurrentPowerStage((prev) => prev - 1);
+        // Calculate FP needed for previous stage
+        const previousStageInfo = POWER_STAGES[currentPowerStage - 2];
+        setCurrentFP(previousStageInfo.fpRequired);
       }
     }, DECAY_INTERVAL * 60 * 1000);
 
     return () => clearInterval(decayInterval);
   }, [currentPowerStage]);
+
+  const stagesContainerRef = useRef<HTMLDivElement>(null);
+
+  // Filter stages to show from previous stage onwards
+  const stagesFromPrevious = POWER_STAGES.slice(
+    Math.max(0, currentPowerStage - 2)
+  );
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-start z-50">
@@ -204,37 +244,34 @@ export default function FarmersPowerModal({ onClose }: FarmersPowerModalProps) {
         className="bg-[#7e4e31] w-full h-full flex flex-col overflow-y-auto"
       >
         {/* Header with Stage Info */}
-        <div className="flex items-start justify-between p-3 xs:p-4 mt-2 border-b border-[#8B5c3C]">
-          <div className="flex flex-col gap-1">
+        <div className="flex flex-col items-start justify-between p-3 xs:p-4 mt-2 border-b border-[#8B5c3C] gap-1">
+          <div className="flex w-full items-center justify-between">
             <motion.h2
-              className="text-white/90 font-bold text-lg xs:text-xl mb-1 flex items-center gap-2"
+              className="text-white/90 font-bold text-base xs:text-lg mb-1 flex items-center gap-2"
               animate={{ rotate: [0, -3, 3, 0] }}
               transition={{ duration: 0.5, repeat: Infinity, repeatDelay: 5 }}
             >
-              <span className="text-2xl">⚡</span>
+              <span className="text-xl">⚡</span>
               Farmers Power
             </motion.h2>
-            <div className="flex flex-col gap-0.5">
-              <motion.p
-                className="text-amber-500 text-sm font-bold drop-shadow-[0_0_3px_rgba(251,191,36,0.7)]"
-                animate={{ opacity: [0.6, 1, 0.6], scale: [1, 1.02, 1] }}
-                transition={{ duration: 2, repeat: Infinity }}
-              >
-                {currentStageInfo.boost}× Game Speed Boost
-              </motion.p>
-              <p className="text-white/70 text-xs">
-                Affects: Growth Time, Perks & More
-              </p>
-            </div>
-          </div>
-          <button
-            onClick={onClose}
-            className="w-8 h-8 flex items-center justify-center rounded-full 
+
+            <button
+              onClick={onClose}
+              className="w-8 h-8 flex items-center justify-center rounded-full 
                       bg-white/10 hover:bg-white/20 transition-colors text-white/80 hover:text-white"
-            aria-label="Close"
-          >
-            <X size={16} />
-          </button>
+              aria-label="Close"
+            >
+              <X size={16} />
+            </button>
+          </div>
+          <div className="flex flex-col gap-0.5">
+            <p className="text-amber-500 text-xs font-bold drop-shadow-[0_0_2px_rgba(251,191,36,0.7)]">
+              {currentStageInfo.boost}× Game Speed Boost
+            </p>
+            <p className="text-white/70 text-xs">
+              Higher power, faster growth for all farmers!
+            </p>
+          </div>
         </div>
 
         <div className="flex-1 flex flex-col items-center gap-6 max-w-md mx-auto w-full px-4 pb-8 overflow-y-auto no-scrollbar pt-4">
@@ -243,8 +280,8 @@ export default function FarmersPowerModal({ onClose }: FarmersPowerModalProps) {
             <div className="flex flex-col gap-4">
               <div className="flex justify-between items-center">
                 <div className="flex items-center gap-2">
-                  <span className="text-3xl">⚡</span>
-                  <span className="text-2xl text-yellow-400">
+                  <span className="text-2xl">⚡</span>
+                  <span className="text-xl text-yellow-400">
                     {currentFP} FP
                   </span>
                 </div>
@@ -269,117 +306,111 @@ export default function FarmersPowerModal({ onClose }: FarmersPowerModalProps) {
                   </span>
                 </div>
               </div>
-            </div>
-          </div>
 
-          {/* Power Combo Section */}
-          <div className="bg-[#5C4121]/50 rounded-xl p-4 w-full border border-yellow-400/20">
-            <div className="flex justify-between items-center mb-3">
-              <span className="text-white/90 text-base font-semibold">
-                Power Combo
-              </span>
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-white/60">Current</span>
-                <span className="text-yellow-400 font-bold text-lg">
-                  ×{powerCombo}
-                </span>
-              </div>
-            </div>
-            <div className="flex flex-col gap-1">
-              <div className="w-full h-1 bg-white/10 rounded overflow-hidden">
-                <motion.div
-                  className="h-full bg-yellow-400"
-                  initial={{ width: "100%" }}
-                  animate={{
-                    width: lastDonationTime
-                      ? `${Math.max(
-                          0,
-                          ((COMBO_WINDOW -
-                            (Date.now() - lastDonationTime.getTime())) /
-                            COMBO_WINDOW) *
-                            100
-                        )}%`
-                      : "100%",
-                  }}
-                />
-              </div>
-              <p className="text-white/60 text-xs mt-1">
-                {lastDonationTime
-                  ? `${Math.max(
-                      0,
-                      Math.ceil(
-                        (COMBO_WINDOW -
-                          (Date.now() - lastDonationTime.getTime())) /
-                          1000
-                      )
-                    )}s until combo reset`
-                  : "Donate to start combo multiplier"}
-              </p>
-            </div>
-          </div>
-
-          {/* Decay Info */}
-          <div className="bg-[#5C4121]/50 rounded-xl p-4 w-full border border-red-400/20">
-            <div className="flex justify-between items-center mb-2">
-              <div>
-                <span className="text-white/90 text-base font-semibold">
-                  Power Decay
-                </span>
-                <p className="text-red-400/90 text-xs mt-1">
-                  -1 point every 10 minutes
-                </p>
-              </div>
-              <div className="text-right">
-                <span className="text-red-400 text-lg font-bold">
-                  {minutesUntilDecay}m
-                </span>
-                <p className="text-xs text-white/60">until next decay</p>
-              </div>
-            </div>
-            <div className="w-full h-1 bg-white/10 rounded overflow-hidden mt-2">
-              <motion.div
-                className="h-full bg-red-400"
-                initial={{ width: "100%" }}
-                animate={{
-                  width: `${
-                    (timeUntilDecay / (DECAY_INTERVAL * 60 * 1000)) * 100
-                  }%`,
-                }}
-              />
+              <Accordion
+                type="single"
+                collapsible
+                className="w-full"
+              >
+                <AccordionItem
+                  value="stages"
+                  className="border-0 bg-[#4A341A] rounded-lg px-2"
+                >
+                  <AccordionTrigger className="py-2 text-white/90 text-sm font-semibold hover:no-underline">
+                    Power Stages
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    <div
+                      ref={stagesContainerRef}
+                      className="max-h-48 overflow-y-auto pr-2 -mr-2"
+                    >
+                      {stagesFromPrevious.map((stage) => (
+                        <div
+                          key={stage.stage}
+                          className={cn(
+                            "flex items-center justify-between p-2 rounded mb-2",
+                            currentPowerStage === stage.stage
+                              ? "bg-yellow-500/20 border border-yellow-400/30"
+                              : currentPowerStage > stage.stage
+                              ? "bg-[#4A341A]/50"
+                              : "bg-[#4A341A]/20"
+                          )}
+                        >
+                          <div className="flex items-center gap-2">
+                            <div
+                              className={cn(
+                                "w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold",
+                                currentPowerStage === stage.stage
+                                  ? "bg-yellow-500 text-[#4A341A]"
+                                  : currentPowerStage > stage.stage
+                                  ? "bg-yellow-500/20 text-yellow-400"
+                                  : "bg-[#4A341A] text-white/50"
+                              )}
+                            >
+                              {stage.stage}
+                            </div>
+                            <div className="flex flex-col">
+                              <span
+                                className={cn(
+                                  "text-sm",
+                                  currentPowerStage >= stage.stage
+                                    ? "text-white/90"
+                                    : "text-white/50"
+                                )}
+                              >
+                                {stage.boost}× Boost
+                              </span>
+                              <span className="text-xs text-white/50">
+                                {stage.fpRequired} FP
+                              </span>
+                            </div>
+                          </div>
+                          {currentPowerStage === stage.stage && (
+                            <span className="text-yellow-400 text-xs font-medium">
+                              Current
+                            </span>
+                          )}
+                          {currentPowerStage > stage.stage && (
+                            <span className="text-green-400 text-xs">✓</span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
             </div>
           </div>
 
           {/* Contribution Section */}
-          <div className="w-full bg-[#5C4121]/50 rounded-xl p-6 border border-yellow-400/20">
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-white/90 text-lg font-semibold">
-                Contribute Power
-              </span>
-              <span className="text-white/70 text-sm">
+          <div className="flex flex-col w-full bg-[#5C4121]/50 rounded-xl p-6 border border-yellow-400/20 gap-2">
+            <span className="text-white/90 font-semibold">Do your part!</span>
+
+            <div className="flex flex-col gap-4">
+              <div className="flex gap-4 items-center bg-[#4A341A] p-4 rounded-lg border border-yellow-400/10">
+                <input
+                  type="number"
+                  min="1"
+                  value={contributionAmount}
+                  onChange={(e) =>
+                    setContributionAmount(
+                      Math.max(1, parseInt(e.target.value) || 1)
+                    )
+                  }
+                  className="bg-[#5C4121] text-white rounded px-3 py-2 w-16 border border-yellow-400/20 text-center text-lg [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                />
+                <div className="flex flex-col">
+                  <span className="text-white/90 text-xs">
+                    Current Combo: ×{powerCombo}
+                  </span>
+                  <span className="text-yellow-400 text-sm font-bold">
+                    = {contributionAmount * powerCombo} FP
+                  </span>
+                </div>
+              </div>
+              <span className="text-white/70 text-xs">
                 Balance: ${tokenBalancesData?.totalBalanceUSD.toFixed(2) ?? "0"}
               </span>
-            </div>
-
-            <div className="flex gap-4 items-center mb-4 bg-[#4A341A] p-4 rounded-lg border border-yellow-400/10">
-              <input
-                type="number"
-                min="1"
-                value={contributionAmount}
-                onChange={(e) =>
-                  setContributionAmount(
-                    Math.max(1, parseInt(e.target.value) || 1)
-                  )
-                }
-                className="bg-[#5C4121] text-white rounded px-3 py-2 w-24 border border-yellow-400/20 text-center text-lg"
-              />
-              <div className="flex flex-col">
-                <span className="text-white/90 text-sm">
-                  Current Combo: ×{powerCombo}
-                </span>
-                <span className="text-yellow-400 text-lg font-bold">
-                  = {contributionAmount * powerCombo} FP
-                </span>
-              </div>
             </div>
 
             <DaimoPayButton.Custom
@@ -425,6 +456,83 @@ export default function FarmersPowerModal({ onClose }: FarmersPowerModalProps) {
                 </Button>
               )}
             </DaimoPayButton.Custom>
+          </div>
+
+          {/* Power Combo Section */}
+          <div className="bg-[#5C4121]/50 rounded-xl p-4 w-full border border-yellow-400/20">
+            <div className="flex justify-between items-center mb-3">
+              <span className="text-white/90 text-sm font-semibold">
+                Power Combo
+              </span>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-white/60">Current</span>
+                <span className="text-yellow-400 font-bold text-base">
+                  ×{powerCombo}
+                </span>
+              </div>
+            </div>
+            <div className="flex flex-col gap-1">
+              <div className="w-full h-1 bg-white/10 rounded overflow-hidden">
+                <motion.div
+                  className="h-full bg-yellow-400"
+                  initial={{ width: "100%" }}
+                  animate={{
+                    width: lastDonationTime
+                      ? `${Math.max(
+                          0,
+                          ((COMBO_WINDOW -
+                            (Date.now() - lastDonationTime.getTime())) /
+                            COMBO_WINDOW) *
+                            100
+                        )}%`
+                      : "100%",
+                  }}
+                />
+              </div>
+              <p className="text-white/60 text-xs mt-1">
+                {lastDonationTime
+                  ? `${Math.max(
+                      0,
+                      Math.ceil(
+                        (COMBO_WINDOW -
+                          (Date.now() - lastDonationTime.getTime())) /
+                          1000
+                      )
+                    )}s until combo reset`
+                  : "Donate to start combo multiplier"}
+              </p>
+            </div>
+          </div>
+
+          {/* Decay Info */}
+          <div className="bg-[#5C4121]/50 rounded-xl p-4 w-full border border-red-400/20">
+            <div className="flex justify-between items-center mb-2">
+              <div>
+                <span className="text-white/90 text-sm font-semibold">
+                  Power Decay
+                </span>
+                <p className="text-red-400/90 text-xs mt-1">
+                  -1 point every 10 minutes
+                </p>
+              </div>
+              <div className="text-right">
+                <span className="text-red-400 text-base font-bold">
+                  {minutesUntilDecay}m
+                </span>
+                <p className="text-xs text-white/60">until next decay</p>
+              </div>
+            </div>
+            <div className="w-full h-1 bg-white/10 rounded overflow-hidden mt-2">
+              <motion.div
+                className="h-full bg-red-400"
+                initial={{ width: "100%" }}
+                animate={{
+                  width: `${
+                    (timeUntilDecay / (DECAY_INTERVAL * 60 * 1000)) * 100
+                  }%`,
+                }}
+              />
+            </div>
           </div>
 
           {errorMessage && (
