@@ -31,16 +31,12 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    console.log("mode", mode, "targetFid", targetFid, "limit", limit);
-
     const userCommunityDonations =
       await getUserCommunityDonationsLeaderboardRaw(
         Number(limit) || 20,
         mode as Mode,
         Number(targetFid)
       );
-
-    console.log("userCommunityDonations", userCommunityDonations);
 
     return NextResponse.json(userCommunityDonations);
   } catch (error) {

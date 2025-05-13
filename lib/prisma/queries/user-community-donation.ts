@@ -243,8 +243,6 @@ export const getUserCommunityDonationsLeaderboardRaw = async (
     "totalPtAmount" DESC
   `;
 
-  console.log("SQL Query:", query);
-
   const result = await prisma.$queryRaw<
     {
       fid: number;

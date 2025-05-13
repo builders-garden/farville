@@ -30,6 +30,7 @@ import {
 import { useDonationLeaderboard } from "@/hooks/use-donation-leadeboard";
 import { LeaderboardUserAvatar } from "./leaderboard/LeaderboardUserAvatar";
 import ProfileModal from "./ProfileModal";
+import { FloatingShareButton } from "./FloatingShareButton";
 
 interface FarmersPowerModalProps {
   onClose: () => void;
@@ -245,6 +246,22 @@ export default function FarmersPowerModal({ onClose }: FarmersPowerModalProps) {
 
   const handleCloseProfile = () => {
     setSelectedUserFid(undefined);
+  };
+
+  const handleShareLeaderboard = async () => {
+    // const { castUrl } = leaderboardFlexCardComposeCastUrl(
+    //   state.user.fid,
+    //   mode,
+    // );
+    // await sdk.actions.openUrl(castUrl);
+  };
+
+  const handleShare = () => {
+    if (activeTab === "leaderboard") {
+      handleShareLeaderboard();
+    } else {
+      console.warn("No share action defined for this tab");
+    }
   };
 
   console.log("leaderboardData", leaderboardData);
@@ -653,7 +670,7 @@ export default function FarmersPowerModal({ onClose }: FarmersPowerModalProps) {
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: 0.02 }}
                       className="w-full bg-gradient-to-r from-[#8B5E3C] to-[#6d4c2c] px-3 xs:px-4 py-2 xs:py-3 rounded-lg flex items-center gap-2 xs:gap-3
-                                   border-2 border-[#FFB938] shadow-lg mb-3 xs:mb-4 relative overflow-hidden
+                                   border-2 border-[#FFB938] shadow-lg relative overflow-hidden
                                    hover:scale-[1.02] transition-transform duration-200 cursor-pointer"
                       onClick={() => setSelectedUserFid(state.user.fid)}
                     >
@@ -685,7 +702,7 @@ export default function FarmersPowerModal({ onClose }: FarmersPowerModalProps) {
                             {leaderboardData?.targetData.totalPtAmount.toLocaleString()}
                           </div>
                           <div className="text-white/60 text-[10px] xs:text-xs">
-                            Donations:{" "}
+                            Donations:
                             {leaderboardData?.targetData.donationCount}
                           </div>
                         </div>
@@ -732,7 +749,7 @@ export default function FarmersPowerModal({ onClose }: FarmersPowerModalProps) {
                                 FP:{entry.totalPtAmount.toLocaleString()}
                               </div>
                               <div className="text-white/60 text-[10px] xs:text-xs">
-                                Donations: {entry.donationCount}
+                                Donations:{entry.donationCount}
                               </div>
                             </div>
                           </div>
@@ -741,6 +758,10 @@ export default function FarmersPowerModal({ onClose }: FarmersPowerModalProps) {
                     ))}
                   </div>
                 </>
+              )}
+
+              {activeTab === "leaderboard" && (
+                <FloatingShareButton onClick={handleShare} />
               )}
 
               {/* Info Footer */}
