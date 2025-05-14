@@ -14,8 +14,6 @@ import { Button } from "./ui/button";
 import { Mode } from "@/lib/types/game";
 import { AnimatedCircularProgressBar } from "./ui/animated-circular-progress-bar";
 import { MODE_DEFINITIONS } from "@/lib/modes/constants";
-import { useSocket } from "@/hooks/use-socket";
-// import { OG_FIDS_LIST } from "@/lib/contracts/constants";
 
 export default function Header() {
   const {
@@ -29,27 +27,9 @@ export default function Header() {
   } = useGame();
   const { progress } = getCurrentLevelAndProgress(state.experience);
 
-  const { socket } = useSocket();
-
-  // const showOgButton = OG_FIDS_LIST.indexOf(state.user.fid) !== -1;
-
   const availableUserModes = Object.values(Mode).filter((modeValue) =>
     modeAvailableForUser(modeValue, state.user.fid)
   ).length;
-
-  const handleClick = () => {
-    console.log("Button clicked");
-    if (socket?.connected) {
-      socket.emit("new-donation", {
-        fid: state.user.fid,
-        mode: mode,
-        username: state.user.username,
-        ptAmount: Math.floor(Math.random() * 20) + 1,
-      });
-    } else {
-      console.error("Socket is not connected");
-    }
-  };
 
   return (
     <div className="bg-[#8B5E3C]/40 px-4 py-2 shadow-lg bg-opacity-95 backdrop-blur-sm border-b-2 border-[#6d4c2c]/50 z-30">
@@ -82,15 +62,6 @@ export default function Header() {
             </AnimatedCircularProgressBar>
           </div>
         </div>
-
-        <motion.button
-          className="bg-[#8B5E3C] hover:bg-[#6d4c2c] text-white px-4 py-2 rounded-lg shadow-lg"
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={handleClick}
-        >
-          Emit
-        </motion.button>
 
         {/* Currency elements container - column on mobile, row on desktop */}
         <div className="flex flex-col xs:flex-row xs:items-center xs:gap-4 items-end">

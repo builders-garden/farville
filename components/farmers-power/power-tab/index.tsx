@@ -45,9 +45,8 @@ const COMBO_WINDOW = 10 * 60 * 1000; // 10 minutes in milliseconds
 const DECAY_INTERVAL = 600; // 600 minutes (10 hours) for power stage decay
 
 export const PowerTab = () => {
-  const { state, refetchUserItems } = useGame();
-  const { address } = useAccount();
-  const { chainId } = useAccount();
+  const { state, refetchUserItems, mode } = useGame();
+  const { address, chainId } = useAccount();
   const { switchChain } = useSwitchChain();
 
   // State for power mechanics
@@ -159,10 +158,6 @@ export const PowerTab = () => {
 
   const handleContributionSuccess = (amount: number) => {
     try {
-      const loadingToast = toast.loading(
-        "Distributing power boost to all farmers..."
-      );
-
       // Update combo and FP
       const newCombo = Math.min(powerCombo + 1, MAX_COMBO);
       setPowerCombo(newCombo);
@@ -179,10 +174,6 @@ export const PowerTab = () => {
       if (newStage > currentPowerStage) {
         setShowConfetti(true);
       }
-
-      toast.success("Power boost distributed successfully!", {
-        id: loadingToast,
-      });
 
       refetchUserItems();
     } catch (error) {
@@ -237,6 +228,9 @@ export const PowerTab = () => {
         walletBalance={tokenBalancesData?.totalBalanceUSD ?? 0}
         userId={state.user.fid.toString()}
         onContributionSuccess={handleContributionSuccess}
+        mode={mode}
+        address={address}
+        username={state.user.username}
       />
 
       <LastContributionTable />

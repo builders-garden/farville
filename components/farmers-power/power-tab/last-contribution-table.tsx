@@ -32,7 +32,10 @@ export const LastContributionTable = () => {
         {lastContributions === undefined ? (
           <TableBody>
             <TableRow>
-              <TableCell colSpan={2} className="text-center text-white/70">
+              <TableCell
+                colSpan={2}
+                className="text-center text-white/70"
+              >
                 Loading...
               </TableCell>
             </TableRow>

@@ -77,7 +77,7 @@ export default function FarmersPowerModal({ onClose }: FarmersPowerModalProps) {
             {/* Tabs */}
             <div className="grid grid-cols-2 gap-1 xs:gap-2">
               {[
-                { id: "power", icon: "⚡️", label: "Farmers Power" },
+                { id: "power", icon: "⚡️", label: "Power" },
                 { id: "leaderboard", icon: "🏆", label: "Leaderboard" },
               ].map((tab) => (
                 <motion.button
