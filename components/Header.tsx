@@ -15,7 +15,7 @@ import { Mode } from "@/lib/types/game";
 import { AnimatedCircularProgressBar } from "./ui/animated-circular-progress-bar";
 import { MODE_DEFINITIONS } from "@/lib/modes/constants";
 import { useSocket } from "@/hooks/use-socket";
-import { useEffect } from "react";
+// import { useEffect } from "react";
 // import { OG_FIDS_LIST } from "@/lib/contracts/constants";
 
 export default function Header() {
@@ -30,7 +30,7 @@ export default function Header() {
   } = useGame();
   const { progress } = getCurrentLevelAndProgress(state.experience);
 
-  const { current: socket } = useSocket();
+  const { socket } = useSocket();
 
   // const showOgButton = OG_FIDS_LIST.indexOf(state.user.fid) !== -1;
 
@@ -42,26 +42,28 @@ export default function Header() {
     console.log("Button clicked");
     if (socket?.connected) {
       socket.emit("new-donation", {
+        fid: state.user.fid,
+        mode: mode,
         username: state.user.username,
-        amount: 1,
+        ptAmount: Math.floor(Math.random() * 20) + 1,
       });
     } else {
       console.error("Socket is not connected");
     }
   };
 
-  useEffect(() => {
-    if (!socket) return;
+  // useEffect(() => {
+  //   if (!socket) return;
 
-    console.log("Socket connected:", socket.connected);
-    socket.on("new-donation", (data) => {
-      console.log(`${data.username} donated ${data.amount} coins! 🎉`);
-    });
+  //   console.log("Socket connected:", socket.connected);
+  //   socket.on("new-donation", (data) => {
+  //     console.log(`${data.username} donated ${data.ptAmount} coins! 🎉`);
+  //   });
 
-    return () => {
-      socket.off("new-donation");
-    };
-  }, [socket]);
+  //   return () => {
+  //     socket.off("new-donation");
+  //   };
+  // }, [socket]);
 
   return (
     <div className="bg-[#8B5E3C]/40 px-4 py-2 shadow-lg bg-opacity-95 backdrop-blur-sm border-b-2 border-[#6d4c2c]/50 z-30">

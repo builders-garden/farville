@@ -28,6 +28,8 @@ import MarketplaceModal from "./marketplace";
 import LeaderboardModal from "./leaderboard";
 import { MODE_DEFINITIONS } from "@/lib/modes/constants";
 import FarmersPowerModal from "./farmers-power";
+import { useSocket } from "@/hooks/use-socket";
+import toast from "react-hot-toast";
 
 // const WelcomeOverlay = dynamic(() => import("./../components/WelcomeOverlay"), {
 //   ssr: false,
@@ -192,6 +194,8 @@ export default function GameWrapper() {
   const { startBackgroundMusic } = useAudio();
   const { mode, state, activeOverlay, setActiveOverlay } = useGame();
 
+  const { socket } = useSocket();
+
   const { safeAreaInsets } = useFrameContext();
   // const [showPatchNotes, setShowPatchNotes] = useState(false);
   // const toastShownRef = useRef(false);
@@ -208,6 +212,29 @@ export default function GameWrapper() {
       startNextStep("mainTour");
     }
   }, [startNextStep, state.showGridCellsTutorial, activeOverlay]);
+
+  // useEffect to check if the other players made a donation
+  useEffect(() => {
+    if (!socket) return;
+
+    socket.on("new-donation", (data) => {
+      console.log(`${JSON.stringify(data)} 🎉`);
+      toast(`${data.username} +${data.ptAmount} PT`, {
+        duration: 3000,
+        style: {},
+        position: "bottom-right",
+        className: "bg-amber-500 text-white rounded-lg p-2",
+        ariaProps: {
+          role: "status",
+          "aria-live": "polite",
+        },
+      });
+    });
+
+    return () => {
+      socket.off("new-donation");
+    };
+  }, [socket]);
 
   // useEffect(() => {
   //   if (!toastShownRef.current) {
@@ -262,10 +289,7 @@ export default function GameWrapper() {
 
       {activeOverlay?.type === "requests" ? (
         <AnimatePresence>
-          <RequestModal
-            onClose={handleOverlayComplete}
-            id={activeOverlay.id}
-          />
+          <RequestModal onClose={handleOverlayComplete} id={activeOverlay.id} />
         </AnimatePresence>
       ) : activeOverlay?.type === "voucher" ? (
         <AnimatePresence>
@@ -289,10 +313,7 @@ export default function GameWrapper() {
           className="flex flex-col h-[100dvh] w-full overflow-hidden"
         >
           <Header />
-          <div
-            className="flex-1 relative min-h-0"
-            id="game-grid"
-          >
+          <div className="flex-1 relative min-h-0" id="game-grid">
             <GameGrid />
           </div>
           <Toolbar safeAreaInsets={safeAreaInsets} />

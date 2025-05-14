@@ -1,38 +1,12 @@
-// hooks/useSocket.ts
-import { useEffect, useRef } from "react";
-import { io, Socket } from "socket.io-client";
+"use client";
 
-type ServerToClientEvents = {
-  "new-donation": (data: { username: string; amount: number }) => void;
-};
-
-type ClientToServerEvents = {
-  "new-donation": (data: { username: string; amount: number }) => void;
-};
+import { useContext } from "react";
+import { SocketContext } from "@/context/SocketContext";
 
 export const useSocket = () => {
-  const socketRef =
-    useRef<Socket<ServerToClientEvents, ClientToServerEvents>>(null);
-
-  useEffect(() => {
-    const socket = io("http://localhost:3001", {
-      transports: ["websocket"],
-    });
-
-    socketRef.current = socket;
-
-    socket.on("connect", () => {
-      console.log("✅ Connected to socket server", socket.id);
-    });
-
-    socket.on("disconnect", () => {
-      console.log("❌ Disconnected from socket server");
-    });
-
-    return () => {
-      socket.disconnect();
-    };
-  }, []);
-
-  return socketRef;
+  const context = useContext(SocketContext);
+  if (!context) {
+    throw new Error("useSocket must be used within a SocketProvider");
+  }
+  return context;
 };
