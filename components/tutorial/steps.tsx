@@ -68,7 +68,7 @@ export const steps = [
         title: "Fertilize your seed",
         content: (
           <div className="flex flex-col gap-2">
-            <p>Now use the fertilizer on your planted carrot to speed up its growth time.</p>
+            <p>Now fertilizer your carrot to speed up its growth time.</p>
           </div>
         ),
         selector: "#grid-cell-1-1",
