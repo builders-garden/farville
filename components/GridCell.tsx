@@ -305,7 +305,7 @@ export default function GridCell({ cell }: GridCellProps) {
         });
         setTimeout(() => {
           toast.dismiss(`${cell.x}-${cell.y}-planting`);
-        }, 3000);
+        }, 5000);
       }
       return;
     }
