@@ -731,3 +731,14 @@ export const modeAvailableForUser = (mode: Mode, fid: number) => {
 
   return true;
 };
+
+export const getRandomTestUserFid = async (): Promise<number> => {
+  const users = await getUsersByXp(Mode.Classic, 200);
+  const randomUser =
+    users.users[Math.floor(Math.random() * users.users.length)];
+  console.log(
+    `getRandomTestUserFid randomUser: https://warpcast.com/${randomUser.username} (${randomUser.displayName})`,
+    randomUser.fid
+  );
+  return randomUser.fid;
+};

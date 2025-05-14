@@ -57,11 +57,6 @@ export default defineConfig({
     contextOptions: {
       ignoreHTTPSErrors: true,
     },
-
-    // An object containing additional HTTP headers to be sent with every request.
-    extraHTTPHeaders: {
-      Authorization: `Bearer ${process.env.PLAYWRIGHT_TOKEN}`,
-    },
   },
 
   /* Configure projects for major browsers */

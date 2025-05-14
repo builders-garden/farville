@@ -24,23 +24,29 @@ export const useSignIn = (isInMaintenance: boolean) => {
         throw new Error(`SDK initialization failed: ${contextError}`);
       }
 
-      if (!context) {
-        throw new Error("Farville must be played from Warpcast!");
-      }
+      let result;
+      if (isTestMode) {
+        result = {
+          signature: "0x123",
+          message: "<3 from test mode",
+          fid: null,
+          referrerFid: null,
+        };
+      } else {
+        if (!context) throw new Error("Farville must be played from Warpcast!");
+        if (!context.user?.fid)
+          throw new Error(
+            "No FID found. Please make sure you're logged into Warpcast."
+          );
 
-      if (!context.user?.fid) {
-        throw new Error(
-          "No FID found. Please make sure you're logged into Warpcast."
-        );
+        result = await sdk.actions.signIn({
+          nonce: Math.random().toString(36).substring(2),
+          notBefore: new Date().toISOString(),
+          expirationTime: new Date(
+            Date.now() + MESSAGE_EXPIRATION_TIME
+          ).toISOString(),
+        });
       }
-
-      const result = await sdk.actions.signIn({
-        nonce: Math.random().toString(36).substring(2),
-        notBefore: new Date().toISOString(),
-        expirationTime: new Date(
-          Date.now() + MESSAGE_EXPIRATION_TIME
-        ).toISOString(),
-      });
 
       const referrerFid =
         context?.location?.type === "cast_embed"
@@ -75,15 +81,13 @@ export const useSignIn = (isInMaintenance: boolean) => {
     } finally {
       setIsLoading(false);
     }
-  }, [context, contextError]);
+  }, [context, contextError, isTestMode]);
 
   const handleSignIn = useCallback(async () => {
     try {
       setIsLoading(true);
       setError(null);
       if (token && !isSignedIn && !authCheckError) {
-        setIsSignedIn(true);
-      } else if (isTestMode) {
         setIsSignedIn(true);
       } else {
         const data = await signIn();
