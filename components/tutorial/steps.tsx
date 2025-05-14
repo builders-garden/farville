@@ -5,12 +5,10 @@ export const steps: Tour[] = [
     tour: "mainTour",
     steps: [
       {
-        icon: "🌱",
+        icon: "",
         title: "Pick a seed",
         content: (
-            <p className="text-xs">
-              Pick carrot seeds and start planting!
-            </p>
+          <p className="text-xs">Pick carrot seeds and start planting!</p>
         ),
         selector: "#carrot-seeds",
         side: "bottom-left" as const,
@@ -20,12 +18,10 @@ export const steps: Tour[] = [
         pointerRadius: 8,
       },
       {
-        icon: "🌱",
+        icon: "",
         title: "Plant your seed",
         content: (
-          <div className="flex flex-col gap-2">
-            <p>Now click on the field to plant your first carrot.</p>
-          </div>
+            <p>Click on the field to plant your first carrot.</p>
         ),
         showControls: false,
         showSkip: false,
@@ -35,13 +31,9 @@ export const steps: Tour[] = [
         pointerRadius: 8,
       },
       {
-        icon: "✨",
+        icon: "",
         title: "Pick a fertilizer",
-        content: (
-          <div className="flex flex-row">
-            <p>Pick a fertilizer to boost your crop growth.</p>
-          </div>
-        ),
+        content: <p>Pick a fertilizer to boost your carrot growth.</p>,
         selector: "#fertilizer",
         side: "bottom-left" as const,
         showControls: false,
@@ -50,15 +42,9 @@ export const steps: Tour[] = [
         pointerRadius: 8,
       },
       {
-        icon: "✨",
+        icon: "",
         title: "Fertilize your seed",
-        content: (
-          <div className="flex flex-col gap-2">
-            <p className="text-sm">
-              Now fertilizer your carrot to speed up its growth time.
-            </p>
-          </div>
-        ),
+        content: <p>Fertilize your carrot to speed up its growth time.</p>,
         selector: "#grid-cell-1-1",
         side: "top-left" as const,
         showControls: false,
@@ -67,13 +53,9 @@ export const steps: Tour[] = [
         pointerRadius: 8,
       },
       {
-        icon: "🌾",
-        title: "Harvest Your Crop",
-        content: (
-          <div className="flex flex-col gap-2">
-            <p>When your carrot is ready, click on it to harvest it.</p>
-          </div>
-        ),
+        icon: "",
+        title: "Harvest Your Carrot",
+        content: <p>Your carrot is ready. Click on it to harvest!</p>,
         selector: "#grid-cell-1-1",
         side: "top-left" as const,
         showControls: true,
@@ -82,13 +64,9 @@ export const steps: Tour[] = [
         pointerRadius: 8,
       },
       {
-        icon: "🌾",
+        icon: "",
         title: "Sell your carrot!",
-        content: (
-          <div className="flex flex-col gap-2">
-            <p>Visit the market and sell your carrot to earn coins.</p>
-          </div>
-        ),
+        content: <p>Visit the market and sell your carrot to earn coins.</p>,
         selector: "#market-toolbar-btn",
         side: "bottom-left" as const,
         showControls: true,
