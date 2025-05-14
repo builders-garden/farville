@@ -35,7 +35,7 @@ import { AnimatedCircularProgressBar } from "./ui/animated-circular-progress-bar
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
+  DialogClose,
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Slider } from "@/components/ui/slider";
@@ -84,9 +84,13 @@ export default function FarmersPowerModal({ onClose }: FarmersPowerModalProps) {
 
   // New state for power mechanics
   const [currentFP, setCurrentFP] = useState<number>(3250);
+  const [fpChangeAnimation, setFpChangeAnimation] = useState<
+    "increase" | "decrease" | null
+  >(null);
+  const previousFP = useRef(currentFP);
   const [powerCombo, setPowerCombo] = useState<number>(6);
   const [lastDonationTime, setLastDonationTime] = useState<Date | null>(
-    new Date(Date.now() - 5 * 60 * 1000)
+    new Date(Date.now() - 9.5 * 60 * 1000)
   );
   const [nextDecayTime, setNextDecayTime] = useState<Date>(
     new Date(Date.now() + DECAY_INTERVAL * 60 * 1000)
@@ -98,10 +102,40 @@ export default function FarmersPowerModal({ onClose }: FarmersPowerModalProps) {
   useEffect(() => {
     const interval = setInterval(() => {
       setTimerNow(Date.now());
+
+      // Check if timer reached 0 (10 minutes elapsed)
+      if (lastDonationTime) {
+        const timeElapsed = Date.now() - lastDonationTime.getTime();
+        if (timeElapsed >= COMBO_WINDOW) {
+          // Reset combo and last donation time
+          setPowerCombo(1);
+          setLastDonationTime(new Date());
+
+          // Decrease FP by 1
+          setCurrentFP((prevFP) => Math.max(0, prevFP - 1));
+        }
+      }
     }, 16); // ~60fps update rate
 
     return () => clearInterval(interval);
-  }, []);
+  }, [lastDonationTime]);
+
+  // Effect to detect FP changes and trigger animations
+  useEffect(() => {
+    if (currentFP !== previousFP.current) {
+      setFpChangeAnimation(
+        currentFP > previousFP.current ? "increase" : "decrease"
+      );
+      previousFP.current = currentFP;
+
+      // Reset animation state after animation completes
+      const timer = setTimeout(() => {
+        setFpChangeAnimation(null);
+      }, 1000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [currentFP]);
 
   // UI state
   const [showConfetti, setShowConfetti] = useState(false);
@@ -336,14 +370,14 @@ export default function FarmersPowerModal({ onClose }: FarmersPowerModalProps) {
               {currentStageInfo.boost}× Game Speed Boost
             </p> */}
                 <p className="text-white/70 text-xs">
-                  Higher power, faster growth for all farmers!
+                  Let&apos;s play Farville faster!
                 </p>
               </div>
             </div>
 
             <div className="flex-1 flex flex-col items-center gap-6 max-w-md mx-auto w-full px-4 pb-8 overflow-y-auto no-scrollbar pt-4">
               {/* Tabs */}
-              <div className="grid grid-cols-2 gap-1 xs:gap-2 mb-3 xs:mb-4">
+              <div className="grid grid-cols-2 gap-1 xs:gap-2">
                 {[
                   { id: "power", icon: "⚡️", label: "Farmers Power" },
                   { id: "leaderboard", icon: "🏆", label: "Leaderboard" },
@@ -415,9 +449,33 @@ export default function FarmersPowerModal({ onClose }: FarmersPowerModalProps) {
 
                           <div className="flex flex-col gap-1.5 items-end">
                             <div className="flex items-baseline gap-1.5">
-                              <span className="text-[1.65rem] font-bold text-yellow-400">
+                              <motion.span
+                                className={cn(
+                                  "text-[1.65rem] font-bold",
+                                  fpChangeAnimation === "increase"
+                                    ? "text-green-500"
+                                    : fpChangeAnimation === "decrease"
+                                    ? "text-red-400"
+                                    : "text-yellow-400"
+                                )}
+                                animate={
+                                  fpChangeAnimation
+                                    ? {
+                                        scale: [1, 1.2, 1],
+                                        y:
+                                          fpChangeAnimation === "increase"
+                                            ? [0, -10, 0]
+                                            : [0, 5, 0],
+                                      }
+                                    : {}
+                                }
+                                transition={{
+                                  duration: 0.5,
+                                  ease: "easeOut",
+                                }}
+                              >
                                 {currentFP}
-                              </span>
+                              </motion.span>
                               <span className="text-white/60 text-sm">
                                 /{" "}
                                 {nextStageInfo
@@ -439,23 +497,66 @@ export default function FarmersPowerModal({ onClose }: FarmersPowerModalProps) {
 
                       {/* Combo Timer */}
                       {lastDonationTime && (
-                        <div className="bg-[#4A341A] rounded-lg p-3">
-                          <div className="flex flex-col xs:flex-row xs:items-center justify-between gap-1">
+                        <div
+                          className={cn(
+                            "flex flex-col gap-3 rounded-lg p-3",
+                            powerCombo > 1
+                              ? "bg-gradient-to-br from-[#4A341A] via-[#5A442A] to-[#4A341A] relative overflow-hidden"
+                              : "bg-[#4A341A]"
+                          )}
+                        >
+                          {powerCombo > 1 && (
+                            <div className="absolute inset-0 bg-gradient-to-r from-yellow-400/10 via-orange-400/10 to-yellow-400/10">
+                              <motion.div
+                                className="w-[200%] h-full absolute"
+                                style={{
+                                  backgroundImage:
+                                    "linear-gradient(to right, transparent, rgba(255,255,255,0.1), transparent)",
+                                }}
+                                animate={{
+                                  x: ["-100%", "100%"],
+                                }}
+                                transition={{
+                                  duration: 2,
+                                  repeat: Infinity,
+                                  ease: "linear",
+                                }}
+                              />
+                            </div>
+                          )}
+                          <div className="flex flex-col items-start justify-between gap-3 relative z-10">
                             <div className="flex items-center gap-2 text-white/80">
                               <Clock
                                 size={16}
-                                className="text-[#FFB938]"
+                                className={cn(
+                                  powerCombo > 1
+                                    ? "text-yellow-400"
+                                    : "text-[#FFB938]"
+                                )}
                               />
                               <span className="text-[10px]">
-                                Combo expires in:
+                                FP decrease in:
                               </span>
                             </div>
                             <motion.div
-                              className="flex gap-1 text-white font-bold"
-                              animate={{ opacity: [1, 0.8, 1] }}
-                              transition={{ duration: 0.5, repeat: Infinity }}
+                              className="flex gap-1 text-white font-bold w-full"
+                              animate={{
+                                opacity:
+                                  powerCombo > 1 ? [1, 0.7, 1] : [1, 0.8, 1],
+                              }}
+                              transition={{
+                                duration: powerCombo > 1 ? 0.8 : 0.5,
+                                repeat: Infinity,
+                              }}
                             >
-                              <div className="bg-[#5C4121] px-2 py-1 rounded-md text-xs min-w-[30px] flex items-center justify-center">
+                              <div
+                                className={cn(
+                                  "px-2 py-1 rounded-md text-xs w-full flex items-center justify-center",
+                                  powerCombo > 1
+                                    ? "bg-[#5C4121]/80 border border-yellow-400/20"
+                                    : "bg-[#5C4121]"
+                                )}
+                              >
                                 {Math.max(
                                   0,
                                   Math.floor(
@@ -467,10 +568,24 @@ export default function FarmersPowerModal({ onClose }: FarmersPowerModalProps) {
                                   .toString()
                                   .padStart(2, "0")}
                               </div>
-                              <span className="text-[#FFB938] flex items-center">
+                              <span
+                                className={cn(
+                                  "flex items-center",
+                                  powerCombo > 1
+                                    ? "text-yellow-400"
+                                    : "text-[#FFB938]"
+                                )}
+                              >
                                 :
                               </span>
-                              <div className="bg-[#5C4121] px-2 py-1 rounded-md text-xs min-w-[30px] flex items-center justify-center">
+                              <div
+                                className={cn(
+                                  "px-2 py-1 rounded-md text-xs w-full flex items-center justify-center",
+                                  powerCombo > 1
+                                    ? "bg-[#5C4121]/80 border border-yellow-400/20"
+                                    : "bg-[#5C4121]"
+                                )}
+                              >
                                 {Math.max(
                                   0,
                                   Math.floor(
@@ -483,119 +598,177 @@ export default function FarmersPowerModal({ onClose }: FarmersPowerModalProps) {
                                   .toString()
                                   .padStart(2, "0")}
                               </div>
-                              <span className="text-[#FFB938] flex items-center">
+                              <span
+                                className={cn(
+                                  "flex items-center",
+                                  powerCombo > 1
+                                    ? "text-yellow-400"
+                                    : "text-[#FFB938]"
+                                )}
+                              >
                                 :
                               </span>
-                              <div className="bg-[#5C4121] px-2 py-1 rounded-md text-xs min-w-[40px] flex items-center justify-center">
+                              <div
+                                className={cn(
+                                  "px-2 py-1 rounded-md text-xs w-full flex items-center justify-center",
+                                  powerCombo > 1
+                                    ? "bg-[#5C4121]/80 border border-yellow-400/20"
+                                    : "bg-[#5C4121]"
+                                )}
+                              >
                                 {Math.max(
                                   0,
                                   Math.floor(
-                                    (COMBO_WINDOW -
+                                    ((COMBO_WINDOW -
                                       (timerNow - lastDonationTime.getTime())) %
-                                      1000
+                                      1000) /
+                                      10
                                   )
                                 )
                                   .toString()
-                                  .padStart(3, "0")}
+                                  .padStart(2, "0")}
                               </div>
                             </motion.div>
-                          </div>
-                        </div>
-                      )}
 
-                      {/* Burning Fuse Timer */}
-                      {lastDonationTime && (
-                        <div className="bg-[#4A341A] rounded-lg p-3 mt-3 relative overflow-hidden">
-                          {/* Fuse Track */}
-                          <div className="h-2 bg-[#2A1E12] rounded-full relative">
-                            {/* Burning Fuse */}
-                            <motion.div
-                              className="absolute left-0 top-0 h-full bg-gradient-to-r from-yellow-500 via-orange-500 to-red-500"
-                              style={{
-                                width: `${Math.max(
-                                  0,
-                                  ((COMBO_WINDOW -
-                                    (Date.now() - lastDonationTime.getTime())) /
-                                    COMBO_WINDOW) *
-                                    100
-                                )}%`,
-                              }}
-                              animate={{
-                                width: "0%",
-                              }}
-                              transition={{
-                                duration: Math.max(
-                                  0,
-                                  (COMBO_WINDOW -
-                                    (Date.now() - lastDonationTime.getTime())) /
-                                    1000
-                                ),
-                                ease: "linear",
-                              }}
-                            >
-                              {/* Spark Animation */}
-                              <div className="absolute right-[-5px] top-1/2 -translate-y-1/2">
-                                <motion.div
-                                  className="w-3 h-3 rounded-full bg-yellow-400 shadow-lg shadow-yellow-400/50"
-                                  animate={{
-                                    scale: [1, 1.2, 1],
-                                    opacity: [1, 0.7, 1],
-                                  }}
-                                  transition={{
-                                    duration: 0.5,
-                                    repeat: Infinity,
-                                    ease: "easeInOut",
-                                  }}
-                                />
-                                {/* Spark Particles */}
-                                <motion.div
-                                  className="absolute top-1/2 right-1/2 w-1 h-1 rounded-full bg-yellow-400"
-                                  animate={{
-                                    y: [-4, 4],
-                                    x: [0, 4],
-                                    opacity: [1, 0],
-                                  }}
-                                  transition={{
-                                    duration: 0.4,
-                                    repeat: Infinity,
-                                    ease: "easeOut",
-                                  }}
-                                />
-                                <motion.div
-                                  className="absolute top-1/2 right-1/2 w-1 h-1 rounded-full bg-orange-400"
-                                  animate={{
-                                    y: [-2, 2],
-                                    x: [0, 3],
-                                    opacity: [1, 0],
-                                  }}
-                                  transition={{
-                                    duration: 0.3,
-                                    repeat: Infinity,
-                                    ease: "easeOut",
-                                    delay: 0.1,
-                                  }}
-                                />
-                              </div>
-                            </motion.div>
+                            {powerCombo > 1 && (
+                              <motion.div
+                                className="w-full text-center text-yellow-400 text-sm font-semibold"
+                                animate={{ scale: [1, 1.05, 1] }}
+                                transition={{ duration: 1.5, repeat: Infinity }}
+                              >
+                                Power Combo: ×{powerCombo}
+                              </motion.div>
+                            )}
                           </div>
 
-                          {/* Explosion Animation */}
-                          {COMBO_WINDOW -
-                            (Date.now() - lastDonationTime.getTime()) <=
-                            0 && (
-                            <motion.div
-                              className="absolute inset-0 bg-yellow-400"
-                              initial={{ opacity: 0 }}
-                              animate={{
-                                opacity: [0, 0.8, 0],
-                                scale: [1, 1.2, 1],
-                              }}
-                              transition={{
-                                duration: 0.5,
-                                ease: "easeOut",
-                              }}
-                            />
-                          )}
+                          {/* Burning Fuse */}
+                          <div className="relative">
+                            {/* Fuse Track */}
+                            <div className="h-2 bg-[#2A1E12] rounded-full relative">
+                              {/* Burning Fuse */}
+                              <motion.div
+                                key={
+                                  lastDonationTime
+                                    ? lastDonationTime.getTime()
+                                    : "initial"
+                                }
+                                className="absolute left-0 top-0 h-full bg-gradient-to-r from-red-500 via-orange-500 to-yellow-500"
+                                style={{
+                                  width: `${Math.max(
+                                    0,
+                                    ((COMBO_WINDOW -
+                                      (Date.now() -
+                                        lastDonationTime.getTime())) /
+                                      COMBO_WINDOW) *
+                                      98
+                                  )}%`,
+                                }}
+                                animate={{
+                                  width: "2%",
+                                }}
+                                transition={{
+                                  duration: Math.max(
+                                    0,
+                                    (COMBO_WINDOW -
+                                      (Date.now() -
+                                        lastDonationTime.getTime())) /
+                                      1000
+                                  ),
+                                  ease: "linear",
+                                }}
+                              >
+                                {/* Enhanced Spark Animation */}
+                                <div className="absolute right-[-8px] top-1/2 -translate-y-1/2">
+                                  <motion.div
+                                    className="w-4 h-4 rounded-full bg-yellow-300 shadow-lg shadow-yellow-400/80"
+                                    animate={{
+                                      scale: [1, 1.2, 1],
+                                      boxShadow: [
+                                        "0 0 10px 2px rgba(250, 204, 21, 0.8)",
+                                        "0 0 15px 4px rgba(250, 204, 21, 0.9)",
+                                        "0 0 10px 2px rgba(250, 204, 21, 0.8)",
+                                      ],
+                                    }}
+                                    transition={{
+                                      duration: 0.8,
+                                      repeat: Infinity,
+                                      ease: "easeInOut",
+                                    }}
+                                  />
+                                  {/* Multiple Spark Particles */}
+                                  <motion.div
+                                    className="absolute top-1/2 right-1/2 w-2.5 h-2.5 rounded-full bg-yellow-300"
+                                    animate={{
+                                      y: [-8, 8],
+                                      x: [-2, 8],
+                                      opacity: [1, 0],
+                                      scale: [1.2, 0.6],
+                                      rotate: [-45, 45],
+                                    }}
+                                    transition={{
+                                      duration: 0.8,
+                                      repeat: Infinity,
+                                      ease: "easeOut",
+                                      times: [0, 1],
+                                      repeatDelay: 0.2,
+                                    }}
+                                  />
+                                  <motion.div
+                                    className="absolute top-1/2 right-1/2 w-2.5 h-2.5 rounded-full bg-orange-300"
+                                    animate={{
+                                      y: [-6, 4],
+                                      x: [2, 7],
+                                      opacity: [1, 0],
+                                      scale: [1.1, 0.5],
+                                      rotate: [30, -30],
+                                    }}
+                                    transition={{
+                                      duration: 0.6,
+                                      repeat: Infinity,
+                                      ease: "easeOut",
+                                      delay: 0.15,
+                                      repeatDelay: 0.1,
+                                    }}
+                                  />
+                                  <motion.div
+                                    className="absolute top-1/2 right-1/2 w-2 h-2 rounded-full bg-yellow-200"
+                                    animate={{
+                                      y: [-4, 6],
+                                      x: [-3, 5],
+                                      opacity: [1, 0],
+                                      scale: [1, 0.4],
+                                      rotate: [-15, 15],
+                                    }}
+                                    transition={{
+                                      duration: 0.7,
+                                      repeat: Infinity,
+                                      ease: "easeOut",
+                                      delay: 0.3,
+                                      repeatDelay: 0.15,
+                                    }}
+                                  />
+                                </div>
+                              </motion.div>
+                            </div>
+
+                            {/* Explosion Animation */}
+                            {COMBO_WINDOW -
+                              (Date.now() - lastDonationTime.getTime()) <=
+                              0 && (
+                              <motion.div
+                                className="absolute inset-0 bg-yellow-400"
+                                initial={{ opacity: 0 }}
+                                animate={{
+                                  opacity: [0, 0.8, 0],
+                                  scale: [1, 1.2, 1],
+                                }}
+                                transition={{
+                                  duration: 0.5,
+                                  ease: "easeOut",
+                                }}
+                              />
+                            )}
+                          </div>
                         </div>
                       )}
 
@@ -688,14 +861,61 @@ export default function FarmersPowerModal({ onClose }: FarmersPowerModalProps) {
                     open={showContributeDialog}
                     onOpenChange={setShowContributeDialog}
                   >
-                    <DialogContent className="bg-[#7e4e31] border-yellow-400/20 max-w-[90%] text-white rounded-lg">
-                      <DialogHeader>
-                        <DialogTitle className="text-white/90">
+                    <DialogContent
+                      showCloseButton={false}
+                      className="bg-[#7e4e31] border-yellow-400/20 max-w-[90%] text-white rounded-lg"
+                    >
+                      <div className="flex justify-between items-center mb-4">
+                        <DialogTitle className="text-lg font-semibold text-white/90">
                           Contribute Power
                         </DialogTitle>
-                      </DialogHeader>
+                        <DialogClose
+                          className="w-8 h-8 flex items-center justify-center rounded-full 
+                          bg-white/10 hover:bg-white/20 transition-colors text-white/80 hover:text-white"
+                        >
+                          <X size={16} />
+                        </DialogClose>
+                      </div>
 
                       <div className="flex flex-col gap-4">
+                        {/* Amount and Power Display */}
+                        <div className="bg-[#4A341A] p-4 rounded-lg border border-yellow-400/10">
+                          <div className="flex justify-between items-center mb-3">
+                            <div className="flex flex-col">
+                              <span className="text-white/70 text-xs">
+                                Amount
+                              </span>
+                              <span className="text-2xl font-bold text-yellow-400">
+                                ${contributionAmount}
+                              </span>
+                            </div>
+                            <div className="flex flex-col items-end">
+                              <span className="text-white/70 text-xs">
+                                Power Points
+                              </span>
+                              <span className="text-2xl font-bold text-yellow-400">
+                                {contributionAmount * powerCombo} FP
+                              </span>
+                            </div>
+                          </div>
+                          <div className="flex justify-between gap-2 text-white/70 text-xs text-center border-t border-yellow-400/10 pt-2 mt-1">
+                            <span className="text-white/70">
+                              Current Combo:
+                            </span>
+                            <span className="text-yellow-400 font-bold">
+                              ×{powerCombo}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="mt-2">
+                          <span className="text-white/70 text-xs">
+                            Balance: $
+                            {tokenBalancesData?.totalBalanceUSD.toFixed(2) ??
+                              "0"}
+                          </span>
+                        </div>
+
                         {/* Preset Amount Buttons */}
                         <div className="grid grid-cols-5 gap-2">
                           {[1, 2, 5, 10].map((amount) => (
@@ -724,57 +944,58 @@ export default function FarmersPowerModal({ onClose }: FarmersPowerModalProps) {
                                 ? "text-[#5C4121] bg-yellow-500"
                                 : "text-yellow-400/90 bg-[#5C4121] hover:bg-[#5C4121]/80"
                             )}
-                            onClick={() =>
-                              setShowCustomSlider(!showCustomSlider)
-                            }
+                            onClick={() => {
+                              setShowCustomSlider(!showCustomSlider);
+                              const accordionElement = document.querySelector(
+                                '[data-state="closed"][data-orientation="vertical"]'
+                              );
+                              if (accordionElement) {
+                                (accordionElement as HTMLButtonElement).click();
+                              }
+                            }}
                           >
-                            More
+                            +
                           </Button>
                         </div>
 
                         {/* Custom Amount Slider */}
-                        {showCustomSlider && (
-                          <div className="flex flex-col gap-2 bg-[#5C4121] p-4 rounded-lg">
-                            <div className="flex justify-between items-center mb-2">
-                              <span className="text-white/70 text-sm">
-                                Custom amount:
-                              </span>
-                              <span className="text-yellow-400 font-bold">
-                                ${contributionAmount}
-                              </span>
-                            </div>
-                            <Slider
-                              variant="yellow-brown"
-                              value={[contributionAmount]}
-                              onValueChange={(value) =>
-                                setContributionAmount(value[0])
-                              }
-                              max={50}
-                              min={1}
-                              step={1}
-                            />
-                          </div>
-                        )}
-
-                        {/* Power Info */}
-                        <div className="flex gap-4 items-center bg-[#4A341A] p-4 rounded-lg border border-yellow-400/10">
-                          <div className="text-2xl font-bold text-yellow-400 w-16 text-center">
-                            ${contributionAmount}
-                          </div>
-                          <div className="flex flex-col">
-                            <span className="text-white/90 text-xs">
-                              Current Combo: ×{powerCombo}
-                            </span>
-                            <span className="text-yellow-400 text-sm font-bold">
-                              = {contributionAmount * powerCombo} FP
-                            </span>
-                          </div>
-                        </div>
-
-                        <span className="text-white/70 text-xs">
-                          Balance: $
-                          {tokenBalancesData?.totalBalanceUSD.toFixed(2) ?? "0"}
-                        </span>
+                        <Accordion
+                          type="single"
+                          collapsible
+                          className="w-full"
+                          value={showCustomSlider ? "custom-amount" : ""}
+                        >
+                          <AccordionItem
+                            value="custom-amount"
+                            className="border-0"
+                          >
+                            <AccordionTrigger className="hidden">
+                              Custom Amount
+                            </AccordionTrigger>
+                            <AccordionContent>
+                              <div className="flex flex-col gap-2 bg-[#6D4C2C] p-4 rounded-lg">
+                                <div className="flex justify-between items-center mb-2">
+                                  <span className="text-white/70 text-sm">
+                                    Custom amount:
+                                  </span>
+                                  <span className="text-yellow-400 font-bold">
+                                    ${contributionAmount}
+                                  </span>
+                                </div>
+                                <Slider
+                                  variant="yellow-brown"
+                                  value={[contributionAmount]}
+                                  onValueChange={(value) =>
+                                    setContributionAmount(value[0])
+                                  }
+                                  max={50}
+                                  min={1}
+                                  step={1}
+                                />
+                              </div>
+                            </AccordionContent>
+                          </AccordionItem>
+                        </Accordion>
 
                         {/* Payment Button */}
                         <DaimoPayButton.Custom
