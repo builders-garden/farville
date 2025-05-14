@@ -2,19 +2,19 @@ import { cn } from "@/lib/utils";
 import { Clock } from "lucide-react";
 import { motion } from "framer-motion";
 
-interface ComboTimerProps {
+interface PowerTimerProps {
   powerCombo: number;
   lastDonationTime: Date | null;
   timerNow: number;
   COMBO_WINDOW: number;
 }
 
-export const ComboTimer = ({
+export const PowerTimer = ({
   powerCombo,
   lastDonationTime,
   timerNow,
   COMBO_WINDOW,
-}: ComboTimerProps) => {
+}: PowerTimerProps) => {
   if (!lastDonationTime) return null;
 
   return (
