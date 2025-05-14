@@ -1,22 +1,24 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { useGame } from "../context/GameContext";
-import { ActionType, CropType, PerkType, SeedType } from "../lib/types/game";
-import CropSprite from "./CropSprite";
-import FloatingNumber from "./animations/FloatingNumber";
-import { useState, useRef, useEffect, useMemo, Fragment } from "react";
+import { useAudio } from "@/context/AudioContext";
+import { useUserXp } from "@/hooks/use-user-xp";
 import { CROP_DATA, SPEED_BOOST } from "@/lib/game-constants";
-import Confetti from "./animations/Confetti";
-import { createPortal } from "react-dom";
 import {
   formatTime,
   getBoostTime,
   getGrowthTimeBasedOnMode,
 } from "@/lib/utils";
-import { useAudio } from "@/context/AudioContext";
-import { useUserXp } from "@/hooks/use-user-xp";
 import { UserGridCell } from "@prisma/client";
+import { motion } from "framer-motion";
+import { useNextStep } from "nextstepjs";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
+import toast from "react-hot-toast";
+import { useGame } from "../context/GameContext";
+import { ActionType, CropType, PerkType, SeedType } from "../lib/types/game";
+import CropSprite from "./CropSprite";
+import Confetti from "./animations/Confetti";
+import FloatingNumber from "./animations/FloatingNumber";
 
 interface GridCellProps {
   cell: UserGridCell;
@@ -203,6 +205,7 @@ export default function GridCell({ cell }: GridCellProps) {
     updateUserItems,
     updateUserWeeklyStats,
   } = useGame();
+  const { currentTour, currentStep, setCurrentStep } = useNextStep();
   const { addUserXpsAndCheckLevelUp } = useUserXp();
   const { playSound } = useAudio();
   const cellRef = useRef<HTMLDivElement>(null);
@@ -290,6 +293,20 @@ export default function GridCell({ cell }: GridCellProps) {
       !selectedSeed &&
       !selectedPerk
     ) {
+      if (!cell.plantedAt) {
+        toast.loading("To plant a seed, pick one from the list below", {
+          id: `${cell.x}-${cell.y}-planting`,
+          position: "top-center",
+          style: {
+            backgroundColor: "#fff",
+            color: "#000",
+          },
+          icon: "🌱",
+        });
+        setTimeout(() => {
+          toast.dismiss(`${cell.x}-${cell.y}-planting`);
+        }, 5000);
+      }
       return;
     }
     try {
@@ -385,6 +402,10 @@ export default function GridCell({ cell }: GridCellProps) {
         if (remainingUses <= 1) {
           setSelectedPerk(null);
         }
+        if (currentTour === "mainTour" && currentStep === 3) {
+          setCurrentStep(4);
+          setSelectedPerk(null);
+        }
         return;
       }
 
@@ -432,6 +453,9 @@ export default function GridCell({ cell }: GridCellProps) {
           updateUserWeeklyStats({
             currentScore: state.weeklyStats.currentScore + cropXP,
           });
+          if (currentTour === "mainTour" && currentStep === 4) {
+            setCurrentStep(5);
+          }
         }
         return;
       }
@@ -485,6 +509,10 @@ export default function GridCell({ cell }: GridCellProps) {
 
         setRemainingUses(Math.max(0, remainingUses - 1));
         if (remainingUses <= 1) {
+          setSelectedSeed(null);
+        }
+        if (currentTour === "mainTour" && currentStep === 1) {
+          setCurrentStep(2);
           setSelectedSeed(null);
         }
       }
@@ -567,7 +595,7 @@ export default function GridCell({ cell }: GridCellProps) {
   `;
 
   return (
-    <>
+    <div id={`grid-cell-${cell.x}-${cell.y}`}>
       {showLevelUpConfetti && <Confetti title="LEVEL UP!" />}
       <motion.div
         ref={cellRef}
@@ -669,6 +697,6 @@ export default function GridCell({ cell }: GridCellProps) {
             </Fragment>
           ))}
       </motion.div>
-    </>
+    </div>
   );
 }

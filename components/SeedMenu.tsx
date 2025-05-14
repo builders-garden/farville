@@ -1,11 +1,12 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { useGame } from "../context/GameContext";
-import { SeedType } from "../lib/types/game";
-import { useRef } from "react";
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/solid";
 import { Item } from "@prisma/client";
+import { motion } from "framer-motion";
+import { useNextStep } from "nextstepjs";
+import { useRef } from "react";
+import { useGame } from "../context/GameContext";
+import { SeedType } from "../lib/types/game";
 
 const CROP_COLORS: Record<SeedType, string> = {
   "carrot-seeds": "border-orange-400",
@@ -22,6 +23,7 @@ const CROP_COLORS: Record<SeedType, string> = {
 };
 
 export default function SeedMenu() {
+  const { currentStep, currentTour, setCurrentStep } = useNextStep();
   const {
     selectedSeed,
     setSelectedSeed,
@@ -60,10 +62,16 @@ export default function SeedMenu() {
       setSelectedSeed(item.slug as SeedType);
       setSelectedPerk(null);
       setRemainingUses(seed?.quantity || 0);
+      if (currentTour === "mainTour" && currentStep === 0) {
+        setCurrentStep(1);
+      }
     } else {
       setSelectedPerk(perk!);
       setSelectedSeed(null);
       setRemainingUses(perk?.quantity || 0);
+      if (currentTour === "mainTour" && currentStep === 2) {
+        setCurrentStep(3);
+      }
     }
   };
 
