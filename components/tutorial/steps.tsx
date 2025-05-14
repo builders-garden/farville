@@ -98,7 +98,7 @@ export const steps = [
         title: "Sell your carrot!",
         content: (
           <div className="flex flex-col gap-2">
-            <p>Visit the market to sell your carrot</p>
+            <p>Visit the market and sell your carrot to earn coins.</p>
           </div>
         ),
         selector: "#market-toolbar-btn",
