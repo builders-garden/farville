@@ -14,6 +14,8 @@ import { Button } from "./ui/button";
 import { Mode } from "@/lib/types/game";
 import { AnimatedCircularProgressBar } from "./ui/animated-circular-progress-bar";
 import { MODE_DEFINITIONS } from "@/lib/modes/constants";
+import { useSocket } from "@/hooks/use-socket";
+import { useEffect } from "react";
 // import { OG_FIDS_LIST } from "@/lib/contracts/constants";
 
 export default function Header() {
@@ -28,9 +30,38 @@ export default function Header() {
   } = useGame();
   const { progress } = getCurrentLevelAndProgress(state.experience);
 
+  const { current: socket } = useSocket();
+
+  // const showOgButton = OG_FIDS_LIST.indexOf(state.user.fid) !== -1;
+
   const availableUserModes = Object.values(Mode).filter((modeValue) =>
     modeAvailableForUser(modeValue, state.user.fid)
   ).length;
+
+  const handleClick = () => {
+    console.log("Button clicked");
+    if (socket?.connected) {
+      socket.emit("new-donation", {
+        username: state.user.username,
+        amount: 1,
+      });
+    } else {
+      console.error("Socket is not connected");
+    }
+  };
+
+  useEffect(() => {
+    if (!socket) return;
+
+    console.log("Socket connected:", socket.connected);
+    socket.on("new-donation", (data) => {
+      console.log(`${data.username} donated ${data.amount} coins! 🎉`);
+    });
+
+    return () => {
+      socket.off("new-donation");
+    };
+  }, [socket]);
 
   return (
     <div className="bg-[#8B5E3C]/40 px-4 py-2 shadow-lg bg-opacity-95 backdrop-blur-sm border-b-2 border-[#6d4c2c]/50 z-30">
@@ -61,60 +92,17 @@ export default function Header() {
                 />
               </div>
             </AnimatedCircularProgressBar>
-            {/* <span className="text-white/70 text-[8px]">
-                (
-                {(state.experience >= 1000000
-                  ? (state.experience / 1000000).toFixed(1) + "M"
-                  : state.experience >= 1000
-                  ? (state.experience / 1000).toFixed(1) + "K"
-                  : state.experience.toString()
-                ).replace(/\.0([KM])$/, "$1")}
-                /
-                {((threshold) =>
-                  threshold >= 1000000
-                    ? (threshold / 1000000).toFixed(1) + "M"
-                    : threshold >= 1000
-                    ? (threshold / 1000).toFixed(1) + "K"
-                    : threshold)(
-                  LEVEL_XP_THRESHOLDS[
-                    Math.min(
-                      LEVEL_XP_THRESHOLDS.findIndex(
-                        (threshold) => state.experience < threshold
-                      ),
-                      LEVEL_XP_THRESHOLDS.length - 1
-                    )
-                  ] || LEVEL_XP_THRESHOLDS[LEVEL_XP_THRESHOLDS.length - 1]
-                )
-                  .toString()
-                  .replace(/\.0([KM])$/, "$1")}
-                <span className="ml-0.5 text-[8px]">XP</span>)
-              </span> */}
-            {/* <div className="mt-1.5 h-1.5 w-full bg-[#5d3c1c] rounded-full overflow-hidden">
-              <motion.div
-                className="h-full bg-[#FFB938]"
-                initial={{ width: 0 }}
-                animate={{ width: `${progress}%` }}
-                transition={{ duration: 0.5 }}
-              />
-              {state.level}
-            </div> */}
           </div>
         </div>
 
-        {/* {showOgButton && (
-          <div className="flex flex-col items-center w-[48px]">
-            <motion.button
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => {
-                setShowMintOGBadge(true);
-              }}
-              className={`py-[9px] px-[6px] bg-[#FFB938] text-[#5d3c1c] rounded-full flex items-center justify-center transition-colors relative shadow-lg shadow-[#A17449]/50 animate-pulse`}
-            >
-              <span className="text-xs">OG</span>
-            </motion.button>
-          </div>
-        )} */}
+        <motion.button
+          className="bg-[#8B5E3C] hover:bg-[#6d4c2c] text-white px-4 py-2 rounded-lg shadow-lg"
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={handleClick}
+        >
+          Emit
+        </motion.button>
 
         {/* Currency elements container - column on mobile, row on desktop */}
         <div className="flex flex-col xs:flex-row xs:items-center xs:gap-4 items-end">
