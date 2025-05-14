@@ -1,17 +1,17 @@
 "use client";
 
+import { MODE_DEFINITIONS } from "@/lib/modes/constants";
+import { Mode } from "@/lib/types/game";
+import { useEffect } from "react";
 import { useGame } from "../context/GameContext";
 import GridCell from "./GridCell";
-import { HarvestedGoldCrop } from "./modals/HarvestedGoldCrop";
-import { NewAchievementReached } from "./modals/NewAchievementReached";
 import SeedMenu from "./SeedMenu";
+import { HarvestedGoldCrop } from "./modals/HarvestedGoldCrop";
 import MintOgModal from "./modals/MintOgModal";
+import { NewAchievementReached } from "./modals/NewAchievementReached";
+import { NotActiveModeModal } from "./modals/NotActiveModeModal";
 import MintCollectibleModal from "./modals/mint-collectible-modal";
 import { WelcomeOnNewModeCard } from "./modes/WelcomeOnNewModeCard";
-import { NotActiveModeModal } from "./modals/NotActiveModeModal";
-import { Mode } from "@/lib/types/game";
-import { MODE_DEFINITIONS } from "@/lib/modes/constants";
-import { useEffect } from "react";
 
 export default function GameGrid() {
   const {
@@ -97,7 +97,10 @@ export default function GameGrid() {
           >
             {grid.map((row) =>
               row.map((cell) => (
-                <GridCell key={`${cell.fid}-${cell.x}-${cell.y}`} cell={cell} />
+                <GridCell
+                  key={`${cell.fid}-${cell.x}-${cell.y}`}
+                  cell={cell}
+                />
               ))
             )}
           </div>

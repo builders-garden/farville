@@ -1,88 +1,92 @@
+import Image from "next/image";
+
 export const steps = [
   {
     tour: "mainTour",
     steps: [
       {
-        icon: "👨🏻‍🌾",
-        title: "Welcome, Farmer!",
+        icon: "🌱",
+        title: "Pick a seed",
         content: (
-          <div className="flex flex-col gap-2">
-            <p>Ready to grow your own farm?</p>
-            <p>Let&apos;s begin your Farville journey!</p>
+          <div className="flex flex-row">
+            <p>Pick a carrot seed and plant it in the field.</p>
+            <Image
+              src="/images/seed/seed_carrot.png"
+              className="w-10 h-10 p-1 border-2 border-yellow-500 rounded-md"
+              alt="Plant"
+              width={32}
+              height={32}
+            />
           </div>
         ),
-        showControls: true,
-      },
-      {
-        icon: "🚜",
-        title: "Your Mission",
-        content: (
-          <div className="flex flex-col gap-2">
-            <p>
-              In Farville, your mission is to grow your farm by{" "}
-              <span className="font-bold text-emerald-300">planting seeds</span>
-              ,{" "}
-              <span className="font-bold text-amber-300">harvesting crops</span>
-              , and{" "}
-              <span className="font-bold text-blue-300">
-                selling your produce
-              </span>
-              .
-            </p>
-          </div>
-        ),
-        showControls: true,
-        showSkip: true,
+        selector: "#seed-menu",
+        side: "top" as const,
+        showControls: false,
+        showSkip: false,
         pointerPadding: 4,
         pointerRadius: 8,
       },
       {
         icon: "🌱",
-        title: "Plant Your Seeds",
+        title: "Plant your seed",
         content: (
           <div className="flex flex-col gap-2">
-            <p>Choose your seeds and plant them in the fields.</p>
-            <p>
-              You&apos;ve got 4 carrot seeds — why not get started with those?
-            </p>
+            <p>Click on the field to plant your seed.</p>
           </div>
         ),
-        selector: "#seed-menu",
-        side: "top" as const,
-        showControls: true,
-        showSkip: true,
+        showControls: false,
+        showSkip: false,
+        selector: "#grid-cell-1-1",
+        side: "top-left" as const,
         pointerPadding: 4,
         pointerRadius: 8,
       },
       {
         icon: "✨",
-        title: "Speed Things Up",
+        title: "Pick a fertilizer",
         content: (
-          <div className="flex flex-col gap-2">
-            <p>Perks help your crops grow faster. Use them wisely!</p>
-            <p>
-              (Psst... we gave you 4 fertilizers to fast-track your first
-              harvest. Scroll to find them!)
-            </p>
+          <div className="flex flex-row">
+            <p>Pick a fertilizer to boost your crop growth.</p>
+            <Image
+              src="/images/perks/fertilizer.png"
+              className="w-10 h-10 p-1 border-2 border-blue-400 rounded-md"
+              alt="Plant"
+              width={32}
+              height={32}
+            />
           </div>
         ),
         selector: "#seed-menu",
         side: "top" as const,
-        showControls: true,
-        showSkip: true,
+        showControls: false,
+        showSkip: false,
         pointerPadding: 4,
         pointerRadius: 8,
       },
       {
-        icon: "💰",
-        title: "Visit the Market",
+        icon: "✨",
+        title: "Fertilize your seed",
         content: (
-          <div className="flex flex-col gap-2 text-xs">
-            <p>This is the Market — sell your crops here to earn coins 🪙.</p>
-            <p>Use your coins to buy new seeds and powerful perks.</p>
+          <div className="flex flex-col gap-2">
+            <p>Now use a fertilizer to speed up the growth of your carrot.</p>
           </div>
         ),
-        selector: "#market-toolbar-btn",
+        selector: "#grid-cell-1-1",
+        side: "top-left" as const,
+        showControls: false,
+        showSkip: false,
+        pointerPadding: 4,
+        pointerRadius: 8,
+      },
+      {
+        icon: "🌾",
+        title: "Harvest Your Crop",
+        content: (
+          <div className="flex flex-col gap-2">
+            <p>When your carrot is ready, click on it to harvest it.</p>
+          </div>
+        ),
+        selector: "#grid-cell-1-1",
         side: "top-left" as const,
         showControls: true,
         showSkip: true,
@@ -90,17 +94,15 @@ export const steps = [
         pointerRadius: 8,
       },
       {
-        icon: "🚜",
-        title: "Let's Farm!",
+        icon: "🌾",
+        title: "Sell your carrot!",
         content: (
           <div className="flex flex-col gap-2">
-            <p>You&apos;re all set. Time to get your hands dirty!</p>
-            <p>
-              Plant your first 4 carrot seeds and watch your farm come to life.
-            </p>
-            <p>Brum brum! 🚜💨</p>
+            <p>Visit the market to sell your carrot</p>
           </div>
         ),
+        selector: "#market-toolbar-btn",
+        side: "bottom-left" as const,
         showControls: true,
         showSkip: true,
         pointerPadding: 4,

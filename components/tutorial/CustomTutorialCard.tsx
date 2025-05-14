@@ -1,15 +1,8 @@
 "use client";
 
-import React from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Step } from "nextstepjs";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import React from "react";
 
 interface CustomTutorialCardProps {
   step: Step;
@@ -23,10 +16,6 @@ interface CustomTutorialCardProps {
 
 const CustomTutorialCard = ({
   step,
-  currentStep,
-  totalSteps,
-  nextStep,
-  prevStep,
   skipTour,
   arrow,
 }: CustomTutorialCardProps) => {
@@ -50,7 +39,7 @@ const CustomTutorialCard = ({
         {arrow}
       </CardContent>
 
-      <CardFooter className="flex flex-col w-full gap-2 px-4 py-2 pb-4">
+      {/* <CardFooter className="flex flex-col w-full gap-2 px-4 py-2 pb-4">
         <div className="flex flex-row w-full justify-between gap-4">
           {currentStep > 0 && (
             <Button
@@ -71,7 +60,7 @@ const CustomTutorialCard = ({
             {currentStep === totalSteps - 1 ? "Finish" : "Next"}
           </Button>
         </div>
-      </CardFooter>
+      </CardFooter> */}
     </Card>
   );
 };
