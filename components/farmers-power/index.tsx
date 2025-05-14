@@ -7,12 +7,12 @@ import Confetti from "@/components/animations/Confetti";
 import { X } from "lucide-react";
 import { base } from "viem/chains";
 import { useEffect, useState, useRef } from "react";
-import { PowerStatus } from "./farmers-power/PowerStatus";
-import { ComboTimer } from "./farmers-power/ComboTimer";
-import { PowerStages } from "./farmers-power/PowerStages";
-import { DecayInfo } from "./farmers-power/DecayInfo";
-import { ContributeDialog } from "./farmers-power/ContributeDialog";
-import { Button } from "./ui/button";
+import { PowerStatus } from "./PowerStatus";
+import { ComboTimer } from "./ComboTimer";
+import { PowerStages } from "./PowerStages";
+import { DecayInfo } from "./DecayInfo";
+import { ContributeDialog } from "./ContributeDialog";
+import { Button } from "../ui/button";
 import { DaimoPayCompletedEvent } from "@daimo/pay";
 
 interface FarmersPowerModalProps {
@@ -78,15 +78,6 @@ export default function FarmersPowerModal({ onClose }: FarmersPowerModalProps) {
   const [showContributeDialog, setShowContributeDialog] = useState(false);
   const [nextUpdate, setNextUpdate] = useState(Date.now());
 
-  // Effect for rapid timer updates
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setNextUpdate(Date.now());
-    }, 16); // ~60fps update rate
-
-    return () => clearInterval(interval);
-  }, []);
-
   // Calculate current stage and next stage info
   const currentPowerStage =
     POWER_STAGES.findIndex((stage) => stage.fpRequired > currentFP) ||
@@ -94,8 +85,8 @@ export default function FarmersPowerModal({ onClose }: FarmersPowerModalProps) {
   const currentStageInfo = POWER_STAGES[currentPowerStage - 1];
   const nextStageInfo = POWER_STAGES[currentPowerStage];
 
-  // Calculate decay timings
-  const timeUntilDecay = Math.max(0, nextDecayTime.getTime() - Date.now());
+  // Calculate decay timings using the nextUpdate state
+  const timeUntilDecay = Math.max(0, nextDecayTime.getTime() - nextUpdate);
   const minutesUntilDecay = Math.floor(timeUntilDecay / (1000 * 60));
 
   // Effect to detect FP changes and trigger animations
@@ -114,6 +105,15 @@ export default function FarmersPowerModal({ onClose }: FarmersPowerModalProps) {
     }
   }, [currentFP]);
 
+  // Effect for rapid timer updates
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setNextUpdate(Date.now());
+    }, 16); // ~60fps update rate
+
+    return () => clearInterval(interval);
+  }, []);
+
   // Effect for power decay
   useEffect(() => {
     const interval = setInterval(() => {
@@ -129,16 +129,16 @@ export default function FarmersPowerModal({ onClose }: FarmersPowerModalProps) {
 
   // Effect to handle combo decay
   useEffect(() => {
-    const interval = setInterval(() => {
+    const checkInterval = setInterval(() => {
       const timeElapsed = Date.now() - lastDonationTime.getTime();
       if (timeElapsed >= COMBO_WINDOW) {
         setPowerCombo(1);
         setLastDonationTime(new Date());
         setCurrentFP((prevFP) => Math.max(0, prevFP - 1));
       }
-    }, 16);
+    }, 16); // Check frequently to ensure precise timing
 
-    return () => clearInterval(interval);
+    return () => clearInterval(checkInterval);
   }, [lastDonationTime]);
 
   // Chain management
@@ -265,7 +265,6 @@ export default function FarmersPowerModal({ onClose }: FarmersPowerModalProps) {
                 lastDonationTime={lastDonationTime}
                 powerCombo={powerCombo}
                 COMBO_WINDOW={COMBO_WINDOW}
-                currentTime={nextUpdate}
               />
 
               <PowerStages

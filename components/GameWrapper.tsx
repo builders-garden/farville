@@ -26,7 +26,7 @@ import { Mode } from "@/lib/types/game";
 import VoucherModal from "./VoucherModal";
 import MarketplaceModal from "./marketplace";
 import LeaderboardModal from "./leaderboard";
-import FarmersPowerModal from "./FarmersPowerModal";
+import FarmersPowerModal from "./farmers-power";
 import { MODE_DEFINITIONS } from "@/lib/modes/constants";
 
 // const WelcomeOverlay = dynamic(() => import("./../components/WelcomeOverlay"), {
