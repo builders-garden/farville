@@ -10,6 +10,7 @@ import {
 } from "@/lib/utils";
 import { UserGridCell } from "@prisma/client";
 import { motion } from "framer-motion";
+import { useNextStep } from "nextstepjs";
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import toast from "react-hot-toast";
@@ -18,7 +19,6 @@ import { ActionType, CropType, PerkType, SeedType } from "../lib/types/game";
 import CropSprite from "./CropSprite";
 import Confetti from "./animations/Confetti";
 import FloatingNumber from "./animations/FloatingNumber";
-import { useNextStep } from "nextstepjs";
 
 interface GridCellProps {
   cell: UserGridCell;
@@ -513,6 +513,7 @@ export default function GridCell({ cell }: GridCellProps) {
         }
         if (currentTour === "mainTour" && currentStep === 1) {
           setCurrentStep(2);
+          setSelectedSeed(null);
         }
       }
     } catch (error) {

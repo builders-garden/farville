@@ -1,6 +1,6 @@
-import Image from "next/image";
+import { Tour } from "nextstepjs";
 
-export const steps = [
+export const steps: Tour[] = [
   {
     tour: "mainTour",
     steps: [
@@ -8,19 +8,12 @@ export const steps = [
         icon: "🌱",
         title: "Pick a seed",
         content: (
-          <div className="flex flex-row">
-            <p>Pick carrot seeds and start planting!</p>
-            <Image
-              src="/images/seed/seed_carrot.png"
-              className="w-10 h-10 p-1 border-2 border-yellow-500 rounded-md"
-              alt="Plant"
-              width={32}
-              height={32}
-            />
-          </div>
+            <p className="text-xs">
+              Pick carrot seeds and start planting!
+            </p>
         ),
-        selector: "#seed-menu",
-        side: "top" as const,
+        selector: "#carrot-seeds",
+        side: "bottom-left" as const,
         showControls: false,
         showSkip: false,
         pointerPadding: 4,
@@ -47,17 +40,10 @@ export const steps = [
         content: (
           <div className="flex flex-row">
             <p>Pick a fertilizer to boost your crop growth.</p>
-            <Image
-              src="/images/perks/fertilizer.png"
-              className="w-10 h-10 p-1 border-2 border-blue-400 rounded-md"
-              alt="Plant"
-              width={32}
-              height={32}
-            />
           </div>
         ),
-        selector: "#seed-menu",
-        side: "top" as const,
+        selector: "#fertilizer",
+        side: "bottom-left" as const,
         showControls: false,
         showSkip: false,
         pointerPadding: 4,
@@ -68,7 +54,9 @@ export const steps = [
         title: "Fertilize your seed",
         content: (
           <div className="flex flex-col gap-2">
-            <p>Now fertilizer your carrot to speed up its growth time.</p>
+            <p className="text-sm">
+              Now fertilizer your carrot to speed up its growth time.
+            </p>
           </div>
         ),
         selector: "#grid-cell-1-1",

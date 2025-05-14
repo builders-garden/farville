@@ -64,7 +64,6 @@ export default function SeedMenu() {
       setRemainingUses(seed?.quantity || 0);
       if (currentTour === "mainTour" && currentStep === 0) {
         setCurrentStep(1);
-        setSelectedSeed(null);
       }
     } else {
       setSelectedPerk(perk!);
