@@ -86,10 +86,31 @@ export const getUserCommunityDonationsByDateRange = async (
  */
 export const getLastUserCommunityDonations = async (
   limit: number
-): Promise<UserCommunityDonation[]> => {
+): Promise<
+  (UserCommunityDonation & {
+    user: {
+      username: string;
+      displayName: string | null;
+      avatarUrl: string | null;
+      selectedAvatarUrl: string | null;
+      mintedOG: boolean;
+    };
+  })[]
+> => {
   return await prisma.userCommunityDonation.findMany({
     orderBy: { createdAt: "desc" },
     take: limit,
+    include: {
+      user: {
+        select: {
+          username: true,
+          displayName: true,
+          avatarUrl: true,
+          selectedAvatarUrl: true,
+          mintedOG: true,
+        },
+      },
+    },
   });
 };
 

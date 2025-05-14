@@ -15,7 +15,6 @@ import { Mode } from "@/lib/types/game";
 import { AnimatedCircularProgressBar } from "./ui/animated-circular-progress-bar";
 import { MODE_DEFINITIONS } from "@/lib/modes/constants";
 import { useSocket } from "@/hooks/use-socket";
-// import { useEffect } from "react";
 // import { OG_FIDS_LIST } from "@/lib/contracts/constants";
 
 export default function Header() {
@@ -51,19 +50,6 @@ export default function Header() {
       console.error("Socket is not connected");
     }
   };
-
-  // useEffect(() => {
-  //   if (!socket) return;
-
-  //   console.log("Socket connected:", socket.connected);
-  //   socket.on("new-donation", (data) => {
-  //     console.log(`${data.username} donated ${data.ptAmount} coins! 🎉`);
-  //   });
-
-  //   return () => {
-  //     socket.off("new-donation");
-  //   };
-  // }, [socket]);
 
   return (
     <div className="bg-[#8B5E3C]/40 px-4 py-2 shadow-lg bg-opacity-95 backdrop-blur-sm border-b-2 border-[#6d4c2c]/50 z-30">

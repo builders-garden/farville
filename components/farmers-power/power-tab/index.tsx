@@ -11,6 +11,7 @@ import { base } from "viem/chains";
 import { useGame } from "@/context/GameContext";
 import { toast } from "react-hot-toast";
 import { PowerTimer } from "./power-timer";
+import { LastContributionTable } from "./last-contribution-table";
 
 const POWER_STAGES = [
   { stage: 1, fpRequired: 0, boost: 1 },
@@ -237,6 +238,8 @@ export const PowerTab = () => {
         userId={state.user.fid.toString()}
         onContributionSuccess={handleContributionSuccess}
       />
+
+      <LastContributionTable />
 
       {/* Info Footer */}
       <div className="text-center text-white/60 text-xs mt-4">

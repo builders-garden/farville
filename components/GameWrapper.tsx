@@ -221,9 +221,11 @@ export default function GameWrapper() {
       console.log(`${JSON.stringify(data)} 🎉`);
       toast(`${data.username} +${data.ptAmount} PT`, {
         duration: 3000,
-        style: {},
+        style: {
+          backgroundColor: "chocolate",
+          color: "white",
+        },
         position: "bottom-right",
-        className: "bg-amber-500 text-white rounded-lg p-2",
         ariaProps: {
           role: "status",
           "aria-live": "polite",

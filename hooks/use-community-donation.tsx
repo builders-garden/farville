@@ -1,10 +1,6 @@
 import { useApiQuery } from "./use-api-query";
 import { Mode } from "@/lib/types/game";
-import { UserCommunityDonationLeaderboard } from "@/lib/prisma/queries";
-
-export interface DonationsLeaderboardResponse {
-  leaderboard: UserCommunityDonationLeaderboard[];
-}
+import { UserCommunityDonation } from "@prisma/client";
 
 export const useCommunityDonation = (mode: Mode, enabled = true) => {
   const queryParams = new URLSearchParams();
@@ -14,7 +10,17 @@ export const useCommunityDonation = (mode: Mode, enabled = true) => {
     queryParams.toString() ? `?${queryParams.toString()}` : ""
   }`;
 
-  return useApiQuery<DonationsLeaderboardResponse>({
+  return useApiQuery<
+    (UserCommunityDonation & {
+      user: {
+        username: string;
+        displayName: string | null;
+        avatarUrl: string | null;
+        selectedAvatarUrl: string | null;
+        mintedOG: boolean;
+      };
+    })[]
+  >({
     url,
     queryKey: ["community-donations", mode],
     isProtected: true,
