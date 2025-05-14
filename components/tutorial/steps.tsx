@@ -9,7 +9,7 @@ export const steps = [
         title: "Pick a seed",
         content: (
           <div className="flex flex-row">
-            <p>Pick a carrot seed and plant it in the field.</p>
+            <p>Pick carrot seeds and start planting!</p>
             <Image
               src="/images/seed/seed_carrot.png"
               className="w-10 h-10 p-1 border-2 border-yellow-500 rounded-md"
@@ -31,7 +31,7 @@ export const steps = [
         title: "Plant your seed",
         content: (
           <div className="flex flex-col gap-2">
-            <p>Click on the field to plant your seed.</p>
+            <p>Now click on the field to plant your first carrot.</p>
           </div>
         ),
         showControls: false,
@@ -68,7 +68,7 @@ export const steps = [
         title: "Fertilize your seed",
         content: (
           <div className="flex flex-col gap-2">
-            <p>Now use a fertilizer to speed up the growth of your carrot.</p>
+            <p>Now use the fertilizer on your planted carrot to speed up its growth time.</p>
           </div>
         ),
         selector: "#grid-cell-1-1",
