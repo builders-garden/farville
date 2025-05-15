@@ -13,7 +13,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { X } from "lucide-react";
+import { X, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { DaimoPayButton } from "@daimo/pay";
 import { base } from "viem/chains";
@@ -41,6 +41,7 @@ interface PowerContributionProps {
   mode: Mode;
   address: `0x${string}` | undefined;
   username: string;
+  tokenBalancesIsLoading: boolean;
 }
 
 export const PowerContribution = ({
@@ -56,6 +57,7 @@ export const PowerContribution = ({
   mode,
   address,
   username,
+  tokenBalancesIsLoading,
 }: PowerContributionProps) => {
   const [contributionAmount, setContributionAmount] = useState(1);
   const [showCustomSlider, setShowCustomSlider] = useState(false);
@@ -198,8 +200,16 @@ export const PowerContribution = ({
           {!paymentCompleted && !finalTxHash && (
             <div className="flex flex-col gap-3">
               <div className="flex w-full justify-between mt-2">
-                <span className="text-white/70 text-xs">
-                  Balance: ${walletBalance.toFixed(2)}
+                <span className="text-white/70 text-xs flex items-center gap-2">
+                  Balance:{" "}
+                  {tokenBalancesIsLoading ? (
+                    <Loader2
+                      className="w-3 h-3 animate-spin text-yellow-400"
+                      strokeWidth={3}
+                    />
+                  ) : (
+                    `$${walletBalance.toFixed(2)}`
+                  )}
                 </span>
               </div>
 
@@ -219,6 +229,7 @@ export const PowerContribution = ({
                       setContributionAmount(amount);
                       setShowCustomSlider(false);
                     }}
+                    disabled={tokenBalancesIsLoading}
                   >
                     ${amount}
                   </Button>
@@ -232,6 +243,7 @@ export const PowerContribution = ({
                       : "text-yellow-400/90 bg-[#5C4121] hover:bg-[#5C4121]/80"
                   )}
                   onClick={() => setShowCustomSlider(!showCustomSlider)}
+                  disabled={tokenBalancesIsLoading}
                 >
                   +
                 </Button>
@@ -269,6 +281,7 @@ export const PowerContribution = ({
                         max={50}
                         min={1}
                         step={1}
+                        disabled={tokenBalancesIsLoading}
                       />
                     </div>
                   </AccordionContent>
@@ -301,7 +314,9 @@ export const PowerContribution = ({
                   variant="default"
                   className={cn(
                     "w-full py-3 text-base font-medium",
-                    !hasEnoughEthBalance || !hasEnoughUSDBalance
+                    !hasEnoughEthBalance ||
+                      !hasEnoughUSDBalance ||
+                      tokenBalancesIsLoading
                       ? "text-yellow-400/50 cursor-not-allowed bg-yellow-500/10"
                       : "text-[#5C4121] bg-yellow-500 hover:bg-yellow-500/80 hover:text-[#5C4121]"
                   )}
@@ -310,10 +325,23 @@ export const PowerContribution = ({
                     !hasEnoughEthBalance ||
                     !hasEnoughUSDBalance ||
                     paymentStarted ||
-                    paymentCompleted
+                    paymentCompleted ||
+                    tokenBalancesIsLoading
                   }
                 >
-                  {paymentStarted ? "Contributing..." : "Confirm"}
+                  {tokenBalancesIsLoading ? (
+                    <div className="flex items-center justify-center gap-2">
+                      <Loader2
+                        className="w-4 h-4 animate-spin"
+                        strokeWidth={3}
+                      />
+                      <span>Loading...</span>
+                    </div>
+                  ) : paymentStarted ? (
+                    "Contributing..."
+                  ) : (
+                    "Confirm"
+                  )}
                 </Button>
               )}
             </DaimoPayButton.Custom>

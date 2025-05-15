@@ -1,20 +1,49 @@
 import { cn } from "@/lib/utils";
 import { Clock } from "lucide-react";
 import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
 
 interface PowerTimerProps {
   powerCombo: number;
   lastDonationTime: Date | null;
-  timerNow: number;
   COMBO_WINDOW: number;
+  setPowerCombo: React.Dispatch<React.SetStateAction<number>>;
+  setLastDonationTime: React.Dispatch<React.SetStateAction<Date | null>>;
+  setCurrentFP: React.Dispatch<React.SetStateAction<number>>;
 }
 
 export const PowerTimer = ({
   powerCombo,
   lastDonationTime,
-  timerNow,
   COMBO_WINDOW,
+  setPowerCombo,
+  setLastDonationTime,
+  setCurrentFP,
 }: PowerTimerProps) => {
+  const [timerNow, setTimerNow] = useState(Date.now());
+
+  // Effect for rapid timer updates
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTimerNow(Date.now());
+
+      // Check if timer reached 0 (10 minutes elapsed)
+      if (lastDonationTime) {
+        const timeElapsed = Date.now() - lastDonationTime.getTime();
+        if (timeElapsed >= COMBO_WINDOW) {
+          // Reset combo and last donation time
+          setPowerCombo(1);
+          setLastDonationTime(new Date());
+
+          // Decrease FP by 1
+          setCurrentFP((prevFP) => Math.max(0, prevFP - 1));
+        }
+      }
+    }, 16); // ~60fps update rate
+
+    return () => clearInterval(interval);
+  }, [lastDonationTime]);
+
   if (!lastDonationTime) return null;
 
   return (

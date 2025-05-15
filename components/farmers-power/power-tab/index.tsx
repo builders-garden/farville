@@ -59,7 +59,6 @@ export const PowerTab = () => {
   const [lastDonationTime, setLastDonationTime] = useState<Date | null>(
     new Date(Date.now() - 9.5 * 60 * 1000)
   );
-  const [timerNow, setTimerNow] = useState(Date.now());
   const [showConfetti, setShowConfetti] = useState(false);
   const [showContributeDialog, setShowContributeDialog] = useState(false);
 
@@ -71,28 +70,6 @@ export const PowerTab = () => {
   // Calculate next stage requirements
   const currentStageInfo = POWER_STAGES[currentPowerStage - 1];
   const nextStageInfo = POWER_STAGES[currentPowerStage];
-
-  // Effect for rapid timer updates
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setTimerNow(Date.now());
-
-      // Check if timer reached 0 (10 minutes elapsed)
-      if (lastDonationTime) {
-        const timeElapsed = Date.now() - lastDonationTime.getTime();
-        if (timeElapsed >= COMBO_WINDOW) {
-          // Reset combo and last donation time
-          setPowerCombo(1);
-          setLastDonationTime(new Date());
-
-          // Decrease FP by 1
-          setCurrentFP((prevFP) => Math.max(0, prevFP - 1));
-        }
-      }
-    }, 16); // ~60fps update rate
-
-    return () => clearInterval(interval);
-  }, [lastDonationTime]);
 
   // Effect to detect FP changes and trigger animations
   useEffect(() => {
@@ -136,20 +113,21 @@ export const PowerTab = () => {
     chainId: base.id,
   });
 
-  const { data: tokenBalancesData } = useQuery({
-    queryKey: ["tokenBalances", address],
-    queryFn: async () => {
-      if (address) {
-        const x = await getWalletBalance(address);
-        return x;
-      }
-      return {
-        totalBalanceUSD: 0,
-        tokenBalances: {},
-      };
-    },
-    enabled: !!address,
-  });
+  const { data: tokenBalancesData, isLoading: tokenBalancesIsLoading } =
+    useQuery({
+      queryKey: ["tokenBalances", address],
+      queryFn: async () => {
+        if (address) {
+          const x = await getWalletBalance(address);
+          return x;
+        }
+        return {
+          totalBalanceUSD: 0,
+          tokenBalances: {},
+        };
+      },
+      enabled: !!address,
+    });
 
   const hasEnoughEthBalance = !!balance && BigInt(balance.value) > BigInt(0);
   const hasEnoughUSDBalance =
@@ -199,8 +177,10 @@ export const PowerTab = () => {
           <PowerTimer
             powerCombo={powerCombo}
             lastDonationTime={lastDonationTime}
-            timerNow={timerNow}
             COMBO_WINDOW={COMBO_WINDOW}
+            setPowerCombo={setPowerCombo}
+            setLastDonationTime={setLastDonationTime}
+            setCurrentFP={setCurrentFP}
           />
 
           <PowerStages
@@ -231,6 +211,7 @@ export const PowerTab = () => {
         mode={mode}
         address={address}
         username={state.user.username}
+        tokenBalancesIsLoading={tokenBalancesIsLoading}
       />
 
       <LastContributionTable />
