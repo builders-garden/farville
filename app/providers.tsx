@@ -34,6 +34,8 @@ export function Providers({ children }: { children: React.ReactNode }) {
             steps={steps}
             cardComponent={CustomTutorialCard}
             shadowOpacity="0.4"
+            noInViewScroll={true}
+            scrollToTop={false}
           >
             <AudioProvider>{children}</AudioProvider>
           </NextStep>
