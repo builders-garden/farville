@@ -333,3 +333,9 @@ model UserCommunityBoosterHistory {
 
   @@map("user_community_booster_history")
 }
+
+model CommunityBoosterPoints {
+  points Int @id
+
+  @@map("community_booster_points")
+}

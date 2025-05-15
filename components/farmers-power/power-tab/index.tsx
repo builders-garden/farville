@@ -12,6 +12,7 @@ import { useGame } from "@/context/GameContext";
 import { toast } from "react-hot-toast";
 import { PowerTimer } from "./power-timer";
 import { LastContributionTable } from "./last-contribution-table";
+import { useCommunityBoosterManagement } from "@/hooks/use-community-booster";
 
 const POWER_STAGES = [
   { stage: 1, fpRequired: 0, boost: 1 },
@@ -50,7 +51,9 @@ export const PowerTab = () => {
   const { switchChain } = useSwitchChain();
 
   // State for power mechanics
-  const [currentFP, setCurrentFP] = useState<number>(3250);
+  const [currentFP, setCurrentFP] = useState<number>(
+    state.communityBoosterStatus?.points || 0
+  );
   const [fpChangeAnimation, setFpChangeAnimation] = useState<
     "increase" | "decrease" | null
   >(null);
@@ -134,6 +137,8 @@ export const PowerTab = () => {
     !!tokenBalancesData?.totalBalanceUSD &&
     tokenBalancesData.totalBalanceUSD >= 1;
 
+  const { mutate: updateFP } = useCommunityBoosterManagement();
+
   const handleContributionSuccess = (amount: number) => {
     try {
       // Update combo and FP
@@ -153,6 +158,10 @@ export const PowerTab = () => {
         setShowConfetti(true);
       }
 
+      updateFP({
+        points: fpToAdd,
+        operation: "increment",
+      });
       refetchUserItems();
     } catch (error) {
       console.error("Error distributing power boost:", error);
@@ -174,14 +183,16 @@ export const PowerTab = () => {
             currentStageInfo={currentStageInfo}
           />
 
-          <PowerTimer
-            powerCombo={powerCombo}
-            lastDonationTime={lastDonationTime}
-            COMBO_WINDOW={COMBO_WINDOW}
-            setPowerCombo={setPowerCombo}
-            setLastDonationTime={setLastDonationTime}
-            setCurrentFP={setCurrentFP}
-          />
+          {currentFP > 0 && (
+            <PowerTimer
+              powerCombo={powerCombo}
+              lastDonationTime={lastDonationTime}
+              COMBO_WINDOW={COMBO_WINDOW}
+              setPowerCombo={setPowerCombo}
+              setLastDonationTime={setLastDonationTime}
+              setCurrentFP={setCurrentFP}
+            />
+          )}
 
           <PowerStages
             currentPowerStage={currentPowerStage}

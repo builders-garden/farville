@@ -24,7 +24,7 @@ import {
 import { Mode } from "@/lib/types/game";
 import { useUserModes } from "./use-user-modes";
 import { useUserGlobalStats } from "./use-user-global-stats";
-import { useCommunityBoosterStatus } from "./use-community-booster-multiplier";
+import { useCommunityBoosterStatus } from "./use-community-booster";
 
 export interface RefetchType {
   all: () => Promise<void>;
@@ -83,7 +83,9 @@ export interface GameState {
   showGridCellsTutorial: boolean;
   showMarketplaceTutorial: boolean;
   userModes: Mode[];
-  communityBoosterStatus: UserCommunityBoosterHistory | null;
+  communityBoosterStatus:
+    | (UserCommunityBoosterHistory & { points: number })
+    | null;
 }
 
 export const useGameState = (mode: Mode) => {
