@@ -19,10 +19,12 @@ import {
   UserHarvestedCrop,
   UserHasCollectible,
   Item,
+  UserCommunityBoosterHistory,
 } from "@prisma/client";
 import { Mode } from "@/lib/types/game";
 import { useUserModes } from "./use-user-modes";
 import { useUserGlobalStats } from "./use-user-global-stats";
+import { useCommunityBoosterStatus } from "./use-community-booster-multiplier";
 
 export interface RefetchType {
   all: () => Promise<void>;
@@ -81,6 +83,7 @@ export interface GameState {
   showGridCellsTutorial: boolean;
   showMarketplaceTutorial: boolean;
   userModes: Mode[];
+  communityBoosterStatus: UserCommunityBoosterHistory | null;
 }
 
 export const useGameState = (mode: Mode) => {
@@ -125,6 +128,7 @@ export const useGameState = (mode: Mode) => {
     showGridCellsTutorial: false,
     showMarketplaceTutorial: false,
     userModes: [],
+    communityBoosterStatus: null,
   });
   const {
     userItems,
@@ -187,6 +191,12 @@ export const useGameState = (mode: Mode) => {
     isLoading: isLoadingUserModes,
     refetch: refetchUserModes,
   } = useUserModes(state?.user?.fid);
+
+  const {
+    userCommunityBoosterStatus,
+    isLoading: isLoadingUserCommunityBoosterStatus,
+    refetch: refetchUserCommunityBoosterStatus,
+  } = useCommunityBoosterStatus();
 
   const updateUserState = useCallback(() => {
     if (user) {
@@ -463,6 +473,15 @@ export const useGameState = (mode: Mode) => {
     }
   }, [state.user, userGlobalStats]);
 
+  useEffect(() => {
+    if (userCommunityBoosterStatus) {
+      setState((prevState) => ({
+        ...prevState!,
+        communityBoosterStatus: userCommunityBoosterStatus,
+      }));
+    }
+  }, [userCommunityBoosterStatus]);
+
   const refetchAll = useCallback(async () => {
     await Promise.all([
       refetchUserItems(),
@@ -475,6 +494,7 @@ export const useGameState = (mode: Mode) => {
       refetchWeeklyStats(),
       refetchUserCollectibles(),
       refetchUserModes(),
+      refetchUserCommunityBoosterStatus(),
     ]);
   }, [
     refetchUserItems,
@@ -487,6 +507,7 @@ export const useGameState = (mode: Mode) => {
     refetchWeeklyStats,
     refetchUserCollectibles,
     refetchUserModes,
+    refetchUserCommunityBoosterStatus,
   ]);
 
   useEffect(() => {
@@ -709,7 +730,8 @@ export const useGameState = (mode: Mode) => {
       isUserHarvestedCropsLoading ||
       weeklyStatsLoading ||
       userCollectiblesLoading ||
-      isLoadingUserModes,
+      isLoadingUserModes ||
+      isLoadingUserCommunityBoosterStatus,
     refetch: {
       all: refetchAll,
       userItems: async () => {

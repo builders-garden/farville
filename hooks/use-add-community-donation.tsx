@@ -16,7 +16,7 @@ export const useAddCommunityDonation = () => {
   const { socket } = useSocket();
 
   return useApiMutation<unknown, AddCommunityDonationParams>({
-    url: "/api/user-community-donation",
+    url: "/api/community/donation",
     method: "POST",
     body: (data: AddCommunityDonationParams) => ({
       txHash: data.txHash,

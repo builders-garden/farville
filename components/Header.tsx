@@ -67,6 +67,7 @@ export default function Header() {
         <div className="flex flex-col xs:flex-row xs:items-center xs:gap-4 items-end">
           {/* FarmersPower */}
           <motion.div
+            className="flex flex-row gap-1 items-center cursor-pointer"
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
             onClick={() => setShowFarmersPower(true)}
@@ -78,6 +79,9 @@ export default function Header() {
               height={22}
               className="mt-[-2px] cursor-pointer"
             />
+            <span className="text-white/90 font-bold text-md">
+              x{state.communityBoosterStatus?.stage ?? 1}
+            </span>
           </motion.div>
 
           {/* streak counter button */}

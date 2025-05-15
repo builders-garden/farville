@@ -16,7 +16,7 @@ export const useDonationLeaderboard = (
   if (targetFid) queryParams.append("targetFid", targetFid.toString());
   queryParams.append("mode", mode);
 
-  const url = `/api/user-community-donation/leaderboard${
+  const url = `/api/community/donation/leaderboard${
     queryParams.toString() ? `?${queryParams.toString()}` : ""
   }`;
 

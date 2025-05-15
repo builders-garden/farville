@@ -316,7 +316,20 @@ model UserCommunityDonation {
   createdAt     DateTime @default(now()) @db.Timestamptz(6)
   walletAddress String
 
-  user User @relation(fields: [fid], references: [fid], onDelete: NoAction, onUpdate: NoAction)
+  user               User                          @relation(fields: [fid], references: [fid], onDelete: NoAction, onUpdate: NoAction)
+  lastStageDonations UserCommunityBoosterHistory[]
 
   @@map("user_community_donation")
+}
+
+model UserCommunityBoosterHistory {
+  id           String   @id @default(dbgenerated("gen_random_uuid()"))
+  mode         String   @default("classic")
+  stage        Int
+  lastDonation String?
+  createdAt    DateTime @default(now()) @db.Timestamptz(6)
+
+  donation UserCommunityDonation? @relation(fields: [lastDonation], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "user_community_booster_history_last_donation_fkey")
+
+  @@map("user_community_booster_history")
 }

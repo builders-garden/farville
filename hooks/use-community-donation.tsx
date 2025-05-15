@@ -6,7 +6,7 @@ export const useCommunityDonation = (mode: Mode, enabled = true) => {
   const queryParams = new URLSearchParams();
   queryParams.append("mode", mode);
 
-  const url = `/api/user-community-donation${
+  const url = `/api/community/donation${
     queryParams.toString() ? `?${queryParams.toString()}` : ""
   }`;
 
