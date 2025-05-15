@@ -1,15 +1,8 @@
 "use client";
 
-import React from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Step } from "nextstepjs";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import React from "react";
 
 interface CustomTutorialCardProps {
   step: Step;
@@ -23,34 +16,30 @@ interface CustomTutorialCardProps {
 
 const CustomTutorialCard = ({
   step,
-  currentStep,
-  totalSteps,
-  nextStep,
-  prevStep,
   skipTour,
   arrow,
 }: CustomTutorialCardProps) => {
   return (
-    <Card className="min-w-[300px] xs:min-w-[360px] bg-[#7E4E31] border-none p-0">
-      <CardHeader className="flex flex-row justify-between items-center p-4">
+    <Card className="min-w-[240px] xs:min-w-[280px] bg-[#7E4E31] border-none p-2">
+      <CardHeader className="flex flex-row justify-between items-start p-2 gap-4">
         <CardTitle className="flex items-center gap-4 text-md text-white/90">
-          {step.icon && <span>{step.icon}</span>}
+          {step.icon && <span className="mb-2">{step.icon}</span>}
           {step.title}
         </CardTitle>
         <button
           onClick={skipTour}
-          className="flex items-center text-white/70 hover:text-white hover:bg-white/10 rounded-full px-[8px] py-[4px]"
+          className="flex items-center text-white/70 hover:text-white hover:bg-white/10 rounded-full px-[8px] mb-4"
         >
           ×
         </button>
       </CardHeader>
 
-      <CardContent className="px-4 py-2">
+      <CardContent className="px-2 py-1">
         <div className="mb-2 text-[12px] text-white/90">{step.content}</div>
         {arrow}
       </CardContent>
 
-      <CardFooter className="flex flex-col w-full gap-2 px-4 py-2 pb-4">
+      {/* <CardFooter className="flex flex-col w-full gap-2 px-4 py-2 pb-4">
         <div className="flex flex-row w-full justify-between gap-4">
           {currentStep > 0 && (
             <Button
@@ -71,7 +60,7 @@ const CustomTutorialCard = ({
             {currentStep === totalSteps - 1 ? "Finish" : "Next"}
           </Button>
         </div>
-      </CardFooter>
+      </CardFooter> */}
     </Card>
   );
 };

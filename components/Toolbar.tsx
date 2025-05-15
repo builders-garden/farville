@@ -1,10 +1,11 @@
 "use client";
 
-import { useGame } from "../context/GameContext";
-import Image from "next/image";
-import { motion } from "framer-motion";
 import { MODE_DEFINITIONS, ModeFeature } from "@/lib/modes/constants";
+import { motion } from "framer-motion";
+import Image from "next/image";
+import { useNextStep } from "nextstepjs";
 import { useEffect, useState } from "react";
+import { useGame } from "../context/GameContext";
 
 export default function Toolbar({
   safeAreaInsets,
@@ -22,6 +23,8 @@ export default function Toolbar({
     state,
     newGoldCropsFound,
   } = useGame();
+
+  const { currentTour, currentStep, closeNextStep } = useNextStep();
 
   const [modeDefinition, setModeDefinition] = useState(MODE_DEFINITIONS[mode]);
   useEffect(() => {
@@ -49,6 +52,9 @@ export default function Toolbar({
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => {
+              if (currentTour === "mainTour" && currentStep === 5) {
+                closeNextStep();
+              }
               setShowMarket(true);
             }}
             data-tutorial="marketplace"
