@@ -12,6 +12,7 @@ export default async function middleware(req: NextRequest) {
   if (
     req.nextUrl.pathname === "/api/sign-in" ||
     req.nextUrl.pathname.includes("/api/og") ||
+    req.nextUrl.pathname.includes("/api/health") ||
     req.nextUrl.pathname.includes("/api/webhook") ||
     req.nextUrl.pathname.includes("/api/weekly-leaderboard") ||
     // Skip auth check for leaderboard API when called from server-side OG image generation
