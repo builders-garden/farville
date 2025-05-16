@@ -452,6 +452,8 @@ export default function GridCell({ cell }: GridCellProps) {
           mode,
         });
 
+        const communityBoosterMultiplier =
+          state.communityBoosterStatus?.stage || 1;
         updateGridCells([
           {
             x: cell.x,
@@ -463,7 +465,8 @@ export default function GridCell({ cell }: GridCellProps) {
                 getGrowthTimeBasedOnMode(
                   selectedSeed.replace("-seeds", "") as CropType,
                   mode
-                )
+                ) /
+                  communityBoosterMultiplier
             ),
             isReadyToHarvest: false,
             mode,

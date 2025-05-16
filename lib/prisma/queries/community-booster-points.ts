@@ -1,4 +1,6 @@
 import { prisma } from "../client";
+import { getCurrentCommunityBooster } from "./user-community-booster-history";
+import { getCurrentPowerStage } from "@/lib/utils";
 
 export const getCommunityBoosterPoints = async (): Promise<number> => {
   const communityBooster = await prisma.communityBoosterPoints.findFirst();
@@ -19,23 +21,54 @@ export const getCommunityBoosterPoints = async (): Promise<number> => {
 export const incrementCommunityBoosterPoints = async (
   pointsToAdd: number
 ): Promise<number> => {
+  const currentCommunityBoosterStatus = await getCurrentCommunityBooster();
+  const currentPoints = await getCommunityBoosterPoints();
+
   await prisma.communityBoosterPoints.updateMany({
     data: { points: { increment: pointsToAdd } },
   });
 
-  // Get the updated points value after the update
-  const currentPoints = await prisma.communityBoosterPoints.findFirst();
-  return currentPoints?.points ?? 0;
+  const stageAfterIncrement = getCurrentPowerStage(currentPoints + pointsToAdd);
+
+  // Check if the stage has changed
+  if (currentCommunityBoosterStatus?.stage !== stageAfterIncrement) {
+    await prisma.userCommunityBoosterHistory.create({
+      data: {
+        mode: currentCommunityBoosterStatus?.mode,
+        stage: stageAfterIncrement,
+      },
+    });
+
+    // TODO: step 1: send async harvestAt reset to the server
+    // TODO: step 2: send a notification to all the users
+  }
+
+  return currentPoints + pointsToAdd;
 };
 
 export const decrementCommunityBoosterPoints = async (
   pointsToSubtract: number
 ): Promise<number> => {
+  const currentCommunityBoosterStatus = await getCurrentCommunityBooster();
+  const currentPoints = await getCommunityBoosterPoints();
+
   await prisma.communityBoosterPoints.updateMany({
     data: { points: { decrement: pointsToSubtract } },
   });
 
-  // Get the updated points value after the update
-  const currentPoints = await prisma.communityBoosterPoints.findFirst();
-  return currentPoints?.points ?? 0;
+  const stageAfterDecrement = getCurrentPowerStage(
+    currentPoints - pointsToSubtract
+  );
+
+  // Check if the stage has changed
+  if (currentCommunityBoosterStatus?.stage !== stageAfterDecrement) {
+    await prisma.userCommunityBoosterHistory.create({
+      data: {
+        mode: currentCommunityBoosterStatus?.mode,
+        stage: stageAfterDecrement,
+      },
+    });
+  }
+
+  return currentPoints - pointsToSubtract;
 };

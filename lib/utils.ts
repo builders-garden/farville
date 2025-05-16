@@ -7,6 +7,7 @@ import {
   CROP_DATA,
   DAILY_QUESTS_NUMBER,
   LEVEL_XP_THRESHOLDS,
+  POWER_STAGES,
   SPEED_BOOST,
   WEEKLY_QUESTS_NUMBER,
 } from "./game-constants";
@@ -730,4 +731,11 @@ export const modeAvailableForUser = (mode: Mode, fid: number) => {
   }
 
   return true;
+};
+
+export const getCurrentPowerStage = (fp: number) => {
+  return (
+    POWER_STAGES.findIndex((stage) => stage.fpRequired > fp) ||
+    POWER_STAGES.length
+  );
 };
