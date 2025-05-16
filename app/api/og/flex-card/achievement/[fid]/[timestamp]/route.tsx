@@ -51,18 +51,11 @@ export async function GET(
     const { searchParams } = new URL(request.url);
     const crop = searchParams.get("crop");
     const step = searchParams.get("step");
-    const mode = searchParams.get("mode") as Mode;
 
     const appUrl = env.NEXT_PUBLIC_URL;
 
     if (!fid) {
       return new Response("Farmer ID is required", {
-        status: 400,
-      });
-    }
-
-    if (!mode) {
-      return new Response("Mode is required", {
         status: 400,
       });
     }
@@ -73,14 +66,14 @@ export async function GET(
       });
     }
 
-    const user = await getUserByMode(Number(fid), mode);
+    const user = await getUserByMode(Number(fid), Mode.Classic);
 
     const topStreaks: TopStreaksResult[] = await getTopStreaks();
     const totActiveStreaks = await getActiveStreaksCount();
 
     const topStreaksUsers: UserWithStatistic[] = [];
     for (const streak of topStreaks) {
-      const user = await getUserByMode(streak.fid, mode);
+      const user = await getUserByMode(streak.fid, Mode.Classic);
       if (user) {
         topStreaksUsers.push(user);
       }
