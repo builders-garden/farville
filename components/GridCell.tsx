@@ -211,6 +211,9 @@ export default function GridCell({ cell }: GridCellProps) {
   const cellRef = useRef<HTMLDivElement>(null);
   const [showPopup, setShowPopup] = useState(false);
 
+  // Ref to track if the planting help toast has been shown recently
+  const hasShownToastRef = useRef(false);
+
   const isReadyToHarvest =
     cell.isReadyToHarvest ||
     (cell.plantedAt &&
@@ -293,9 +296,11 @@ export default function GridCell({ cell }: GridCellProps) {
       !selectedSeed &&
       !selectedPerk
     ) {
-      if (!cell.plantedAt) {
+      if (!cell.plantedAt && state.level < 4 && !hasShownToastRef.current) {
+        hasShownToastRef.current = true;
+
         toast.loading("To plant a seed, pick one from the list below", {
-          id: `${cell.x}-${cell.y}-planting`,
+          id: "planting-help-toast",
           position: "top-center",
           style: {
             backgroundColor: "#fff",
@@ -303,8 +308,13 @@ export default function GridCell({ cell }: GridCellProps) {
           },
           icon: "🌱",
         });
+
         setTimeout(() => {
-          toast.dismiss(`${cell.x}-${cell.y}-planting`);
+          toast.dismiss("planting-help-toast");
+          // Reset the toast flag after a cooldown period
+          setTimeout(() => {
+            hasShownToastRef.current = false;
+          }, 10000); // Don't show toast again for 10 seconds
         }, 5000);
       }
       return;
