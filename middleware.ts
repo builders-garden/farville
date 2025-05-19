@@ -39,9 +39,11 @@ export default async function middleware(req: NextRequest) {
 
   // Get token from Authorization header
   const authHeader = req.headers.get("Authorization");
+  console.log("authHeader", authHeader);
   const token = authHeader?.startsWith("Bearer ")
     ? authHeader.substring(7) // Remove "Bearer " prefix
     : null;
+  console.log("token", token);
 
   if (!token) {
     return NextResponse.json(
