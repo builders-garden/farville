@@ -1,31 +1,40 @@
 config:
   target: https://dev-coolify.farville.farm
   phases:
-    - duration: 5
-      arrivalRate: 5
+    # create 1 virtual user per second, for a total duration of 1 minute
+    - name: "1vu/s for 1min"
+      duration: 60
+      arrivalRate: 1
+    # create 50 virtual user per second, for a total duration of 10 minutes
+    # - name: "50vu/s for 5min"
+    #   duration: 300
+    #   arrivalRate: 50
+  ensure:
+    maxErrorRate: 1
+    max: 500
+  # plugins:
+  #   metrics-by-endpoint: {}
 
-before:
-  flow:
-    - log: "Get auth token"
-    - post:
-        url: '/api/sign-in'
-        json:
-          signature: "0x123"
-          message: "<3 from test mode"
-          fid: null
-          referrerFid: null
-        capture:
-          - json: $.token
-            as: token
 
 scenarios:
   - name: "test_buy_harvest_sell"
     flow:
+      - post:
+          url: '/api/sign-in'
+          json:
+            signature: "0x123"
+            message: "<3 from test mode"
+            fid: null
+            referrerFid: null
+          capture:
+            - json: $.token
+              as: authToken
+
       # Buy 4 carrot seeds
       - post:
-          url: "/api/users/me/items/1"
+          url: "/api/users/me/items/1/"
           headers:
-            Authorization: "Bearer {{ token }}"
+            Authorization: "Bearer {{authToken}}"
           json:
             action: "buy"
             itemId: 1
@@ -36,7 +45,7 @@ scenarios:
       - post:
           url: "/api/grid-bulk"
           headers:
-            Authorization: "Bearer {{ token }}"
+            Authorization: "Bearer {{authToken}}"
           json:
             action: "plant"
             itemSlug: "carrot-seeds"
@@ -62,12 +71,12 @@ scenarios:
       
       # Pause for 4 seconds
       - think: 4
-      
+
       # Harvest carrots
       - post:
           url: "/api/grid-bulk"
           headers:
-            Authorization: "Bearer {{ token }}"
+            Authorization: "Bearer {{authToken}}"
           json:
             action: "harvest"
             itemSlug: "carrot-seeds"
@@ -93,19 +102,14 @@ scenarios:
 
       # Pause for 10 seconds
       - think: 10
-      
+
       # Sell 4 carrots
       - post:
           url: "/api/users/me/items/1"
           headers:
-            Authorization: "Bearer {{ token }}"
+            Authorization: "Bearer {{authToken}}"
           json:
             action: "sell"
             itemId: 1
             mode: "classic"
             quantity: 4
-
-
-after:
-  flow:
-    - log: "Invalidate token"
