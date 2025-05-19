@@ -1,0 +1,111 @@
+config:
+  target: https://dev-coolify.farville.farm
+  phases:
+    - duration: 5
+      arrivalRate: 5
+
+before:
+  flow:
+    - log: "Get auth token"
+    - post:
+        url: '/api/sign-in'
+        json:
+          signature: "0x123"
+          message: "<3 from test mode"
+          fid: null
+          referrerFid: null
+        capture:
+          - json: $.token
+            as: token
+
+scenarios:
+  - name: "test_buy_harvest_sell"
+    flow:
+      # Buy 4 carrot seeds
+      - post:
+          url: "/api/users/me/items/1"
+          headers:
+            Authorization: "Bearer {{ token }}"
+          json:
+            action: "buy"
+            itemId: 1
+            mode: "classic"
+            quantity: 4
+
+      # Plant 4 carrot seeds
+      - post:
+          url: "/api/grid-bulk"
+          headers:
+            Authorization: "Bearer {{ token }}"
+          json:
+            action: "plant"
+            itemSlug: "carrot-seeds"
+            mode: "classic"
+            cells: [
+              {
+                x: 0,
+                y: 0
+              },
+              {
+                x: 1,
+                y: 0
+              },
+              {
+                x: 0,
+                y: 1
+              },
+              {
+                x: 1,
+                y: 1
+              },
+            ]
+      
+      # Pause for 4 seconds
+      - think: 4
+      
+      # Harvest carrots
+      - post:
+          url: "/api/grid-bulk"
+          headers:
+            Authorization: "Bearer {{ token }}"
+          json:
+            action: "harvest"
+            itemSlug: "carrot-seeds"
+            mode: "classic"
+            cells: [
+              {
+                x: 0,
+                y: 0
+              },
+              {
+                x: 1,
+                y: 0
+              },
+              {
+                x: 0,
+                y: 1
+              },
+              {
+                x: 1,
+                y: 1
+              },
+            ]
+
+      # Pause for 10 seconds
+      - think: 10
+      
+      # Sell 4 carrots
+      - post:
+          url: "/api/users/me/items/1"
+          headers:
+            Authorization: "Bearer {{ token }}"
+          json:
+            action: "sell"
+            itemId: 1
+            mode: "classic"
+            quantity: 4
+
+
+after:
+  flow:
+    - log: "Invalidate token"

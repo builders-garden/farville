@@ -17,7 +17,7 @@ const baseURL = `http://localhost:${PORT}`;
  * See https://playwright.dev/docs/test-configuration.
  */
 export default defineConfig({
-  testDir: "./tests",
+  testDir: "./e2e",
   /* Timeout per test */
   timeout: 40 * 1000,
   /* Retry on CI only */

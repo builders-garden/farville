@@ -23,8 +23,8 @@ export const env = createEnv({
     MIDJOURNEY_API_KEY: z.string().min(1),
     PINATA_JWT_SECRET: z.string().min(1),
     SIGNER_PRIVATE_KEY: z.string().min(1),
-    // test playwright
-    PLAYWRIGHT_TOKEN: z.string().optional(),
+    // test playwright on artillery cloud load testing
+    ARTILLERY_CLOUD_API_KEY: z.string().optional(),
   },
   client: {
     NEXT_PUBLIC_URL: z.string().url().min(1),

@@ -1,0 +1,18 @@
+config:
+  target: https://dev-coolify.farville.farm
+  phases:
+    - arrivalRate: 1
+      duration: 10
+  engines:
+    playwright:
+      launchOptions:
+        headless: false # remove this if you want to run in Fargate
+      contextOptions:
+        # NOTE: we use the $dirname utility so Playwright can resolve the full path
+        storageState: "{{ $dirname }}/storage.json"
+  processor: ./flow.js
+
+scenarios:
+  - name: buy_plant_harvest_carrot_seeds
+    engine: playwright
+    flowFunction: buyPlantHarvestCarrots

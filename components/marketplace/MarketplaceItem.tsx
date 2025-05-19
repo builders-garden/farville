@@ -269,7 +269,7 @@ function BuySellButton({
       className="w-full px-1 xs:px-2 py-1 xs:py-1.5 bg-[#2B593B] text-white/90 rounded hover:bg-[#346344] 
             transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-[10px] xs:text-xs font-medium
             border border-white/10"
-      data-testid={`market-buy-item-${itemSlug}-${amount}`}
+      data-testid={`market-buy-sell-item-${itemSlug}-${amount}`}
     >
       {amount}
     </motion.button>

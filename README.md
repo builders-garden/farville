@@ -59,3 +59,50 @@ yarn dev
 - TypeScript
 - Tailwind CSS
 - Framer Motion
+
+## Testing
+Testing is done using Playwright for end-to-end tests [./e2e/market.spec.ts](./e2e/market.spec.ts) and Artillery for load/stress testing [./tests/artillery-load.yml](./tests/artillery-load.yml).
+
+### Playwright end-to-end tests
+
+Launch playwright tests with the UI
+
+```bash
+yarn test:ui
+```
+
+or in headless mode
+
+```bash
+yarn test
+```
+
+### Artillery load tests
+
+Have your test environment ready and running on your infrastructure.
+
+1. Install artillery globally
+
+    ```bash
+    npm install -g artillery@latest
+    ```
+
+2. Run the load test using artillery
+
+    ```bash
+    yarn test:load
+    ```
+
+    or
+
+    ```bash
+    npx artillery run tests/artillery/playwright/load-test-playwright.yml
+    ```
+
+### Artillery x Playwright
+
+In artillery you can also run playwright tests combining both playwright and artillery.
+
+```bash
+yarn test:load:playwright
+```
