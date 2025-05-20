@@ -8,7 +8,7 @@ config:
     # create 1 virtual user per second, for a total duration of 1 minute
     - name: "1vu/s for 60s"
       duration: 60
-      arrivalRate: 2
+      arrivalRate: 1
       maxVusers: 100
     # create 240 users: 2 virtual user per second, for a total duration of 2 minutes
     # - name: "2vu/s for 2min"
