@@ -87,7 +87,13 @@ Have your test environment ready and running on your infrastructure.
     npm install -g artillery@latest
     ```
 
-2. Run the load test using artillery
+2. Save the API key in the environment variable `ARTILLERY_CLOUD_API_KEY`
+
+    ```bash
+    export ARTILLERY_CLOUD_API_KEY=...
+    ```
+
+3. Run the load test using artillery
 
     ```bash
     yarn test:load

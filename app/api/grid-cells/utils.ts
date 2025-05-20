@@ -11,8 +11,11 @@ export async function sendQuestsCalculation(
   itemId?: number,
   itemAmount?: number
 ) {
+  const isTestMode =
+    !!env.NEXT_PUBLIC_IS_TEST_MODE && env.NEXT_PUBLIC_APP_ENV === "development";
   if (
     env.NEXT_PUBLIC_URL === "http://localhost:3000" ||
+    isTestMode ||
     !MODE_DEFINITIONS[mode].features.includes(ModeFeature.Quests)
   ) {
     return;

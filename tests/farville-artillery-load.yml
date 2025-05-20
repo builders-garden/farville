@@ -1,0 +1,164 @@
+config:
+  target: https://dev-coolify.farville.farm
+  http:
+    # Responses have to be sent within 20 seconds, or an `ETIMEDOUT` error gets raised.
+    timeout: 20
+  phases:
+    # create 60 users: 1 virtual user per second, for a total duration of 1 minute
+    - name: "1vu/s for 1min"
+      duration: 60
+      arrivalRate: 1
+    # create 240 users: 2 virtual user per second, for a total duration of 2 minutes
+    # - name: "2vu/s for 2min"
+    #   duration: 120
+    #   arrivalRate: 2
+    # create 1500 users: 5 virtual user per second, for a total duration of 5 minutes
+    # - name: "5vu/s for 5min"
+    #   duration: 300
+    #   arrivalRate: 5
+    # create 1500 users: 50 virtual user per second, for a total duration of 10 minutes
+    # - name: "50vu/s for 5min"
+    #   duration: 300
+    #   arrivalRate: 50
+  # ensure:
+  #   maxErrorRate: 1
+  #   max: 500
+  # plugins:
+  #   metrics-by-endpoint: {}
+
+
+scenarios:
+  - name: "test_buy_harvest_sell"
+    flow:
+      - post:
+          url: '/api/sign-in'
+          json:
+            signature: "0x123"
+            message: "<3 from test mode"
+            fid: null
+            referrerFid: null
+          capture:
+            - json: $.token
+              as: authToken
+
+      # Buy 4 carrot seeds
+      - post:
+          url: "/api/users/me/items/1/"
+          headers:
+            Authorization: "Bearer {{authToken}}"
+          json:
+            action: "buy"
+            itemId: 1
+            mode: "classic"
+            quantity: 4
+          capture:
+            - json: $.message
+              as: buyMessage
+            - json: $.error
+              as: buyError
+              strict: false
+      - log: "buy msg: {{buyMessage}}\nbuy error {{buyError}}"
+
+      # Plant 4 carrot seeds
+      - post:
+          url: "/api/grid-bulk"
+          headers:
+            Authorization: "Bearer {{authToken}}"
+          json:
+            action: "plant"
+            itemSlug: "carrot-seeds"
+            mode: "classic"
+            cells: [
+              {
+                x: 1,
+                y: 1
+              },
+              {
+                x: 2,
+                y: 1
+              },
+              {
+                x: 1,
+                y: 2
+              },
+              {
+                x: 2,
+                y: 2
+              },
+            ]
+          capture:
+            - json: $.data.cells.ok
+              as: plantedCellsOk
+            - json: $.data.cells.nok
+              as: plantedCellsNotOk
+            - json: $.error
+              as: plantedError1
+              strict: false
+            - json: $.data.error
+              as: plantedError2
+              strict: false
+      - log: "planted cells\nplant ok: {{plantedCellsOk}}\nplant nok: {{plantedCellsNotOk}}\nplant error 1: {{plantedError1}} 2: {{plantedError2}}"
+      
+      # Pause for 4 seconds
+      - think: 4
+
+      # Harvest carrots
+      - post:
+          url: "/api/grid-bulk"
+          headers:
+            Authorization: "Bearer {{authToken}}"
+          json:
+            action: "harvest"
+            itemSlug: "carrot-seeds"
+            mode: "classic"
+            cells: [
+              {
+                x: 1,
+                y: 1
+              },
+              {
+                x: 2,
+                y: 1
+              },
+              {
+                x: 1,
+                y: 2
+              },
+              {
+                x: 2,
+                y: 2
+              },
+            ]
+          capture:
+            - json: $.data.cells.ok
+              as: harvestCellsOk
+            - json: $.data.cells.nok
+              as: harvestCellsNotOk
+            - json: $.error
+              as: harvestError1
+              strict: false
+            - json: $.data.error
+              as: harvestError2
+              strict: false
+      - log: "harvested cells\nharvest ok: {{harvestCellsOk}}\nharvest nok: {{harvestCellsNotOk}}\nharvest error 1: {{harvestError1}} 2: {{harvestError2}}"
+
+      # Pause for 10 seconds
+      - think: 10
+
+      # Sell 4 carrots
+      - post:
+          url: "/api/users/me/items/1"
+          headers:
+            Authorization: "Bearer {{authToken}}"
+          json:
+            action: "sell"
+            itemId: 1
+            mode: "classic"
+            quantity: 4
+          capture:
+            - json: $.message
+              as: sellMessage
+            - json: $.error
+              as: sellError
+              strict: false
+      - log: "sell msg: {{sellMessage}}\nbuy error {{sellError}}"
