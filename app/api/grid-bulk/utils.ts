@@ -95,7 +95,7 @@ export const plantBulk = async (
   const cropType = seedType.replace("-seeds", "") as CropType;
 
   // get current community boost
-  const currentCommunityBoost = await getCurrentCommunityBooster();
+  const currentCommunityBoost = await getCurrentCommunityBooster(mode);
   const currentCommunityBoostMultiplier = currentCommunityBoost?.stage ?? 1;
 
   const updatedGridCellsBulk = await updateGridCellsBulk(

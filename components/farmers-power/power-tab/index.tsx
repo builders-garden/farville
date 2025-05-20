@@ -33,7 +33,9 @@ export const PowerTab = () => {
     "increase" | "decrease" | null
   >(null);
   const previousFP = useRef(currentFP);
-  const [powerCombo, setPowerCombo] = useState<number>(6);
+  const [powerCombo, setPowerCombo] = useState<number>(
+    state.communityBoosterStatus?.combo || 0
+  );
   const [lastDonationTime, setLastDonationTime] = useState<Date | null>(
     new Date(Date.now() - 9.5 * 60 * 1000)
   );

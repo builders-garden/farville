@@ -84,7 +84,7 @@ export interface GameState {
   showMarketplaceTutorial: boolean;
   userModes: Mode[];
   communityBoosterStatus:
-    | (UserCommunityBoosterHistory & { points: number })
+    | (UserCommunityBoosterHistory & { points: number; combo: number })
     | null;
 }
 
@@ -198,7 +198,7 @@ export const useGameState = (mode: Mode) => {
     userCommunityBoosterStatus,
     isLoading: isLoadingUserCommunityBoosterStatus,
     refetch: refetchUserCommunityBoosterStatus,
-  } = useCommunityBoosterStatus();
+  } = useCommunityBoosterStatus(mode);
 
   const updateUserState = useCallback(() => {
     if (user) {

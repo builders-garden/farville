@@ -3,14 +3,15 @@ import { useApiQuery } from "./use-api-query";
 import { useApiMutation } from "./use-api-mutation";
 import { Mode } from "@/lib/types/game";
 
-export const useCommunityBoosterStatus = () => {
+export const useCommunityBoosterStatus = (mode: Mode) => {
   const { data, isLoading, refetch } = useApiQuery<
     UserCommunityBoosterHistory & {
       points: number;
+      combo: number;
     }
   >({
-    url: `/api/community/booster`,
-    queryKey: ["user-community-booster-multiplier"],
+    url: `/api/community/booster?mode=${mode}`,
+    queryKey: ["user-community-booster-multiplier", mode],
     isProtected: true,
   });
 

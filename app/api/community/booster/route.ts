@@ -8,14 +8,20 @@ import axios from "axios";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
-    const userCommunityDonations = await getCurrentCommunityBooster();
-    const communityBoosterPoints = await getCommunityBoosterPoints();
+    const mode = req.nextUrl.searchParams.get("mode") as Mode;
+    if (!mode) {
+      return NextResponse.json({ error: "Mode is required" }, { status: 400 });
+    }
+
+    const userCommunityDonations = await getCurrentCommunityBooster(mode);
+    const communityBoosterPoints = await getCommunityBoosterPoints(mode);
 
     return NextResponse.json({
       ...userCommunityDonations,
-      points: communityBoosterPoints,
+      points: communityBoosterPoints.points,
+      combo: communityBoosterPoints.combo,
     });
   } catch (error) {
     console.error("Error fetching user community donations:", error);

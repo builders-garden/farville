@@ -333,7 +333,9 @@ model UserCommunityBoosterHistory {
 }
 
 model CommunityBoosterPoints {
-  points Int @id
+  points Int    @id
+  mode   String @default("classic")
+  combo  Int    @default(1)
 
   @@map("community_booster_points")
 }

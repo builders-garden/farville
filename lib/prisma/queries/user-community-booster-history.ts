@@ -1,5 +1,6 @@
 import { UserCommunityBoosterHistory, Prisma } from "@prisma/client";
 import { prisma } from "../client";
+import { Mode } from "@/lib/types/game";
 
 /**
  * Get the user's community booster history, ordered by createdAt desc
@@ -17,12 +18,16 @@ export const getUserCommunityBoosterHistory = async (
 /**
  * Get the latest (current) community booster entry
  */
-export const getCurrentCommunityBooster =
-  async (): Promise<UserCommunityBoosterHistory | null> => {
-    return prisma.userCommunityBoosterHistory.findFirst({
-      orderBy: { createdAt: "desc" },
-    });
-  };
+export const getCurrentCommunityBooster = async (
+  mode: Mode
+): Promise<UserCommunityBoosterHistory | null> => {
+  return prisma.userCommunityBoosterHistory.findFirst({
+    orderBy: { createdAt: "desc" },
+    where: {
+      mode,
+    },
+  });
+};
 
 /**
  * Create a new community booster entry
