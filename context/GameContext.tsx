@@ -157,6 +157,7 @@ interface GameContextType {
     stage: number;
     combo: number;
   }) => void;
+  makeAllGridCellsHarvestable: () => void;
 }
 
 export const GameContext = createContext<GameContextType | null>(null);
@@ -200,6 +201,7 @@ export function GameProvider({
     updateUserWeeklyStats,
     updateUserCollectibles,
     updateUserCommunityBoosterStatus,
+    makeAllGridCellsHarvestable,
   } = useGameState(mode);
   const [selectedSeed, setSelectedSeed] = useState<SeedType | null>(null);
   const [selectedPerk, setSelectedPerk] = useState<UserItem | null>(null);
@@ -611,6 +613,7 @@ export function GameProvider({
         showNotActiveMode,
         setShowNotActiveMode,
         updateUserCommunityBoosterStatus,
+        makeAllGridCellsHarvestable,
       }}
     >
       {children}

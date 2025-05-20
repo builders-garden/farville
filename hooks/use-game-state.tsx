@@ -573,6 +573,20 @@ export const useGameState = (mode: Mode) => {
     []
   );
 
+  const makeAllGridCellsHarvestable = useCallback(() => {
+    setState((prevState) => {
+      if (!prevState) return prevState;
+      const newGrid = prevState.grid.map((cell) => ({
+        ...cell,
+        isReadyToHarvest: true,
+      }));
+      return {
+        ...prevState,
+        grid: newGrid,
+      };
+    });
+  }, []);
+
   // Add new method to update user items directly
   const updateUserItems = useCallback((updatedItems: Partial<UserItem>[]) => {
     setState((prevState) => {
@@ -836,5 +850,6 @@ export const useGameState = (mode: Mode) => {
     updateUserWeeklyStats,
     updateUserCollectibles,
     updateUserCommunityBoosterStatus,
+    makeAllGridCellsHarvestable,
   };
 };

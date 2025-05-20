@@ -10,7 +10,6 @@ import { useFrameContext } from "../context/FrameContext";
 import { useGame } from "../context/GameContext";
 import Header from "./Header";
 import InventoryModal from "./InventoryModal";
-// import toast from "react-hot-toast";
 // import PatchNotesModal from "./PatchNotesModal";
 import PerkIndicator from "./PerkIndicator";
 import PlantingIndicator from "./PlantingIndicator";
@@ -29,7 +28,8 @@ import LeaderboardModal from "./leaderboard";
 import { MODE_DEFINITIONS } from "@/lib/modes/constants";
 import FarmersPowerModal from "./farmers-power";
 import { useSocket } from "@/hooks/use-socket";
-import toast from "react-hot-toast";
+// import toast from "react-hot-toast";
+import { toast as sonnerToast } from "sonner";
 
 // const WelcomeOverlay = dynamic(() => import("./../components/WelcomeOverlay"), {
 //   ssr: false,
@@ -198,6 +198,7 @@ export default function GameWrapper() {
     activeOverlay,
     setActiveOverlay,
     updateUserCommunityBoosterStatus,
+    makeAllGridCellsHarvestable,
   } = useGame();
 
   const { socket } = useSocket();
@@ -233,17 +234,9 @@ export default function GameWrapper() {
         combo: data.combo,
       });
       if (data.fid !== state.user.fid) {
-        toast(`${data.username} +${data.ptAmount} PT`, {
-          duration: 3000,
-          style: {
-            backgroundColor: "chocolate",
-            color: "white",
-          },
-          position: "bottom-right",
-          ariaProps: {
-            role: "status",
-            "aria-live": "polite",
-          },
+        sonnerToast(`${data.username} +${data.ptAmount}PT`, {
+          duration: 5000,
+          position: "top-right",
         });
       }
     });
@@ -255,18 +248,12 @@ export default function GameWrapper() {
         stage: data.newStage,
         combo: data.combo,
       });
-      // toast(`${data.username} +${data.ptAmount} PT`, {
-      //   duration: 3000,
-      //   style: {
-      //     backgroundColor: "chocolate",
-      //     color: "white",
-      //   },
-      //   position: "bottom-right",
-      //   ariaProps: {
-      //     role: "status",
-      //     "aria-live": "polite",
-      //   },
-      // });
+      makeAllGridCellsHarvestable();
+      sonnerToast(`x${data.newStage} boost reached!`, {
+        description: `It's harvest time!`,
+        duration: 10000,
+        position: "top-right",
+      });
     });
 
     return () => {
