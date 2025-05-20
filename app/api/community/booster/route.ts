@@ -1,9 +1,10 @@
+import { env } from "@/lib/env";
 import {
-  decrementCommunityBoosterPoints,
   getCommunityBoosterPoints,
   getCurrentCommunityBooster,
-  incrementCommunityBoosterPoints,
 } from "@/lib/prisma/queries";
+import { Mode } from "@/lib/types/game";
+import axios from "axios";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -27,7 +28,12 @@ export async function GET() {
 
 const requestSchema = z.object({
   points: z.number().min(1),
-  operation: z.enum(["increment", "decrement"]),
+  txHash: z.string().min(1),
+  walletAddress: z.string().min(1),
+  dollarAmount: z.number().min(1),
+  message: z.string().optional(),
+  username: z.string().min(1),
+  mode: z.nativeEnum(Mode),
 });
 
 export async function POST(req: NextRequest) {
@@ -48,19 +54,40 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { points, operation } = requestBody.data;
+    const {
+      points,
+      txHash,
+      walletAddress,
+      dollarAmount,
+      message,
+      username,
+      mode,
+    } = requestBody.data;
 
-    let updatedPoints = 0;
-    if (operation === "increment") {
-      updatedPoints = await incrementCommunityBoosterPoints(points);
-    } else if (operation === "decrement") {
-      updatedPoints = await decrementCommunityBoosterPoints(points);
-    }
+    const result = await axios({
+      method: "POST",
+      url: `${env.FARVILLE_SERVICE_URL}/api/async-jobs/community-booster`,
+      headers: {
+        "x-api-secret": env.FARVILLE_SERVICE_API_KEY,
+      },
+      data: {
+        fid: Number(fid),
+        txHash,
+        walletAddress,
+        dollarAmount,
+        message,
+        points,
+        username,
+        mode,
+      },
+    });
+
+    console.log("launched async job to reset harvestAt", result.data);
 
     return NextResponse.json({
       message: "Points successfully updated",
       data: {
-        points: updatedPoints,
+        points,
       },
     });
   } catch (error) {

@@ -1,6 +1,7 @@
 import { UserCommunityBoosterHistory } from "@prisma/client";
 import { useApiQuery } from "./use-api-query";
 import { useApiMutation } from "./use-api-mutation";
+import { Mode } from "@/lib/types/game";
 
 export const useCommunityBoosterStatus = () => {
   const { data, isLoading, refetch } = useApiQuery<
@@ -16,7 +17,7 @@ export const useCommunityBoosterStatus = () => {
   return { userCommunityBoosterStatus: data, isLoading, refetch };
 };
 
-export const useCommunityBoosterManagement = () => {
+export const useCommunityBoosterIncrement = () => {
   return useApiMutation<
     {
       message: string;
@@ -26,20 +27,24 @@ export const useCommunityBoosterManagement = () => {
     },
     {
       points: number;
-      operation: "increment" | "decrement";
+      txHash: string;
+      walletAddress: string;
+      dollarAmount: number;
+      message?: string;
+      username: string;
+      mode: Mode;
     }
   >({
     url: () => `/api/community/booster`,
     method: "POST",
-    body: ({
-      points,
-      operation,
-    }: {
-      points: number;
-      operation: "increment" | "decrement";
-    }) => ({
-      points,
-      operation,
+    body: (data) => ({
+      points: data.points,
+      txHash: data.txHash,
+      walletAddress: data.walletAddress,
+      dollarAmount: data.dollarAmount,
+      message: data.message,
+      username: data.username,
+      mode: data.mode,
     }),
     onSuccess: (data) => {
       console.log("Points successfully updated:", data);

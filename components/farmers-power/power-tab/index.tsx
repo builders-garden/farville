@@ -12,7 +12,7 @@ import { useGame } from "@/context/GameContext";
 import { toast } from "react-hot-toast";
 import { PowerTimer } from "./power-timer";
 import { LastContributionTable } from "./last-contribution-table";
-import { useCommunityBoosterManagement } from "@/hooks/use-community-booster";
+import { useCommunityBoosterIncrement } from "@/hooks/use-community-booster";
 import {
   COMBO_WINDOW,
   DECAY_INTERVAL,
@@ -112,17 +112,20 @@ export const PowerTab = () => {
     !!tokenBalancesData?.totalBalanceUSD &&
     tokenBalancesData.totalBalanceUSD >= 1;
 
-  const { mutate: updateFP } = useCommunityBoosterManagement();
+  const { mutate: updateFP } = useCommunityBoosterIncrement();
 
-  const handleContributionSuccess = (amount: number) => {
+  const handleContributionSuccess = (dollarAmount: number) => {
     try {
+      if (!address) {
+        throw new Error("No address found");
+      }
       // Update combo and FP
       const newCombo = Math.min(powerCombo + 1, MAX_COMBO);
       setPowerCombo(newCombo);
       setLastDonationTime(new Date());
 
       // Add FP with combo multiplier
-      const fpToAdd = amount * newCombo;
+      const fpToAdd = dollarAmount * newCombo;
       const newFP = currentFP + fpToAdd;
       setCurrentFP(newFP);
 
@@ -135,7 +138,12 @@ export const PowerTab = () => {
 
       updateFP({
         points: fpToAdd,
-        operation: "increment",
+        txHash: "0x1234567890abcdef", // Placeholder for actual transaction hash
+        walletAddress: address,
+        dollarAmount: dollarAmount,
+        message: undefined,
+        username: state.user.username,
+        mode: mode,
       });
       refetchUserItems();
     } catch (error) {
@@ -194,9 +202,7 @@ export const PowerTab = () => {
         walletBalance={tokenBalancesData?.totalBalanceUSD ?? 0}
         userId={state.user.fid.toString()}
         onContributionSuccess={handleContributionSuccess}
-        mode={mode}
         address={address}
-        username={state.user.username}
         tokenBalancesIsLoading={tokenBalancesIsLoading}
       />
 

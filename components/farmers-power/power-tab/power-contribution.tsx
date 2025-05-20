@@ -25,8 +25,6 @@ import {
 import { PaymentCompletedEvent } from "@daimo/common";
 import { env } from "@/lib/env";
 import sdk from "@farcaster/frame-sdk";
-import { useAddCommunityDonation } from "@/hooks/use-add-community-donation";
-import { Mode } from "@/lib/types/game";
 
 interface PowerContributionProps {
   showDialog: boolean;
@@ -38,9 +36,7 @@ interface PowerContributionProps {
   walletBalance?: number;
   userId: string;
   onContributionSuccess: (amount: number) => void;
-  mode: Mode;
   address: `0x${string}` | undefined;
-  username: string;
   tokenBalancesIsLoading: boolean;
 }
 
@@ -54,9 +50,7 @@ export const PowerContribution = ({
   walletBalance = 0,
   userId,
   onContributionSuccess,
-  mode,
   address,
-  username,
   tokenBalancesIsLoading,
 }: PowerContributionProps) => {
   const [contributionAmount, setContributionAmount] = useState(1);
@@ -66,8 +60,6 @@ export const PowerContribution = ({
   const [errorMessage, setErrorMessage] = useState("");
   const [finalTxHash, setFinalTxHash] = useState("");
   const [paymentHandled, setPaymentHandled] = useState(false);
-
-  const { mutate: addCommunityDonation } = useAddCommunityDonation();
 
   const resetState = () => {
     setContributionAmount(1);
@@ -90,7 +82,32 @@ export const PowerContribution = ({
     setPaymentStarted(true);
   };
 
-  const handlePaymentCompleted = async (e: PaymentCompletedEvent) => {
+  // const handlePaymentCompleted = async (e: PaymentCompletedEvent) => {
+  //   if (paymentHandled) return; // Prevent duplicate handling
+
+  //   if (!address) {
+  //     setErrorMessage("Wallet address is not available.");
+  //     setPaymentCompleted(false);
+  //     return;
+  //   }
+
+  //   setPaymentCompleted(true);
+  //   setPaymentStarted(false);
+  //   setFinalTxHash(e.txHash);
+  //   setPaymentHandled(true); // Mark this payment as handled
+
+  //   try {
+  //     onContributionSuccess(contributionAmount);
+  //     // Modal will stay open so user can see success state and share buttons
+  //   } catch (error) {
+  //     console.error("Error adding community donation:", error);
+  //     setErrorMessage("Failed to record your contribution. Please try again.");
+  //     setPaymentCompleted(false);
+  //     setPaymentHandled(false); // Reset if there was an error
+  //   }
+  // };
+
+  const handlePaymentCompleted = async () => {
     if (paymentHandled) return; // Prevent duplicate handling
 
     if (!address) {
@@ -101,19 +118,10 @@ export const PowerContribution = ({
 
     setPaymentCompleted(true);
     setPaymentStarted(false);
-    setFinalTxHash(e.txHash);
+    setFinalTxHash("0x1234567890abcdef"); // Placeholder for actual transaction hash
     setPaymentHandled(true); // Mark this payment as handled
 
     try {
-      addCommunityDonation({
-        txHash: e.txHash,
-        mode,
-        fid: Number(userId),
-        ptAmount: contributionAmount * powerCombo,
-        dollarAmount: contributionAmount,
-        walletAddress: address,
-        username,
-      });
       onContributionSuccess(contributionAmount);
       // Modal will stay open so user can see success state and share buttons
     } catch (error) {
@@ -292,60 +300,61 @@ export const PowerContribution = ({
 
           {/* Payment Button */}
           {!paymentCompleted ? (
-            <DaimoPayButton.Custom
-              appId={env.NEXT_PUBLIC_DAIMO_PAY_ID}
-              metadata={{
-                userId,
-              }}
-              preferredChains={[base.id]}
-              preferredTokens={[{ chain: base.id, address: BASE_USDC_ADDRESS }]}
-              toAddress={BG_MULTISIG_ADDRESS}
-              // toUnits={contributionAmount.toString()}
-              toUnits={"0.000001"}
-              toToken={BASE_USDC_ADDRESS}
-              toChain={base.id}
-              onPaymentStarted={handlePaymentStarted}
-              onPaymentCompleted={handlePaymentCompleted}
-              onPaymentBounced={handlePaymentBounced}
-              closeOnSuccess
-            >
-              {({ show }) => (
-                <Button
-                  variant="default"
-                  className={cn(
-                    "w-full py-3 text-base font-medium",
-                    !hasEnoughEthBalance ||
-                      !hasEnoughUSDBalance ||
-                      tokenBalancesIsLoading
-                      ? "text-yellow-400/50 cursor-not-allowed bg-yellow-500/10"
-                      : "text-[#5C4121] bg-yellow-500 hover:bg-yellow-500/80 hover:text-[#5C4121]"
-                  )}
-                  onClick={show}
-                  disabled={
-                    !hasEnoughEthBalance ||
-                    !hasEnoughUSDBalance ||
-                    paymentStarted ||
-                    paymentCompleted ||
-                    tokenBalancesIsLoading
-                  }
-                >
-                  {tokenBalancesIsLoading ? (
-                    <div className="flex items-center justify-center gap-2">
-                      <Loader2
-                        className="w-4 h-4 animate-spin"
-                        strokeWidth={3}
-                      />
-                      <span>Loading...</span>
-                    </div>
-                  ) : paymentStarted ? (
-                    "Contributing..."
-                  ) : (
-                    "Confirm"
-                  )}
-                </Button>
-              )}
-            </DaimoPayButton.Custom>
+            <Button onClick={() => handlePaymentCompleted()}>PORCO...</Button>
           ) : (
+            // <DaimoPayButton.Custom
+            //   appId={env.NEXT_PUBLIC_DAIMO_PAY_ID}
+            //   metadata={{
+            //     userId,
+            //   }}
+            //   preferredChains={[base.id]}
+            //   preferredTokens={[{ chain: base.id, address: BASE_USDC_ADDRESS }]}
+            //   toAddress={BG_MULTISIG_ADDRESS}
+            //   // toUnits={contributionAmount.toString()}
+            //   toUnits={"0.000001"}
+            //   toToken={BASE_USDC_ADDRESS}
+            //   toChain={base.id}
+            //   onPaymentStarted={handlePaymentStarted}
+            //   onPaymentCompleted={handlePaymentCompleted}
+            //   onPaymentBounced={handlePaymentBounced}
+            //   closeOnSuccess
+            // >
+            //   {({ show }) => (
+            //     <Button
+            //       variant="default"
+            //       className={cn(
+            //         "w-full py-3 text-base font-medium",
+            //         !hasEnoughEthBalance ||
+            //           !hasEnoughUSDBalance ||
+            //           tokenBalancesIsLoading
+            //           ? "text-yellow-400/50 cursor-not-allowed bg-yellow-500/10"
+            //           : "text-[#5C4121] bg-yellow-500 hover:bg-yellow-500/80 hover:text-[#5C4121]"
+            //       )}
+            //       onClick={show}
+            //       disabled={
+            //         !hasEnoughEthBalance ||
+            //         !hasEnoughUSDBalance ||
+            //         paymentStarted ||
+            //         paymentCompleted ||
+            //         tokenBalancesIsLoading
+            //       }
+            //     >
+            //       {tokenBalancesIsLoading ? (
+            //         <div className="flex items-center justify-center gap-2">
+            //           <Loader2
+            //             className="w-4 h-4 animate-spin"
+            //             strokeWidth={3}
+            //           />
+            //           <span>Loading...</span>
+            //         </div>
+            //       ) : paymentStarted ? (
+            //         "Contributing..."
+            //       ) : (
+            //         "Confirm"
+            //       )}
+            //     </Button>
+            //   )}
+            // </DaimoPayButton.Custom>
             <div className="flex flex-col items-center gap-1.5 p-3 rounded-lg border border-yellow-400/20">
               <span className="text-yellow-400 font-semibold text-sm text-center">
                 🎉 Congratulations! 🎉

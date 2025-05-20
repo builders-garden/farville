@@ -43,6 +43,8 @@ export const env = createEnv({
     NEXT_PUBLIC_FARCASTER_HEADER: z.string().min(1),
     NEXT_PUBLIC_FARCASTER_PAYLOAD: z.string().min(1),
     NEXT_PUBLIC_FARCASTER_SIGNATURE: z.string().min(1),
+    // Socket
+    NEXT_PUBLIC_SOCKET_URL: z.string().url().min(1),
   },
   // For Next.js >= 13.4.4, you only need to destructure client variables:
   experimental__runtimeEnv: {
@@ -60,5 +62,6 @@ export const env = createEnv({
       process.env.NEXT_PUBLIC_FARCASTER_SIGNATURE,
     NEXT_PUBLIC_REOWN_DOMAIN_VERIFICATION_CODE:
       process.env.NEXT_PUBLIC_REOWN_DOMAIN_VERIFICATION_CODE,
+    NEXT_PUBLIC_SOCKET_URL: process.env.NEXT_PUBLIC_SOCKET_URL,
   },
 });
