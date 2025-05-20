@@ -1,4 +1,8 @@
-import { UserCommunityBoosterHistory, Prisma } from "@prisma/client";
+import {
+  UserCommunityBoosterHistory,
+  Prisma,
+  UserCommunityDonation,
+} from "@prisma/client";
 import { prisma } from "../client";
 import { Mode } from "@/lib/types/game";
 
@@ -20,11 +24,17 @@ export const getUserCommunityBoosterHistory = async (
  */
 export const getCurrentCommunityBooster = async (
   mode: Mode
-): Promise<UserCommunityBoosterHistory | null> => {
+): Promise<
+  | (UserCommunityBoosterHistory & { donation: UserCommunityDonation | null })
+  | null
+> => {
   return prisma.userCommunityBoosterHistory.findFirst({
     orderBy: { createdAt: "desc" },
     where: {
       mode,
+    },
+    include: {
+      donation: true,
     },
   });
 };

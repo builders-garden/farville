@@ -1,4 +1,7 @@
-import { UserCommunityBoosterHistory } from "@prisma/client";
+import {
+  UserCommunityBoosterHistory,
+  UserCommunityDonation,
+} from "@prisma/client";
 import { useApiQuery } from "./use-api-query";
 import { useApiMutation } from "./use-api-mutation";
 import { Mode } from "@/lib/types/game";
@@ -6,6 +9,7 @@ import { Mode } from "@/lib/types/game";
 export const useCommunityBoosterStatus = (mode: Mode) => {
   const { data, isLoading, refetch } = useApiQuery<
     UserCommunityBoosterHistory & {
+      donation: UserCommunityDonation;
       points: number;
       combo: number;
     }

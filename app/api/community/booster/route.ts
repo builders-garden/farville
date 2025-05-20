@@ -20,6 +20,10 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({
       ...userCommunityDonations,
+      donation: {
+        ...userCommunityDonations?.donation,
+        createdAt: userCommunityDonations?.donation?.createdAt ?? new Date(),
+      },
       points: communityBoosterPoints.points,
       combo: communityBoosterPoints.combo,
     });
@@ -70,7 +74,7 @@ export async function POST(req: NextRequest) {
       mode,
     } = requestBody.data;
 
-    const result = await axios({
+    await axios({
       method: "POST",
       url: `${env.FARVILLE_SERVICE_URL}/api/async-jobs/community-booster`,
       headers: {
@@ -87,8 +91,6 @@ export async function POST(req: NextRequest) {
         mode,
       },
     });
-
-    console.log("launched async job to reset harvestAt", result.data);
 
     return NextResponse.json({
       message: "Points successfully updated",

@@ -19,7 +19,6 @@ import {
   UserHarvestedCrop,
   UserHasCollectible,
   Item,
-  UserCommunityBoosterHistory,
 } from "@prisma/client";
 import { Mode } from "@/lib/types/game";
 import { useUserModes } from "./use-user-modes";
@@ -83,9 +82,13 @@ export interface GameState {
   showGridCellsTutorial: boolean;
   showMarketplaceTutorial: boolean;
   userModes: Mode[];
-  communityBoosterStatus:
-    | (UserCommunityBoosterHistory & { points: number; combo: number })
-    | null;
+  communityBoosterStatus: {
+    stage: number;
+    points: number;
+    combo: number;
+    mode: Mode;
+    lastDonation: Date;
+  } | null;
 }
 
 export const useGameState = (mode: Mode) => {
@@ -232,6 +235,21 @@ export const useGameState = (mode: Mode) => {
     }
   }, [userItems]);
 
+  const updateUserCommunityBoosterStatusState = useCallback(() => {
+    if (userCommunityBoosterStatus) {
+      setState((prevState) => ({
+        ...prevState!,
+        communityBoosterStatus: {
+          stage: userCommunityBoosterStatus.stage,
+          points: userCommunityBoosterStatus.points,
+          combo: userCommunityBoosterStatus.combo,
+          mode: userCommunityBoosterStatus.mode as Mode,
+          lastDonation: userCommunityBoosterStatus.donation.createdAt,
+        },
+      }));
+    }
+  }, [userCommunityBoosterStatus]);
+
   const updateGridState = useCallback(() => {
     if (gridCells) {
       setState((prevState) => ({
@@ -348,6 +366,10 @@ export const useGameState = (mode: Mode) => {
   useEffect(() => {
     updateGridState();
   }, [gridCells, updateGridState]);
+
+  useEffect(() => {
+    updateUserCommunityBoosterStatusState();
+  }, [userCommunityBoosterStatus, updateUserCommunityBoosterStatusState]);
 
   useEffect(() => {
     updateItemsState();
@@ -479,7 +501,13 @@ export const useGameState = (mode: Mode) => {
     if (userCommunityBoosterStatus) {
       setState((prevState) => ({
         ...prevState!,
-        communityBoosterStatus: userCommunityBoosterStatus,
+        communityBoosterStatus: {
+          mode: userCommunityBoosterStatus.mode as Mode,
+          stage: userCommunityBoosterStatus.stage,
+          lastDonation: userCommunityBoosterStatus.donation.createdAt,
+          points: userCommunityBoosterStatus.points,
+          combo: userCommunityBoosterStatus.combo,
+        },
       }));
     }
   }, [userCommunityBoosterStatus]);
@@ -719,6 +747,43 @@ export const useGameState = (mode: Mode) => {
     []
   );
 
+  const updateUserCommunityBoosterStatus = useCallback(
+    (statusParams: { pointsToAdd: number; stage: number; combo: number }) => {
+      console.log(
+        "Updating user community booster status:",
+        statusParams.pointsToAdd,
+        statusParams.stage,
+        statusParams.combo
+      );
+      setState((prevState) => {
+        if (!prevState) return prevState;
+
+        const currentStatus = prevState.communityBoosterStatus;
+        if (!currentStatus) return prevState;
+
+        console.log("new status:", {
+          mode: currentStatus.mode,
+          stage: statusParams.stage,
+          lastDonation: currentStatus.lastDonation,
+          points: currentStatus.points + statusParams.pointsToAdd,
+          combo: statusParams.combo,
+        });
+
+        return {
+          ...prevState,
+          communityBoosterStatus: {
+            mode: currentStatus.mode,
+            stage: statusParams.stage,
+            lastDonation: currentStatus.lastDonation,
+            points: currentStatus.points + statusParams.pointsToAdd,
+            combo: statusParams.combo,
+          },
+        };
+      });
+    },
+    []
+  );
+
   return {
     state,
     loading:
@@ -770,5 +835,6 @@ export const useGameState = (mode: Mode) => {
     updateUserHarvestedCrops,
     updateUserWeeklyStats,
     updateUserCollectibles,
+    updateUserCommunityBoosterStatus,
   };
 };

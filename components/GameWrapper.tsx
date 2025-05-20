@@ -192,7 +192,13 @@ function TimelineModalContainer() {
 
 export default function GameWrapper() {
   const { startBackgroundMusic } = useAudio();
-  const { mode, state, activeOverlay, setActiveOverlay } = useGame();
+  const {
+    mode,
+    state,
+    activeOverlay,
+    setActiveOverlay,
+    updateUserCommunityBoosterStatus,
+  } = useGame();
 
   const { socket } = useSocket();
 
@@ -213,28 +219,59 @@ export default function GameWrapper() {
     }
   }, [startNextStep, state.showGridCellsTutorial, activeOverlay]);
 
+  console.log("community combo status", state.communityBoosterStatus);
+
   // useEffect to check if the other players made a donation
   useEffect(() => {
     if (!socket) return;
 
     socket.on("new-donation", (data) => {
       console.log(`${JSON.stringify(data)} 🎉`);
-      toast(`${data.username} +${data.ptAmount} PT`, {
-        duration: 3000,
-        style: {
-          backgroundColor: "chocolate",
-          color: "white",
-        },
-        position: "bottom-right",
-        ariaProps: {
-          role: "status",
-          "aria-live": "polite",
-        },
+      updateUserCommunityBoosterStatus({
+        pointsToAdd: data.ptAmount,
+        stage: data.stage,
+        combo: data.combo,
       });
+      if (data.fid !== state.user.fid) {
+        toast(`${data.username} +${data.ptAmount} PT`, {
+          duration: 3000,
+          style: {
+            backgroundColor: "chocolate",
+            color: "white",
+          },
+          position: "bottom-right",
+          ariaProps: {
+            role: "status",
+            "aria-live": "polite",
+          },
+        });
+      }
+    });
+
+    socket.on("harvest-all", (data) => {
+      console.log(`${JSON.stringify(data)}`);
+      updateUserCommunityBoosterStatus({
+        pointsToAdd: data.currentPoints,
+        stage: data.newStage,
+        combo: data.combo,
+      });
+      // toast(`${data.username} +${data.ptAmount} PT`, {
+      //   duration: 3000,
+      //   style: {
+      //     backgroundColor: "chocolate",
+      //     color: "white",
+      //   },
+      //   position: "bottom-right",
+      //   ariaProps: {
+      //     role: "status",
+      //     "aria-live": "polite",
+      //   },
+      // });
     });
 
     return () => {
       socket.off("new-donation");
+      socket.off("harvest-all");
     };
   }, [socket]);
 

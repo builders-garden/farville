@@ -152,6 +152,11 @@ interface GameContextType {
       mode: Mode;
     }>
   >;
+  updateUserCommunityBoosterStatus: (statusParams: {
+    pointsToAdd: number;
+    stage: number;
+    combo: number;
+  }) => void;
 }
 
 export const GameContext = createContext<GameContextType | null>(null);
@@ -194,6 +199,7 @@ export function GameProvider({
     updateUserHarvestedCrops,
     updateUserWeeklyStats,
     updateUserCollectibles,
+    updateUserCommunityBoosterStatus,
   } = useGameState(mode);
   const [selectedSeed, setSelectedSeed] = useState<SeedType | null>(null);
   const [selectedPerk, setSelectedPerk] = useState<UserItem | null>(null);
@@ -604,6 +610,7 @@ export function GameProvider({
         initializeMode,
         showNotActiveMode,
         setShowNotActiveMode,
+        updateUserCommunityBoosterStatus,
       }}
     >
       {children}

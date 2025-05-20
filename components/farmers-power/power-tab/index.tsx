@@ -29,6 +29,14 @@ export const PowerTab = () => {
   const [currentFP, setCurrentFP] = useState<number>(
     state.communityBoosterStatus?.points || 0
   );
+
+  // Effect to update currentFP when communityBoosterStatus changes
+  useEffect(() => {
+    if (state.communityBoosterStatus?.points !== undefined) {
+      setCurrentFP(state.communityBoosterStatus.points);
+    }
+  }, [state.communityBoosterStatus?.points]);
+
   const [fpChangeAnimation, setFpChangeAnimation] = useState<
     "increase" | "decrease" | null
   >(null);

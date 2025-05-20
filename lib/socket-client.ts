@@ -1,11 +1,26 @@
+import { UserCommunityDonation } from "@prisma/client";
 import { io, Socket } from "socket.io-client";
 
 export type ServerToClientEvents = {
   "new-donation": (data: {
-    fid: number;
+    message: string | null;
+    id: string;
+    txHash: string;
     mode: string;
-    username: string;
+    fid: number;
+    dollarAmount: number;
     ptAmount: number;
+    createdAt: Date;
+    walletAddress: string;
+    username: string;
+    stage: number;
+    combo: number;
+  }) => void;
+  "harvest-all": (data: {
+    newStage: number;
+    currentPoints: number;
+    lastDonation: UserCommunityDonation;
+    combo: number;
   }) => void;
 };
 
