@@ -1,6 +1,8 @@
+import axios from "axios";
 import { prisma } from "../client";
 import { getCurrentCommunityBooster } from "./user-community-booster-history";
 import { getCurrentPowerStage } from "@/lib/utils";
+import { env } from "@/lib/env";
 
 export const getCommunityBoosterPoints = async (): Promise<number> => {
   const communityBooster = await prisma.communityBoosterPoints.findFirst();
@@ -41,6 +43,14 @@ export const incrementCommunityBoosterPoints = async (
 
     // TODO: step 1: send async harvestAt reset to the server
     // TODO: step 2: send a notification to all the users
+    const result = await axios({
+      method: "POST",
+      url: `${env.FARVILLE_SERVICE_URL}/api/async-jobs/community-booster`,
+      headers: {
+        "x-api-secret": env.FARVILLE_SERVICE_API_KEY,
+      },
+    });
+    console.log("launched async job to reset harvestAt", result.data);
   }
 
   return currentPoints + pointsToAdd;

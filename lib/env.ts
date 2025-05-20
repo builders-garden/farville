@@ -23,6 +23,9 @@ export const env = createEnv({
     MIDJOURNEY_API_KEY: z.string().min(1),
     PINATA_JWT_SECRET: z.string().min(1),
     SIGNER_PRIVATE_KEY: z.string().min(1),
+    // Farville Service
+    FARVILLE_SERVICE_URL: z.string().url().min(1),
+    FARVILLE_SERVICE_API_KEY: z.string().min(1),
   },
   client: {
     NEXT_PUBLIC_URL: z.string().url().min(1),
