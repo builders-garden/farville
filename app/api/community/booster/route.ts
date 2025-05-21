@@ -37,10 +37,7 @@ export async function GET(req: NextRequest) {
 }
 
 const requestSchema = z.object({
-  points: z.number().min(1),
-  txHash: z.string().min(1),
-  walletAddress: z.string().min(1),
-  dollarAmount: z.number().min(1),
+  paymentId: z.string().min(1),
   message: z.string().optional(),
   username: z.string().min(1),
   mode: z.nativeEnum(Mode),
@@ -64,15 +61,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const {
-      points,
-      txHash,
-      walletAddress,
-      dollarAmount,
-      message,
-      username,
-      mode,
-    } = requestBody.data;
+    const { paymentId, message, username, mode } = requestBody.data;
 
     await axios({
       method: "POST",
@@ -82,11 +71,8 @@ export async function POST(req: NextRequest) {
       },
       data: {
         fid: Number(fid),
-        txHash,
-        walletAddress,
-        dollarAmount,
+        paymentId,
         message,
-        points,
         username,
         mode,
       },
@@ -95,7 +81,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       message: "Points successfully updated",
       data: {
-        points,
+        paymentId,
       },
     });
   } catch (error) {

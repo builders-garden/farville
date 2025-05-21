@@ -3,7 +3,6 @@ import { Button } from "@/components/ui/button";
 import { PowerStats } from "./power-status";
 import { PowerStages } from "./power-stages";
 import { PowerContribution } from "./power-contribution";
-import Confetti from "@/components/animations/Confetti";
 import { useAccount, useBalance, useSwitchChain } from "wagmi";
 import { useQuery } from "@tanstack/react-query";
 import { getWalletBalance } from "@/lib/lifi";
@@ -16,14 +15,12 @@ import { useCommunityBoosterIncrement } from "@/hooks/use-community-booster";
 import {
   COMBO_WINDOW,
   DECAY_INTERVAL,
-  MAX_COMBO,
   POWER_STAGES,
 } from "@/lib/game-constants";
-import { v4 as uuid } from "uuid";
 import { useCommunityDonation } from "@/hooks/use-community-donation";
 
 export const PowerTab = () => {
-  const { state, refetchUserItems, mode } = useGame();
+  const { state, mode } = useGame();
   const { address, chainId } = useAccount();
   const { switchChain } = useSwitchChain();
 
@@ -101,7 +98,6 @@ export const PowerTab = () => {
 
   // Removed debug console logs
 
-  const [showConfetti, setShowConfetti] = useState(false);
   const [showContributeDialog, setShowContributeDialog] = useState(false);
 
   // Calculate current stage based on FP
@@ -178,38 +174,18 @@ export const PowerTab = () => {
 
   const { mutate: updateFP } = useCommunityBoosterIncrement();
 
-  const handleContributionSuccess = (dollarAmount: number) => {
+  const handleContributionSuccess = (paymentId: string) => {
     try {
       if (!address) {
         throw new Error("No address found");
       }
-      // Update combo and FP
-      const newCombo = Math.min(powerCombo + 1, MAX_COMBO);
-      setPowerCombo(newCombo);
-      setLastDonationTime(new Date());
-
-      // Add FP with combo multiplier
-      const fpToAdd = dollarAmount * newCombo;
-      const newFP = currentFP + fpToAdd;
-      setCurrentFP(newFP);
-
-      const newStage =
-        POWER_STAGES.findIndex((stage) => stage.fpRequired > newFP) ||
-        POWER_STAGES.length;
-      if (newStage > currentPowerStage) {
-        setShowConfetti(true);
-      }
 
       updateFP({
-        points: fpToAdd,
-        txHash: uuid(),
-        walletAddress: address,
-        dollarAmount: dollarAmount,
+        paymentId,
         message: undefined,
         username: state.user.username,
         mode: mode,
       });
-      refetchUserItems();
     } catch (error) {
       console.error("Error distributing power boost:", error);
       toast.error("Failed to distribute power boost. Please try again.");
@@ -218,7 +194,6 @@ export const PowerTab = () => {
 
   return (
     <>
-      {showConfetti && <Confetti title="POWER STAGE UP!" />}
       {/* Current Status Section */}
       <div className="w-full bg-[#5C4121]/50 rounded-xl p-6 border border-yellow-400/20">
         <div className="flex flex-col gap-4">

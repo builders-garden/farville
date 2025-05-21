@@ -31,10 +31,7 @@ export const useCommunityBoosterIncrement = () => {
       };
     },
     {
-      points: number;
-      txHash: string;
-      walletAddress: string;
-      dollarAmount: number;
+      paymentId: string;
       message?: string;
       username: string;
       mode: Mode;
@@ -43,10 +40,7 @@ export const useCommunityBoosterIncrement = () => {
     url: () => `/api/community/booster`,
     method: "POST",
     body: (data) => ({
-      points: data.points,
-      txHash: data.txHash,
-      walletAddress: data.walletAddress,
-      dollarAmount: data.dollarAmount,
+      paymentId: data.paymentId,
       message: data.message,
       username: data.username,
       mode: data.mode,
