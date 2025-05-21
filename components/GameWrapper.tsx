@@ -199,6 +199,7 @@ export default function GameWrapper() {
     setActiveOverlay,
     updateUserCommunityBoosterStatus,
     makeAllGridCellsHarvestable,
+    refetch,
   } = useGame();
 
   const { socket } = useSocket();
@@ -228,11 +229,15 @@ export default function GameWrapper() {
 
     socket.on("new-donation", (data) => {
       console.log(`${JSON.stringify(data)} 🎉`);
+      console.log("AMOUNT TO ADD", data.ptAmount);
       updateUserCommunityBoosterStatus({
         pointsToAdd: data.ptAmount,
         stage: data.stage,
         combo: data.combo,
+        lastDonation: new Date(data.createdAt),
       });
+      // Also refresh community donations to ensure they're up to date
+      refetch.communityDonations();
       if (data.fid !== state.user.fid) {
         sonnerToast(`${data.username} +${data.ptAmount}PT`, {
           duration: 5000,
@@ -270,7 +275,13 @@ export default function GameWrapper() {
       socket.off("harvest-all");
       socket.off("new-decrement");
     };
-  }, [socket]);
+  }, [
+    socket,
+    updateUserCommunityBoosterStatus,
+    makeAllGridCellsHarvestable,
+    state.user.fid,
+    refetch,
+  ]);
 
   // useEffect(() => {
   //   if (!toastShownRef.current) {

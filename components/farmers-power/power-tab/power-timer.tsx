@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 import { Clock } from "lucide-react";
 import { motion } from "framer-motion";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 
 interface PowerTimerProps {
   powerCombo: number;
@@ -13,6 +13,24 @@ interface PowerTimerProps {
   setLastTimerReset: React.Dispatch<React.SetStateAction<Date>>;
 }
 
+// Helper function to get conditional styling based on power combo
+const usePowerComboStyles = (powerCombo: number) => {
+  return useMemo(
+    () => ({
+      text: powerCombo > 1 ? "text-yellow-400" : "text-[#FFB938]",
+      background:
+        powerCombo > 1
+          ? "bg-gradient-to-br from-[#4A341A] via-[#5A442A] to-[#4A341A] relative overflow-hidden"
+          : "bg-[#4A341A]",
+      timeUnit:
+        powerCombo > 1
+          ? "bg-[#5C4121]/80 border border-yellow-400/20"
+          : "bg-[#5C4121]",
+    }),
+    [powerCombo]
+  );
+};
+
 export const PowerTimer = ({
   powerCombo,
   lastDonationTime,
@@ -23,6 +41,7 @@ export const PowerTimer = ({
   setLastTimerReset,
 }: PowerTimerProps) => {
   const [timerNow, setTimerNow] = useState(Date.now());
+  const styles = usePowerComboStyles(powerCombo);
 
   // Effect for updating timer display
   useEffect(() => {
@@ -31,6 +50,42 @@ export const PowerTimer = ({
     }, 16); // ~60fps update rate for smooth display
     return () => clearInterval(displayInterval);
   }, []);
+
+  // Helper function to handle timer expiration and reset
+  const handleTimerExpiration = useCallback(() => {
+    // Reset combo and decrease FP once
+    if (powerCombo > 1) {
+      setPowerCombo(1);
+    }
+    setCurrentFP((prevFP) => Math.max(0, prevFP - 1));
+
+    // Calculate the proper next window using modulo logic
+    const msElapsedSinceLastDonation = lastDonationTime
+      ? Date.now() - lastDonationTime.getTime()
+      : 0;
+
+    if (lastDonationTime) {
+      // Calculate how many full COMBO_WINDOWs have passed since last donation
+      const elapsedCycles = Math.floor(
+        msElapsedSinceLastDonation / COMBO_WINDOW
+      );
+      // Calculate the start of the current window (not the next one)
+      const currentWindowStart = new Date(
+        lastDonationTime.getTime() + elapsedCycles * COMBO_WINDOW
+      );
+      setLastTimerReset(currentWindowStart);
+    } else {
+      // If no last donation, just start from now
+      setLastTimerReset(new Date());
+    }
+  }, [
+    COMBO_WINDOW,
+    lastDonationTime,
+    powerCombo,
+    setCurrentFP,
+    setLastTimerReset,
+    setPowerCombo,
+  ]);
 
   // Separate effect for checking window expiration and handling FP/combo decrease
   useEffect(() => {
@@ -42,66 +97,17 @@ export const PowerTimer = ({
 
     // If the time already elapsed, handle it immediately
     if (timeToNextExpiry <= 0) {
-      // Reset combo and decrease FP once
-      if (powerCombo > 1) {
-        setPowerCombo(powerCombo - 1);
-      }
-      setCurrentFP((prevFP) => Math.max(0, prevFP - 1));
-
-      // Calculate the proper next window using modulo logic
-      const msElapsedSinceLastDonation = lastDonationTime
-        ? Date.now() - lastDonationTime.getTime()
-        : 0;
-
-      if (lastDonationTime) {
-        // Calculate how many full COMBO_WINDOWs have passed since last donation
-        const elapsedCycles = Math.floor(
-          msElapsedSinceLastDonation / COMBO_WINDOW
-        );
-        // Calculate the start of the current window (not the next one)
-        const currentWindowStart = new Date(
-          lastDonationTime.getTime() + elapsedCycles * COMBO_WINDOW
-        );
-        setLastTimerReset(currentWindowStart);
-      } else {
-        // If no last donation, just start from now
-        setLastTimerReset(new Date());
-      }
+      handleTimerExpiration();
       return;
     }
 
     // Set timeout for the exact moment when the current window expires
-    const timeout = setTimeout(() => {
-      // Reset combo and decrease FP once when the timer expires
-      if (powerCombo > 1) {
-        setPowerCombo(powerCombo - 1);
-      }
-      setCurrentFP((prevFP) => Math.max(0, prevFP - 1));
-
-      // Calculate the proper next window using modulo logic
-      const msElapsedSinceLastDonation = lastDonationTime
-        ? Date.now() - lastDonationTime.getTime()
-        : 0;
-
-      if (lastDonationTime) {
-        // Calculate how many full COMBO_WINDOWs have passed since last donation
-        const elapsedCycles = Math.floor(
-          msElapsedSinceLastDonation / COMBO_WINDOW
-        );
-        // Calculate the start of the current window (not the next one)
-        const currentWindowStart = new Date(
-          lastDonationTime.getTime() + elapsedCycles * COMBO_WINDOW
-        );
-        setLastTimerReset(currentWindowStart);
-      } else {
-        // If no last donation, just start from now
-        setLastTimerReset(new Date());
-      }
-    }, timeToNextExpiry);
+    const timeout = setTimeout(handleTimerExpiration, timeToNextExpiry);
 
     return () => clearTimeout(timeout);
   }, [
     COMBO_WINDOW,
+    handleTimerExpiration,
     lastDonationTime,
     lastTimerReset,
     powerCombo,
@@ -112,12 +118,7 @@ export const PowerTimer = ({
 
   return (
     <div
-      className={cn(
-        "flex flex-col gap-3 rounded-lg p-3",
-        powerCombo > 1
-          ? "bg-gradient-to-br from-[#4A341A] via-[#5A442A] to-[#4A341A] relative overflow-hidden"
-          : "bg-[#4A341A]"
-      )}
+      className={cn("flex flex-col gap-3 rounded-lg p-3", styles.background)}
     >
       {powerCombo > 1 && (
         <div className="absolute inset-0 bg-gradient-to-r from-yellow-400/10 via-orange-400/10 to-yellow-400/10">
@@ -142,9 +143,7 @@ export const PowerTimer = ({
         <div className="flex items-center gap-2 text-white/80">
           <Clock
             size={16}
-            className={cn(
-              powerCombo > 1 ? "text-yellow-400" : "text-[#FFB938]"
-            )}
+            className={styles.text}
           />
           <span className="text-[10px]">FP decrease in:</span>
         </div>
@@ -158,59 +157,42 @@ export const PowerTimer = ({
             repeat: Infinity,
           }}
         >
-          <TimeUnit
-            value={Math.max(
+          {/* Calculate remaining time once */}
+          {(() => {
+            const remainingMs = Math.max(
               0,
-              Math.floor(
-                (COMBO_WINDOW - (timerNow - lastTimerReset.getTime())) /
-                  (1000 * 60)
-              )
-            )}
-            powerCombo={powerCombo}
-          />
-          <span
-            className={cn(
-              "flex items-center",
-              powerCombo > 1 ? "text-yellow-400" : "text-[#FFB938]"
-            )}
-          >
-            :
-          </span>
-          <TimeUnit
-            value={Math.max(
-              0,
-              Math.floor(
-                ((COMBO_WINDOW - (timerNow - lastTimerReset.getTime())) %
-                  (1000 * 60)) /
-                  1000
-              )
-            )}
-            powerCombo={powerCombo}
-          />
-          <span
-            className={cn(
-              "flex items-center",
-              powerCombo > 1 ? "text-yellow-400" : "text-[#FFB938]"
-            )}
-          >
-            :
-          </span>
-          <TimeUnit
-            value={Math.max(
-              0,
-              Math.floor(
-                ((COMBO_WINDOW - (timerNow - lastTimerReset.getTime())) %
-                  1000) /
-                  10
-              )
-            )}
-            powerCombo={powerCombo}
-          />
+              COMBO_WINDOW - (timerNow - lastTimerReset.getTime())
+            );
+            const minutes = Math.floor(remainingMs / (1000 * 60));
+            const seconds = Math.floor((remainingMs % (1000 * 60)) / 1000);
+            const centiseconds = Math.floor((remainingMs % 1000) / 10);
+
+            const colonClass = cn("flex items-center", styles.text);
+
+            return (
+              <>
+                <TimeUnit
+                  value={minutes}
+                  powerCombo={powerCombo}
+                />
+                <span className={colonClass}>:</span>
+                <TimeUnit
+                  value={seconds}
+                  powerCombo={powerCombo}
+                />
+                <span className={colonClass}>:</span>
+                <TimeUnit
+                  value={centiseconds}
+                  powerCombo={powerCombo}
+                />
+              </>
+            );
+          })()}
         </motion.div>
 
         {powerCombo > 1 && (
           <motion.div
-            className="w-full text-center text-yellow-400 text-sm font-semibold"
+            className={`w-full text-center text-sm font-semibold ${styles.text}`}
             animate={{ scale: [1, 1.05, 1] }}
             transition={{ duration: 1.5, repeat: Infinity }}
           >
@@ -233,18 +215,20 @@ const TimeUnit = ({
 }: {
   value: number;
   powerCombo: number;
-}) => (
-  <div
-    className={cn(
-      "px-2 py-1 rounded-md text-xs w-full flex items-center justify-center",
-      powerCombo > 1
-        ? "bg-[#5C4121]/80 border border-yellow-400/20"
-        : "bg-[#5C4121]"
-    )}
-  >
-    {value.toString().padStart(2, "0")}
-  </div>
-);
+}) => {
+  const styles = usePowerComboStyles(powerCombo);
+
+  return (
+    <div
+      className={cn(
+        "px-2 py-1 rounded-md text-xs w-full flex items-center justify-center",
+        styles.timeUnit
+      )}
+    >
+      {value.toString().padStart(2, "0")}
+    </div>
+  );
+};
 
 const BurningFuse = ({
   lastTimerReset,
@@ -257,6 +241,7 @@ const BurningFuse = ({
   const timeElapsed = Date.now() - lastTimerReset.getTime();
   const remainingTime = Math.max(0, COMBO_WINDOW - timeElapsed);
   const remainingPercentage = (remainingTime / COMBO_WINDOW) * 98;
+  const isExpired = remainingTime <= 0;
 
   return (
     <div className="relative">
@@ -311,7 +296,7 @@ const BurningFuse = ({
         </motion.div>
       </div>
 
-      {COMBO_WINDOW - (Date.now() - lastTimerReset.getTime()) <= 0 && (
+      {isExpired && (
         <motion.div
           className="absolute inset-0 bg-yellow-400"
           initial={{ opacity: 0 }}

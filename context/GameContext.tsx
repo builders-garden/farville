@@ -156,8 +156,21 @@ interface GameContextType {
     pointsToAdd: number;
     stage: number;
     combo: number;
+    lastDonation?: Date;
   }) => void;
   makeAllGridCellsHarvestable: () => void;
+  refetch: {
+    all: () => Promise<void>;
+    userItems: () => Promise<void>;
+    items: () => Promise<void>;
+    user: () => Promise<void>;
+    grid: () => Promise<void>;
+    claimableQuests: () => Promise<void>;
+    streaks: () => Promise<void>;
+    frosts: () => Promise<void>;
+    userModes: () => Promise<void>;
+    communityDonations: () => Promise<void>;
+  };
 }
 
 export const GameContext = createContext<GameContextType | null>(null);
@@ -614,6 +627,7 @@ export function GameProvider({
         setShowNotActiveMode,
         updateUserCommunityBoosterStatus,
         makeAllGridCellsHarvestable,
+        refetch,
       }}
     >
       {children}

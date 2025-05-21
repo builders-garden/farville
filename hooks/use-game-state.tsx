@@ -1,5 +1,5 @@
 import { useUserItems, UserItem } from "./use-user-items";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useGridCells } from "./use-grid-cells";
 import { useItems } from "./use-items";
 import { getCurrentDayStreak, getCurrentLevelAndProgress } from "@/lib/utils";
@@ -11,7 +11,11 @@ import { useUserHarvestedCrops } from "./use-user-harvested-crops";
 import { useWeeklyStats } from "./use-weekly-stats";
 import { useUserCollectibles } from "./use-user-collectibles";
 import { CROP_DATA } from "../lib/game-constants";
-import { UserHasQuestWithQuest, UserWithStatistic } from "@/lib/prisma/types";
+import {
+  UserHasQuestWithQuest,
+  UserWithStatistic,
+  UserCommunityDonationEnhanced,
+} from "@/lib/prisma/types";
 import {
   Collectible,
   UserGridCell,
@@ -24,6 +28,7 @@ import { Mode } from "@/lib/types/game";
 import { useUserModes } from "./use-user-modes";
 import { useUserGlobalStats } from "./use-user-global-stats";
 import { useCommunityBoosterStatus } from "./use-community-booster";
+import { useCommunityDonation } from "./use-community-donation";
 
 export interface RefetchType {
   all: () => Promise<void>;
@@ -35,6 +40,7 @@ export interface RefetchType {
   streaks: () => Promise<void>;
   frosts: () => Promise<void>;
   userModes: () => Promise<void>;
+  communityDonations: () => Promise<void>;
 }
 
 export interface AllQuests {
@@ -89,6 +95,7 @@ export interface GameState {
     mode: Mode;
     lastDonation: Date;
   } | null;
+  communityDonations: UserCommunityDonationEnhanced[];
 }
 
 export const useGameState = (mode: Mode) => {
@@ -134,6 +141,7 @@ export const useGameState = (mode: Mode) => {
     showMarketplaceTutorial: false,
     userModes: [],
     communityBoosterStatus: null,
+    communityDonations: [],
   });
   const {
     userItems,
@@ -186,6 +194,12 @@ export const useGameState = (mode: Mode) => {
   } = useWeeklyStats(mode, state?.user?.fid);
 
   const {
+    data: communityDonations,
+    isLoading: isLoadingCommunityDonations,
+    refetch: refetchCommunityDonations,
+  } = useCommunityDonation(mode);
+
+  const {
     userCollectibles,
     isLoading: userCollectiblesLoading,
     refetch: refetchUserCollectibles,
@@ -235,8 +249,32 @@ export const useGameState = (mode: Mode) => {
     }
   }, [userItems]);
 
+  const updateCommunityDonationsState = useCallback(() => {
+    if (communityDonations) {
+      setState((prevState) => ({
+        ...prevState!,
+        communityDonations: communityDonations,
+      }));
+    }
+  }, [communityDonations]);
+
+  // Track manual updates to prevent automatic overwriting
+  const lastManualUpdateRef = useRef<number>(0);
+
   const updateUserCommunityBoosterStatusState = useCallback(() => {
     if (userCommunityBoosterStatus) {
+      // If we've had a manual update recently (within 2 seconds), don't overwrite it
+      if (Date.now() - lastManualUpdateRef.current < 2000) {
+        console.log("Skipping automatic update due to recent manual update");
+        return;
+      }
+
+      // Get the last donation date either from communityDonations or from the booster status
+      const lastDonationDate =
+        communityDonations && communityDonations.length > 0
+          ? new Date(communityDonations[0].createdAt)
+          : userCommunityBoosterStatus.donation.createdAt;
+      console.log("Auto updating community booster status", lastDonationDate);
       setState((prevState) => ({
         ...prevState!,
         communityBoosterStatus: {
@@ -244,11 +282,11 @@ export const useGameState = (mode: Mode) => {
           points: userCommunityBoosterStatus.points,
           combo: userCommunityBoosterStatus.combo,
           mode: userCommunityBoosterStatus.mode as Mode,
-          lastDonation: userCommunityBoosterStatus.donation.createdAt,
+          lastDonation: lastDonationDate,
         },
       }));
     }
-  }, [userCommunityBoosterStatus]);
+  }, [userCommunityBoosterStatus, communityDonations]);
 
   const updateGridState = useCallback(() => {
     if (gridCells) {
@@ -368,6 +406,16 @@ export const useGameState = (mode: Mode) => {
   }, [gridCells, updateGridState]);
 
   useEffect(() => {
+    updateCommunityDonationsState();
+  }, [communityDonations, updateCommunityDonationsState]);
+
+  useEffect(() => {
+    // Don't run this effect if we've had a manual update recently
+    if (Date.now() - lastManualUpdateRef.current < 2000) {
+      console.log("Skipping useEffect due to recent manual update");
+      return;
+    }
+    console.log("Running updateUserCommunityBoosterStatusState from useEffect");
     updateUserCommunityBoosterStatusState();
   }, [userCommunityBoosterStatus, updateUserCommunityBoosterStatusState]);
 
@@ -398,7 +446,7 @@ export const useGameState = (mode: Mode) => {
         updateUserFrosts({});
       }
     }
-  }, [userStreaks, updateStreaksState]);
+  }, [userStreaks, updateStreaksState, updateUserFrosts]);
 
   useEffect(() => {
     if (userStreaks && userStreaks[0]) {
@@ -421,7 +469,7 @@ export const useGameState = (mode: Mode) => {
         }));
       }
     }
-  }, [userStreaks, state.frosts.lastStreakDates]);
+  }, [userStreaks, state.frosts.lastStreakDates, updateUserFrosts]);
 
   useEffect(() => {
     updateUserFrostsState();
@@ -497,20 +545,7 @@ export const useGameState = (mode: Mode) => {
     }
   }, [state.user, userGlobalStats]);
 
-  useEffect(() => {
-    if (userCommunityBoosterStatus) {
-      setState((prevState) => ({
-        ...prevState!,
-        communityBoosterStatus: {
-          mode: userCommunityBoosterStatus.mode as Mode,
-          stage: userCommunityBoosterStatus.stage,
-          lastDonation: userCommunityBoosterStatus.donation.createdAt,
-          points: userCommunityBoosterStatus.points,
-          combo: userCommunityBoosterStatus.combo,
-        },
-      }));
-    }
-  }, [userCommunityBoosterStatus]);
+  // Removed duplicate effect for userCommunityBoosterStatus - using only updateUserCommunityBoosterStatusState
 
   const refetchAll = useCallback(async () => {
     await Promise.all([
@@ -525,6 +560,7 @@ export const useGameState = (mode: Mode) => {
       refetchUserCollectibles(),
       refetchUserModes(),
       refetchUserCommunityBoosterStatus(),
+      refetchCommunityDonations(),
     ]);
   }, [
     refetchUserItems,
@@ -538,6 +574,7 @@ export const useGameState = (mode: Mode) => {
     refetchUserCollectibles,
     refetchUserModes,
     refetchUserCommunityBoosterStatus,
+    refetchCommunityDonations,
   ]);
 
   useEffect(() => {
@@ -762,13 +799,22 @@ export const useGameState = (mode: Mode) => {
   );
 
   const updateUserCommunityBoosterStatus = useCallback(
-    (statusParams: { pointsToAdd: number; stage: number; combo: number }) => {
+    (statusParams: {
+      pointsToAdd: number;
+      stage: number;
+      combo: number;
+      lastDonation?: Date;
+    }) => {
       console.log(
         "Updating user community booster status:",
         statusParams.pointsToAdd,
         statusParams.stage,
         statusParams.combo
       );
+
+      // Mark this as a manual update
+      lastManualUpdateRef.current = Date.now();
+
       setState((prevState) => {
         if (!prevState) return prevState;
 
@@ -778,7 +824,7 @@ export const useGameState = (mode: Mode) => {
         console.log("new status:", {
           mode: currentStatus.mode,
           stage: statusParams.stage,
-          lastDonation: currentStatus.lastDonation,
+          lastDonation: statusParams.lastDonation ?? currentStatus.lastDonation,
           points: currentStatus.points + statusParams.pointsToAdd,
           combo: statusParams.combo,
         });
@@ -788,12 +834,16 @@ export const useGameState = (mode: Mode) => {
           communityBoosterStatus: {
             mode: currentStatus.mode,
             stage: statusParams.stage,
-            lastDonation: currentStatus.lastDonation,
+            lastDonation:
+              statusParams.lastDonation ?? currentStatus.lastDonation,
             points: currentStatus.points + statusParams.pointsToAdd,
             combo: statusParams.combo,
           },
         };
       });
+
+      // Log that we've completed the manual update
+      console.log("Manual update of community booster status complete");
     },
     []
   );
@@ -812,7 +862,8 @@ export const useGameState = (mode: Mode) => {
       weeklyStatsLoading ||
       userCollectiblesLoading ||
       isLoadingUserModes ||
-      isLoadingUserCommunityBoosterStatus,
+      isLoadingUserCommunityBoosterStatus ||
+      isLoadingCommunityDonations,
     refetch: {
       all: refetchAll,
       userItems: async () => {
@@ -841,6 +892,9 @@ export const useGameState = (mode: Mode) => {
       },
       userModes: async () => {
         await refetchUserModes();
+      },
+      communityDonations: async () => {
+        await refetchCommunityDonations();
       },
     } as RefetchType,
     updateGridCells,

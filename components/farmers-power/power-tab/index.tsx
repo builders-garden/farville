@@ -17,7 +17,6 @@ import {
   DECAY_INTERVAL,
   POWER_STAGES,
 } from "@/lib/game-constants";
-import { useCommunityDonation } from "@/hooks/use-community-donation";
 
 export const PowerTab = () => {
   const { state, mode } = useGame();
@@ -31,6 +30,7 @@ export const PowerTab = () => {
 
   // Effect to update currentFP when communityBoosterStatus changes
   useEffect(() => {
+    console.log("UPDATING FP", state.communityBoosterStatus?.points);
     if (state.communityBoosterStatus?.points !== undefined) {
       setCurrentFP(state.communityBoosterStatus.points);
     }
@@ -44,24 +44,33 @@ export const PowerTab = () => {
     state.communityBoosterStatus?.combo || 0
   );
 
-  const { data: lastContributions } = useCommunityDonation(mode, true);
+  // Use communityDonations from GameState instead of direct API call
+  const lastContributions = state.communityDonations;
 
   const [lastDonationTime, setLastDonationTime] = useState<Date | null>(
-    lastContributions?.[0]?.createdAt
-      ? new Date(lastContributions[0].createdAt)
-      : null
+    state.communityBoosterStatus?.lastDonation || null
   );
 
   useEffect(() => {
     if (lastContributions && lastContributions.length > 0) {
       const lastDonation = lastContributions[0];
       setLastDonationTime(new Date(lastDonation.createdAt));
+    } else if (state.communityBoosterStatus?.lastDonation) {
+      // Use lastDonation from communityBoosterStatus as fallback
+      setLastDonationTime(state.communityBoosterStatus.lastDonation);
     }
-  }, [lastContributions]);
+  }, [lastContributions, state.communityBoosterStatus?.lastDonation]);
+
+  useEffect(() => {
+    // Update powerCombo from state when it changes
+    if (state.communityBoosterStatus?.combo !== undefined) {
+      setPowerCombo(state.communityBoosterStatus.combo);
+    }
+  }, [state.communityBoosterStatus?.combo]);
 
   const [lastTimerReset, setLastTimerReset] = useState<Date>(() => {
     if (!lastDonationTime) return new Date(); // Default to now if no donations yet
-
+    console.log("lastDonationTime", lastDonationTime);
     const timeSinceLastDonation = Date.now() - lastDonationTime.getTime();
 
     if (timeSinceLastDonation < COMBO_WINDOW) {
@@ -79,6 +88,7 @@ export const PowerTab = () => {
 
   useEffect(() => {
     if (!lastDonationTime) return;
+    console.log("lastDonationTime", lastDonationTime);
 
     const timeSinceLastDonation = Date.now() - lastDonationTime.getTime();
 
