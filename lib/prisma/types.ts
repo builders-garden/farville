@@ -7,6 +7,7 @@ import {
   Item,
   UserHasVoucher,
   Voucher,
+  UserCommunityDonation,
 } from "@prisma/client";
 import { Mode } from "../types/game";
 
@@ -61,4 +62,14 @@ export type VoucherWithItem = Voucher & {
 
 export type UserHasVoucherWithVoucher = UserHasVoucher & {
   voucher: VoucherWithItem;
+};
+
+export type UserCommunityDonationEnhanced = UserCommunityDonation & {
+  user: {
+    username: string;
+    displayName: string | null;
+    avatarUrl: string | null;
+    selectedAvatarUrl: string | null;
+    mintedOG: boolean;
+  };
 };

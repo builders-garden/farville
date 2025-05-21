@@ -19,6 +19,8 @@ import {
   MAX_COMBO,
   POWER_STAGES,
 } from "@/lib/game-constants";
+import { v4 as uuid } from "uuid";
+import { useCommunityDonation } from "@/hooks/use-community-donation";
 
 export const PowerTab = () => {
   const { state, refetchUserItems, mode } = useGame();
@@ -44,9 +46,61 @@ export const PowerTab = () => {
   const [powerCombo, setPowerCombo] = useState<number>(
     state.communityBoosterStatus?.combo || 0
   );
+
+  const { data: lastContributions } = useCommunityDonation(mode, true);
+
   const [lastDonationTime, setLastDonationTime] = useState<Date | null>(
-    new Date(Date.now() - 9.5 * 60 * 1000)
+    lastContributions?.[0]?.createdAt
+      ? new Date(lastContributions[0].createdAt)
+      : null
   );
+
+  useEffect(() => {
+    if (lastContributions && lastContributions.length > 0) {
+      const lastDonation = lastContributions[0];
+      setLastDonationTime(new Date(lastDonation.createdAt));
+    }
+  }, [lastContributions]);
+
+  const [lastTimerReset, setLastTimerReset] = useState<Date>(() => {
+    if (!lastDonationTime) return new Date(); // Default to now if no donations yet
+
+    const timeSinceLastDonation = Date.now() - lastDonationTime.getTime();
+
+    if (timeSinceLastDonation < COMBO_WINDOW) {
+      // If the last donation was within the combo window, use that as the reset time
+      return lastDonationTime;
+    } else {
+      // Calculate proper reset time using modulo logic
+      const elapsedCycles = Math.floor(timeSinceLastDonation / COMBO_WINDOW);
+      // This returns the start time of the current cycle we're in
+      return new Date(
+        lastDonationTime.getTime() + elapsedCycles * COMBO_WINDOW
+      );
+    }
+  });
+
+  useEffect(() => {
+    if (!lastDonationTime) return;
+
+    const timeSinceLastDonation = Date.now() - lastDonationTime.getTime();
+
+    if (timeSinceLastDonation < COMBO_WINDOW) {
+      // If the last donation was within the combo window, reset timer to that point
+      setLastTimerReset(lastDonationTime);
+    } else {
+      // Calculate proper reset time using modulo logic
+      // This keeps track of where we are within the current cycle
+      const elapsedCycles = Math.floor(timeSinceLastDonation / COMBO_WINDOW);
+      const currentWindowStart = new Date(
+        lastDonationTime.getTime() + elapsedCycles * COMBO_WINDOW
+      );
+      setLastTimerReset(currentWindowStart);
+    }
+  }, [lastDonationTime]);
+
+  // Removed debug console logs
+
   const [showConfetti, setShowConfetti] = useState(false);
   const [showContributeDialog, setShowContributeDialog] = useState(false);
 
@@ -148,7 +202,7 @@ export const PowerTab = () => {
 
       updateFP({
         points: fpToAdd,
-        txHash: "0x1234567890abcdef", // Placeholder for actual transaction hash
+        txHash: uuid(),
         walletAddress: address,
         dollarAmount: dollarAmount,
         message: undefined,
@@ -182,8 +236,9 @@ export const PowerTab = () => {
               lastDonationTime={lastDonationTime}
               COMBO_WINDOW={COMBO_WINDOW}
               setPowerCombo={setPowerCombo}
-              setLastDonationTime={setLastDonationTime}
               setCurrentFP={setCurrentFP}
+              lastTimerReset={lastTimerReset}
+              setLastTimerReset={setLastTimerReset}
             />
           )}
 
@@ -216,7 +271,7 @@ export const PowerTab = () => {
         tokenBalancesIsLoading={tokenBalancesIsLoading}
       />
 
-      <LastContributionTable />
+      <LastContributionTable lastContributions={lastContributions} />
 
       {/* Info Footer */}
       <div className="text-center text-white/60 text-xs mt-4">

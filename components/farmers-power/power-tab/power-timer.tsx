@@ -8,8 +8,9 @@ interface PowerTimerProps {
   lastDonationTime: Date | null;
   COMBO_WINDOW: number;
   setPowerCombo: React.Dispatch<React.SetStateAction<number>>;
-  setLastDonationTime: React.Dispatch<React.SetStateAction<Date | null>>;
   setCurrentFP: React.Dispatch<React.SetStateAction<number>>;
+  lastTimerReset: Date;
+  setLastTimerReset: React.Dispatch<React.SetStateAction<Date>>;
 }
 
 export const PowerTimer = ({
@@ -17,34 +18,97 @@ export const PowerTimer = ({
   lastDonationTime,
   COMBO_WINDOW,
   setPowerCombo,
-  setLastDonationTime,
   setCurrentFP,
+  lastTimerReset,
+  setLastTimerReset,
 }: PowerTimerProps) => {
   const [timerNow, setTimerNow] = useState(Date.now());
 
-  // Effect for rapid timer updates
+  // Effect for updating timer display
   useEffect(() => {
-    const interval = setInterval(() => {
+    const displayInterval = setInterval(() => {
       setTimerNow(Date.now());
+    }, 16); // ~60fps update rate for smooth display
+    return () => clearInterval(displayInterval);
+  }, []);
 
-      // Check if timer reached 0 (10 minutes elapsed)
-      if (lastDonationTime) {
-        const timeElapsed = Date.now() - lastDonationTime.getTime();
-        if (timeElapsed >= COMBO_WINDOW) {
-          // Reset combo and last donation time
-          setPowerCombo(1);
-          setLastDonationTime(new Date());
+  // Separate effect for checking window expiration and handling FP/combo decrease
+  useEffect(() => {
+    // Only set up the interval if we have a valid lastTimerReset
+    if (!lastTimerReset) return;
 
-          // Decrease FP by 1
-          setCurrentFP((prevFP) => Math.max(0, prevFP - 1));
-        }
+    const windowExpiryTime = lastTimerReset.getTime() + COMBO_WINDOW;
+    const timeToNextExpiry = windowExpiryTime - Date.now();
+
+    // If the time already elapsed, handle it immediately
+    if (timeToNextExpiry <= 0) {
+      // Reset combo and decrease FP once
+      if (powerCombo > 1) {
+        setPowerCombo(powerCombo - 1);
       }
-    }, 16); // ~60fps update rate
+      setCurrentFP((prevFP) => Math.max(0, prevFP - 1));
 
-    return () => clearInterval(interval);
-  }, [lastDonationTime]);
+      // Calculate the proper next window using modulo logic
+      const msElapsedSinceLastDonation = lastDonationTime
+        ? Date.now() - lastDonationTime.getTime()
+        : 0;
 
-  if (!lastDonationTime) return null;
+      if (lastDonationTime) {
+        // Calculate how many full COMBO_WINDOWs have passed since last donation
+        const elapsedCycles = Math.floor(
+          msElapsedSinceLastDonation / COMBO_WINDOW
+        );
+        // Calculate the start of the current window (not the next one)
+        const currentWindowStart = new Date(
+          lastDonationTime.getTime() + elapsedCycles * COMBO_WINDOW
+        );
+        setLastTimerReset(currentWindowStart);
+      } else {
+        // If no last donation, just start from now
+        setLastTimerReset(new Date());
+      }
+      return;
+    }
+
+    // Set timeout for the exact moment when the current window expires
+    const timeout = setTimeout(() => {
+      // Reset combo and decrease FP once when the timer expires
+      if (powerCombo > 1) {
+        setPowerCombo(powerCombo - 1);
+      }
+      setCurrentFP((prevFP) => Math.max(0, prevFP - 1));
+
+      // Calculate the proper next window using modulo logic
+      const msElapsedSinceLastDonation = lastDonationTime
+        ? Date.now() - lastDonationTime.getTime()
+        : 0;
+
+      if (lastDonationTime) {
+        // Calculate how many full COMBO_WINDOWs have passed since last donation
+        const elapsedCycles = Math.floor(
+          msElapsedSinceLastDonation / COMBO_WINDOW
+        );
+        // Calculate the start of the current window (not the next one)
+        const currentWindowStart = new Date(
+          lastDonationTime.getTime() + elapsedCycles * COMBO_WINDOW
+        );
+        setLastTimerReset(currentWindowStart);
+      } else {
+        // If no last donation, just start from now
+        setLastTimerReset(new Date());
+      }
+    }, timeToNextExpiry);
+
+    return () => clearTimeout(timeout);
+  }, [
+    COMBO_WINDOW,
+    lastDonationTime,
+    lastTimerReset,
+    powerCombo,
+    setCurrentFP,
+    setLastTimerReset,
+    setPowerCombo,
+  ]);
 
   return (
     <div
@@ -98,7 +162,7 @@ export const PowerTimer = ({
             value={Math.max(
               0,
               Math.floor(
-                (COMBO_WINDOW - (timerNow - lastDonationTime.getTime())) /
+                (COMBO_WINDOW - (timerNow - lastTimerReset.getTime())) /
                   (1000 * 60)
               )
             )}
@@ -116,7 +180,7 @@ export const PowerTimer = ({
             value={Math.max(
               0,
               Math.floor(
-                ((COMBO_WINDOW - (timerNow - lastDonationTime.getTime())) %
+                ((COMBO_WINDOW - (timerNow - lastTimerReset.getTime())) %
                   (1000 * 60)) /
                   1000
               )
@@ -135,7 +199,7 @@ export const PowerTimer = ({
             value={Math.max(
               0,
               Math.floor(
-                ((COMBO_WINDOW - (timerNow - lastDonationTime.getTime())) %
+                ((COMBO_WINDOW - (timerNow - lastTimerReset.getTime())) %
                   1000) /
                   10
               )
@@ -156,7 +220,7 @@ export const PowerTimer = ({
       </div>
 
       <BurningFuse
-        lastDonationTime={lastDonationTime}
+        lastTimerReset={lastTimerReset}
         COMBO_WINDOW={COMBO_WINDOW}
       />
     </div>
@@ -183,88 +247,87 @@ const TimeUnit = ({
 );
 
 const BurningFuse = ({
-  lastDonationTime,
+  lastTimerReset,
   COMBO_WINDOW,
 }: {
-  lastDonationTime: Date;
+  lastTimerReset: Date;
   COMBO_WINDOW: number;
-}) => (
-  <div className="relative">
-    <div className="h-2 bg-[#2A1E12] rounded-full relative">
-      <motion.div
-        key={lastDonationTime ? lastDonationTime.getTime() : "initial"}
-        className="absolute left-0 top-0 h-full bg-gradient-to-r from-red-500 via-orange-500 to-yellow-500"
-        style={{
-          width: `${Math.max(
-            0,
-            ((COMBO_WINDOW - (Date.now() - lastDonationTime.getTime())) /
-              COMBO_WINDOW) *
-              98
-          )}%`,
-        }}
-        animate={{
-          width: "2%",
-        }}
-        transition={{
-          duration: Math.max(
-            0,
-            (COMBO_WINDOW - (Date.now() - lastDonationTime.getTime())) / 1000
-          ),
-          ease: "linear",
-        }}
-      >
-        <div className="absolute right-[-8px] top-1/2 -translate-y-1/2">
-          <motion.div
-            className="w-4 h-4 rounded-full bg-yellow-300 shadow-lg shadow-yellow-400/80"
-            animate={{
-              scale: [1, 1.2, 1],
-              boxShadow: [
-                "0 0 10px 2px rgba(250, 204, 21, 0.8)",
-                "0 0 15px 4px rgba(250, 204, 21, 0.9)",
-                "0 0 10px 2px rgba(250, 204, 21, 0.8)",
-              ],
-            }}
-            transition={{
-              duration: 0.8,
-              repeat: Infinity,
-              ease: "easeInOut",
-            }}
-          />
-          <SparkParticle
-            delay={0}
-            x={[-2, 8]}
-            y={[-8, 8]}
-          />
-          <SparkParticle
-            delay={0.15}
-            x={[2, 7]}
-            y={[-6, 4]}
-          />
-          <SparkParticle
-            delay={0.3}
-            x={[-3, 5]}
-            y={[-4, 6]}
-          />
-        </div>
-      </motion.div>
-    </div>
+}) => {
+  // Calculate remaining time in the current window
+  const timeElapsed = Date.now() - lastTimerReset.getTime();
+  const remainingTime = Math.max(0, COMBO_WINDOW - timeElapsed);
+  const remainingPercentage = (remainingTime / COMBO_WINDOW) * 98;
 
-    {COMBO_WINDOW - (Date.now() - lastDonationTime.getTime()) <= 0 && (
-      <motion.div
-        className="absolute inset-0 bg-yellow-400"
-        initial={{ opacity: 0 }}
-        animate={{
-          opacity: [0, 0.8, 0],
-          scale: [1, 1.2, 1],
-        }}
-        transition={{
-          duration: 0.5,
-          ease: "easeOut",
-        }}
-      />
-    )}
-  </div>
-);
+  return (
+    <div className="relative">
+      <div className="h-2 bg-[#2A1E12] rounded-full relative">
+        <motion.div
+          key={lastTimerReset ? lastTimerReset.getTime() : "initial"}
+          className="absolute left-0 top-0 h-full bg-gradient-to-r from-red-500 via-orange-500 to-yellow-500"
+          style={{
+            width: `${remainingPercentage}%`,
+          }}
+          animate={{
+            width: "2%",
+          }}
+          transition={{
+            duration: remainingTime / 1000,
+            ease: "linear",
+          }}
+        >
+          <div className="absolute right-[-8px] top-1/2 -translate-y-1/2">
+            <motion.div
+              className="w-4 h-4 rounded-full bg-yellow-300 shadow-lg shadow-yellow-400/80"
+              animate={{
+                scale: [1, 1.2, 1],
+                boxShadow: [
+                  "0 0 10px 2px rgba(250, 204, 21, 0.8)",
+                  "0 0 15px 4px rgba(250, 204, 21, 0.9)",
+                  "0 0 10px 2px rgba(250, 204, 21, 0.8)",
+                ],
+              }}
+              transition={{
+                duration: 0.8,
+                repeat: Infinity,
+                ease: "easeInOut",
+              }}
+            />
+            <SparkParticle
+              delay={0}
+              x={[-2, 8]}
+              y={[-8, 8]}
+            />
+            <SparkParticle
+              delay={0.15}
+              x={[2, 7]}
+              y={[-6, 4]}
+            />
+            <SparkParticle
+              delay={0.3}
+              x={[-3, 5]}
+              y={[-4, 6]}
+            />
+          </div>
+        </motion.div>
+      </div>
+
+      {COMBO_WINDOW - (Date.now() - lastTimerReset.getTime()) <= 0 && (
+        <motion.div
+          className="absolute inset-0 bg-yellow-400"
+          initial={{ opacity: 0 }}
+          animate={{
+            opacity: [0, 0.8, 0],
+            scale: [1, 1.2, 1],
+          }}
+          transition={{
+            duration: 0.5,
+            ease: "easeOut",
+          }}
+        />
+      )}
+    </div>
+  );
+};
 
 const SparkParticle = ({
   delay,

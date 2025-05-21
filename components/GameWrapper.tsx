@@ -256,9 +256,19 @@ export default function GameWrapper() {
       });
     });
 
+    socket.on("new-decrement", (data) => {
+      console.log(`${JSON.stringify(data)}`);
+      updateUserCommunityBoosterStatus({
+        pointsToAdd: 0, // TODO: WE ALREADY SHOW THIS THROGH THE TIMER - TO BE CHECKED
+        stage: data.stage,
+        combo: data.combo,
+      });
+    });
+
     return () => {
       socket.off("new-donation");
       socket.off("harvest-all");
+      socket.off("new-decrement");
     };
   }, [socket]);
 
@@ -315,7 +325,10 @@ export default function GameWrapper() {
 
       {activeOverlay?.type === "requests" ? (
         <AnimatePresence>
-          <RequestModal onClose={handleOverlayComplete} id={activeOverlay.id} />
+          <RequestModal
+            onClose={handleOverlayComplete}
+            id={activeOverlay.id}
+          />
         </AnimatePresence>
       ) : activeOverlay?.type === "voucher" ? (
         <AnimatePresence>
@@ -339,7 +352,10 @@ export default function GameWrapper() {
           className="flex flex-col h-[100dvh] w-full overflow-hidden"
         >
           <Header />
-          <div className="flex-1 relative min-h-0" id="game-grid">
+          <div
+            className="flex-1 relative min-h-0"
+            id="game-grid"
+          >
             <GameGrid />
           </div>
           <Toolbar safeAreaInsets={safeAreaInsets} />

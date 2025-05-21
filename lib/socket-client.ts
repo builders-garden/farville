@@ -22,6 +22,7 @@ export type ServerToClientEvents = {
     lastDonation: UserCommunityDonation;
     combo: number;
   }) => void;
+  "new-decrement": (data: { stage: number; combo: number }) => void;
 };
 
 export type ClientToServerEvents = {

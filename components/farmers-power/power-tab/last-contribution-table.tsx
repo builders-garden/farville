@@ -1,5 +1,3 @@
-import { useGame } from "@/context/GameContext";
-
 import {
   Table,
   TableBody,
@@ -8,14 +6,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useCommunityDonation } from "@/hooks/use-community-donation";
 import { LeaderboardUserAvatar } from "@/components/leaderboard/LeaderboardUserAvatar";
+import { UserCommunityDonationEnhanced } from "@/lib/prisma/types";
 
-export const LastContributionTable = () => {
-  const { mode } = useGame();
-
-  const { data: lastContributions } = useCommunityDonation(mode, true);
-
+export const LastContributionTable: React.FC<{
+  lastContributions: UserCommunityDonationEnhanced[] | undefined;
+}> = ({ lastContributions }) => {
   return (
     <div className="w-full bg-[#5C4121]/50 rounded-xl p-4 border border-yellow-400/20">
       <h3 className="text-white/90 text-md font-bold mb-4">
