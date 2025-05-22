@@ -1,7 +1,6 @@
 import { CROP_DATA, SPEED_BOOST } from "@/lib/game-constants";
 import {
   getCropNameFromSeeds,
-  getGrowthTime,
   sendDelayedNotification,
 } from "@/lib/game-notifications";
 import { sendBatchToPostHog } from "@/lib/posthog/server";
@@ -21,6 +20,7 @@ import {
   calculateGoldCropsInBatch,
   getAchievementProgressByCrop,
   getBoostTime,
+  getGrowthTime,
   getGrowthTimeBasedOnMode,
   isBoostable,
 } from "@/lib/utils";

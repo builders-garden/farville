@@ -11,7 +11,13 @@ import {
   SPEED_BOOST,
   WEEKLY_QUESTS_NUMBER,
 } from "./game-constants";
-import { CropType, Mode, PerkType, QuestType } from "@/lib/types/game";
+import {
+  CropType,
+  Mode,
+  PerkType,
+  QuestType,
+  SeedType,
+} from "@/lib/types/game";
 import { fetchUsersFollowedBy } from "./neynar";
 import {
   getModePartialLeaderboardFromFids,
@@ -634,6 +640,43 @@ export const getGrowthTimeBasedOnMode = (crop: CropType, mode: Mode) => {
   return Math.floor(baseGrowthTime / MODE_DEFINITIONS[mode].growthTimeDivisor);
 };
 
+export const getGrowthTimeBasedOnMultiplier = (
+  crop: CropType,
+  multiplier: number,
+  formatted: boolean = false
+) => {
+  const baseGrowthTime = CROP_DATA[crop].growthTime;
+  const multipliedTime = Math.floor(baseGrowthTime / multiplier);
+  return formatted
+    ? formatMillisecondsToTimeUnit(multipliedTime)
+    : multipliedTime;
+};
+
+function formatMillisecondsToTimeUnit(
+  ms: number
+): `${bigint}s` | `${bigint}m` | `${bigint}h` | `${bigint}d` {
+  const seconds = ms / 1000;
+  const minutes = seconds / 60;
+  const hours = minutes / 60;
+  const days = hours / 24;
+
+  if (days >= 1) return `${BigInt(Math.floor(days))}d`;
+  if (hours >= 1) return `${BigInt(Math.floor(hours))}h`;
+  if (minutes >= 1) return `${BigInt(Math.floor(minutes))}m`;
+  return `${BigInt(Math.floor(seconds))}s`;
+}
+
+export function getGrowthTime(
+  seedType: SeedType
+): `${bigint}s` | `${bigint}m` | `${bigint}h` | `${bigint}d` {
+  const cropType = seedType.replace("-seeds", "");
+  const cropData = CROP_DATA[cropType];
+  if (!cropData) {
+    throw new Error(`Unknown seed type: ${seedType}`);
+  }
+  return formatMillisecondsToTimeUnit(cropData.growthTime);
+}
+
 export const initQuestsAndLeaderboardEntryByMode = async (
   fid: number,
   mode: Mode
@@ -738,4 +781,12 @@ export const getCurrentPowerStage = (fp: number) => {
     POWER_STAGES.findIndex((stage) => stage.fpRequired > fp) ||
     POWER_STAGES.length
   );
+};
+
+export const getCurrentPowerStateTarget = (fp: number) => {
+  const currentPowerStage = getCurrentPowerStage(fp);
+  return {
+    previous: POWER_STAGES[currentPowerStage - 1]?.fpRequired,
+    target: POWER_STAGES[currentPowerStage]?.fpRequired,
+  };
 };
