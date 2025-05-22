@@ -14,6 +14,8 @@ export async function getFarcasterManifest() {
     frameName += " NGROK";
   } else if (appUrl.includes("dev.farville.farm")) {
     frameName += " Dev";
+  } else if (appUrl.includes("coolify")) {
+    frameName += " Coolify";
   }
   return {
     accountAssociation: {
