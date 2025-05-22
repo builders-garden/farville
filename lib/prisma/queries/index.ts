@@ -18,5 +18,8 @@ export * from "./user-harvested-crop";
 export * from "./request";
 export * from "./voucher";
 export * from "./user-has-voucher";
+export * from "./user-community-donation";
+export * from "./user-community-booster-history";
+export * from "./community-booster-points";
 
 export * from "./game";

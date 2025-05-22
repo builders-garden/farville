@@ -1,12 +1,12 @@
 import { CROP_DATA, SPEED_BOOST } from "@/lib/game-constants";
 import {
   getCropNameFromSeeds,
-  getGrowthTime,
   sendDelayedNotification,
 } from "@/lib/game-notifications";
 import { sendBatchToPostHog } from "@/lib/posthog/server";
 import {
   addUserItem,
+  getCurrentCommunityBooster,
   getUserGridCells,
   getUserHarvestedCrops,
   getUserItemBySlug,
@@ -20,6 +20,7 @@ import {
   calculateGoldCropsInBatch,
   getAchievementProgressByCrop,
   getBoostTime,
+  getGrowthTime,
   getGrowthTimeBasedOnMode,
   isBoostable,
 } from "@/lib/utils";
@@ -92,6 +93,11 @@ export const plantBulk = async (
     }
   }
   const cropType = seedType.replace("-seeds", "") as CropType;
+
+  // get current community boost
+  const currentCommunityBoost = await getCurrentCommunityBooster(mode);
+  const currentCommunityBoostMultiplier = currentCommunityBoost?.stage ?? 1;
+
   const updatedGridCellsBulk = await updateGridCellsBulk(
     fid,
     plantableCells.map((cell) => ({
@@ -100,7 +106,9 @@ export const plantBulk = async (
       cropType,
       plantedAt: new Date(),
       harvestAt: new Date(
-        Date.now() + getGrowthTimeBasedOnMode(cropType, mode)
+        Date.now() +
+          getGrowthTimeBasedOnMode(cropType, mode) /
+            currentCommunityBoostMultiplier
       ),
     }))
   );

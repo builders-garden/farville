@@ -1065,3 +1065,34 @@ export const CREATOR_FIDS = [4461, 5698, 262800];
 
 export const DAILY_QUESTS_NUMBER = 3;
 export const WEEKLY_QUESTS_NUMBER = 3;
+
+export const POWER_STAGES = [
+  { stage: 1, fpRequired: 0, boost: 1 },
+  { stage: 2, fpRequired: 50, boost: 2 },
+  { stage: 3, fpRequired: 150, boost: 3 },
+  { stage: 4, fpRequired: 300, boost: 4 },
+  { stage: 5, fpRequired: 500, boost: 5 },
+  { stage: 6, fpRequired: 800, boost: 6 },
+  { stage: 7, fpRequired: 1200, boost: 7 },
+  { stage: 8, fpRequired: 1700, boost: 8 },
+  { stage: 9, fpRequired: 2300, boost: 9 },
+  { stage: 10, fpRequired: 3050, boost: 10 },
+  { stage: 11, fpRequired: 3950, boost: 11 },
+  { stage: 12, fpRequired: 5050, boost: 12 },
+  { stage: 13, fpRequired: 6350, boost: 13 },
+  { stage: 14, fpRequired: 7850, boost: 14 },
+  { stage: 15, fpRequired: 9550, boost: 15 },
+  { stage: 16, fpRequired: 11550, boost: 16 },
+  { stage: 17, fpRequired: 13850, boost: 17 },
+  { stage: 18, fpRequired: 16450, boost: 18 },
+  { stage: 19, fpRequired: 19350, boost: 19 },
+  { stage: 20, fpRequired: 22550, boost: 20 },
+  { stage: 21, fpRequired: 26050, boost: 21 },
+  { stage: 22, fpRequired: 29850, boost: 22 },
+  { stage: 23, fpRequired: 33950, boost: 23 },
+  { stage: 24, fpRequired: 38350, boost: 24 },
+];
+
+export const MAX_COMBO = 10;
+export const COMBO_WINDOW = 10 * 60 * 1000; // 10 minutes in milliseconds
+export const DECAY_INTERVAL = 600; // 600 minutes (10 hours) for power stage decay

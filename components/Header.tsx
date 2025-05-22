@@ -14,7 +14,6 @@ import { Button } from "./ui/button";
 import { Mode } from "@/lib/types/game";
 import { AnimatedCircularProgressBar } from "./ui/animated-circular-progress-bar";
 import { MODE_DEFINITIONS } from "@/lib/modes/constants";
-// import { OG_FIDS_LIST } from "@/lib/contracts/constants";
 
 export default function Header() {
   const {
@@ -24,11 +23,9 @@ export default function Header() {
     setShowTimeline,
     setShowStreaks,
     setShowNotActiveMode,
-    // setShowMintOGBadge
+    setShowFarmersPower,
   } = useGame();
   const { progress } = getCurrentLevelAndProgress(state.experience);
-
-  // const showOgButton = OG_FIDS_LIST.indexOf(state.user.fid) !== -1;
 
   const availableUserModes = Object.values(Mode).filter((modeValue) =>
     modeAvailableForUser(modeValue, state.user.fid)
@@ -63,63 +60,30 @@ export default function Header() {
                 />
               </div>
             </AnimatedCircularProgressBar>
-            {/* <span className="text-white/70 text-[8px]">
-                (
-                {(state.experience >= 1000000
-                  ? (state.experience / 1000000).toFixed(1) + "M"
-                  : state.experience >= 1000
-                  ? (state.experience / 1000).toFixed(1) + "K"
-                  : state.experience.toString()
-                ).replace(/\.0([KM])$/, "$1")}
-                /
-                {((threshold) =>
-                  threshold >= 1000000
-                    ? (threshold / 1000000).toFixed(1) + "M"
-                    : threshold >= 1000
-                    ? (threshold / 1000).toFixed(1) + "K"
-                    : threshold)(
-                  LEVEL_XP_THRESHOLDS[
-                    Math.min(
-                      LEVEL_XP_THRESHOLDS.findIndex(
-                        (threshold) => state.experience < threshold
-                      ),
-                      LEVEL_XP_THRESHOLDS.length - 1
-                    )
-                  ] || LEVEL_XP_THRESHOLDS[LEVEL_XP_THRESHOLDS.length - 1]
-                )
-                  .toString()
-                  .replace(/\.0([KM])$/, "$1")}
-                <span className="ml-0.5 text-[8px]">XP</span>)
-              </span> */}
-            {/* <div className="mt-1.5 h-1.5 w-full bg-[#5d3c1c] rounded-full overflow-hidden">
-              <motion.div
-                className="h-full bg-[#FFB938]"
-                initial={{ width: 0 }}
-                animate={{ width: `${progress}%` }}
-                transition={{ duration: 0.5 }}
-              />
-              {state.level}
-            </div> */}
           </div>
         </div>
 
-        {/* {showOgButton && (
-          <div className="flex flex-col items-center w-[48px]">
-            <motion.button
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => {
-                setShowMintOGBadge(true);
-              }}
-              className={`py-[9px] px-[6px] bg-[#FFB938] text-[#5d3c1c] rounded-full flex items-center justify-center transition-colors relative shadow-lg shadow-[#A17449]/50 animate-pulse`}
-            >
-              <span className="text-xs">OG</span>
-            </motion.button>
-          </div>
-        )} */}
-
         {/* Currency elements container - column on mobile, row on desktop */}
         <div className="flex flex-col xs:flex-row xs:items-center xs:gap-4 items-end">
+          {/* FarmersPower */}
+          <motion.div
+            className="flex flex-row gap-1 items-center cursor-pointer"
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            onClick={() => setShowFarmersPower(true)}
+          >
+            <Image
+              src="/images/special/farmers-power.png" // You'll need to add this icon
+              alt="FarmersPower"
+              width={22}
+              height={22}
+              className="mt-[-2px] cursor-pointer"
+            />
+            <span className="text-white/90 font-bold text-md">
+              x{state.communityBoosterStatus?.stage ?? 1}
+            </span>
+          </motion.div>
+
           {/* streak counter button */}
           <motion.div
             className={`h-auto xs:h-[42px] flex flex-row gap-1 items-center text-white/90 tracking-wide font-bold cursor-pointer relative
