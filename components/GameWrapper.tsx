@@ -249,7 +249,7 @@ export default function GameWrapper() {
     socket.on("harvest-all", (data) => {
       console.log(`${JSON.stringify(data)}`);
       updateUserCommunityBoosterStatus({
-        pointsToAdd: data.currentPoints,
+        pointsToAdd: 0, // We already add the points on "new-donation"
         stage: data.newStage,
         combo: data.combo,
       });
