@@ -27,7 +27,7 @@ export const useCommunityBoosterIncrement = () => {
     {
       message: string;
       data: {
-        points: number;
+        donationId: string;
       };
     },
     {
@@ -47,6 +47,7 @@ export const useCommunityBoosterIncrement = () => {
     }),
     onSuccess: (data) => {
       console.log("Points successfully updated:", data);
+      return data.data;
     },
     onError: (error) => {
       console.error("Error updating points:", error);

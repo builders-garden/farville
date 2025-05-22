@@ -14,7 +14,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { X, Loader2 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, communityContributionFlexCardComposeCastUrl } from "@/lib/utils";
 import { DaimoPayButton } from "@daimo/pay";
 import { base } from "viem/chains";
 import {
@@ -25,12 +25,12 @@ import {
 import { PaymentCompletedEvent } from "@daimo/common";
 import { env } from "@/lib/env";
 import sdk from "@farcaster/frame-sdk";
+import { useGame } from "@/context/GameContext";
 
 interface PowerContributionProps {
   showDialog: boolean;
   onClose: () => void;
   powerCombo: number;
-  currentStageInfo: { boost: number };
   hasEnoughEthBalance: boolean;
   hasEnoughUSDBalance: boolean;
   walletBalance?: number;
@@ -38,13 +38,13 @@ interface PowerContributionProps {
   onContributionSuccess: (paymentId: string) => void;
   address: `0x${string}` | undefined;
   tokenBalancesIsLoading: boolean;
+  returnedDonationId: string | null;
 }
 
 export const PowerContribution = ({
   showDialog,
   onClose,
   powerCombo,
-  currentStageInfo,
   hasEnoughEthBalance,
   hasEnoughUSDBalance,
   walletBalance = 0,
@@ -52,6 +52,7 @@ export const PowerContribution = ({
   onContributionSuccess,
   address,
   tokenBalancesIsLoading,
+  returnedDonationId,
 }: PowerContributionProps) => {
   const [contributionAmount, setContributionAmount] = useState(1);
   const [showCustomSlider, setShowCustomSlider] = useState(false);
@@ -60,6 +61,7 @@ export const PowerContribution = ({
   const [errorMessage, setErrorMessage] = useState("");
   const [finalTxHash, setFinalTxHash] = useState("");
   const [paymentHandled, setPaymentHandled] = useState(false);
+  const { state, mode } = useGame();
 
   const resetState = () => {
     setContributionAmount(1);
@@ -74,6 +76,11 @@ export const PowerContribution = ({
   useEffect(() => {
     if (showDialog) {
       resetState();
+      if (walletBalance < 1) {
+        setErrorMessage(
+          "You need at least $1 in your wallet to contribute. Please add funds."
+        );
+      }
     }
   }, [showDialog]);
 
@@ -117,9 +124,16 @@ export const PowerContribution = ({
   };
 
   const handleSharePower = async () => {
-    await sdk.actions.openUrl(
-      `https://warpcast.com/~/compose?text=I just boosted all Farville farmers' growth speed by ${currentStageInfo.boost}x! ⚡%0A%0APlay Farville: https://farville.farm`
+    if (!returnedDonationId) {
+      setErrorMessage("No donation ID available.");
+      return;
+    }
+    const { castUrl } = communityContributionFlexCardComposeCastUrl(
+      state.user.fid,
+      mode,
+      returnedDonationId
     );
+    await sdk.actions.openUrl(castUrl);
   };
 
   return (
@@ -238,10 +252,7 @@ export const PowerContribution = ({
                 className="w-full"
                 value={showCustomSlider ? "custom-amount" : ""}
               >
-                <AccordionItem
-                  value="custom-amount"
-                  className="border-0"
-                >
+                <AccordionItem value="custom-amount" className="border-0">
                   <AccordionTrigger className="hidden">
                     Custom Amount
                   </AccordionTrigger>
@@ -275,60 +286,63 @@ export const PowerContribution = ({
 
           {/* Payment Button */}
           {!paymentCompleted ? (
-            // <Button onClick={() => handlePaymentCompleted()}>PORCO...</Button>
-            <DaimoPayButton.Custom
-              appId={env.NEXT_PUBLIC_DAIMO_PAY_ID}
-              metadata={{
-                userId,
-              }}
-              preferredChains={[base.id]}
-              preferredTokens={[{ chain: base.id, address: BASE_USDC_ADDRESS }]}
-              toAddress={BG_MULTISIG_ADDRESS}
-              // toUnits={contributionAmount.toString()}
-              toUnits={"0.000001"}
-              toToken={BASE_USDC_ADDRESS}
-              toChain={base.id}
-              onPaymentStarted={handlePaymentStarted}
-              onPaymentCompleted={handlePaymentCompleted}
-              onPaymentBounced={handlePaymentBounced}
-              closeOnSuccess
-            >
-              {({ show }) => (
-                <Button
-                  variant="default"
-                  className={cn(
-                    "w-full py-3 text-base font-medium",
-                    !hasEnoughEthBalance ||
+            !errorMessage && (
+              <DaimoPayButton.Custom
+                appId={env.NEXT_PUBLIC_DAIMO_PAY_ID}
+                metadata={{
+                  userId,
+                }}
+                preferredChains={[base.id]}
+                preferredTokens={[
+                  { chain: base.id, address: BASE_USDC_ADDRESS },
+                ]}
+                toAddress={BG_MULTISIG_ADDRESS}
+                // toUnits={contributionAmount.toString()}
+                toUnits={"0.000001"}
+                toToken={BASE_USDC_ADDRESS}
+                toChain={base.id}
+                onPaymentStarted={handlePaymentStarted}
+                onPaymentCompleted={handlePaymentCompleted}
+                onPaymentBounced={handlePaymentBounced}
+                closeOnSuccess
+              >
+                {({ show }) => (
+                  <Button
+                    variant="default"
+                    className={cn(
+                      "w-full py-3 text-base font-medium",
+                      !hasEnoughEthBalance ||
+                        !hasEnoughUSDBalance ||
+                        tokenBalancesIsLoading
+                        ? "text-yellow-400/50 cursor-not-allowed bg-yellow-500/10"
+                        : "text-[#5C4121] bg-yellow-500 hover:bg-yellow-500/80 hover:text-[#5C4121]"
+                    )}
+                    onClick={show}
+                    disabled={
+                      !hasEnoughEthBalance ||
                       !hasEnoughUSDBalance ||
+                      paymentStarted ||
+                      paymentCompleted ||
                       tokenBalancesIsLoading
-                      ? "text-yellow-400/50 cursor-not-allowed bg-yellow-500/10"
-                      : "text-[#5C4121] bg-yellow-500 hover:bg-yellow-500/80 hover:text-[#5C4121]"
-                  )}
-                  onClick={show}
-                  disabled={
-                    !hasEnoughEthBalance ||
-                    !hasEnoughUSDBalance ||
-                    paymentStarted ||
-                    paymentCompleted ||
-                    tokenBalancesIsLoading
-                  }
-                >
-                  {tokenBalancesIsLoading ? (
-                    <div className="flex items-center justify-center gap-2">
-                      <Loader2
-                        className="w-4 h-4 animate-spin"
-                        strokeWidth={3}
-                      />
-                      <span>Loading...</span>
-                    </div>
-                  ) : paymentStarted ? (
-                    "Contributing..."
-                  ) : (
-                    "Confirm"
-                  )}
-                </Button>
-              )}
-            </DaimoPayButton.Custom>
+                    }
+                  >
+                    {tokenBalancesIsLoading ? (
+                      <div className="flex items-center justify-center gap-2">
+                        <Loader2
+                          className="w-4 h-4 animate-spin"
+                          strokeWidth={3}
+                        />
+                        <span>Loading...</span>
+                      </div>
+                    ) : paymentStarted ? (
+                      "Contributing..."
+                    ) : (
+                      "Confirm"
+                    )}
+                  </Button>
+                )}
+              </DaimoPayButton.Custom>
+            )
           ) : (
             <div className="flex flex-col items-center gap-1.5 p-3 rounded-lg border border-yellow-400/20">
               <span className="text-yellow-400 font-semibold text-sm text-center">
@@ -352,12 +366,24 @@ export const PowerContribution = ({
 
           {paymentCompleted && finalTxHash && (
             <div className="flex flex-col gap-3">
-              <Button
-                onClick={handleSharePower}
-                className="w-full py-3 text-base font-medium text-[#5C4121] bg-yellow-500 hover:bg-yellow-500/80 hover:text-[#5C4121]"
-              >
-                Share 🎁
-              </Button>
+              {returnedDonationId !== null ? (
+                <Button
+                  onClick={handleSharePower}
+                  className="w-full py-3 text-base font-medium text-[#5C4121] bg-yellow-500 hover:bg-yellow-500/80 hover:text-[#5C4121]"
+                >
+                  Share 🎁
+                </Button>
+              ) : (
+                <Button
+                  className="w-full py-3 text-base font-medium text-yellow-400/50 cursor-not-allowed bg-yellow-500/10"
+                  disabled
+                >
+                  <div className="flex items-center justify-center gap-2">
+                    <Loader2 className="w-4 h-4 animate-spin" strokeWidth={3} />
+                    <span>Processing...</span>
+                  </div>
+                </Button>
+              )}
               <p
                 className="text-white/70 text-sm text-center underline cursor-pointer"
                 onClick={async () => {

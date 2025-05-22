@@ -10,27 +10,34 @@ import { base } from "viem/chains";
 import { useGame } from "@/context/GameContext";
 import { toast } from "react-hot-toast";
 import { PowerTimer } from "./power-timer";
-import { LastContributionTable } from "./last-contribution-table";
+import { ContributionTableSection } from "./contribution-table-section";
 import { useCommunityBoosterIncrement } from "@/hooks/use-community-booster";
 import {
   COMBO_WINDOW,
   DECAY_INTERVAL,
   POWER_STAGES,
 } from "@/lib/game-constants";
+import { useCommunityDonation } from "@/hooks/use-community-donation";
 
 export const PowerTab = () => {
   const { state, mode } = useGame();
   const { address, chainId } = useAccount();
   const { switchChain } = useSwitchChain();
+  const [donationId, setDonationId] = useState<string | null>(null);
 
   // State for power mechanics
   const [currentFP, setCurrentFP] = useState<number>(
     state.communityBoosterStatus?.points || 0
   );
 
+  const { data: userContributions } = useCommunityDonation(
+    mode,
+    true,
+    state.user.fid
+  );
+
   // Effect to update currentFP when communityBoosterStatus changes
   useEffect(() => {
-    console.log("UPDATING FP", state.communityBoosterStatus?.points);
     if (state.communityBoosterStatus?.points !== undefined) {
       setCurrentFP(state.communityBoosterStatus.points);
     }
@@ -70,7 +77,6 @@ export const PowerTab = () => {
 
   const [lastTimerReset, setLastTimerReset] = useState<Date>(() => {
     if (!lastDonationTime) return new Date(); // Default to now if no donations yet
-    console.log("lastDonationTime", lastDonationTime);
     const timeSinceLastDonation = Date.now() - lastDonationTime.getTime();
 
     if (timeSinceLastDonation < COMBO_WINDOW) {
@@ -88,7 +94,6 @@ export const PowerTab = () => {
 
   useEffect(() => {
     if (!lastDonationTime) return;
-    console.log("lastDonationTime", lastDonationTime);
 
     const timeSinceLastDonation = Date.now() - lastDonationTime.getTime();
 
@@ -182,20 +187,21 @@ export const PowerTab = () => {
     !!tokenBalancesData?.totalBalanceUSD &&
     tokenBalancesData.totalBalanceUSD >= 1;
 
-  const { mutate: updateFP } = useCommunityBoosterIncrement();
+  const { mutateAsync: updateFP } = useCommunityBoosterIncrement();
 
-  const handleContributionSuccess = (paymentId: string) => {
+  const handleContributionSuccess = async (paymentId: string) => {
     try {
       if (!address) {
         throw new Error("No address found");
       }
 
-      updateFP({
+      const result = await updateFP({
         paymentId,
         message: undefined,
         username: state.user.username,
         mode: mode,
       });
+      setDonationId(result.data.donationId);
     } catch (error) {
       console.error("Error distributing power boost:", error);
       toast.error("Failed to distribute power boost. Please try again.");
@@ -246,7 +252,6 @@ export const PowerTab = () => {
         showDialog={showContributeDialog}
         onClose={() => setShowContributeDialog(false)}
         powerCombo={powerCombo}
-        currentStageInfo={currentStageInfo}
         hasEnoughEthBalance={hasEnoughEthBalance}
         hasEnoughUSDBalance={hasEnoughUSDBalance}
         walletBalance={tokenBalancesData?.totalBalanceUSD ?? 0}
@@ -254,9 +259,13 @@ export const PowerTab = () => {
         onContributionSuccess={handleContributionSuccess}
         address={address}
         tokenBalancesIsLoading={tokenBalancesIsLoading}
+        returnedDonationId={donationId}
       />
 
-      <LastContributionTable lastContributions={lastContributions} />
+      <ContributionTableSection
+        lastContributions={lastContributions}
+        yourContributions={userContributions}
+      />
 
       {/* Info Footer */}
       <div className="text-center text-white/60 text-xs mt-4">

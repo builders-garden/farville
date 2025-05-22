@@ -1,13 +1,19 @@
-import {
-  getLastUserCommunityDonations,
-  createUserCommunityDonation,
-} from "@/lib/prisma/queries";
+import { getLastUserCommunityDonations } from "@/lib/prisma/queries";
+import { Mode } from "@/lib/types/game";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const limit = searchParams.get("limit");
+    const mode = searchParams.get("mode");
+    const fid = searchParams.get("fid");
+
+    console.log("GET /api/community/donation", {
+      limit,
+      mode,
+      fid,
+    });
 
     if (limit && isNaN(Number(limit))) {
       return NextResponse.json(
@@ -16,7 +22,13 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    if (!mode) {
+      return NextResponse.json({ error: "Mode is required" }, { status: 400 });
+    }
+
     const userCommunityDonations = await getLastUserCommunityDonations(
+      mode as Mode,
+      fid ? Number(fid) : undefined,
       Number(limit) || 10
     );
 
@@ -25,47 +37,6 @@ export async function GET(request: NextRequest) {
     console.error("Error fetching user community donations:", error);
     return NextResponse.json(
       { error: "Failed to fetch user community donations" },
-      { status: 500 }
-    );
-  }
-}
-
-export async function POST(request: NextRequest) {
-  try {
-    const body = await request.json();
-    const { txHash, mode, fid, ptAmount, dollarAmount, walletAddress } = body;
-
-    // TODO: ptAmount must be calculated here using the combo value from DB
-
-    // Validate required fields
-    if (
-      !txHash ||
-      !mode ||
-      !fid ||
-      !ptAmount ||
-      !dollarAmount ||
-      !walletAddress
-    ) {
-      return NextResponse.json(
-        { error: "Missing required fields" },
-        { status: 400 }
-      );
-    }
-
-    const donation = await createUserCommunityDonation({
-      txHash,
-      mode,
-      fid,
-      ptAmount,
-      dollarAmount,
-      walletAddress,
-    });
-
-    return NextResponse.json(donation);
-  } catch (error) {
-    console.error("Error creating user community donation:", error);
-    return NextResponse.json(
-      { error: "Failed to create user community donation" },
       { status: 500 }
     );
   }

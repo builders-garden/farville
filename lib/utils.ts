@@ -139,6 +139,23 @@ export const streakFlexCardComposeCastUrl = (
   };
 };
 
+export const communityContributionFlexCardComposeCastUrl = (
+  fid: number,
+  mode: Mode,
+  contributionId: string
+) => {
+  const timestamp = Date.now();
+  const frameUrl = `${env.NEXT_PUBLIC_URL}/flex-card/community-booster/${fid}/${timestamp}?mode=${mode}&contributionId=${contributionId}`;
+  const text = `Let's farm together faster! 🚜💨\n\nI just donated some Farmer Points to the Community Booster - Help Farville Farmers and donate`;
+  const urlFriendlyText = encodeURIComponent(text);
+  return {
+    frameUrl,
+    castUrl: `https://warpcast.com/~/compose?text=${urlFriendlyText}&embeds[]=${encodeURIComponent(
+      frameUrl
+    )}&channelKey=farville`,
+  };
+};
+
 export const mintedOgFlexCardComposeCastUrl = (fid: number) => {
   const timestamp = Date.now();
   const frameUrl = `${env.NEXT_PUBLIC_URL}/flex-card/minted-og/${fid}/${timestamp}`;

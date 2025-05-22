@@ -7,6 +7,7 @@ import { Mode } from "@/lib/types/game";
 import axios from "axios";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { v4 as uuid } from "uuid";
 
 export async function GET(req: NextRequest) {
   try {
@@ -63,6 +64,8 @@ export async function POST(req: NextRequest) {
 
     const { paymentId, message, username, mode } = requestBody.data;
 
+    const donationId = uuid();
+
     await axios({
       method: "POST",
       url: `${env.FARVILLE_SERVICE_URL}/api/async-jobs/community-booster`,
@@ -72,6 +75,7 @@ export async function POST(req: NextRequest) {
       data: {
         fid: Number(fid),
         paymentId,
+        donationId,
         message,
         username,
         mode,
@@ -81,7 +85,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       message: "Points successfully updated",
       data: {
-        paymentId,
+        donationId,
       },
     });
   } catch (error) {

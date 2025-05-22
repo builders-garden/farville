@@ -85,7 +85,9 @@ export const getUserCommunityDonationsByDateRange = async (
  * @returns An array of funding records
  */
 export const getLastUserCommunityDonations = async (
-  limit: number
+  mode: Mode,
+  fid?: number,
+  limit: number = 10
 ): Promise<
   (UserCommunityDonation & {
     user: {
@@ -98,6 +100,10 @@ export const getLastUserCommunityDonations = async (
   })[]
 > => {
   return await prisma.userCommunityDonation.findMany({
+    where: {
+      mode,
+      ...(fid ? { fid } : {}),
+    },
     orderBy: { createdAt: "desc" },
     take: limit,
     include: {

@@ -274,7 +274,6 @@ export const useGameState = (mode: Mode) => {
         communityDonations && communityDonations.length > 0
           ? new Date(communityDonations[0].createdAt)
           : userCommunityBoosterStatus.donation.createdAt;
-      console.log("Auto updating community booster status", lastDonationDate);
       setState((prevState) => ({
         ...prevState!,
         communityBoosterStatus: {
@@ -412,10 +411,8 @@ export const useGameState = (mode: Mode) => {
   useEffect(() => {
     // Don't run this effect if we've had a manual update recently
     if (Date.now() - lastManualUpdateRef.current < 2000) {
-      console.log("Skipping useEffect due to recent manual update");
       return;
     }
-    console.log("Running updateUserCommunityBoosterStatusState from useEffect");
     updateUserCommunityBoosterStatusState();
   }, [userCommunityBoosterStatus, updateUserCommunityBoosterStatusState]);
 
@@ -501,7 +498,6 @@ export const useGameState = (mode: Mode) => {
       // for each mode inside userGlobalStats calculate the global xps
       let totalXP = 0;
       let totalCoins = 0;
-      console.log("User Global Stats:", userGlobalStats);
       Object.keys(userGlobalStats).forEach((key) => {
         const userStat = userGlobalStats[key as Mode];
         if (userStat) {
@@ -509,8 +505,6 @@ export const useGameState = (mode: Mode) => {
           totalCoins += userStat.coins;
         }
       });
-
-      console.log("Total XP:", totalXP, "Total Coins:", totalCoins);
 
       // check if the user should see the grid cells tutorial
       if (totalXP === 0) {
@@ -805,13 +799,6 @@ export const useGameState = (mode: Mode) => {
       combo: number;
       lastDonation?: Date;
     }) => {
-      console.log(
-        "Updating user community booster status:",
-        statusParams.pointsToAdd,
-        statusParams.stage,
-        statusParams.combo
-      );
-
       // Mark this as a manual update
       lastManualUpdateRef.current = Date.now();
 
