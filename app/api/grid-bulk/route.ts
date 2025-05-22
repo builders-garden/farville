@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { SeedType, PerkType, ActionType, Mode } from "@/lib/types/game";
 import { fertilizeBulk, harvestBulk, perkBulk, plantBulk } from "./utils";
-import { z } from "zod";
 import { getUserByMode } from "@/lib/prisma/queries";
+import Logger from "@/lib/logger";
+import { z } from "zod";
 
 export interface GridBulkRequest {
   action: ActionType;
@@ -34,7 +35,7 @@ export const POST = async (req: NextRequest) => {
   if (!fid) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-  console.log("/api/grid-bulk user", fid, "start", "date", new Date());
+  Logger.logTest(`/api/grid-bulk user ${fid} started at ${new Date()}`);
 
   const requestJson = await req.json();
   const requestBody = requestSchema.safeParse(requestJson);
@@ -47,29 +48,18 @@ export const POST = async (req: NextRequest) => {
   }
 
   const { action, itemSlug, cells, mode } = requestBody.data;
-  console.log(
-    "/api/grid-bulk user",
-    fid,
-    "body parsed, action",
-    action,
-    itemSlug,
-    "date",
-    new Date()
+  Logger.logTest(
+    `/api/grid-bulk user ${fid} body parsed, action ${action} item ${itemSlug} date ${new Date()}`
   );
 
   const user = await getUserByMode(Number(fid), mode);
   if (!user) {
     return NextResponse.json({ error: "User not found" }, { status: 404 });
   }
-  console.log(
-    "/api/grid-bulk user",
-    fid,
-    "action",
-    action,
-    "user found",
-    user.username,
-    "date",
-    new Date()
+  Logger.logTest(
+    `/api/grid-bulk user ${fid} action ${action} user found ${
+      user.username
+    } date ${new Date()}`
   );
 
   try {
@@ -87,15 +77,8 @@ export const POST = async (req: NextRequest) => {
             { status: 400 }
           );
         }
-        console.log(
-          "/api/grid-bulk user",
-          fid,
-          "action",
-          action,
-          "planting started",
-          itemSlug,
-          "date",
-          new Date()
+        Logger.logTest(
+          `/api/grid-bulk user ${fid} action ${action} planting started ${itemSlug} date ${new Date()}`
         );
         const plantResult = await plantBulk(
           Number(fid),
@@ -103,41 +86,24 @@ export const POST = async (req: NextRequest) => {
           itemSlug as SeedType,
           mode
         );
-        console.log(
-          "/api/grid-bulk user",
-          fid,
-          "action",
-          action,
-          "planting finished",
-          plantResult.type,
-          "date",
-          new Date()
+        Logger.logTest(
+          `/api/grid-bulk user ${fid} action ${action} planting finished ${
+            plantResult.type
+          } date ${new Date()}`
         );
         return NextResponse.json({
           success: true,
           data: plantResult,
         });
       case ActionType.Harvest:
-        console.log(
-          "/api/grid-bulk user",
-          fid,
-          "action",
-          action,
-          "harvesting started",
-          "date",
-          new Date()
+        Logger.logTest(
+          `/api/grid-bulk user ${fid} action ${action} harvesting started date ${new Date()}`
         );
         const harvestResult = await harvestBulk(Number(fid), cells, mode);
-        console.log(
-          "/api/grid-bulk user",
-          fid,
-          "action",
-          action,
-          "harvesting finished",
-          harvestResult.cells.ok.length,
-          harvestResult.cells.nok.length,
-          "date",
-          new Date()
+        Logger.logTest(
+          `/api/grid-bulk user ${fid} action ${action} harvesting finished ${
+            harvestResult.cells.ok.length
+          } ${harvestResult.cells.nok.length} date ${new Date()}`
         );
         return NextResponse.json({
           success: true,
@@ -156,15 +122,8 @@ export const POST = async (req: NextRequest) => {
             { status: 400 }
           );
         }
-        console.log(
-          "/api/grid-bulk user",
-          fid,
-          "action",
-          action,
-          "applying perk started",
-          itemSlug,
-          "date",
-          new Date()
+        Logger.logTest(
+          `/api/grid-bulk user ${fid} action ${action} applying perk started ${itemSlug} date ${new Date()}`
         );
         const perkResult = await perkBulk(
           Number(fid),
@@ -172,40 +131,24 @@ export const POST = async (req: NextRequest) => {
           itemSlug as PerkType,
           mode
         );
-        console.log(
-          "/api/grid-bulk user",
-          fid,
-          "action",
-          action,
-          "applying perk finished",
-          perkResult.type,
-          "date",
-          new Date()
+        Logger.logTest(
+          `/api/grid-bulk user ${fid} action ${action} applying perk finished ${
+            perkResult.type
+          } date ${new Date()}`
         );
         return NextResponse.json({
           success: true,
           data: perkResult,
         });
       case ActionType.Fertilize:
-        console.log(
-          "/api/grid-bulk user",
-          fid,
-          "action",
-          action,
-          "fertilizing started",
-          "date",
-          new Date()
+        Logger.logTest(
+          `/api/grid-bulk user ${fid} action ${action} fertilizing started date ${new Date()}`
         );
         const fertilizeResult = await fertilizeBulk(Number(fid), cells, mode);
-        console.log(
-          "/api/grid-bulk user",
-          fid,
-          "action",
-          action,
-          "fertilizing finished",
-          fertilizeResult.type,
-          "date",
-          new Date()
+        Logger.logTest(
+          `/api/grid-bulk user ${fid} action ${action} fertilizing finished ${
+            fertilizeResult.type
+          } date ${new Date()}`
         );
         return NextResponse.json({
           success: true,
