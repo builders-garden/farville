@@ -350,7 +350,7 @@ export const PowerContribution = ({
           ) : (
             <div className="flex flex-col items-center gap-1.5 p-3 rounded-lg border border-yellow-400/20">
               <span className="text-yellow-400 font-semibold text-sm text-center">
-                🎉 Congratulations! 🎉
+                🎉 Congrats! 🎉
               </span>
               <span className="text-white/90 text-xs text-center">
                 You just contributed{" "}
