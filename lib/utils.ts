@@ -146,7 +146,7 @@ export const communityContributionFlexCardComposeCastUrl = (
 ) => {
   const timestamp = Date.now();
   const frameUrl = `${env.NEXT_PUBLIC_URL}/flex-card/community-booster/${fid}/${timestamp}?mode=${mode}&id=${contributionId}`;
-  const text = `Let's farm together faster! 🚜💨\n\nI just donated some Farmer Points to the Community Booster - Help Farville Farmers and donate`;
+  const text = `Let's farm together faster! 🚜💨\n\nI just donated some Farmers Power to the Community Booster - Help Farville Farmers and donate`;
   const urlFriendlyText = encodeURIComponent(text);
   return {
     frameUrl,

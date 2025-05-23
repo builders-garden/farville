@@ -184,7 +184,7 @@ export const PowerContribution = ({
                 </span>
               </div>
               <div className="flex flex-col items-end">
-                <span className="text-white/70 text-xs">Power Points</span>
+                <span className="text-white/70 text-xs">Farmers Power</span>
                 <span className="text-2xl font-bold text-yellow-400">
                   {contributionAmount * powerCombo} FP
                 </span>
@@ -192,7 +192,7 @@ export const PowerContribution = ({
             </div>
             <div className="flex justify-between gap-2 text-white/70 text-xs text-center border-t border-yellow-400/10 pt-2 mt-1">
               <span className="text-white/70">Current Combo:</span>
-              <span className="text-yellow-400 font-bold">×{powerCombo}</span>
+              <span className="text-yellow-400 font-bold">{powerCombo}x</span>
             </div>
           </div>
 
@@ -302,8 +302,7 @@ export const PowerContribution = ({
                   { chain: base.id, address: BASE_USDC_ADDRESS },
                 ]}
                 toAddress={BG_MULTISIG_ADDRESS}
-                // toUnits={contributionAmount.toString()}
-                toUnits={"0.000001"}
+                toUnits={contributionAmount.toString()}
                 toToken={BASE_USDC_ADDRESS}
                 toChain={base.id}
                 onPaymentStarted={handlePaymentStarted}

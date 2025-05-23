@@ -38,7 +38,7 @@ export async function generateMetadata({
     version: "next",
     imageUrl: imageUrl.toString(),
     button: {
-      title: `Contribute Farmer Points! 🌱`,
+      title: `Contribute Farmers Power! 🌱`,
       action: {
         type: "launch_frame",
         name: "Farville",
@@ -50,9 +50,9 @@ export async function generateMetadata({
   };
 
   return {
-    title: `Contribute Farmer Points! 🌱`,
+    title: `Contribute Farmers Power! 🌱`,
     openGraph: {
-      title: `Contribute Farmer Points! 🌱`,
+      title: `Contribute Farmers Power! 🌱`,
       description: "Plant, grow, and harvest crops with your friends.",
       images: [{ url: imageUrl.toString() }],
     },

@@ -71,7 +71,9 @@ export default function Header() {
             className="flex flex-row gap-1 items-center cursor-pointer"
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
-            onClick={() => setShowFarmersPower(true)}
+            onClick={() => {
+              if (state.communityBoosterStatus) setShowFarmersPower(true);
+            }}
           >
             <FarmersPowerSpeedometer
               stage={state.communityBoosterStatus?.stage || 1}
