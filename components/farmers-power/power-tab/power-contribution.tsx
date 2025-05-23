@@ -158,7 +158,7 @@ export const PowerContribution = ({
         }}
       >
         <div className="flex justify-between items-center">
-          <DialogTitle className="text-lg font-semibold text-white/90">
+          <DialogTitle className="text-md font-semibold text-white/90">
             Contribute Power
           </DialogTitle>
           <DialogClose

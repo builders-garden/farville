@@ -41,7 +41,7 @@ export const PowerStages = ({
         <AccordionContent>
           <div
             ref={stagesContainerRef}
-            className="max-h-48 overflow-y-auto pr-2 -mr-2 scrollbar-thin scrollbar-thumb-yellow-500/20 scrollbar-track-[#4A341A]/20"
+            className="max-h-48 overflow-y-auto pr-2 -mr-2 no-scrollbar"
           >
             {stagesFromPrevious.map((stage) => (
               <div

@@ -18,12 +18,14 @@ import {
   POWER_STAGES,
 } from "@/lib/game-constants";
 import { useCommunityDonation } from "@/hooks/use-community-donation";
+import { HowItWorks } from "./how-it-works";
 
 export const PowerTab = () => {
   const { state, mode } = useGame();
   const { address, chainId } = useAccount();
   const { switchChain } = useSwitchChain();
   const [donationId, setDonationId] = useState<string | null>(null);
+  const [showHowItWorksDialog, setShowHowItWorksDialog] = useState(false);
 
   // State for power mechanics
   const [currentFP, setCurrentFP] = useState<number>(
@@ -236,6 +238,11 @@ export const PowerTab = () => {
           <PowerStages
             currentPowerStage={currentPowerStage}
             stages={POWER_STAGES}
+          />
+
+          <HowItWorks
+            isOpen={showHowItWorksDialog}
+            onOpenChange={setShowHowItWorksDialog}
           />
         </div>
       </div>
