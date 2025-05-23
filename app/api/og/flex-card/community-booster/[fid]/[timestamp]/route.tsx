@@ -282,8 +282,8 @@ export async function GET(
                     gap: "4px",
                   }}
                 >
-                  <span>Farmer</span>
-                  <span>Points</span>
+                  <span>Farmers</span>
+                  <span>Power</span>
                 </div>
               </div>
             </div>
