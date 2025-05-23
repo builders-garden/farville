@@ -14,6 +14,7 @@ import { Button } from "./ui/button";
 import { Mode } from "@/lib/types/game";
 import { AnimatedCircularProgressBar } from "./ui/animated-circular-progress-bar";
 import { MODE_DEFINITIONS } from "@/lib/modes/constants";
+import { FarmersPowerSpeedometer } from "./FarmersPowerSpeedometer";
 
 export default function Header() {
   const {
@@ -72,16 +73,9 @@ export default function Header() {
             whileTap={{ scale: 0.9 }}
             onClick={() => setShowFarmersPower(true)}
           >
-            <Image
-              src="/images/special/farmers-power.png" // You'll need to add this icon
-              alt="FarmersPower"
-              width={22}
-              height={22}
-              className="mt-[-2px] cursor-pointer"
+            <FarmersPowerSpeedometer
+              stage={state.communityBoosterStatus?.stage || 1}
             />
-            <span className="text-white/90 font-bold text-md">
-              x{state.communityBoosterStatus?.stage ?? 1}
-            </span>
           </motion.div>
 
           {/* streak counter button */}
