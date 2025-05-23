@@ -99,13 +99,17 @@ export const LeaderboardTab = ({ onSelectUser }: LeaderboardTabProps) => {
               {state.user.username}
             </p>
             <div className="flex flex-row items-center justify-between w-full">
-              <div className="text-[#FFB938] rounded-full font-medium text-[10px] xs:text-xs">
-                FP:
-                {transformedLeaderboardData?.targetData.totalPtAmount.toLocaleString()}
+              <div className="text-[#FFB938] rounded-full font-medium text-[10px] xs:text-xs flex gap-1">
+                <span>FP:</span>
+                <span>
+                  {transformedLeaderboardData?.targetData.totalPtAmount.toLocaleString()}
+                </span>
               </div>
-              <div className="text-white/60 text-[10px] xs:text-xs">
-                Donations:
-                {transformedLeaderboardData?.targetData.donationCount}
+              <div className="text-white/60 text-[10px] xs:text-xs flex gap-1">
+                <span>Times:</span>
+                <span>
+                  {transformedLeaderboardData?.targetData.donationCount}
+                </span>
               </div>
             </div>
           </div>
@@ -145,11 +149,13 @@ export const LeaderboardTab = ({ onSelectUser }: LeaderboardTabProps) => {
                   {entry.username}
                 </p>
                 <div className="flex flex-row justify-between w-full">
-                  <div className="text-[#FFB938] rounded-full font-medium text-[10px] xs:text-xs">
-                    FP:{entry.totalPtAmount.toLocaleString()}
+                  <div className="text-[#FFB938] rounded-full font-medium text-[10px] xs:text-xs flex gap-1">
+                    <span>FP:</span>
+                    <span>{entry.totalPtAmount.toLocaleString()}</span>
                   </div>
-                  <div className="text-white/60 text-[10px] xs:text-xs">
-                    Donations:{entry.donationCount}
+                  <div className="text-white/60 text-[10px] xs:text-xs flex gap-1">
+                    <span>Times:</span>
+                    <span>{entry.donationCount}</span>
                   </div>
                 </div>
               </div>

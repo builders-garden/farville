@@ -76,13 +76,15 @@ export const PowerContribution = ({
   useEffect(() => {
     if (showDialog) {
       resetState();
-      if (walletBalance < 1) {
+      if (walletBalance < 1 && !tokenBalancesIsLoading) {
         setErrorMessage(
           "You need at least $1 in your wallet to contribute. Please add funds."
         );
+      } else if (walletBalance >= 1) {
+        setErrorMessage("");
       }
     }
-  }, [showDialog]);
+  }, [showDialog, walletBalance, tokenBalancesIsLoading]);
 
   const handlePaymentStarted = () => {
     setPaymentHandled(false);
@@ -156,7 +158,7 @@ export const PowerContribution = ({
         }}
       >
         <div className="flex justify-between items-center">
-          <DialogTitle className="text-lg font-semibold text-white/90">
+          <DialogTitle className="text-md font-semibold text-white/90">
             Contribute Power
           </DialogTitle>
           <DialogClose
@@ -252,7 +254,10 @@ export const PowerContribution = ({
                 className="w-full"
                 value={showCustomSlider ? "custom-amount" : ""}
               >
-                <AccordionItem value="custom-amount" className="border-0">
+                <AccordionItem
+                  value="custom-amount"
+                  className="border-0"
+                >
                   <AccordionTrigger className="hidden">
                     Custom Amount
                   </AccordionTrigger>
@@ -379,7 +384,10 @@ export const PowerContribution = ({
                   disabled
                 >
                   <div className="flex items-center justify-center gap-2">
-                    <Loader2 className="w-4 h-4 animate-spin" strokeWidth={3} />
+                    <Loader2
+                      className="w-4 h-4 animate-spin"
+                      strokeWidth={3}
+                    />
                     <span>Processing...</span>
                   </div>
                 </Button>

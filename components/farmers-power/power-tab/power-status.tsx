@@ -64,14 +64,14 @@ export const PowerStats = ({
           >
             {currentFP}
           </motion.span>
-          <span className="text-white/60 text-sm">
-            / {nextStageInfo ? nextStageInfo.fpRequired : "MAX"}
+          <span className="text-white/60 text-xs">
+            / {nextStageInfo ? nextStageInfo.fpRequired : "MAX"} FP
           </span>
         </div>
-        <div className="flex items-center gap-1.5">
-          <span className="text-white/70 text-sm">Game goes at</span>
+        <div className="flex items-center gap-2">
+          <span className="text-white/70 text-sm">Game Speed</span>
           <span className="text-amber-500 text-base font-bold">
-            {currentStageInfo.boost}×
+            {currentStageInfo.boost}x
           </span>
         </div>
       </div>

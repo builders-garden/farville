@@ -196,7 +196,7 @@ export const PowerTimer = ({
             animate={{ scale: [1, 1.05, 1] }}
             transition={{ duration: 1.5, repeat: Infinity }}
           >
-            Power Combo: ×{powerCombo}
+            Power Combo: {powerCombo}x
           </motion.div>
         )}
       </div>

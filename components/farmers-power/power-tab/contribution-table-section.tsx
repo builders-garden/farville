@@ -37,7 +37,6 @@ export const ContributionTableSection: React.FC<{
 
   return (
     <div className="flex flex-col gap-4 w-full">
-      <h3 className="text-white/90 text-md font-bold">Contributions</h3>
       <div className="w-full bg-[#5C4121]/50 rounded-xl p-4 border border-yellow-400/20">
         {/* Tabs */}
         <div className="grid grid-cols-2 gap-1 xs:gap-2">
@@ -82,7 +81,7 @@ export const ContributionTableSection: React.FC<{
         <Table>
           <TableHeader>
             <TableRow className="text-white/70">
-              <TableHead>Farmer</TableHead>
+              <TableHead>Contributor</TableHead>
               <TableHead className="text-right">FP</TableHead>
               {activeTab === "yours" && <TableHead className="w-8"></TableHead>}
             </TableRow>
