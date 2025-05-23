@@ -35,11 +35,11 @@ export default function Header() {
   return (
     <div className="bg-[#8B5E3C]/40 px-4 py-2 shadow-lg bg-opacity-95 backdrop-blur-sm border-b-2 border-[#6d4c2c]/50 z-30">
       <div className="flex justify-between items-center max-w-4xl mx-auto">
-        <div
-          className="h-[42px] rounded-xl flex items-center cursor-pointer"
-          onClick={() => setShowTimeline(true)}
-        >
-          <div className="w-fit">
+        <div className="h-[42px] rounded-xl flex items-center cursor-pointer gap-4">
+          <div
+            className="w-fit"
+            onClick={() => setShowTimeline(true)}
+          >
             <AnimatedCircularProgressBar
               max={100}
               min={0}
@@ -62,10 +62,7 @@ export default function Header() {
               </div>
             </AnimatedCircularProgressBar>
           </div>
-        </div>
 
-        {/* Currency elements container - column on mobile, row on desktop */}
-        <div className="flex flex-col xs:flex-row xs:items-center xs:gap-4 items-end">
           {/* FarmersPower */}
           <motion.div
             className="flex flex-row gap-1 items-center cursor-pointer"
@@ -79,7 +76,10 @@ export default function Header() {
               stage={state.communityBoosterStatus?.stage || 1}
             />
           </motion.div>
+        </div>
 
+        {/* Currency elements container - column on mobile, row on desktop */}
+        <div className="flex flex-col xs:flex-row xs:items-center xs:gap-4 items-end">
           {/* streak counter button */}
           <motion.div
             className={`h-auto xs:h-[42px] flex flex-row gap-1 items-center text-white/90 tracking-wide font-bold cursor-pointer relative
