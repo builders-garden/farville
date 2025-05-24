@@ -295,21 +295,21 @@
   resolved "https://registry.yarnpkg.com/@daimo/contract/-/contract-1.6.0.tgz#c40ae16e4b507c864a240ee99194c66f3e55bdff"
   integrity sha512-Rdrav/NZ06aTQXC6j/AZ0nxxQbyNrI2zqiF+jydU9T0BCluwK7TbDUMBnxeaEzuPoS4vaPmlbLkC41qbwA9zzw==
 
-"@daimo/pay-common@1.6.3":
-  version "1.6.3"
-  resolved "https://registry.yarnpkg.com/@daimo/pay-common/-/pay-common-1.6.3.tgz#0b5c9e0a1b05ef1648d8b317cbcb34ff5a1f58ab"
-  integrity sha512-GLZT13X5BMlJRHtKl2Y1yoVeN23Kw1RQY8r8JEK4Inh6YMfWAm72Df5wImTAaPemuvVxfMzCZfLMpz1DQ6iPJw==
+"@daimo/pay-common@1.8.4":
+  version "1.8.4"
+  resolved "https://registry.yarnpkg.com/@daimo/pay-common/-/pay-common-1.8.4.tgz#471f2a117c96721e75dae42c70c35e0d42b7aee3"
+  integrity sha512-avvzOoIY2DcchinilN3jZPZWbTXY22md1JQTOBFFnXVAeNOMt/s/cefdFMys2YXcYA2kLdhnCG7/lUirz3hWOQ==
   dependencies:
     "@scure/base" "^1.2.4"
     viem "^2.23.14"
     zod "^3.24.2"
 
-"@daimo/pay@^1.6.3":
-  version "1.6.3"
-  resolved "https://registry.yarnpkg.com/@daimo/pay/-/pay-1.6.3.tgz#84a92475467feb80c7c97d01a4f9c487586b903f"
-  integrity sha512-arHs5o+6rhNUHyZvu4wANONyP1eatYjvOxNzL08mtRueDzrhJh4OLvkfzzgHzuOYdCIjYXpNEQT2puER1HjI6A==
+"@daimo/pay@^1.8.4":
+  version "1.8.4"
+  resolved "https://registry.yarnpkg.com/@daimo/pay/-/pay-1.8.4.tgz#9a23cffdcf289bfb5baeed59cd53934412ac1338"
+  integrity sha512-xjIztuu8n7NSq/D5CYKpfXegQMlQQTGN9gK3bg6zOo5qpCDgsjwPhayXBYIevrWu0Wn8IhazhjYrNUb3ca8tHw==
   dependencies:
-    "@daimo/pay-common" "1.6.3"
+    "@daimo/pay-common" "1.8.4"
     "@rollup/plugin-typescript" "^12.1.2"
     "@solana/wallet-adapter-base" "^0.9.23"
     "@solana/wallet-adapter-react" "^0.15.35"

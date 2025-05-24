@@ -15,17 +15,17 @@ import {
 } from "@/components/ui/accordion";
 import { X, Loader2 } from "lucide-react";
 import { cn, communityContributionFlexCardComposeCastUrl } from "@/lib/utils";
-import { DaimoPayButton } from "@daimo/pay";
 import { base } from "viem/chains";
 import {
   BASE_USDC_ADDRESS,
   BG_MULTISIG_ADDRESS,
   BASE_SCAN_BASE_URL,
 } from "@/lib/contracts/constants";
-import { PaymentCompletedEvent } from "@daimo/common";
 import { env } from "@/lib/env";
 import sdk from "@farcaster/frame-sdk";
 import { useGame } from "@/context/GameContext";
+import { PaymentCompletedEvent } from "@daimo/pay-common";
+import { DaimoPayButton } from "@daimo/pay";
 
 interface PowerContributionProps {
   showDialog: boolean;
@@ -91,7 +91,7 @@ export const PowerContribution = ({
     setPaymentStarted(true);
   };
 
-  const handlePaymentCompleted = async (e: PaymentCompletedEvent) => {
+  const handlePaymentCompleted = (e: PaymentCompletedEvent) => {
     if (paymentHandled) return; // Prevent duplicate handling
 
     if (!address) {
