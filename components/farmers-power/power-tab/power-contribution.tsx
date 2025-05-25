@@ -309,6 +309,7 @@ export const PowerContribution = ({
                   { chain: base.id, address: BASE_USDC_ADDRESS },
                 ]}
                 toAddress={BG_MULTISIG_ADDRESS}
+                // toUnits={"0.01"}
                 toUnits={contributionAmount.toString()}
                 toToken={BASE_USDC_ADDRESS}
                 toChain={base.id}

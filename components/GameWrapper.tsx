@@ -192,7 +192,7 @@ function TimelineModalContainer() {
 }
 
 export default function GameWrapper() {
-  const { startBackgroundMusic } = useAudio();
+  const { startBackgroundMusic, playSound } = useAudio();
   const {
     mode,
     state,
@@ -239,6 +239,7 @@ export default function GameWrapper() {
       // Also refresh community donations to ensure they're up to date
       refetch.communityDonations();
       if (data.fid !== state.user.fid) {
+        const pfpSize = 28;
         sonnerToast.custom(
           (t) => (
             <div
@@ -252,9 +253,9 @@ export default function GameWrapper() {
                 <Image
                   src={data.pfp}
                   alt={data.username}
-                  width={24}
-                  height={24}
-                  className="rounded-full"
+                  width={pfpSize}
+                  height={pfpSize}
+                  className={`rounded-full object-cover w-[${pfpSize}px] h-[${pfpSize}px] border-2 border-[#ffdc68]`}
                 />
               )}
               <span>{data.username}</span>
@@ -262,10 +263,11 @@ export default function GameWrapper() {
             </div>
           ),
           {
-            duration: 5000,
+            duration: 10000,
             position: "top-right",
           }
         );
+        playSound("newDonation");
       }
     });
 
