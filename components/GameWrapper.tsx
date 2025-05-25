@@ -30,6 +30,7 @@ import FarmersPowerModal from "./farmers-power";
 import { useSocket } from "@/hooks/use-socket";
 // import toast from "react-hot-toast";
 import { toast as sonnerToast } from "sonner";
+import Image from "next/image";
 
 // const WelcomeOverlay = dynamic(() => import("./../components/WelcomeOverlay"), {
 //   ssr: false,
@@ -199,6 +200,7 @@ export default function GameWrapper() {
     setActiveOverlay,
     updateUserCommunityBoosterStatus,
     makeAllGridCellsHarvestable,
+    setShowFarmersPower,
     refetch,
   } = useGame();
 
@@ -237,10 +239,33 @@ export default function GameWrapper() {
       // Also refresh community donations to ensure they're up to date
       refetch.communityDonations();
       if (data.fid !== state.user.fid) {
-        sonnerToast(`${data.username} +${data.ptAmount}PT`, {
-          duration: 5000,
-          position: "top-right",
-        });
+        sonnerToast.custom(
+          (t) => (
+            <div
+              className="flex items-center gap-2 cursor-pointer"
+              onClick={() => {
+                sonnerToast.dismiss(t);
+                setShowFarmersPower(true);
+              }}
+            >
+              {data.pfp && (
+                <Image
+                  src={data.pfp}
+                  alt={data.username}
+                  width={24}
+                  height={24}
+                  className="rounded-full"
+                />
+              )}
+              <span>{data.username}</span>
+              <span className="text-[#ffdc68]">+{data.ptAmount} FP</span>
+            </div>
+          ),
+          {
+            duration: 5000,
+            position: "top-right",
+          }
+        );
       }
     });
 
@@ -334,7 +359,10 @@ export default function GameWrapper() {
 
       {activeOverlay?.type === "requests" ? (
         <AnimatePresence>
-          <RequestModal onClose={handleOverlayComplete} id={activeOverlay.id} />
+          <RequestModal
+            onClose={handleOverlayComplete}
+            id={activeOverlay.id}
+          />
         </AnimatePresence>
       ) : activeOverlay?.type === "voucher" ? (
         <AnimatePresence>
@@ -358,7 +386,10 @@ export default function GameWrapper() {
           className="flex flex-col h-[100dvh] w-full overflow-hidden"
         >
           <Header />
-          <div className="flex-1 relative min-h-0" id="game-grid">
+          <div
+            className="flex-1 relative min-h-0"
+            id="game-grid"
+          >
             <GameGrid />
           </div>
           <Toolbar safeAreaInsets={safeAreaInsets} />

@@ -42,6 +42,7 @@ const requestSchema = z.object({
   message: z.string().optional(),
   username: z.string().min(1),
   mode: z.nativeEnum(Mode),
+  pfp: z.string(),
 });
 
 export async function POST(req: NextRequest) {
@@ -62,7 +63,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { paymentId, message, username, mode } = requestBody.data;
+    const { paymentId, message, username, mode, pfp } = requestBody.data;
 
     const donationId = uuid();
 
@@ -79,6 +80,7 @@ export async function POST(req: NextRequest) {
         message,
         username,
         mode,
+        pfp,
       },
     });
 
