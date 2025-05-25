@@ -74,6 +74,7 @@ export default function Header() {
           >
             <FarmersPowerSpeedometer
               stage={state.communityBoosterStatus?.stage || 1}
+              currentFP={state.communityBoosterStatus?.points}
             />
           </motion.div>
         </div>
