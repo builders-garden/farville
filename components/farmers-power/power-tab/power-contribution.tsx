@@ -191,7 +191,13 @@ export const PowerContribution = ({
                 </span>
               </div>
             </div>
-            <div className="flex justify-between gap-2 text-white/70 text-xs text-center border-t border-yellow-400/10 pt-2 mt-1">
+            <div className="flex justify-between gap-2 text-white/70 text-xs text-center pb-2">
+              <span className="text-white/70">FP Amount:</span>
+              <span className="text-yellow-400 font-bold">
+                {FP_AMOUNT[contributionAmount]}
+              </span>
+            </div>
+            <div className="flex justify-between gap-2 text-white/70 text-xs text-center border-t border-yellow-400/10 pt-2">
               <span className="text-white/70">Current Combo:</span>
               <span className="text-yellow-400 font-bold">{powerCombo}x</span>
             </div>
