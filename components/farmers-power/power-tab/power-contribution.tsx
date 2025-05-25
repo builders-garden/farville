@@ -26,6 +26,7 @@ import sdk from "@farcaster/frame-sdk";
 import { useGame } from "@/context/GameContext";
 import { PaymentCompletedEvent } from "@daimo/pay-common";
 import { DaimoPayButton } from "@daimo/pay";
+import { FP_AMOUNT } from "@/lib/game-constants";
 
 interface PowerContributionProps {
   showDialog: boolean;
@@ -186,7 +187,7 @@ export const PowerContribution = ({
               <div className="flex flex-col items-end">
                 <span className="text-white/70 text-xs">Farmers Power</span>
                 <span className="text-2xl font-bold text-yellow-400">
-                  {contributionAmount * powerCombo} FP
+                  {FP_AMOUNT[contributionAmount] * powerCombo} FP
                 </span>
               </div>
             </div>
@@ -355,7 +356,7 @@ export const PowerContribution = ({
               <span className="text-white/90 text-xs text-center">
                 You just contributed{" "}
                 <span className="text-yellow-400 font-bold">
-                  {contributionAmount * powerCombo} FP
+                  {FP_AMOUNT[contributionAmount] * powerCombo} FP
                 </span>{" "}
                 to help the farmers!
               </span>
