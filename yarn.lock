@@ -278,38 +278,21 @@
     eventemitter3 "^5.0.1"
     preact "^10.24.2"
 
-"@daimo/common@^1.6.0":
-  version "1.6.0"
-  resolved "https://registry.yarnpkg.com/@daimo/common/-/common-1.6.0.tgz#c1854f438f0f751fae08ee0aef6731c3b694bc07"
-  integrity sha512-O3SaBhJt9PwTeXa+YOBePsHl4wX5qHfKQLODKNC67H+rubkWe7fL2PP19SxsUD1zcbklwj3gE+lLmGoxkYtBow==
-  dependencies:
-    "@daimo/contract" "1.6.0"
-    "@noble/curves" "^1.6.0"
-    "@scure/base" "^1.1.9"
-    "@scure/bip39" "^1.3.0"
-    viem "^2.21.10"
-    zod "^3.23.8"
-
-"@daimo/contract@1.6.0":
-  version "1.6.0"
-  resolved "https://registry.yarnpkg.com/@daimo/contract/-/contract-1.6.0.tgz#c40ae16e4b507c864a240ee99194c66f3e55bdff"
-  integrity sha512-Rdrav/NZ06aTQXC6j/AZ0nxxQbyNrI2zqiF+jydU9T0BCluwK7TbDUMBnxeaEzuPoS4vaPmlbLkC41qbwA9zzw==
-
-"@daimo/pay-common@1.6.3":
-  version "1.6.3"
-  resolved "https://registry.yarnpkg.com/@daimo/pay-common/-/pay-common-1.6.3.tgz#0b5c9e0a1b05ef1648d8b317cbcb34ff5a1f58ab"
-  integrity sha512-GLZT13X5BMlJRHtKl2Y1yoVeN23Kw1RQY8r8JEK4Inh6YMfWAm72Df5wImTAaPemuvVxfMzCZfLMpz1DQ6iPJw==
+"@daimo/pay-common@1.8.6", "@daimo/pay-common@^1.8.6":
+  version "1.8.6"
+  resolved "https://registry.yarnpkg.com/@daimo/pay-common/-/pay-common-1.8.6.tgz#ff9ddef78d25f5c96e702e615ec98e01bc4c2d84"
+  integrity sha512-cWzPVe78KWi0tTUUyYtnOrW5Hrp5LyOs9HU02U5l34emGFteFkrsLKWaX872mtSvrFH41G6yzllh3KutD5Rs8g==
   dependencies:
     "@scure/base" "^1.2.4"
     viem "^2.23.14"
     zod "^3.24.2"
 
-"@daimo/pay@^1.6.3":
-  version "1.6.3"
-  resolved "https://registry.yarnpkg.com/@daimo/pay/-/pay-1.6.3.tgz#84a92475467feb80c7c97d01a4f9c487586b903f"
-  integrity sha512-arHs5o+6rhNUHyZvu4wANONyP1eatYjvOxNzL08mtRueDzrhJh4OLvkfzzgHzuOYdCIjYXpNEQT2puER1HjI6A==
+"@daimo/pay@^1.8.6":
+  version "1.8.6"
+  resolved "https://registry.yarnpkg.com/@daimo/pay/-/pay-1.8.6.tgz#71de1acc00dff52c7a51276837c706210021df22"
+  integrity sha512-LvUmpq2F07axrTe2U5DEV2+G8mmZ9elyF6se7taV83Ziairrlr0Ue51S8I4z7CLr5U4OhfJu587NZsVyndgA4A==
   dependencies:
-    "@daimo/pay-common" "1.6.3"
+    "@daimo/pay-common" "1.8.6"
     "@rollup/plugin-typescript" "^12.1.2"
     "@solana/wallet-adapter-base" "^0.9.23"
     "@solana/wallet-adapter-react" "^0.15.35"
@@ -2802,7 +2785,7 @@
   resolved "https://registry.yarnpkg.com/@safe-global/safe-gateway-typescript-sdk/-/safe-gateway-typescript-sdk-3.22.9.tgz#7f6571aaf1aecbe1217f6dd294ad2f3d90c2c8c2"
   integrity sha512-7ojVK/crhOaGowEO8uYWaopZzcr5rR76emgllGIfjCLR70aY4PbASpi9Pbs+7jIRzPDBBkM0RBo+zYx5UduX8Q==
 
-"@scure/base@^1.1.3", "@scure/base@^1.1.9", "@scure/base@^1.2.4", "@scure/base@~1.2.2", "@scure/base@~1.2.4":
+"@scure/base@^1.1.3", "@scure/base@^1.2.4", "@scure/base@~1.2.2", "@scure/base@~1.2.4":
   version "1.2.4"
   resolved "https://registry.yarnpkg.com/@scure/base/-/base-1.2.4.tgz#002eb571a35d69bdb4c214d0995dff76a8dcd2a9"
   integrity sha512-5Yy9czTO47mqz+/J8GM6GIId4umdCk1wc1q8rKERQulIoc8VP9pzDcghv10Tl2E7R96ZUx/PhND3ESYUQX8NuQ==
@@ -2855,7 +2838,7 @@
     "@noble/hashes" "~1.4.0"
     "@scure/base" "~1.1.6"
 
-"@scure/bip39@1.5.4", "@scure/bip39@^1.3.0", "@scure/bip39@^1.4.0":
+"@scure/bip39@1.5.4", "@scure/bip39@^1.4.0":
   version "1.5.4"
   resolved "https://registry.yarnpkg.com/@scure/bip39/-/bip39-1.5.4.tgz#07fd920423aa671be4540d59bdd344cc1461db51"
   integrity sha512-TFM4ni0vKvCfBpohoh+/lY05i9gRbSwXWngAsF4CABQxoaOHijxuaZ2R6cStDQ5CHtHO9aGJTr4ksVJASRRyMA==
@@ -9808,7 +9791,7 @@ viem@^2.1.1:
     ox "0.6.7"
     ws "8.18.0"
 
-viem@^2.21.10, viem@^2.22.21, viem@^2.23.14, viem@^2.23.3, viem@^2.24.3:
+viem@^2.22.21, viem@^2.23.14, viem@^2.23.3, viem@^2.24.3:
   version "2.25.0"
   resolved "https://registry.yarnpkg.com/viem/-/viem-2.25.0.tgz#53e2438512f21233be1f2850b9862e80fc512041"
   integrity sha512-TtFgfQkZOfb642s8+i+h27dRhBfZV//WWOkZ9saoS1Ml8kipj9RiOiDaSmAUly1rhq9kbnYhni1xVtb195XVGA==

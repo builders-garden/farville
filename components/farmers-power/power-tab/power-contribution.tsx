@@ -15,17 +15,17 @@ import {
 } from "@/components/ui/accordion";
 import { X, Loader2 } from "lucide-react";
 import { cn, communityContributionFlexCardComposeCastUrl } from "@/lib/utils";
-import { DaimoPayButton } from "@daimo/pay";
 import { base } from "viem/chains";
 import {
   BASE_USDC_ADDRESS,
   BG_MULTISIG_ADDRESS,
   BASE_SCAN_BASE_URL,
 } from "@/lib/contracts/constants";
-import { PaymentCompletedEvent } from "@daimo/common";
 import { env } from "@/lib/env";
 import sdk from "@farcaster/frame-sdk";
 import { useGame } from "@/context/GameContext";
+import { PaymentCompletedEvent } from "@daimo/pay-common";
+import { DaimoPayButton, useDaimoPayUI } from "@daimo/pay";
 
 interface PowerContributionProps {
   showDialog: boolean;
@@ -54,6 +54,8 @@ export const PowerContribution = ({
   tokenBalancesIsLoading,
   returnedDonationId,
 }: PowerContributionProps) => {
+  const { resetPayment } = useDaimoPayUI();
+
   const [contributionAmount, setContributionAmount] = useState(1);
   const [showCustomSlider, setShowCustomSlider] = useState(false);
   const [paymentStarted, setPaymentStarted] = useState(false);
@@ -65,6 +67,9 @@ export const PowerContribution = ({
 
   const resetState = () => {
     setContributionAmount(1);
+    resetPayment({
+      toUnits: "1",
+    });
     setShowCustomSlider(false);
     setPaymentStarted(false);
     setPaymentCompleted(false);
@@ -227,6 +232,9 @@ export const PowerContribution = ({
                     onClick={() => {
                       setContributionAmount(amount);
                       setShowCustomSlider(false);
+                      resetPayment({
+                        toUnits: amount.toString(),
+                      });
                     }}
                     disabled={tokenBalancesIsLoading}
                   >
@@ -254,10 +262,7 @@ export const PowerContribution = ({
                 className="w-full"
                 value={showCustomSlider ? "custom-amount" : ""}
               >
-                <AccordionItem
-                  value="custom-amount"
-                  className="border-0"
-                >
+                <AccordionItem value="custom-amount" className="border-0">
                   <AccordionTrigger className="hidden">
                     Custom Amount
                   </AccordionTrigger>
@@ -274,9 +279,12 @@ export const PowerContribution = ({
                       <Slider
                         variant="yellow-brown"
                         value={[contributionAmount]}
-                        onValueChange={(value) =>
-                          setContributionAmount(value[0])
-                        }
+                        onValueChange={(value) => {
+                          setContributionAmount(value[0]);
+                          resetPayment({
+                            toUnits: value[0].toString(),
+                          });
+                        }}
                         max={50}
                         min={1}
                         step={1}
@@ -383,10 +391,7 @@ export const PowerContribution = ({
                   disabled
                 >
                   <div className="flex items-center justify-center gap-2">
-                    <Loader2
-                      className="w-4 h-4 animate-spin"
-                      strokeWidth={3}
-                    />
+                    <Loader2 className="w-4 h-4 animate-spin" strokeWidth={3} />
                     <span>Processing...</span>
                   </div>
                 </Button>
