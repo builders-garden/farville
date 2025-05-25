@@ -108,29 +108,30 @@ model Streak {
 }
 
 model User {
-  fid                 Int                    @id
-  username            String
-  displayName         String
-  avatarUrl           String?
-  walletAddress       String
-  notificationDetails Json?                  @db.Json
-  mintedOG            Boolean                @default(false)
-  createdAt           DateTime               @default(now()) @db.Timestamptz(6)
-  selectedAvatarUrl   String?
-  referrals           Referral[]
-  requests            Request[]
-  streaks             Streak[]
-  donationsAsDonator  UserDonationHistory[]  @relation("user_donation_history_donatorFidTouser")
-  donationsAsReceiver UserDonationHistory[]  @relation("user_donation_history_receiverFidTouser")
-  gridCells           UserGridCell[]
-  harvestedCrops      UserHarvestedCrop[]
-  collectibles        UserHasCollectible[]
-  items               UserHasItem[]
-  quests              UserHasQuest[]
-  vouchers            UserHasVoucher[]
-  leaderboardEntry    UserLeaderboardEntry[]
-  user_notification   UserNotification[]
-  statistics          UserStatistic[]
+  fid                   Int                     @id
+  username              String
+  displayName           String
+  avatarUrl             String?
+  walletAddress         String
+  notificationDetails   Json?                   @db.Json
+  mintedOG              Boolean                 @default(false)
+  createdAt             DateTime                @default(now()) @db.Timestamptz(6)
+  selectedAvatarUrl     String?
+  referrals             Referral[]
+  requests              Request[]
+  streaks               Streak[]
+  UserCommunityDonation UserCommunityDonation[]
+  donationsAsDonator    UserDonationHistory[]   @relation("user_donation_history_donatorFidTouser")
+  donationsAsReceiver   UserDonationHistory[]   @relation("user_donation_history_receiverFidTouser")
+  gridCells             UserGridCell[]
+  harvestedCrops        UserHarvestedCrop[]
+  collectibles          UserHasCollectible[]
+  items                 UserHasItem[]
+  quests                UserHasQuest[]
+  vouchers              UserHasVoucher[]
+  leaderboardEntry      UserLeaderboardEntry[]
+  user_notification     UserNotification[]
+  statistics            UserStatistic[]
 
   @@map("user")
 }
@@ -302,4 +303,39 @@ model UserHasVoucher {
 
   @@id([fid, voucherId])
   @@map("user_has_voucher")
+}
+
+model UserCommunityDonation {
+  id                 String                        @id @default(dbgenerated("gen_random_uuid()"))
+  txHash             String
+  mode               String                        @default("classic")
+  fid                Int
+  dollarAmount       Float
+  ptAmount           Float
+  message            String?
+  createdAt          DateTime                      @default(now()) @db.Timestamptz(6)
+  walletAddress      String
+  lastStageDonations UserCommunityBoosterHistory[]
+  user               User                          @relation(fields: [fid], references: [fid], onDelete: NoAction, onUpdate: NoAction)
+
+  @@map("user_community_donation")
+}
+
+model UserCommunityBoosterHistory {
+  id           String                 @id @default(dbgenerated("gen_random_uuid()"))
+  mode         String                 @default("classic")
+  stage        Int
+  lastDonation String?
+  createdAt    DateTime               @default(now()) @db.Timestamptz(6)
+  donation     UserCommunityDonation? @relation(fields: [lastDonation], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "user_community_booster_history_last_donation_fkey")
+
+  @@map("user_community_booster_history")
+}
+
+model CommunityBoosterPoints {
+  points Int    @id
+  mode   String @default("classic")
+  combo  Int    @default(1)
+
+  @@map("community_booster_points")
 }

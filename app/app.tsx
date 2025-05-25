@@ -1,9 +1,12 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import dynamic from "next/dynamic";
 import type { OverlayConfig } from "@/context/GameContext";
 import { Toaster } from "react-hot-toast";
+import { useAccount, useConnect } from "wagmi";
+import farcasterFrame from "@farcaster/frame-wagmi-connector";
+import { useFrameContext } from "@/context/FrameContext";
 
 export const toasterStyle = {
   padding: "0.375rem 0.75rem",
@@ -27,6 +30,21 @@ export default function App({
 }: {
   initialOverlay?: OverlayConfig;
 }) {
+  const { isConnected, address } = useAccount();
+  const { connect } = useConnect();
+  const { context } = useFrameContext();
+
+  // always connect to wagmi farcaster frame to retrieve wallet address
+  useEffect(() => {
+    if (!isConnected || !address) {
+      if (context) {
+        connect({ connector: farcasterFrame() });
+      }
+      return;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isConnected, address]);
+
   return (
     <>
       <Toaster

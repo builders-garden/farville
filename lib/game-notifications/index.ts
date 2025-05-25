@@ -1,6 +1,5 @@
 import { Mode, SeedType } from "@/lib/types/game";
 import { qstashPublishJSON } from "../qstash";
-import { CROP_DATA } from "@/lib/game-constants";
 import { env } from "@/lib/env";
 import Logger from "../logger";
 
@@ -61,29 +60,4 @@ export function getCropNameFromSeeds(seedType: SeedType) {
     default:
       throw new Error(`Unknown seed type: ${seedType}`);
   }
-}
-
-function formatMillisecondsToTimeUnit(
-  ms: number
-): `${bigint}s` | `${bigint}m` | `${bigint}h` | `${bigint}d` {
-  const seconds = ms / 1000;
-  const minutes = seconds / 60;
-  const hours = minutes / 60;
-  const days = hours / 24;
-
-  if (days >= 1) return `${BigInt(Math.floor(days))}d`;
-  if (hours >= 1) return `${BigInt(Math.floor(hours))}h`;
-  if (minutes >= 1) return `${BigInt(Math.floor(minutes))}m`;
-  return `${BigInt(Math.floor(seconds))}s`;
-}
-
-export function getGrowthTime(
-  seedType: SeedType
-): `${bigint}s` | `${bigint}m` | `${bigint}h` | `${bigint}d` {
-  const cropType = seedType.replace("-seeds", "");
-  const cropData = CROP_DATA[cropType];
-  if (!cropData) {
-    throw new Error(`Unknown seed type: ${seedType}`);
-  }
-  return formatMillisecondsToTimeUnit(cropData.growthTime);
 }
