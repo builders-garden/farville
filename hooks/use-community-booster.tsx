@@ -35,6 +35,7 @@ export const useCommunityBoosterIncrement = () => {
       message?: string;
       username: string;
       mode: Mode;
+      pfp: string;
     }
   >({
     url: () => `/api/community/booster`,
@@ -44,6 +45,7 @@ export const useCommunityBoosterIncrement = () => {
       message: data.message,
       username: data.username,
       mode: data.mode,
+      pfp: data.pfp,
     }),
     onSuccess: (data) => {
       console.log("Points successfully updated:", data);

@@ -273,7 +273,8 @@ export const useGameState = (mode: Mode) => {
       const lastDonationDate =
         communityDonations && communityDonations.length > 0
           ? new Date(communityDonations[0].createdAt)
-          : userCommunityBoosterStatus.donation.createdAt;
+          : new Date(userCommunityBoosterStatus.donation.createdAt);
+
       setState((prevState) => ({
         ...prevState!,
         communityBoosterStatus: {

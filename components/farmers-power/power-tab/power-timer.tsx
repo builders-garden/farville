@@ -190,7 +190,7 @@ export const PowerTimer = ({
           })()}
         </motion.div>
 
-        {powerCombo > 1 && (
+        {powerCombo > 1 ? (
           <motion.div
             className={`w-full text-center text-sm font-semibold ${styles.text}`}
             animate={{ scale: [1, 1.05, 1] }}
@@ -198,6 +198,10 @@ export const PowerTimer = ({
           >
             Power Combo: {powerCombo}x
           </motion.div>
+        ) : (
+          <div className={`w-full text-center text-sm ${styles.text}`}>
+            Start a Combo now!
+          </div>
         )}
       </div>
 

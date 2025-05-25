@@ -4,11 +4,6 @@ import "./globals.css";
 import { Providers } from "./providers";
 import { Toaster } from "@/components/ui/sonner";
 
-// const geist = Geist({
-//   variable: "--font-geist",
-//   subsets: ["latin"],
-// });
-
 const pixelFont = Press_Start_2P({
   weight: "400",
   subsets: ["latin"],
@@ -25,7 +20,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html
+      lang="en"
+      suppressHydrationWarning
+    >
       <body className={`${pixelFont.className} antialiased`}>
         <Toaster
           // offset={{ bottom: "20rem" }}
@@ -35,10 +33,10 @@ export default function RootLayout({
               padding: "0.375rem 0.75rem",
               fontSize: "0.7rem",
               filter: "drop-shadow(0 4px 4px rgb(0 0 0 / 0.15))",
-              backgroundColor: "chocolate",
+              backgroundColor: "#148435",
               color: "white",
               marginBottom: "4.5rem",
-              width: "58%",
+              width: "fit-content",
               marginLeft: "auto",
               marginRight: "30px",
               fontFamily: '"Press Start 2P"',

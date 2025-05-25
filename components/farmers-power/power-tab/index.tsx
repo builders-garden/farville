@@ -189,6 +189,8 @@ export const PowerTab = () => {
     !!tokenBalancesData?.totalBalanceUSD &&
     tokenBalancesData.totalBalanceUSD >= 1;
 
+  const userPfp = state.user.selectedAvatarUrl || state.user.avatarUrl || "";
+
   const { mutateAsync: updateFP } = useCommunityBoosterIncrement();
 
   const handleContributionSuccess = async (paymentId: string) => {
@@ -202,6 +204,7 @@ export const PowerTab = () => {
         message: undefined,
         username: state.user.username,
         mode: mode,
+        pfp: userPfp,
       });
       setDonationId(result.data.donationId);
     } catch (error) {

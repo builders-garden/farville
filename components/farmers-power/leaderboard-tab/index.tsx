@@ -66,7 +66,7 @@ export const LeaderboardTab = ({ onSelectUser }: LeaderboardTabProps) => {
       : undefined;
 
   return (
-    <>
+    <div className="flex flex-col gap-2 xs:gap-3">
       {transformedLeaderboardData?.targetData && (
         <motion.div
           key={state.user.fid}
@@ -164,6 +164,6 @@ export const LeaderboardTab = ({ onSelectUser }: LeaderboardTabProps) => {
         ))}
       </div>
       <FloatingShareButton onClick={handleShare} />
-    </>
+    </div>
   );
 };
