@@ -26,7 +26,7 @@ import {
   PaymentBouncedEvent,
   PaymentCompletedEvent,
   PaymentStartedEvent,
-} from "@daimo/common";
+} from "@daimo/pay-common";
 import { DaimoPayButton } from "@daimo/pay";
 import { base, mainnet } from "viem/chains";
 

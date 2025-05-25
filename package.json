@@ -19,7 +19,7 @@
   },
   "dependencies": {
     "@daimo/common": "^1.6.0",
-    "@daimo/pay": "^1.6.3",
+    "@daimo/pay": "^1.8.4",
     "@farcaster/auth-client": "^0.3.0",
     "@farcaster/frame-node": "^0.0.10",
     "@farcaster/frame-sdk": "^0.0.26",
