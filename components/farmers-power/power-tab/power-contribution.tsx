@@ -65,11 +65,15 @@ export const PowerContribution = ({
   const [paymentHandled, setPaymentHandled] = useState(false);
   const { state, mode } = useGame();
 
-  const resetState = () => {
-    setContributionAmount(1);
+  const handleSetContributionAmount = (amount: number) => {
+    setContributionAmount(amount);
     resetPayment({
-      toUnits: "1",
+      toUnits: amount.toString(),
     });
+  };
+
+  const resetState = () => {
+    handleSetContributionAmount(1);
     setShowCustomSlider(false);
     setPaymentStarted(false);
     setPaymentCompleted(false);
@@ -230,11 +234,8 @@ export const PowerContribution = ({
                         : "text-yellow-400/90 bg-[#5C4121] hover:bg-[#5C4121]/70"
                     )}
                     onClick={() => {
-                      setContributionAmount(amount);
+                      handleSetContributionAmount(amount);
                       setShowCustomSlider(false);
-                      resetPayment({
-                        toUnits: amount.toString(),
-                      });
                     }}
                     disabled={tokenBalancesIsLoading}
                   >
@@ -262,7 +263,10 @@ export const PowerContribution = ({
                 className="w-full"
                 value={showCustomSlider ? "custom-amount" : ""}
               >
-                <AccordionItem value="custom-amount" className="border-0">
+                <AccordionItem
+                  value="custom-amount"
+                  className="border-0"
+                >
                   <AccordionTrigger className="hidden">
                     Custom Amount
                   </AccordionTrigger>
@@ -281,6 +285,8 @@ export const PowerContribution = ({
                         value={[contributionAmount]}
                         onValueChange={(value) => {
                           setContributionAmount(value[0]);
+                        }}
+                        onValueCommit={(value) => {
                           resetPayment({
                             toUnits: value[0].toString(),
                           });
@@ -391,7 +397,10 @@ export const PowerContribution = ({
                   disabled
                 >
                   <div className="flex items-center justify-center gap-2">
-                    <Loader2 className="w-4 h-4 animate-spin" strokeWidth={3} />
+                    <Loader2
+                      className="w-4 h-4 animate-spin"
+                      strokeWidth={3}
+                    />
                     <span>Processing...</span>
                   </div>
                 </Button>
