@@ -807,3 +807,14 @@ export const getCurrentPowerStateTarget = (fp: number) => {
     target: POWER_STAGES[currentPowerStage]?.fpRequired,
   };
 };
+
+export const getRandomTestUserFid = async (): Promise<number> => {
+  const users = await getUsersByXp(Mode.Classic, 200);
+  const randomUser =
+    users.users[Math.floor(Math.random() * users.users.length)];
+  console.log(
+    `getRandomTestUserFid randomUser: https://warpcast.com/${randomUser.username} (${randomUser.displayName})`,
+    randomUser.fid
+  );
+  return randomUser.fid;
+};

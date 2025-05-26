@@ -133,7 +133,7 @@ export default function ProfileModal({
 
   if (!isCurrentUser && isLoading) {
     return (
-      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+      <div className="fixed inset-0 max-w-md mx-auto bg-black/50 flex items-center justify-center z-50">
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -151,7 +151,7 @@ export default function ProfileModal({
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-start z-50">
+    <div className="fixed inset-0 max-w-md mx-auto bg-black/50 flex items-start z-50">
       <motion.div
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}

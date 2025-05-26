@@ -1,4 +1,5 @@
 import { CropType, ExpansionCost } from "@/lib/types/game";
+import { env } from "@/lib/env";
 
 // Add EXPANSION_COSTS to the context file
 export const EXPANSION_COSTS: ExpansionCost[] = [
@@ -75,8 +76,8 @@ export interface CropData {
   goldId: number;
 }
 
-export const millisecondsInHour = 3600000;
-// process.env.NODE_ENV === "production" ? 3600000 : 1000;
+export const millisecondsInHour =
+  env.NEXT_PUBLIC_APP_ENV === "production" ? 3600000 : 1000;
 
 export const CROP_DATA: { [key: string]: CropData } = {
   wheat: {

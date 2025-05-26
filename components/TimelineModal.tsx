@@ -87,7 +87,7 @@ export default function TimelineModal({ onClose }: { onClose: () => void }) {
   const isLoading = isLoadingUser;
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-start z-50">
+    <div className="fixed inset-0 max-w-md mx-auto bg-black/50 flex items-start z-50">
       {isLoading ? (
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="w-16 h-16 border-4 border-[#FFB938] rounded-full animate-spin"></div>

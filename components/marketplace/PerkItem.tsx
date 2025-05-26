@@ -52,7 +52,7 @@ export default function PerkItem({
   return (
     <motion.div
       key={perk.id}
-      className="bg-[#6d4c2c] p-3 rounded-lg flex flex-col sm:flex-row sm:items-start gap-2 xs:gap-4
+      className="bg-[#6d4c2c] px-3 xs:px-4 py-3 xs:py-3 rounded-lg flex flex-col gap-2 xs:gap-4
                  border border-[#8B5E3C]/50 shadow-md hover:bg-[#7d583a] transition-colors"
     >
       <div className="flex sm:flex-1 items-start gap-2 xs:gap-4 min-w-0">
@@ -116,6 +116,7 @@ export default function PerkItem({
                   className="w-full px-1 xs:px-2 py-1 xs:py-1.5 bg-[#2B593B] text-white/90 rounded hover:bg-[#346344] 
                   transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-[10px] xs:text-xs font-medium
                   border border-white/10"
+                  data-testid={`market-buy-perk-${perk.slug}-${amount}`}
                 >
                   {amount}
                 </motion.button>

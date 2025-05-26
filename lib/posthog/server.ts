@@ -30,6 +30,12 @@ export const sendBatchToPostHog = async (
   const API_URL = "https://eu.i.posthog.com/batch/";
   const API_KEY = env.NEXT_PUBLIC_POSTHOG_KEY;
 
+  const isTestMode =
+    !!env.NEXT_PUBLIC_IS_TEST_MODE && env.NEXT_PUBLIC_APP_ENV === "development";
+  if (isTestMode) {
+    return;
+  }
+
   if (!API_KEY) {
     console.error("PostHog API key not found");
     return;

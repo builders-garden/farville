@@ -48,7 +48,7 @@ export default function Confetti({ title }: ConfettiProps) {
   if (!visible) return null;
 
   return title ? (
-    <div className="fixed inset-0 flex items-center justify-center pointer-events-none z-[80]">
+    <div className="fixed inset-0 max-w-md mx-auto flex items-center justify-center pointer-events-none z-[80]">
       <div
         className={`text-${
           title.includes(" ") ? "6xl" : "5xl"

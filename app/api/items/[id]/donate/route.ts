@@ -1,4 +1,3 @@
-import { sendQuestsCalculation } from "@/app/api/grid-cells/utils";
 import { XP_PER_DONATED_ITEM } from "@/lib/game-constants";
 import { sendDelayedNotification } from "@/lib/game-notifications";
 import {
@@ -18,6 +17,8 @@ import { userCanDonate } from "@/lib/utils";
 import { Mode, PerkType, SpecialItemType } from "@/lib/types/game";
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import axios from "axios";
+import { env } from "@/lib/env";
 
 const requestSchema = z.object({
   quantity: z.number().min(1).max(10),
@@ -148,8 +149,36 @@ export const POST = async (
   });
 
   await Promise.all([
-    sendQuestsCalculation(Number(fid), "donate", mode, itemId, quantity),
-    sendQuestsCalculation(Number(toFid), "receive", mode, itemId, quantity),
+    // sendQuestsCalculation(Number(fid), "donate", mode, itemId, quantity),
+    // sendQuestsCalculation(Number(toFid), "receive", mode, itemId, quantity),
+    axios({
+      url: `${env.FARVILLE_SERVICE_URL}/api/async-jobs/quests-calculation`,
+      method: "POST",
+      headers: {
+        "x-api-secret": env.FARVILLE_SERVICE_API_KEY,
+      },
+      data: {
+        fid: Number(fid),
+        category: "donate",
+        itemId,
+        itemAmount: quantity,
+        mode,
+      },
+    }),
+    axios({
+      url: `${env.FARVILLE_SERVICE_URL}/api/async-jobs/quests-calculation`,
+      method: "POST",
+      headers: {
+        "x-api-secret": env.FARVILLE_SERVICE_API_KEY,
+      },
+      data: {
+        fid: Number(toFid),
+        category: "receive",
+        itemId,
+        itemAmount: quantity,
+        mode,
+      },
+    }),
     sendDelayedNotification(
       toFid.toString(),
       "New Donation!",

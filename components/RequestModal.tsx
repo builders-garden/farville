@@ -153,7 +153,7 @@ export default function RequestModal({
 
   if ((!request && isLoading) || todayDonations === undefined) {
     return (
-      <div className="fixed inset-0 flex items-center justify-center">
+      <div className="fixed inset-0 max-w-md mx-auto flex items-center justify-center">
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}

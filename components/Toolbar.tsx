@@ -32,7 +32,7 @@ export default function Toolbar({
   }, [mode]);
 
   return (
-    <div className="fixed bottom-0 inset-x-0 bg-[#7E4E31]">
+    <div className="fixed bottom-0 inset-x-0 bg-[#7E4E31] max-w-md mx-auto">
       <div
         className="py-3 flex justify-evenly items-center"
         style={{

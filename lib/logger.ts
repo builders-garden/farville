@@ -1,3 +1,5 @@
+import { env } from "@/lib/env";
+
 class Logger {
   private static formatMessage(level: string, message: string): string {
     const timestamp = new Date().toISOString();
@@ -6,6 +8,13 @@ class Logger {
 
   static log(message: string): void {
     console.log(this.formatMessage("log", message));
+  }
+
+  static logTest(message: string): void {
+    const isTestMode =
+      !!env.NEXT_PUBLIC_IS_TEST_MODE &&
+      env.NEXT_PUBLIC_APP_ENV === "development";
+    if (isTestMode) console.log(this.formatMessage("log", message));
   }
 
   static info(message: string): void {

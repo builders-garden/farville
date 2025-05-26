@@ -28,15 +28,21 @@ export const calculateUserQuestsProgress = async (
     return [];
   }
 
-  // Filter eligible quests and process updates
-  const questUpdates = [];
-
-  for (const quest of quests.filter(
+  // Filter eligible quests
+  const eligibleQuests = quests.filter(
     (quest) =>
       quest.quest && (!quest.quest.itemId || quest.quest.itemId === itemId)
-  )) {
-    const result = await prisma.$transaction(async (tx) => {
-      // Get current progress and increment it atomically
+  );
+
+  if (!eligibleQuests.length) {
+    return [];
+  }
+
+  // Batch update all eligible quests in a single transaction
+  const updatedQuestIds: number[] = [];
+  await prisma.$transaction(async (tx) => {
+    for (const quest of eligibleQuests) {
+      // Atomically increment progress and check if completed
       const updated = await tx.userHasQuest.update({
         where: {
           fid_questId: {
@@ -51,9 +57,9 @@ export const calculateUserQuestsProgress = async (
         },
       });
 
-      // If completed, update the status in the same transaction
-      if (updated.progress >= (quest.quest!.amount || 1)) {
-        return tx.userHasQuest.update({
+      // If completed, update status in the same transaction
+      if (updated.progress + itemAmount >= (quest.quest!.amount || 1)) {
+        await tx.userHasQuest.update({
           where: {
             fid_questId: {
               fid,
@@ -66,12 +72,18 @@ export const calculateUserQuestsProgress = async (
           },
         });
       }
+      updatedQuestIds.push(quest.questId);
+    }
+  });
 
-      return updated;
-    });
+  // Fetch and return the updated quests for consistent return values
+  const updatedQuests = await prisma.userHasQuest.findMany({
+    where: {
+      fid,
+      questId: { in: updatedQuestIds },
+    },
+    include: { quest: true },
+  });
 
-    questUpdates.push(result);
-  }
-
-  return questUpdates;
+  return updatedQuests;
 };

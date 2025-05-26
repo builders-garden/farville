@@ -2,6 +2,7 @@ import { Item, UserHasItem } from "@prisma/client";
 import { prisma } from "../client";
 import { Mode } from "@/lib/types/game";
 import { STARTER_PACKS } from "@/lib/modes/constants";
+import Logger from "@/lib/logger";
 
 export const getUserItemByItemId = async (
   fid: number,
@@ -175,6 +176,9 @@ export const removeUserItem = async (
           quantity: { decrement: quantity },
         },
       });
+      Logger.logTest(
+        `/api/grid-bulk user ${fid} action plant step: '4.a update user has item' date ${new Date()}`
+      );
 
       // If the quantity drops to 0 or below, delete the record
       if (updatedItem.quantity <= 0) {
@@ -187,6 +191,9 @@ export const removeUserItem = async (
             },
           },
         });
+        Logger.logTest(
+          `/api/grid-bulk user ${fid} action plant step: '4.b deleted record cause quantity dropped below 0' date ${new Date()}`
+        );
       }
 
       return updatedItem;

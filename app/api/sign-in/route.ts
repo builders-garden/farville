@@ -15,9 +15,20 @@ import {
 import { initQuestsAndLeaderboardEntry } from "@/lib/utils";
 import { env } from "@/lib/env";
 import { Mode } from "@/lib/types/game";
+import { getRandomTestUserFid } from "@/lib/utils";
+
+export const dynamic = "force-dynamic";
 
 export const POST = async (req: NextRequest) => {
-  const { fid, referrerFid, signature, message } = await req.json();
+  const data = await req.json();
+  const { referrerFid, signature, message } = data;
+  const isTestMode =
+    !!env.NEXT_PUBLIC_IS_TEST_MODE && env.NEXT_PUBLIC_APP_ENV === "development";
+
+  let fid = data.fid;
+  if (isTestMode) {
+    fid = await getRandomTestUserFid();
+  }
 
   let user = await getUserByMode(fid, Mode.Classic);
 
@@ -49,11 +60,16 @@ export const POST = async (req: NextRequest) => {
   }
 
   // Verify signature matches custody address
-  const isValidSignature = await verifyMessage({
-    address: user.walletAddress as `0x${string}`,
-    message,
-    signature,
-  });
+  let isValidSignature;
+  if (isTestMode) {
+    isValidSignature = true;
+  } else {
+    isValidSignature = await verifyMessage({
+      address: user.walletAddress as `0x${string}`,
+      message,
+      signature,
+    });
+  }
 
   if (!isValidSignature) {
     return NextResponse.json({ error: "Invalid signature" }, { status: 401 });

@@ -4,7 +4,7 @@ import { CountdownTimer } from "./countdown-timer";
 
 export const Maintenance = ({ maintenanceEnd }: { maintenanceEnd: Date }) => {
   return (
-    <main className="h-screen w-screen overflow-hidden">
+    <main className="h-screen w-screen max-w-md mx-auto overflow-hidden">
       <div className="fixed inset-0">
         <Image
           src="/images/welcome.png"

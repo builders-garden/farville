@@ -1,8 +1,9 @@
-import { sendQuestsCalculation } from "@/app/api/grid-cells/utils";
 import { NextRequest, NextResponse } from "next/server";
 import { buyItem, sellItem } from "./utils";
 import { z } from "zod";
 import { MarketActionType, Mode } from "@/lib/types/game";
+import axios from "axios";
+import { env } from "@/lib/env";
 
 const requestSchema = z.object({
   action: z.nativeEnum(MarketActionType),
@@ -49,13 +50,27 @@ export const POST = async (req: NextRequest) => {
             { status: sellResult.status }
           );
         }
-        await sendQuestsCalculation(
-          Number(fid),
-          "sell",
-          mode,
-          itemId,
-          quantity
-        );
+        // await sendQuestsCalculation(
+        //   Number(fid),
+        //   "sell",
+        //   mode,
+        //   itemId,
+        //   quantity
+        // );
+        await axios({
+          url: `${env.FARVILLE_SERVICE_URL}/api/async-jobs/quests-calculation`,
+          method: "POST",
+          headers: {
+            "x-api-secret": env.FARVILLE_SERVICE_API_KEY,
+          },
+          data: {
+            fid: Number(fid),
+            category: "sell",
+            itemId,
+            itemAmount: quantity,
+            mode,
+          },
+        });
         return NextResponse.json({ message: "Item sold" });
       default:
         return NextResponse.json({ error: "Invalid action" }, { status: 400 });

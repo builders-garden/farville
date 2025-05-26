@@ -11,7 +11,9 @@ export async function sendDelayedNotification(
   mode: Mode,
   delay?: number | `${bigint}s` | `${bigint}m` | `${bigint}h` | `${bigint}d`
 ) {
-  if (env.NEXT_PUBLIC_URL === "http://localhost:3000") {
+  const isTestMode =
+    !!env.NEXT_PUBLIC_IS_TEST_MODE && env.NEXT_PUBLIC_APP_ENV === "development";
+  if (env.NEXT_PUBLIC_URL === "http://localhost:3000" || isTestMode) {
     return;
   }
   const res = await qstashPublishJSON({

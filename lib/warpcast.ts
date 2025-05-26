@@ -7,13 +7,20 @@ import { env } from "@/lib/env";
  */
 export async function getFarcasterManifest() {
   let frameName = "Farville";
+  let noindex = false;
   const appUrl = env.NEXT_PUBLIC_URL;
   if (appUrl.includes("localhost")) {
     frameName += " Local";
+    noindex = true;
   } else if (appUrl.includes("ngrok")) {
     frameName += " NGROK";
+    noindex = true;
   } else if (appUrl.includes("dev.farville.farm")) {
     frameName += " Dev";
+    noindex = true;
+  } else if (appUrl.includes("coolify")) {
+    frameName += " Coolify";
+    noindex = true;
   }
   return {
     accountAssociation: {
@@ -47,6 +54,7 @@ export async function getFarcasterManifest() {
       ],
       heroImageUrl: `${env.NEXT_PUBLIC_URL}/images/hero.jpg`, // 1200 x 630px (1.91:1), promotional display image on top of the mini app store
       ogImageUrl: `${env.NEXT_PUBLIC_URL}/images/hero.jpg`, // 1200 x 630px (1.91:1), promotional image, same as app hero image
+      noindex: noindex,
     },
   };
 }

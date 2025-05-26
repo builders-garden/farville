@@ -32,9 +32,11 @@ import {
   SeedType,
 } from "@/lib/types/game";
 import { NextResponse } from "next/server";
-import { sendQuestsCalculation } from "../grid-cells/utils";
 import { UserGridCell, UserHarvestedCrop } from "@prisma/client";
 import { MODE_DEFINITIONS, ModeFeature } from "@/lib/modes/constants";
+import Logger from "@/lib/logger";
+import { env } from "@/lib/env";
+import axios from "axios";
 
 export interface GridBulkResult {
   type: ActionType;
@@ -70,6 +72,9 @@ export const plantBulk = async (
   mode: Mode
 ) => {
   const userSeeds = await getUserItemBySlug(fid, seedType, mode);
+  Logger.logTest(
+    `/api/grid-bulk user ${fid} action plant step '1. get user seeds' date ${new Date()}`
+  );
 
   if (!userSeeds || userSeeds.quantity < cells.length) {
     return NextResponse.json(
@@ -80,6 +85,9 @@ export const plantBulk = async (
     );
   }
   const gridCells = await getUserGridCells(fid, mode);
+  Logger.logTest(
+    `/api/grid-bulk user ${fid} action plant step: '2. get grid cells' date ${new Date()}`
+  );
 
   const notPlantedCells: (UserGridCell | undefined)[] = [];
   const plantableCells: UserGridCell[] = [];
@@ -92,6 +100,9 @@ export const plantBulk = async (
       plantableCells.push(gridCell);
     }
   }
+  Logger.logTest(
+    `/api/grid-bulk user ${fid} action plant step: '3. filter cells' date ${new Date()}`
+  );
   const cropType = seedType.replace("-seeds", "") as CropType;
 
   // get current community boost
@@ -112,6 +123,9 @@ export const plantBulk = async (
       ),
     }))
   );
+  Logger.logTest(
+    `/api/grid-bulk user ${fid} action plant step: '4. update grid cells in db' date ${new Date()}`
+  );
 
   // TODO: add different track
   if (updatedGridCellsBulk.length > 0) {
@@ -120,6 +134,9 @@ export const plantBulk = async (
       userSeeds.itemId,
       updatedGridCellsBulk.length,
       mode
+    );
+    Logger.logTest(
+      `/api/grid-bulk user ${fid} action plant step: '5. remove user seeds' date ${new Date()}`
     );
 
     await sendDelayedNotification(
@@ -130,14 +147,35 @@ export const plantBulk = async (
       mode,
       getGrowthTime(seedType)
     );
-
-    await sendQuestsCalculation(
-      fid,
-      "plant",
-      mode,
-      userSeeds.itemId,
-      updatedGridCellsBulk.length
+    Logger.logTest(
+      `/api/grid-bulk user ${fid} action plant step: '6. send delayed notification' date ${new Date()}`
     );
+
+    // await sendQuestsCalculation(
+    //   fid,
+    //   "plant",
+    //   mode,
+    //   userSeeds.itemId,
+    //   updatedGridCellsBulk.length
+    // );
+    await axios({
+      url: `${env.FARVILLE_SERVICE_URL}/api/async-jobs/quests-calculation`,
+      method: "POST",
+      headers: {
+        "x-api-secret": env.FARVILLE_SERVICE_API_KEY,
+      },
+      data: {
+        fid,
+        mode,
+        category: "plant",
+        itemId: userSeeds.itemId,
+        itemAmount: updatedGridCellsBulk.length,
+      },
+    });
+    Logger.logTest(
+      `/api/grid-bulk user ${fid} action plant step: '7. send quests calculation' date ${new Date()}`
+    );
+
     await sendBatchToPostHog(
       fid,
       "planted-seed",
@@ -147,8 +185,10 @@ export const plantBulk = async (
         cellId: `${cell.x}/${cell.y}`,
       }))
     );
+    Logger.logTest(
+      `/api/grid-bulk user ${fid} action plant step: '8. send batch to posthog' date ${new Date()}`
+    );
   }
-
   return {
     type: ActionType.Plant,
     cells: {
@@ -164,6 +204,9 @@ export const harvestBulk = async (
   mode: Mode
 ) => {
   const gridCells = await getUserGridCells(fid, mode);
+  Logger.logTest(
+    `/api/grid-bulk user ${fid} action harvest step: '1. get grid cells' date ${new Date()}`
+  );
   const harvestableCells = [];
   const notHarvestableCells = [];
 
@@ -181,6 +224,9 @@ export const harvestBulk = async (
       harvestableCells.push(gridCell);
     }
   }
+  Logger.logTest(
+    `/api/grid-bulk user ${fid} action harvest step: '2. filter cells' date ${new Date()}`
+  );
 
   const crops = harvestableCells.map((gc) => {
     return {
@@ -190,6 +236,10 @@ export const harvestBulk = async (
       xp: CROP_DATA[gc.cropType!].rewardXP,
     };
   });
+
+  Logger.logTest(
+    `/api/grid-bulk user ${fid} action harvest step: '3. map cells' date ${new Date()}`
+  );
   await updateGridCellsBulk(
     fid,
     harvestableCells.map((cell) => ({
@@ -202,7 +252,13 @@ export const harvestBulk = async (
       speedBoostedAt: null,
     }))
   );
+  Logger.logTest(
+    `/api/grid-bulk user ${fid} action harvest step: '4. update grid cells in db' date ${new Date()}`
+  );
   const rewards = await rewardUserBulk(fid, crops, mode);
+  Logger.logTest(
+    `/api/grid-bulk user ${fid} action harvest step: '5. reward user bulk' date ${new Date()}`
+  );
 
   // update user items based on the rewards for each type of crop
   const harvestCropSummary: {
@@ -225,15 +281,24 @@ export const harvestBulk = async (
       harvestCropSummary[crop.crop] = crop.amount;
     }
   });
+  Logger.logTest(
+    `/api/grid-bulk user ${fid} action harvest step: '6. calc summary' date ${new Date()}`
+  );
 
   // check if Harverst Honours is enabled inside this mode
   const isHarvestHonoursAndGoldEnabled = MODE_DEFINITIONS[
     mode
   ].features.includes(ModeFeature.HarvestHonours);
+  Logger.logTest(
+    `/api/grid-bulk user ${fid} action harvest step: '7. calc is honours and gold enabled' date ${new Date()}`
+  );
 
   let userHarvestedCrops: UserHarvestedCrop[] = [];
   if (isHarvestHonoursAndGoldEnabled) {
     userHarvestedCrops = await getUserHarvestedCrops(fid);
+    Logger.logTest(
+      `/api/grid-bulk user ${fid} action harvest step: '8. get user harvested crops' date ${new Date()}`
+    );
   }
 
   // Process each crop type in a single pass
@@ -245,6 +310,9 @@ export const harvestBulk = async (
       const achievementProgress = getAchievementProgressByCrop(
         userHarvestedCrops,
         cropType as CropType
+      );
+      Logger.logTest(
+        `/api/grid-bulk user ${fid} action harvest step: '9. get achievement progress' date ${new Date()}`
       );
 
       // Check if the user has reached a new badge
@@ -265,7 +333,7 @@ export const harvestBulk = async (
       );
 
       if (goldCropCount > 0) {
-        console.log(
+        Logger.logTest(
           `User ${fid} harvested ${goldCropCount} gold ${cropType}! 🌟`
         );
         await addUserItem(fid, CROP_DATA[cropType].goldId, goldCropCount, mode);
@@ -281,14 +349,34 @@ export const harvestBulk = async (
     const regularCropAmount = amount - goldCropCount;
     if (regularCropAmount > 0) {
       await addUserItem(fid, CROP_DATA[cropType].id, regularCropAmount, mode);
+      Logger.logTest(
+        `/api/grid-bulk user ${fid} action harvest step: '10. add user item' date ${new Date()}`
+      );
     }
 
-    await sendQuestsCalculation(
-      fid,
-      ActionType.Harvest,
-      mode,
-      CROP_DATA[cropType].id,
-      amount
+    // await sendQuestsCalculation(
+    //   fid,
+    //   ActionType.Harvest,
+    //   mode,
+    //   CROP_DATA[cropType].id,
+    //   amount
+    // );
+    await axios({
+      url: `${env.FARVILLE_SERVICE_URL}/api/async-jobs/quests-calculation`,
+      method: "POST",
+      headers: {
+        "x-api-secret": env.FARVILLE_SERVICE_API_KEY,
+      },
+      data: {
+        fid,
+        mode,
+        category: ActionType.Harvest,
+        itemId: CROP_DATA[cropType].id,
+        itemAmount: amount,
+      },
+    });
+    Logger.logTest(
+      `/api/grid-bulk user ${fid} action harvest step: '11. send quests calculation' date ${new Date()}`
     );
   }
 
@@ -301,6 +389,9 @@ export const harvestBulk = async (
         cropType: crop.crop,
         cellId: `${crop.x}/${crop.y}`,
       }))
+    );
+    Logger.logTest(
+      `/api/grid-bulk user ${fid} action harvest step: '12. send batch to posthog' date ${new Date()}`
     );
   }
 
@@ -331,8 +422,17 @@ const rewardUserBulk = async (
       amount: cropReward,
     };
   });
+  Logger.logTest(
+    `/api/grid-bulk user ${fid} action harvest step: '4.a map crop with rewards' date ${new Date()}`
+  );
   const totalXp = cropsWithRewards.reduce((acc, crop) => acc + crop.xp, 0);
+  Logger.logTest(
+    `/api/grid-bulk user ${fid} action harvest step: '4.b calc total xp' date ${new Date()}`
+  );
   const updateResult = await updateUserXP(fid, totalXp, mode);
+  Logger.logTest(
+    `/api/grid-bulk user ${fid} action harvest step: '4.c update user xp' date ${new Date()}`
+  );
   await updateUserWeeklyScore(
     fid,
     totalXp,
@@ -340,6 +440,9 @@ const rewardUserBulk = async (
     updateResult.oldXp,
     updateResult.didLevelUp,
     mode
+  );
+  Logger.logTest(
+    `/api/grid-bulk user ${fid} action harvest step: '4.d update user weekly score' date ${new Date()}`
   );
 
   return {

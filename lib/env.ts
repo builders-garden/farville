@@ -26,6 +26,8 @@ export const env = createEnv({
     // Farville Service
     FARVILLE_SERVICE_URL: z.string().url().min(1),
     FARVILLE_SERVICE_API_KEY: z.string().min(1),
+    // test playwright on artillery cloud load testing
+    ARTILLERY_CLOUD_API_KEY: z.string().optional(),
   },
   client: {
     NEXT_PUBLIC_URL: z.string().url().min(1),
@@ -45,6 +47,12 @@ export const env = createEnv({
     NEXT_PUBLIC_FARCASTER_SIGNATURE: z.string().min(1),
     // Socket
     NEXT_PUBLIC_SOCKET_URL: z.string().url().min(1),
+    // test playwright
+    NEXT_PUBLIC_IS_TEST_MODE: z.string().transform((s) => s === "true"),
+    NEXT_PUBLIC_APP_ENV: z
+      .enum(["development", "production"])
+      .optional()
+      .default("development"),
   },
   // For Next.js >= 13.4.4, you only need to destructure client variables:
   experimental__runtimeEnv: {
@@ -63,5 +71,7 @@ export const env = createEnv({
     NEXT_PUBLIC_REOWN_DOMAIN_VERIFICATION_CODE:
       process.env.NEXT_PUBLIC_REOWN_DOMAIN_VERIFICATION_CODE,
     NEXT_PUBLIC_SOCKET_URL: process.env.NEXT_PUBLIC_SOCKET_URL,
+    NEXT_PUBLIC_IS_TEST_MODE: process.env.NEXT_PUBLIC_IS_TEST_MODE,
+    NEXT_PUBLIC_APP_ENV: process.env.NEXT_PUBLIC_APP_ENV,
   },
 });

@@ -385,7 +385,7 @@ export default function GameWrapper() {
             marginLeft: safeAreaInsets.left,
             marginRight: safeAreaInsets.right,
           }}
-          className="flex flex-col h-[100dvh] w-full overflow-hidden"
+          className="flex flex-col h-[100dvh] w-full max-w-md mx-auto overflow-hidden"
         >
           <Header />
           <div

@@ -88,7 +88,7 @@ export default function MarketplaceItem({
       initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ delay: index * 0.1 }}
-      className={`bg-[#6d4c2c] px-3 xs:px-4 py-3 xs:py-3 rounded-lg flex flex-col md:flex-row md:items-center gap-2 xs:gap-3
+      className={`bg-[#6d4c2c] px-3 xs:px-4 py-3 xs:py-3 rounded-lg flex flex-col gap-2 xs:gap-3
                border border-[#8B5E3C]/50 shadow-md relative
                hover:bg-[#7d583a] transition-colors ${
                  isLevelRequired ? "opacity-75" : ""
@@ -154,6 +154,7 @@ export default function MarketplaceItem({
                       key={amount}
                       amount={amount}
                       itemId={item.id}
+                      itemSlug={item.slug}
                       disabled={
                         ownedQuantity < (amount === "ALL" ? 1 : Number(amount))
                       }
@@ -167,6 +168,7 @@ export default function MarketplaceItem({
                         key={amount}
                         amount={amount}
                         itemId={item.id}
+                        itemSlug={item.slug}
                         disabled={
                           item.category === "seed" &&
                           userCoins < (item.buyPrice || 0) * Number(amount)
@@ -245,11 +247,13 @@ export default function MarketplaceItem({
 function BuySellButton({
   amount,
   itemId,
+  itemSlug,
   disabled,
   onClick,
 }: {
   amount: number | string;
   itemId: number;
+  itemSlug: string;
   disabled: boolean;
   onClick: (itemId: number, quantity: number) => void;
 }) {
@@ -265,6 +269,7 @@ function BuySellButton({
       className="w-full px-1 xs:px-2 py-1 xs:py-1.5 bg-[#2B593B] text-white/90 rounded hover:bg-[#346344] 
             transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-[10px] xs:text-xs font-medium
             border border-white/10"
+      data-testid={`market-buy-sell-item-${itemSlug}-${amount}`}
     >
       {amount}
     </motion.button>
