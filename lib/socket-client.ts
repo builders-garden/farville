@@ -15,6 +15,7 @@ export type ServerToClientEvents = {
     username: string;
     stage: number;
     combo: number;
+    pfp: string;
   }) => void;
   "harvest-all": (data: {
     newStage: number;

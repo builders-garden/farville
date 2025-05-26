@@ -18,8 +18,8 @@
     "test:load:playwright": "artillery run ./tests/playwright/farville-load-test-playwright.yml --record"
   },
   "dependencies": {
-    "@daimo/common": "^1.6.0",
-    "@daimo/pay": "^1.8.4",
+    "@daimo/pay": "^1.8.6",
+    "@daimo/pay-common": "^1.8.6",
     "@farcaster/auth-client": "^0.3.0",
     "@farcaster/frame-node": "^0.0.10",
     "@farcaster/frame-sdk": "^0.0.26",

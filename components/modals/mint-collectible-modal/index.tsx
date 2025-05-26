@@ -845,10 +845,7 @@ export default function MintCollectibleModal({
                     onClick={handleShareMint}
                     className="w-full flex-1 py-2 px-4 rounded-[5px] text-[#5C4121] bg-yellow-500 hover:bg-yellow-500/80 hover:text-[#5C4121]"
                   >
-                    <Share2
-                      size={18}
-                      className="w-3 h-3 xs:w-4 xs:h-4"
-                    />
+                    <Share2 size={18} className="w-3 h-3 xs:w-4 xs:h-4" />
                     Share
                   </Button>
                   <div className="flex w-full gap-2">
@@ -874,10 +871,7 @@ export default function MintCollectibleModal({
                       variant="outline"
                       className="w-fit flex py-1 px-2 xs:py-2 xs:px-4 rounded-[5px] bg-transparent hover:bg-yellow-500/10 border-2 border-yellow-500/20 text-yellow-500 hover:text-yellow-500/80 text-[9px] xs:text-xs font-medium items-center justify-center gap-2"
                     >
-                      <Download
-                        size={18}
-                        className="w-3 h-3 xs:w-4 xs:h-4"
-                      />
+                      <Download size={18} className="w-3 h-3 xs:w-4 xs:h-4" />
                     </Button>
                   </div>
                 </>

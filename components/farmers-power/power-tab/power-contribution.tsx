@@ -25,7 +25,8 @@ import { env } from "@/lib/env";
 import sdk from "@farcaster/frame-sdk";
 import { useGame } from "@/context/GameContext";
 import { PaymentCompletedEvent } from "@daimo/pay-common";
-import { DaimoPayButton } from "@daimo/pay";
+import { DaimoPayButton, useDaimoPayUI } from "@daimo/pay";
+import { FP_AMOUNT } from "@/lib/game-constants";
 
 interface PowerContributionProps {
   showDialog: boolean;
@@ -54,6 +55,8 @@ export const PowerContribution = ({
   tokenBalancesIsLoading,
   returnedDonationId,
 }: PowerContributionProps) => {
+  const { resetPayment } = useDaimoPayUI();
+
   const [contributionAmount, setContributionAmount] = useState(1);
   const [showCustomSlider, setShowCustomSlider] = useState(false);
   const [paymentStarted, setPaymentStarted] = useState(false);
@@ -63,8 +66,15 @@ export const PowerContribution = ({
   const [paymentHandled, setPaymentHandled] = useState(false);
   const { state, mode } = useGame();
 
+  const handleSetContributionAmount = (amount: number) => {
+    setContributionAmount(amount);
+    resetPayment({
+      toUnits: amount.toString(),
+    });
+  };
+
   const resetState = () => {
-    setContributionAmount(1);
+    handleSetContributionAmount(1);
     setShowCustomSlider(false);
     setPaymentStarted(false);
     setPaymentCompleted(false);
@@ -186,11 +196,17 @@ export const PowerContribution = ({
               <div className="flex flex-col items-end">
                 <span className="text-white/70 text-xs">Farmers Power</span>
                 <span className="text-2xl font-bold text-yellow-400">
-                  {contributionAmount * powerCombo} FP
+                  {FP_AMOUNT[contributionAmount] * powerCombo} FP
                 </span>
               </div>
             </div>
-            <div className="flex justify-between gap-2 text-white/70 text-xs text-center border-t border-yellow-400/10 pt-2 mt-1">
+            <div className="flex justify-between gap-2 text-white/70 text-xs text-center pb-2">
+              <span className="text-white/70">FP Amount:</span>
+              <span className="text-yellow-400 font-bold">
+                {FP_AMOUNT[contributionAmount]}
+              </span>
+            </div>
+            <div className="flex justify-between gap-2 text-white/70 text-xs text-center border-t border-yellow-400/10 pt-2">
               <span className="text-white/70">Current Combo:</span>
               <span className="text-yellow-400 font-bold">{powerCombo}x</span>
             </div>
@@ -225,7 +241,7 @@ export const PowerContribution = ({
                         : "text-yellow-400/90 bg-[#5C4121] hover:bg-[#5C4121]/70"
                     )}
                     onClick={() => {
-                      setContributionAmount(amount);
+                      handleSetContributionAmount(amount);
                       setShowCustomSlider(false);
                     }}
                     disabled={tokenBalancesIsLoading}
@@ -274,9 +290,14 @@ export const PowerContribution = ({
                       <Slider
                         variant="yellow-brown"
                         value={[contributionAmount]}
-                        onValueChange={(value) =>
-                          setContributionAmount(value[0])
-                        }
+                        onValueChange={(value) => {
+                          setContributionAmount(value[0]);
+                        }}
+                        onValueCommit={(value) => {
+                          resetPayment({
+                            toUnits: value[0].toString(),
+                          });
+                        }}
                         max={50}
                         min={1}
                         step={1}
@@ -302,6 +323,7 @@ export const PowerContribution = ({
                   { chain: base.id, address: BASE_USDC_ADDRESS },
                 ]}
                 toAddress={BG_MULTISIG_ADDRESS}
+                // toUnits={"0.01"}
                 toUnits={contributionAmount.toString()}
                 toToken={BASE_USDC_ADDRESS}
                 toChain={base.id}
@@ -355,7 +377,7 @@ export const PowerContribution = ({
               <span className="text-white/90 text-xs text-center">
                 You just contributed{" "}
                 <span className="text-yellow-400 font-bold">
-                  {contributionAmount * powerCombo} FP
+                  {FP_AMOUNT[contributionAmount] * powerCombo} FP
                 </span>{" "}
                 to help the farmers!
               </span>
