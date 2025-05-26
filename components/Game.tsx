@@ -28,7 +28,7 @@ export default function Game({
   // const monday = getThisWeekMonday();
   const maintenanceStart = new Date(monday.getTime() - 5 * 60 * 1000); // 5 minutes before
   // const maintenanceEnd = new Date(monday.getTime() + 30 * 60 * 1000); // 30 minutes after
-  const maintenanceEnd = new Date(monday.getTime() + 75 * 60 * 1000); // 60 minutes after
+  const maintenanceEnd = new Date(monday.getTime() + 90 * 60 * 1000); // 60 minutes after
 
   const checkMaintenance = () => {
     const now = new Date();
