@@ -4,6 +4,9 @@ import { fertilizeBulk, harvestBulk, perkBulk, plantBulk } from "./utils";
 import { getUserByMode } from "@/lib/prisma/queries";
 import Logger from "@/lib/logger";
 import { z } from "zod";
+import { ipAddress, geolocation, Geo } from "@vercel/functions";
+// TODO use this outside of vercel
+// import { getIp, getGeolocation } from "@/lib/track";
 
 export interface GridBulkRequest {
   action: ActionType;
@@ -30,7 +33,27 @@ const requestSchema = z.object({
 });
 
 export const POST = async (req: NextRequest) => {
+  let ip: string | undefined = undefined;
+  let geolocationDetails: Geo | null = null;
+  try {
+    // TODO: use this outside of vercel
+    // ip = getIp();
+    // geolocationDetails = getGeolocation(ip);
+    ip = ipAddress(req);
+    geolocationDetails = geolocation(req);
+  } catch (error) {
+    console.error("Error getting geolocation:", error);
+  }
   const fid = req.headers.get("x-user-fid");
+  console.log(
+    "/api/grid-bulk",
+    "fid",
+    fid,
+    "ip",
+    ip,
+    "geolocation",
+    JSON.stringify(geolocationDetails)
+  );
 
   if (!fid) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

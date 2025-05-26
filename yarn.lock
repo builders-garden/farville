@@ -4209,6 +4209,11 @@
   resolved "https://registry.yarnpkg.com/@vanilla-extract/private/-/private-1.0.7.tgz#491fb106f9d4a5a96e3e5be29f52ecc228c0952b"
   integrity sha512-v9Yb0bZ5H5Kr8ciwPXyEToOFD7J/fKKH93BYP7NCSZg02VYsA/pNFrLeVDJM2OO/vsygduPKuiEI6ORGQ4IcBw==
 
+"@vercel/functions@^2.1.0":
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/@vercel/functions/-/functions-2.1.0.tgz#f9301a5ac59c8737953c1f3f884f453c2cc54a35"
+  integrity sha512-1gSbK9zfrbJxk1JTBVERDhLi01mK3fz+gw4GjOjZwHnqs0zsBhQA70HGVtXQX/Z3BTRMfbpAEMVDfhecRw0lDA==
+
 "@wagmi/connectors@5.8.3":
   version "5.8.3"
   resolved "https://registry.yarnpkg.com/@wagmi/connectors/-/connectors-5.8.3.tgz#5e70f1e0613a868776d93f996d9b9bf49fb5a82c"

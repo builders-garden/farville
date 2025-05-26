@@ -42,6 +42,7 @@
     "@t3-oss/env-nextjs": "^0.12.0",
     "@tanstack/react-query": "^5.62.10",
     "@upstash/qstash": "^2.7.20",
+    "@vercel/functions": "^2.1.0",
     "@wagmi/core": "^2.16.7",
     "axios": "^1.7.9",
     "canvas-confetti": "^1.9.3",
