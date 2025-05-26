@@ -51,8 +51,7 @@ next-env.d.ts
 
 supabase/.temp
 
-notifications.db
-
+<<<<<<<<< Temporary merge branch 1
 # Playwright
 node_modules/
 /test-results/
@@ -60,3 +59,6 @@ node_modules/
 /blob-report/
 /playwright/.cache/
 /playwright/.auth
+
+# Frames.js
+notifications.db
