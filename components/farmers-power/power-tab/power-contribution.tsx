@@ -231,35 +231,58 @@ export const PowerContribution = ({
                     isFarcasterManiaOn ? "text-[#a590e3]" : "text-yellow-400"
                   }`}
                 >
-                  {FP_AMOUNT[contributionAmount] * powerCombo} FP
+                  {FP_AMOUNT[contributionAmount] *
+                    powerCombo *
+                    (isFarcasterManiaOn ? 2 : 1)}{" "}
+                  FP
                 </span>
               </div>
             </div>
-            <div className="flex justify-between gap-2 text-white/70 text-xs text-center pb-2">
-              <span className="text-white/70">FP Amount:</span>
-              <span
-                className={`font-bold ${
-                  isFarcasterManiaOn ? "text-[#a590e3]" : "text-yellow-400"
-                }`}
+            <div className="flex flex-col w-full gap-2">
+              <div className="flex justify-between gap-2 text-white/70 text-xs text-center bg-[#6D4C2C] px-2 py-1 rounded-lg">
+                <span className="text-white/70">FP Amount:</span>
+                <span
+                  className={`font-bold ${
+                    isFarcasterManiaOn ? "text-[#a590e3]" : "text-yellow-400"
+                  }`}
+                >
+                  {FP_AMOUNT[contributionAmount]}
+                </span>
+              </div>
+              <div
+                className={`flex justify-between gap-2 text-white/70 text-xs text-center border-t ${
+                  isFarcasterManiaOn
+                    ? "border-[#a590e3]/10"
+                    : "border-yellow-400/10"
+                } bg-[#6D4C2C] px-2 py-1 rounded-lg`}
               >
-                {FP_AMOUNT[contributionAmount]}
-              </span>
-            </div>
-            <div
-              className={`flex justify-between gap-2 text-white/70 text-xs text-center border-t ${
-                isFarcasterManiaOn
-                  ? "border-[#a590e3]/10"
-                  : "border-yellow-400/10"
-              } pt-2`}
-            >
-              <span className="text-white/70">Current Combo:</span>
-              <span
-                className={`font-bold ${
-                  isFarcasterManiaOn ? "text-[#a590e3]" : "text-yellow-400"
-                }`}
-              >
-                {powerCombo}x
-              </span>
+                <span className="text-white/70">Current Combo:</span>
+                <span
+                  className={`font-bold ${
+                    isFarcasterManiaOn ? "text-[#a590e3]" : "text-yellow-400"
+                  }`}
+                >
+                  {powerCombo}x
+                </span>
+              </div>
+              {isFarcasterManiaOn && (
+                <div
+                  className={`flex justify-between gap-2 bg-[#a590e359] px-2 py-1 rounded-lg text-xs text-center border-t ${
+                    isFarcasterManiaOn
+                      ? "border-[#a590e3]/10"
+                      : "border-yellow-400/10"
+                  }`}
+                >
+                  <span className="text-white/90">Farcaster Mania:</span>
+                  <span
+                    className={`font-bold ${
+                      isFarcasterManiaOn ? "text-[#a590e3]" : "text-yellow-400"
+                    }`}
+                  >
+                    2x
+                  </span>
+                </div>
+              )}
             </div>
           </div>
 
