@@ -27,6 +27,8 @@ export const PowerTab = () => {
   const [donationId, setDonationId] = useState<string | null>(null);
   const [showHowItWorksDialog, setShowHowItWorksDialog] = useState(false);
 
+  const isFarcasterManiaOn = false;
+
   // State for power mechanics
   const [currentFP, setCurrentFP] = useState<number>(
     state.communityBoosterStatus?.points || 0
@@ -215,47 +217,69 @@ export const PowerTab = () => {
 
   return (
     <>
-      {/* Current Status Section */}
-      <div className="w-full bg-[#5C4121]/50 rounded-xl p-6 border border-yellow-400/20">
-        <div className="flex flex-col gap-4">
-          <PowerStats
-            currentPowerStage={currentPowerStage}
-            currentFP={currentFP}
-            fpChangeAnimation={fpChangeAnimation}
-            nextStageInfo={nextStageInfo}
-            currentStageInfo={currentStageInfo}
-          />
-
-          {currentFP > 0 && (
-            <PowerTimer
-              powerCombo={powerCombo}
-              lastDonationTime={lastDonationTime}
-              COMBO_WINDOW={COMBO_WINDOW}
-              setPowerCombo={setPowerCombo}
-              setCurrentFP={setCurrentFP}
-              lastTimerReset={lastTimerReset}
-              setLastTimerReset={setLastTimerReset}
+      {/* if isFarcasterManiaOn, let's add a label saying "Farcaster Mania"
+"for the next 12 hours, every donation counts twice"*/}
+      <div className="flex flex-col gap-3 w-full">
+        {isFarcasterManiaOn && (
+          <div className="flex flex-col gap-1 w-full bg-[#593A62] rounded-lg p-2 px-4">
+            <div className="text-center text-white font-semibold text-[10px]">
+              It&apos;s Farcaster Mania!
+            </div>
+            <div className="text-center text-[#d7caff] text-[9px]">
+              Every donation counts twice for the next 24 hours!
+            </div>
+          </div>
+        )}
+        {/* Current Status Section */}
+        <div className="w-full bg-[#5C4121]/50 rounded-xl p-6 border border-yellow-400/20">
+          <div className="flex flex-col gap-4">
+            <PowerStats
+              currentPowerStage={currentPowerStage}
+              currentFP={currentFP}
+              fpChangeAnimation={fpChangeAnimation}
+              nextStageInfo={nextStageInfo}
+              currentStageInfo={currentStageInfo}
+              isFarcasterManiaOn={isFarcasterManiaOn}
             />
-          )}
 
-          <PowerStages
-            currentPowerStage={currentPowerStage}
-            stages={POWER_STAGES}
-          />
+            {currentFP > 0 && (
+              <PowerTimer
+                powerCombo={powerCombo}
+                lastDonationTime={lastDonationTime}
+                COMBO_WINDOW={COMBO_WINDOW}
+                setPowerCombo={setPowerCombo}
+                setCurrentFP={setCurrentFP}
+                lastTimerReset={lastTimerReset}
+                setLastTimerReset={setLastTimerReset}
+                isFarcasterManiaOn={isFarcasterManiaOn}
+              />
+            )}
 
-          <HowItWorks
-            isOpen={showHowItWorksDialog}
-            onOpenChange={setShowHowItWorksDialog}
-          />
+            <PowerStages
+              currentPowerStage={currentPowerStage}
+              stages={POWER_STAGES}
+              isFarcasterManiaOn={isFarcasterManiaOn}
+            />
+
+            <HowItWorks
+              isOpen={showHowItWorksDialog}
+              onOpenChange={setShowHowItWorksDialog}
+              isFarcasterManiaOn={isFarcasterManiaOn}
+            />
+          </div>
         </div>
       </div>
 
       <Button
         variant="default"
-        className="w-full py-3 text-base font-medium text-[#5C4121] bg-yellow-500 hover:bg-yellow-500/80 hover:text-[#5C4121]"
+        className={`w-full py-3 text-base font-medium ${
+          isFarcasterManiaOn
+            ? "text-[#573aae] bg-[#ccbef7] hover:bg-[#ccbef7]/80 hover:text-[#573aae]/80"
+            : "text-[#5C4121] bg-yellow-500 hover:bg-yellow-500/80 hover:text-[#5C4121]"
+        }`}
         onClick={() => setShowContributeDialog(true)}
       >
-        Contribute Power 🌟
+        Contribute Power {true ? "⚡" : "🌟"}
       </Button>
 
       <PowerContribution

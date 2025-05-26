@@ -15,13 +15,18 @@ interface PowerTimerProps {
   setCurrentFP: React.Dispatch<React.SetStateAction<number>>;
   lastTimerReset: Date;
   setLastTimerReset: React.Dispatch<React.SetStateAction<Date>>;
+  isFarcasterManiaOn: boolean;
 }
 
 // Helper function to get conditional styling based on power combo
-const usePowerComboStyles = (powerCombo: number) => {
+const usePowerComboStyles = (powerCombo: number, isFarcasterManiaOn: boolean) => {
   return useMemo(
     () => ({
-      text: powerCombo > 1 ? "text-yellow-400" : "text-[#FFB938]",
+      text: isFarcasterManiaOn
+        ? "text-[#a590e3]"
+        : powerCombo > 1
+        ? "text-yellow-400"
+        : "text-[#FFB938]",
       background:
         powerCombo > 1
           ? "bg-gradient-to-br from-[#4A341A] via-[#5A442A] to-[#4A341A] relative overflow-hidden"
@@ -31,7 +36,7 @@ const usePowerComboStyles = (powerCombo: number) => {
           ? "bg-[#5C4121]/80 border border-yellow-400/20"
           : "bg-[#5C4121]",
     }),
-    [powerCombo]
+    [powerCombo, isFarcasterManiaOn]
   );
 };
 
@@ -43,9 +48,10 @@ export const PowerTimer = ({
   setCurrentFP,
   lastTimerReset,
   setLastTimerReset,
+  isFarcasterManiaOn,
 }: PowerTimerProps) => {
   const [timerNow, setTimerNow] = useState(Date.now());
-  const styles = usePowerComboStyles(powerCombo);
+  const styles = usePowerComboStyles(powerCombo, isFarcasterManiaOn);
 
   // Effect for updating timer display
   useEffect(() => {
@@ -187,16 +193,19 @@ export const PowerTimer = ({
                 <TimeUnit
                   value={minutes}
                   powerCombo={powerCombo}
+                  isFarcasterManiaOn={isFarcasterManiaOn}
                 />
                 <span className={colonClass}>:</span>
                 <TimeUnit
                   value={seconds}
                   powerCombo={powerCombo}
+                  isFarcasterManiaOn={isFarcasterManiaOn}
                 />
                 <span className={colonClass}>:</span>
                 <TimeUnit
                   value={centiseconds}
                   powerCombo={powerCombo}
+                  isFarcasterManiaOn={isFarcasterManiaOn}
                 />
               </>
             );
@@ -221,6 +230,7 @@ export const PowerTimer = ({
       <BurningFuse
         lastTimerReset={lastTimerReset}
         COMBO_WINDOW={COMBO_WINDOW}
+        isFarcasterManiaOn={isFarcasterManiaOn}
       />
     </div>
   );
@@ -229,11 +239,13 @@ export const PowerTimer = ({
 const TimeUnit = ({
   value,
   powerCombo,
+  isFarcasterManiaOn,
 }: {
   value: number;
   powerCombo: number;
+  isFarcasterManiaOn: boolean;
 }) => {
-  const styles = usePowerComboStyles(powerCombo);
+  const styles = usePowerComboStyles(powerCombo, isFarcasterManiaOn);
 
   return (
     <div
@@ -250,9 +262,11 @@ const TimeUnit = ({
 const BurningFuse = ({
   lastTimerReset,
   COMBO_WINDOW,
+  isFarcasterManiaOn,
 }: {
   lastTimerReset: Date;
   COMBO_WINDOW: number;
+  isFarcasterManiaOn: boolean;
 }) => {
   // Calculate remaining time in the current window
   const timeElapsed = Date.now() - lastTimerReset.getTime();
@@ -265,7 +279,7 @@ const BurningFuse = ({
       <div className="h-2 bg-[#2A1E12] rounded-full relative">
         <motion.div
           key={lastTimerReset ? lastTimerReset.getTime() : "initial"}
-          className="absolute left-0 top-0 h-full bg-gradient-to-r from-red-500 via-orange-500 to-yellow-500"
+          className={`absolute left-0 top-0 h-full ${isFarcasterManiaOn ? "bg-gradient-to-r from-[#a590e3] via-[#c3b3f3] to-[#e0d6ff]" : "bg-gradient-to-r from-red-500 via-orange-500 to-yellow-500"}`}
           style={{
             width: `${remainingPercentage}%`,
           }}
@@ -279,10 +293,14 @@ const BurningFuse = ({
         >
           <div className="absolute right-[-8px] top-1/2 -translate-y-1/2">
             <motion.div
-              className="w-4 h-4 rounded-full bg-yellow-300 shadow-lg shadow-yellow-400/80"
+              className={`w-4 h-4 rounded-full ${isFarcasterManiaOn ? "bg-[#e0d6ff] shadow-lg shadow-[#a590e3]/80" : "bg-yellow-300 shadow-lg shadow-yellow-400/80"}`}
               animate={{
                 scale: [1, 1.2, 1],
-                boxShadow: [
+                boxShadow: isFarcasterManiaOn ? [
+                  "0 0 10px 2px rgba(165, 144, 227, 0.8)",
+                  "0 0 15px 4px rgba(165, 144, 227, 0.9)",
+                  "0 0 10px 2px rgba(165, 144, 227, 0.8)",
+                ] : [
                   "0 0 10px 2px rgba(250, 204, 21, 0.8)",
                   "0 0 15px 4px rgba(250, 204, 21, 0.9)",
                   "0 0 10px 2px rgba(250, 204, 21, 0.8)",
@@ -298,16 +316,19 @@ const BurningFuse = ({
               delay={0}
               x={[-2, 8]}
               y={[-8, 8]}
+              isFarcasterManiaOn={isFarcasterManiaOn}
             />
             <SparkParticle
               delay={0.15}
               x={[2, 7]}
               y={[-6, 4]}
+              isFarcasterManiaOn={isFarcasterManiaOn}
             />
             <SparkParticle
               delay={0.3}
               x={[-3, 5]}
               y={[-4, 6]}
+              isFarcasterManiaOn={isFarcasterManiaOn}
             />
           </div>
         </motion.div>
@@ -315,7 +336,7 @@ const BurningFuse = ({
 
       {isExpired && (
         <motion.div
-          className="absolute inset-0 bg-yellow-400"
+          className={`absolute inset-0 ${isFarcasterManiaOn ? "bg-[#a590e3]" : "bg-yellow-400"}`}
           initial={{ opacity: 0 }}
           animate={{
             opacity: [0, 0.8, 0],
@@ -335,13 +356,15 @@ const SparkParticle = ({
   delay,
   x,
   y,
+  isFarcasterManiaOn,
 }: {
   delay: number;
   x: [number, number];
   y: [number, number];
+  isFarcasterManiaOn: boolean;
 }) => (
   <motion.div
-    className="absolute top-1/2 right-1/2 w-2.5 h-2.5 rounded-full bg-yellow-300"
+    className={`absolute top-1/2 right-1/2 w-2.5 h-2.5 rounded-full ${isFarcasterManiaOn ? "bg-[#e0d6ff]" : "bg-yellow-300"}`}
     animate={{
       y,
       x,

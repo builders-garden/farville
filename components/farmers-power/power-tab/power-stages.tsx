@@ -16,11 +16,13 @@ interface PowerStage {
 interface PowerStagesProps {
   currentPowerStage: number;
   stages: PowerStage[];
+  isFarcasterManiaOn: boolean;
 }
 
 export const PowerStages = ({
   currentPowerStage,
   stages,
+  isFarcasterManiaOn,
 }: PowerStagesProps) => {
   const stagesContainerRef = useRef<HTMLDivElement>(null);
   const stagesFromPrevious = stages.slice(Math.max(0, currentPowerStage - 2));
@@ -49,7 +51,9 @@ export const PowerStages = ({
                 className={cn(
                   "flex items-center justify-between p-2 rounded mb-2 transition-all duration-200",
                   currentPowerStage === stage.stage
-                    ? "bg-yellow-500/20 border border-yellow-400/50 shadow-sm shadow-yellow-500/10"
+                    ? isFarcasterManiaOn
+                      ? "bg-[#a590e3]/20 border border-[#a590e3]/50 shadow-sm shadow-[#a590e3]/10"
+                      : "bg-yellow-500/20 border border-yellow-400/50 shadow-sm shadow-yellow-500/10"
                     : currentPowerStage > stage.stage
                     ? "bg-[#4A341A]/50"
                     : "bg-[#4A341A]/20"
@@ -59,9 +63,13 @@ export const PowerStages = ({
                   className={cn(
                     "rounded-full flex items-center justify-center text-xs font-bold px-3 py-1.5 transition-all duration-200",
                     currentPowerStage === stage.stage
-                      ? "bg-yellow-500 text-[#4A341A] shadow-sm shadow-yellow-500/30"
+                      ? isFarcasterManiaOn
+                        ? "bg-[#a590e3] text-white shadow-sm shadow-[#a590e3]/30"
+                        : "bg-yellow-500 text-[#4A341A] shadow-sm shadow-yellow-500/30"
                       : currentPowerStage > stage.stage
-                      ? "bg-yellow-500/20 text-yellow-400"
+                      ? isFarcasterManiaOn
+                        ? "bg-[#a590e3]/20 text-[#a590e3]"
+                        : "bg-yellow-500/20 text-yellow-400"
                       : "bg-[#4A341A] text-white/50 border border-white/20"
                   )}
                 >
@@ -73,7 +81,9 @@ export const PowerStages = ({
                     className={cn(
                       "text-xs transition-all duration-200",
                       currentPowerStage === stage.stage
-                        ? "text-yellow-400 font-medium"
+                        ? isFarcasterManiaOn
+                          ? "text-[#a590e3] font-medium"
+                          : "text-yellow-400 font-medium"
                         : currentPowerStage > stage.stage
                         ? "text-green-400"
                         : "text-white/50"

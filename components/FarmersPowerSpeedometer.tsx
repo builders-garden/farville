@@ -7,6 +7,7 @@ interface FarmersPowerSpeedometerProps {
   width?: number;
   height?: number;
   currentFP?: number;
+  isFarcasterManiaOn?: boolean;
 }
 
 export const FarmersPowerSpeedometer = ({
@@ -14,6 +15,7 @@ export const FarmersPowerSpeedometer = ({
   width = 60,
   height = 45,
   currentFP,
+  isFarcasterManiaOn = false,
 }: FarmersPowerSpeedometerProps) => {
   const ACTUAL_PATH_LENGTH = Math.PI * 22; // Semicircle with radius 22
 
@@ -78,11 +80,28 @@ export const FarmersPowerSpeedometer = ({
       1
     );
 
-    const r = 255;
-    const g = Math.round(255 * (1 - progressForColorCalculation));
-    const b = 0;
-    return `rgb(${r}, ${g}, ${b})`;
-  }, [arcProgress, currentFP]);
+    if (isFarcasterManiaOn) {
+      // Farcaster Mania Mode: transition from a lighter purple to a darker purple
+      // New Lighter: rgb(220, 200, 250)
+      // New Darker: rgb(160, 140, 220)
+      const r = Math.round(
+        160 + (1 - progressForColorCalculation) * (220 - 160) 
+      );
+      const g = Math.round(
+        140 + (1 - progressForColorCalculation) * (200 - 140) 
+      );
+      const b = Math.round(
+        220 + (1 - progressForColorCalculation) * (250 - 220) 
+      );
+      return `rgb(${r}, ${g}, ${b})`;
+    } else {
+      // Default Mode: transition from yellow to red
+      const r = 255;
+      const g = Math.round(255 * (1 - progressForColorCalculation));
+      const b = 0;
+      return `rgb(${r}, ${g}, ${b})`;
+    }
+  }, [arcProgress, currentFP, isFarcasterManiaOn]);
 
   // Calculate intensity of pulsing effects based on stage
   const pulseIntensity = useMemo(() => {
@@ -100,14 +119,14 @@ export const FarmersPowerSpeedometer = ({
       viewBox="0 0 60 30"
       preserveAspectRatio="xMidYMid meet"
       style={{
-        filter: `drop-shadow(0 0 3px rgba(253, 224, 71, ${pulseIntensity * 0.7}))`,
+        filter: `drop-shadow(0 0 3px rgba(${isFarcasterManiaOn ? '160, 140, 220' : '253, 224, 71'}, ${pulseIntensity * 0.7}))`,
       }}
       animate={{
         // Animate the filter's opacity for a pulsing aura effect
         filter: [
-          `drop-shadow(0 0 3px rgba(253, 224, 71, ${pulseIntensity * 0.5}))`,
-          `drop-shadow(0 0 6px rgba(253, 224, 71, ${pulseIntensity * 0.8}))`,
-          `drop-shadow(0 0 3px rgba(253, 224, 71, ${pulseIntensity * 0.5}))`,
+          `drop-shadow(0 0 3px rgba(${isFarcasterManiaOn ? '160, 140, 220' : '253, 224, 71'}, ${pulseIntensity * 0.5}))`,
+          `drop-shadow(0 0 6px rgba(${isFarcasterManiaOn ? '160, 140, 220' : '253, 224, 71'}, ${pulseIntensity * 0.8}))`,
+          `drop-shadow(0 0 3px rgba(${isFarcasterManiaOn ? '160, 140, 220' : '253, 224, 71'}, ${pulseIntensity * 0.5}))`,
         ],
       }}
       transition={{
@@ -157,7 +176,7 @@ export const FarmersPowerSpeedometer = ({
         y1="20"
         x2="30"
         y2="-1"
-        stroke="#FDE047" // Lighter, golden-yellow color for better visibility
+        stroke={isFarcasterManiaOn ? "#A08CDC" : "#FDE047"} // New lighter purple: #A08CDC
         strokeWidth="2.8"
         transform={`rotate(${needleRotation}, 30, 20)`}
         strokeLinecap="round"
