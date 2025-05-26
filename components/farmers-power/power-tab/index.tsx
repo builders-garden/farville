@@ -294,6 +294,7 @@ export const PowerTab = () => {
         address={address}
         tokenBalancesIsLoading={tokenBalancesIsLoading}
         returnedDonationId={donationId}
+        isFarcasterManiaOn={isFarcasterManiaOn}
       />
 
       <ContributionTableSection
