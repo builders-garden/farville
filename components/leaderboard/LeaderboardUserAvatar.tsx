@@ -19,6 +19,7 @@ export function LeaderboardUserAvatar({
   size = { width: 10, height: 10 },
   borderSize = 2,
 }: LeaderboardUserAvatarProps) {
+  const isSmall = size.width < 10 || size.height < 10;
   return (
     <div className="relative flex-none">
       <Image
@@ -34,7 +35,12 @@ export function LeaderboardUserAvatar({
         width={40}
         height={40}
       />
-      {isOgUser && <OgBadge />}
+      {isOgUser && (
+        <OgBadge
+          leading={isSmall ? "leading-none" : undefined}
+          padding={isSmall ? "0.15rem" : undefined}
+        />
+      )}
     </div>
   );
 }

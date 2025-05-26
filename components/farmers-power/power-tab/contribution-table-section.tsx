@@ -14,6 +14,7 @@ import { Share2 } from "lucide-react";
 import { communityContributionFlexCardComposeCastUrl } from "@/lib/utils";
 import { useGame } from "@/context/GameContext";
 import sdk from "@farcaster/frame-sdk";
+import ProfileModal from "@/components/ProfileModal";
 
 export const ContributionTableSection: React.FC<{
   lastContributions: UserCommunityDonationEnhanced[] | undefined;
@@ -22,6 +23,9 @@ export const ContributionTableSection: React.FC<{
   const { state, mode } = useGame();
 
   const [activeTab, setActiveTab] = useState<"latest" | "yours">("latest");
+  const [selectedUserFid, setSelectedUserFid] = useState<number | undefined>(
+    undefined
+  );
 
   const selectedContributions =
     activeTab === "latest" ? lastContributions : yourContributions;
@@ -34,6 +38,23 @@ export const ContributionTableSection: React.FC<{
     );
     await sdk.actions.openUrl(castUrl);
   };
+
+  const handleRowClick = (user: UserCommunityDonationEnhanced) => {
+    setSelectedUserFid(user.fid);
+  };
+
+  const handleCloseProfile = () => {
+    setSelectedUserFid(undefined);
+  };
+
+  if (selectedUserFid) {
+    return (
+      <ProfileModal
+        onClose={handleCloseProfile}
+        userFid={selectedUserFid}
+      />
+    );
+  }
 
   return (
     <div className="flex flex-col gap-4 w-full">
@@ -80,7 +101,7 @@ export const ContributionTableSection: React.FC<{
 
         <Table>
           <TableHeader>
-            <TableRow className="text-white/70">
+            <TableRow className="text-white/70 text-xs">
               <TableHead>Contributor</TableHead>
               <TableHead className="text-right">FP</TableHead>
               {activeTab === "yours" && <TableHead className="w-8"></TableHead>}
@@ -113,12 +134,15 @@ export const ContributionTableSection: React.FC<{
               {selectedContributions.map((contribution, index) => (
                 <TableRow
                   key={index}
-                  className={`hover:bg-[#8B5E3C]/20 ${
-                    index % 2 === 0 ? "bg-[#8B5E3C]" : "bg-[#936c4e]"
-                  } rounded-lg overflow-hidden mb-4 border border-yellow-400/20`}
+                  className={`${
+                    index % 2 === 0
+                      ? "bg-[#8B5E3C] hover:bg-[#8B5E3C] hover:bg-opacity-80"
+                      : "bg-[#936c4e] hover:bg-[#936c4e] hover:bg-opacity-80"
+                  } rounded-lg overflow-hidden mb-4 border border-yellow-400/20 cursor-pointer`}
+                  onClick={() => handleRowClick(contribution)}
                 >
-                  <TableCell className="font-medium first:rounded-l-lg">
-                    <div className="flex flex-row items-center gap-2">
+                  <TableCell className="font-medium first:rounded-l-lg px-3">
+                    <div className="flex flex-row items-center gap-3">
                       <LeaderboardUserAvatar
                         pfpUrl={
                           contribution.user.selectedAvatarUrl ||
@@ -132,11 +156,11 @@ export const ContributionTableSection: React.FC<{
                           height: 8,
                         }}
                       />
-                      <div className="flex flex-col justify-center text-white/90">
-                        <span className="text-xs font-semibold">
+                      <div className="flex flex-col justify-center text-white/90 gap-1.5">
+                        <span className="text-xs font-semibold leading-none">
                           {contribution.user.username}
                         </span>
-                        <span className="text-[10px] font-normal text-white/60">
+                        <span className="text-[10px] font-normal text-white/60 leading-none">
                           {(() => {
                             const timestamp = new Date(
                               contribution.createdAt
