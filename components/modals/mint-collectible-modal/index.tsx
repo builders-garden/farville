@@ -955,10 +955,11 @@ export default function MintCollectibleModal({
                     toUnits={selectedPrice.toString()}
                     toToken={BASE_USDC_ADDRESS}
                     toCallData={txCalldata as `0x${string}`}
-                    closeOnSuccess
+                    connectedWalletOnly={true}
                     onPaymentStarted={handlePaymentStarted}
                     onPaymentCompleted={handlePaymentCompleted}
                     onPaymentBounced={handlePaymentBounced}
+                    closeOnSuccess
                   >
                     {({ show }) => (
                       <Button

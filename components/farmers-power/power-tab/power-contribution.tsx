@@ -270,10 +270,7 @@ export const PowerContribution = ({
                 className="w-full"
                 value={showCustomSlider ? "custom-amount" : ""}
               >
-                <AccordionItem
-                  value="custom-amount"
-                  className="border-0"
-                >
+                <AccordionItem value="custom-amount" className="border-0">
                   <AccordionTrigger className="hidden">
                     Custom Amount
                   </AccordionTrigger>
@@ -323,10 +320,10 @@ export const PowerContribution = ({
                   { chain: base.id, address: BASE_USDC_ADDRESS },
                 ]}
                 toAddress={BG_MULTISIG_ADDRESS}
-                // toUnits={"0.01"}
                 toUnits={contributionAmount.toString()}
                 toToken={BASE_USDC_ADDRESS}
                 toChain={base.id}
+                connectedWalletOnly={true}
                 onPaymentStarted={handlePaymentStarted}
                 onPaymentCompleted={handlePaymentCompleted}
                 onPaymentBounced={handlePaymentBounced}
@@ -405,10 +402,7 @@ export const PowerContribution = ({
                   disabled
                 >
                   <div className="flex items-center justify-center gap-2">
-                    <Loader2
-                      className="w-4 h-4 animate-spin"
-                      strokeWidth={3}
-                    />
+                    <Loader2 className="w-4 h-4 animate-spin" strokeWidth={3} />
                     <span>Processing...</span>
                   </div>
                 </Button>
