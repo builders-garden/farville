@@ -96,6 +96,7 @@ export interface GameState {
     lastDonation: Date;
   } | null;
   communityDonations: UserCommunityDonationEnhanced[];
+  isFarcasterManiaOn: boolean; // Add this line
 }
 
 export const useGameState = (mode: Mode) => {
@@ -142,7 +143,9 @@ export const useGameState = (mode: Mode) => {
     userModes: [],
     communityBoosterStatus: null,
     communityDonations: [],
+    isFarcasterManiaOn: false, // Add this line
   });
+
   const {
     userItems,
     isLoading: userItemsLoading,
@@ -382,6 +385,23 @@ export const useGameState = (mode: Mode) => {
       }));
     }
   }, [userCollectibles]);
+
+  // Effect to determine if Farcaster Mania is active
+  useEffect(() => {
+    const now = new Date();
+    const dayOfWeek = now.getUTCDay(); // Sunday = 0, Monday = 1, ..., Saturday = 6
+    const hourOfDay = now.getUTCHours();
+
+    // Farcaster Mania is active from Tuesday 16:00 UTC to Wednesday 16:00 UTC
+    const isManiaTime =
+      (dayOfWeek === 2 && hourOfDay >= 16) || // Tuesday after 16:00 UTC
+      (dayOfWeek === 3 && hourOfDay < 16); // Wednesday before 16:00 UTC
+
+    setState((prevState) => ({
+      ...prevState!,
+      isFarcasterManiaOn: isManiaTime,
+    }));
+  }, []); // Runs once on mount and then relies on date changes triggering re-renders if app is open for long
 
   useEffect(() => {
     updateUserState();

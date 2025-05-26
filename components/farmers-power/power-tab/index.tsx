@@ -27,7 +27,7 @@ export const PowerTab = () => {
   const [donationId, setDonationId] = useState<string | null>(null);
   const [showHowItWorksDialog, setShowHowItWorksDialog] = useState(false);
 
-  const isFarcasterManiaOn = false;
+  const { isFarcasterManiaOn } = state;
 
   // State for power mechanics
   const [currentFP, setCurrentFP] = useState<number>(
