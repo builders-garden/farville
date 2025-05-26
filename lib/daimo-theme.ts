@@ -1,7 +1,7 @@
 export const daimoTheme = {
   "--ck-font-family": "Press Start 2P",
   "--ck-font-weight": "400",
-  "--ck-font-size": "10px",
+  "--ck-font-size": "12px",
   "--ck-border-radius": "20px",
   "--ck-overlay-backdrop-filter": "blur(0px)",
   "--ck-modal-heading-font-weight": "500",
