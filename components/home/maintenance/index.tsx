@@ -39,8 +39,10 @@ export const Maintenance = ({ maintenanceEnd }: { maintenanceEnd: Date }) => {
           </motion.h2>
 
           <p className="text-white/90 text-sm text-center leading-relaxed">
-            The Weekly Leaderboard is resetting. Meanwhile, pls throw some memes
-            on Farcaster.
+            {/* The Weekly Leaderboard is resetting. Meanwhile, pls throw some memes
+            on Farcaster. */}
+            The game is currently undergoing maintenance. Throw some memes on
+            Farcaster in the meantime!
           </p>
           <CountdownTimer maintenanceEnd={maintenanceEnd} />
         </motion.div>
