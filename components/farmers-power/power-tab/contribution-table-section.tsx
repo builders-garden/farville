@@ -113,9 +113,11 @@ export const ContributionTableSection: React.FC<{
               {selectedContributions.map((contribution, index) => (
                 <TableRow
                   key={index}
-                  className={`hover:bg-[#8B5E3C]/20 ${
-                    index % 2 === 0 ? "bg-[#8B5E3C]" : "bg-[#936c4e]"
-                  } rounded-lg overflow-hidden mb-4 border border-yellow-400/20`}
+                  className={`${
+                    index % 2 === 0
+                      ? "bg-[#8B5E3C] hover:bg-[#8B5E3C]"
+                      : "bg-[#936c4e] hover:bg-[#936c4e]"
+                  } rounded-lg overflow-hidden mb-4 border border-yellow-400/20 cursor-pointer`}
                 >
                   <TableCell className="font-medium first:rounded-l-lg">
                     <div className="flex flex-row items-center gap-2">
