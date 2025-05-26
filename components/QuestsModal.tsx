@@ -8,6 +8,7 @@ import FloatingNumber from "@/components/animations/FloatingNumber";
 import Confetti from "./animations/Confetti";
 import { AllQuests } from "@/hooks/use-game-state";
 import { Clock } from "lucide-react";
+import { useGame } from "@/context/GameContext";
 
 type Tab = "daily" | "weekly";
 
@@ -28,6 +29,7 @@ export default function QuestsModal({
   refetchClaimableQuests: () => void;
   refetchUser: () => Promise<void>;
 }) {
+  const { isActionInProgress } = useGame();
   const { safeAreaInsets } = useFrameContext();
   const [activeTab, setActiveTab] = useState<Tab>("daily");
 
@@ -314,6 +316,16 @@ export default function QuestsModal({
           y={rewardAnimation.y + 40}
           type="coins"
         />
+      )}
+
+      {isActionInProgress && (
+        <div className="absolute inset-0 bg-black/60 flex items-center justify-center z-50 rounded-lg">
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+            className="w-12 h-12 border-4 border-white/20 border-t-white/90 rounded-full"
+          />
+        </div>
       )}
     </div>
   );
