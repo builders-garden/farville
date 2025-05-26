@@ -1,4 +1,8 @@
-import { cn } from "@/lib/utils";
+import {
+  cn,
+  getCurrentPowerStage,
+  getCurrentPowerStateTarget,
+} from "@/lib/utils";
 import { Clock } from "lucide-react";
 import { motion } from "framer-motion";
 import { useEffect, useState, useMemo, useCallback } from "react";
@@ -57,7 +61,16 @@ export const PowerTimer = ({
     if (powerCombo > 1) {
       setPowerCombo(1);
     }
-    setCurrentFP((prevFP) => Math.max(0, prevFP - 1));
+
+    setCurrentFP((prevFP) => {
+      const fpRequiredForStage = getCurrentPowerStateTarget(prevFP);
+      const stage = getCurrentPowerStage(prevFP);
+      const multiplier = 0.0015;
+      const decayAmount = Math.ceil(
+        fpRequiredForStage.target * stage * multiplier
+      );
+      return Math.max(0, prevFP - decayAmount);
+    });
 
     // Calculate the proper next window using modulo logic
     const msElapsedSinceLastDonation = lastDonationTime

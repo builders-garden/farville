@@ -70,6 +70,7 @@ export const PowerContribution = ({
     setContributionAmount(amount);
     resetPayment({
       toUnits: amount.toString(),
+      // toUnits: "0.01",
     });
   };
 
@@ -323,10 +324,10 @@ export const PowerContribution = ({
                   { chain: base.id, address: BASE_USDC_ADDRESS },
                 ]}
                 toAddress={BG_MULTISIG_ADDRESS}
-                // toUnits={"0.01"}
                 toUnits={contributionAmount.toString()}
                 toToken={BASE_USDC_ADDRESS}
                 toChain={base.id}
+                connectedWalletOnly={true}
                 onPaymentStarted={handlePaymentStarted}
                 onPaymentCompleted={handlePaymentCompleted}
                 onPaymentBounced={handlePaymentBounced}

@@ -66,19 +66,19 @@ export const LeaderboardTab = ({ onSelectUser }: LeaderboardTabProps) => {
       : undefined;
 
   return (
-    <div className="flex flex-col gap-2 xs:gap-3">
+    <div className="flex flex-col gap-2 xs:gap-3 w-full">
       {transformedLeaderboardData?.targetData && (
         <motion.div
           key={state.user.fid}
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.02 }}
-          className="w-full bg-gradient-to-r from-[#8B5E3C] to-[#6d4c2c] px-3 xs:px-4 py-2 xs:py-3 rounded-lg flex items-center gap-2 xs:gap-3
+          className="w-full bg-gradient-to-r from-[#8B5E3C] to-[#6d4c2c] px-1 xs:px-2 py-2 xs:py-3 rounded-lg flex items-center gap-2 xs:gap-3
                        border-2 border-[#FFB938] shadow-lg relative overflow-hidden
                        hover:scale-[1.02] transition-transform duration-200 cursor-pointer"
           onClick={() => onSelectUser(state.user.fid)}
         >
-          <div className="flex-none text-center px-1.5 xs:px-2 py-0.5 xs:py-1 bg-[#5c4121] rounded-lg text-white/90 text-[10px] xs:text-xs font-medium">
+          <div className="flex-none text-center px-1.5 py-0.5 xs:py-1 bg-[#5c4121] rounded-lg text-white/90 text-[10px] xs:text-xs font-medium">
             #{transformedLeaderboardData?.targetData.position}
           </div>
           {state.user.selectedAvatarUrl || state.user.avatarUrl ? (
@@ -95,17 +95,17 @@ export const LeaderboardTab = ({ onSelectUser }: LeaderboardTabProps) => {
             </div>
           )}
           <div className="flex flex-col gap-0.5 xs:gap-1 w-full">
-            <p className="text-white/90 font-medium truncate text-xs xs:text-sm">
+            <p className="text-white/90 font-medium truncate text-xs">
               {state.user.username}
             </p>
             <div className="flex flex-row items-center justify-between w-full">
-              <div className="text-[#FFB938] rounded-full font-medium text-[10px] xs:text-xs flex gap-1">
+              <div className="text-[#FFB938] rounded-full font-medium text-xs flex gap-1">
                 <span>FP:</span>
                 <span>
                   {transformedLeaderboardData?.targetData.totalPtAmount.toLocaleString()}
                 </span>
               </div>
-              <div className="text-white/60 text-[10px] xs:text-xs flex gap-1">
+              <div className="text-white/60 text-xs flex gap-1">
                 <span>Times:</span>
                 <span>
                   {transformedLeaderboardData?.targetData.donationCount}
@@ -123,14 +123,14 @@ export const LeaderboardTab = ({ onSelectUser }: LeaderboardTabProps) => {
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: index * 0.05 }}
             onClick={() => onSelectUser(entry.fid)}
-            className={`px-3 xs:px-4 py-2 xs:py-3 rounded-lg flex items-center gap-2 xs:gap-3 shadow-md cursor-pointer
+            className={`px-1 xs:px-2 py-2 xs:py-3 rounded-lg flex items-center gap-2 xs:gap-3 shadow-md cursor-pointer
                         ${
                           entry.fid === state.user.fid
                             ? "bg-gradient-to-r from-[#8B5E3C] to-[#6d4c2c] border-2 border-[#FFB938]"
                             : "bg-[#6d4c2c] border border-[#8B5E3C]/50"
                         }`}
           >
-            <div className="flex-none text-center px-1.5 xs:px-2 py-0.5 xs:py-1 bg-[#5c4121] rounded-lg text-white/90 text-[10px] xs:text-xs font-medium">
+            <div className="flex-none text-center px-1.5 py-0.5 xs:py-1 bg-[#5c4121] rounded-lg text-white/90 text-[10px] xs:text-xs font-medium">
               #{index + 1}
             </div>
             {entry.selectedAvatarUrl || entry.avatarUrl ? (
@@ -145,15 +145,15 @@ export const LeaderboardTab = ({ onSelectUser }: LeaderboardTabProps) => {
             )}
             <div className="flex-1 flex items-center justify-between gap-2 xs:gap-4">
               <div className="flex flex-col gap-0.5 xs:gap-1 w-full">
-                <p className="text-white/90 font-medium truncate text-xs xs:text-sm">
+                <p className="text-white/90 font-medium truncate text-xs">
                   {entry.username}
                 </p>
                 <div className="flex flex-row justify-between w-full">
-                  <div className="text-[#FFB938] rounded-full font-medium text-[10px] xs:text-xs flex gap-1">
+                  <div className="text-[#FFB938] rounded-full font-medium text-xs flex gap-1">
                     <span>FP:</span>
                     <span>{entry.totalPtAmount.toLocaleString()}</span>
                   </div>
-                  <div className="text-white/60 text-[10px] xs:text-xs flex gap-1">
+                  <div className="text-white/60 text-xs flex gap-1">
                     <span>Times:</span>
                     <span>{entry.donationCount}</span>
                   </div>
