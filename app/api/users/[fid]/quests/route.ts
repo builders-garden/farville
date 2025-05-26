@@ -1,8 +1,9 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse, userAgent } from "next/server";
 import { Mode, QuestStatus, QuestType } from "@/lib/types/game";
 import { getUserHasQuests } from "@/lib/prisma/queries";
 import { Geo } from "@vercel/functions";
 import { geolocation, ipAddress } from "@vercel/functions";
+import { UserAgent } from "@/lib/types/user-agent";
 
 export async function GET(
   request: NextRequest,
@@ -12,7 +13,9 @@ export async function GET(
     const { fid: stringFid } = await params; // keep this await
     let ip: string | undefined = undefined;
     let geolocationDetails: Geo | null = null;
+    let userAgentDetails: UserAgent | null = null;
     try {
+      userAgentDetails = userAgent(request);
       ip = ipAddress(request);
       geolocationDetails = geolocation(request);
     } catch (error) {
@@ -24,6 +27,8 @@ export async function GET(
       stringFid,
       "ip",
       ip,
+      "userAgent",
+      JSON.stringify(userAgentDetails),
       "geolocation",
       JSON.stringify(geolocationDetails)
     );

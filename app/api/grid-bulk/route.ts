@@ -1,9 +1,10 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse, userAgent } from "next/server";
 import { SeedType, PerkType, ActionType, Mode } from "@/lib/types/game";
 import { fertilizeBulk, harvestBulk, perkBulk, plantBulk } from "./utils";
 import { z } from "zod";
 import { getUserByMode } from "@/lib/prisma/queries";
 import { ipAddress, geolocation, Geo } from "@vercel/functions";
+import { UserAgent } from "@/lib/types/user-agent";
 // TODO use this outside of vercel
 // import { getIp, getGeolocation } from "@/lib/track";
 
@@ -34,8 +35,11 @@ const requestSchema = z.object({
 export const POST = async (req: NextRequest) => {
   let ip: string | undefined = undefined;
   let geolocationDetails: Geo | null = null;
+  let userAgentDetails: UserAgent | null = null;
   try {
+    userAgentDetails = userAgent(req);
     // TODO: use this outside of vercel
+    // userAgentDetails = https://github.com/mfts/papermark/blob/main/lib/utils/user-agent.ts
     // ip = getIp();
     // geolocationDetails = getGeolocation(ip);
     ip = ipAddress(req);
@@ -50,6 +54,8 @@ export const POST = async (req: NextRequest) => {
     fid,
     "ip",
     ip,
+    "userAgent",
+    JSON.stringify(userAgentDetails),
     "geolocation",
     JSON.stringify(geolocationDetails)
   );
