@@ -31,7 +31,7 @@ export function AnimatedCircularProgressBar({
           "--circle-size": "100px",
           "--circumference": circumference,
           "--percent-to-px": `${percentPx}px`,
-          "--gap-percent": "5",
+          "--gap-percent": "3",
           "--offset-factor": "0",
           "--transition-length": "1s",
           "--transition-step": "200ms",
@@ -60,7 +60,7 @@ export function AnimatedCircularProgressBar({
             style={
               {
                 stroke: gaugeSecondaryColor,
-                "--stroke-percent": 90 - currentPercent,
+                "--stroke-percent": 94 - currentPercent,
                 "--offset-factor-secondary": "calc(1 - var(--offset-factor))",
                 strokeDasharray:
                   "calc(var(--stroke-percent) * var(--percent-to-px)) var(--circumference)",
