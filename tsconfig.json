@@ -27,7 +27,8 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    "app/.well-known/**/*.ts"
+    "app/.well-known/**/*.ts",
+    "instrumentation.node.bkp"
   ],
   "exclude": ["node_modules"]
 }

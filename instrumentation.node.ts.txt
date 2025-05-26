@@ -1,0 +1,15 @@
+"use strict";
+import { OTLPHttpJsonTraceExporter } from "@vercel/otel";
+import { diag, DiagConsoleLogger, DiagLogLevel } from "@opentelemetry/api";
+import { env } from "@/lib/env";
+
+diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.DEBUG); // set diaglog level to DEBUG when debugging
+
+const exporterOptions = {
+  url: env.SIGNOZ_TRACE_URL, // Set your own data region https://ingest.[region].signoz.cloud:443/v1/traces or set to http://localhost:4318/v1/traces if using selfhost SigNoz
+  headers: {
+    "signoz-access-token": env.SIGNOZ_INGESTION_KEY,
+  },
+};
+
+export const traceExporter = new OTLPHttpJsonTraceExporter(exporterOptions);

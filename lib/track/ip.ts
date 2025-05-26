@@ -1,7 +1,7 @@
-import { headers } from "next/headers";
+import { NextRequest } from "next/server";
 
-export async function getIp() {
-  const headersList = await headers();
+export async function getNextServerIp(request: NextRequest) {
+  const headersList = request.headers;
   const forwardedFor = headersList.get("x-forwarded-for");
   const realIp = headersList.get("x-real-ip");
 
@@ -13,5 +13,5 @@ export async function getIp() {
     return realIp.trim();
   }
 
-  return null; // or '0.0.0.0', depends
+  return undefined; // or '0.0.0.0', depends
 }

@@ -1,5 +1,6 @@
 import { UserCommunityDonation } from "@prisma/client";
 import { io, Socket } from "socket.io-client";
+import { env } from "@/lib/env";
 
 export type ServerToClientEvents = {
   "new-donation": (data: {
@@ -40,7 +41,7 @@ let socket: Socket<ServerToClientEvents, ClientToServerEvents> | null = null;
 // this function creates a socket connection or returns the existing one
 export const getSocket = () => {
   if (!socket) {
-    socket = io(process.env.NEXT_PUBLIC_SOCKET_URL || "http://localhost:3001", {
+    socket = io(env.NEXT_PUBLIC_SOCKET_URL, {
       transports: ["websocket"],
     });
   }

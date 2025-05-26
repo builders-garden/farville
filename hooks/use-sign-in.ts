@@ -4,7 +4,6 @@ import { useTestMode } from "@/context/TestContext";
 import { useCallback, useEffect, useState } from "react";
 import { MESSAGE_EXPIRATION_TIME } from "@/lib/contracts/constants";
 import posthog from "posthog-js";
-import * as Sentry from "@sentry/nextjs";
 import { useAuthCheck } from "./use-auth-check";
 
 export const useSignIn = (isInMaintenance: boolean) => {
@@ -96,9 +95,6 @@ export const useSignIn = (isInMaintenance: boolean) => {
       }
       setIsSignedIn(true);
       posthog.identify(context?.user?.fid.toString());
-      Sentry.setUser({
-        id: context?.user?.fid.toString(),
-      });
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "Sign in failed";

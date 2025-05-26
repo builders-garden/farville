@@ -28,6 +28,9 @@ export const env = createEnv({
     FARVILLE_SERVICE_API_KEY: z.string().min(1),
     // test playwright on artillery cloud load testing
     ARTILLERY_CLOUD_API_KEY: z.string().optional(),
+    // SigNoz
+    SIGNOZ_TRACE_URL: z.string().url().min(1),
+    SIGNOZ_INGESTION_KEY: z.string().min(1),
   },
   client: {
     NEXT_PUBLIC_URL: z.string().url().min(1),

@@ -4,10 +4,9 @@ import { fertilizeBulk, harvestBulk, perkBulk, plantBulk } from "./utils";
 import { getUserByMode } from "@/lib/prisma/queries";
 import Logger from "@/lib/logger";
 import { z } from "zod";
-import { ipAddress, geolocation, Geo } from "@vercel/functions";
 import { UserAgent } from "@/lib/types/user-agent";
-// TODO use this outside of vercel
-// import { getIp, getGeolocation } from "@/lib/track";
+import { getNextServerIp } from "@/lib/track";
+// import { Geo } from "@/lib/types/geolocation";
 
 export interface GridBulkRequest {
   action: ActionType;
@@ -35,16 +34,12 @@ const requestSchema = z.object({
 
 export const POST = async (req: NextRequest) => {
   let ip: string | undefined = undefined;
-  let geolocationDetails: Geo | null = null;
+  // let geolocationDetails: Geo | null = null;
   let userAgentDetails: UserAgent | null = null;
   try {
-    userAgentDetails = userAgent(req);
-    // TODO: use this outside of vercel
-    // userAgentDetails = https://github.com/mfts/papermark/blob/main/lib/utils/user-agent.ts
-    // ip = getIp();
-    // geolocationDetails = getGeolocation(ip);
-    ip = ipAddress(req);
-    geolocationDetails = geolocation(req);
+    userAgentDetails = userAgent(req); // TODO: use this outside of vercel https://github.com/mfts/papermark/blob/main/lib/utils/user-agent.ts
+    ip = await getNextServerIp(req);
+    // if (ip) geolocationDetails = await getGeolocation(ip);
   } catch (error) {
     console.error("Error getting geolocation:", error);
   }
@@ -56,9 +51,8 @@ export const POST = async (req: NextRequest) => {
     "ip",
     ip,
     "userAgent",
-    JSON.stringify(userAgentDetails),
-    "geolocation",
-    JSON.stringify(geolocationDetails)
+    JSON.stringify(userAgentDetails)
+    // "geolocation",JSON.stringify(geolocationDetails)
   );
 
   if (!fid) {
