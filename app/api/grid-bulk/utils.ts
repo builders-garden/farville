@@ -32,10 +32,11 @@ import {
   SeedType,
 } from "@/lib/types/game";
 import { NextResponse } from "next/server";
-import { sendQuestsCalculation } from "../grid-cells/utils";
 import { UserGridCell, UserHarvestedCrop } from "@prisma/client";
 import { MODE_DEFINITIONS, ModeFeature } from "@/lib/modes/constants";
 import Logger from "@/lib/logger";
+import { env } from "@/lib/env";
+import axios from "axios";
 
 export interface GridBulkResult {
   type: ActionType;
@@ -150,16 +151,31 @@ export const plantBulk = async (
       `/api/grid-bulk user ${fid} action plant step: '6. send delayed notification' date ${new Date()}`
     );
 
-    await sendQuestsCalculation(
-      fid,
-      "plant",
-      mode,
-      userSeeds.itemId,
-      updatedGridCellsBulk.length
-    );
+    // await sendQuestsCalculation(
+    //   fid,
+    //   "plant",
+    //   mode,
+    //   userSeeds.itemId,
+    //   updatedGridCellsBulk.length
+    // );
+    await axios({
+      url: `${env.FARVILLE_SERVICE_URL}/api/async-jobs/quests-calculation`,
+      method: "POST",
+      headers: {
+        "x-api-secret": env.FARVILLE_SERVICE_API_KEY,
+      },
+      data: {
+        fid,
+        mode,
+        category: "plant",
+        itemId: userSeeds.itemId,
+        itemAmount: updatedGridCellsBulk.length,
+      },
+    });
     Logger.logTest(
       `/api/grid-bulk user ${fid} action plant step: '7. send quests calculation' date ${new Date()}`
     );
+
     await sendBatchToPostHog(
       fid,
       "planted-seed",
@@ -338,13 +354,27 @@ export const harvestBulk = async (
       );
     }
 
-    await sendQuestsCalculation(
-      fid,
-      ActionType.Harvest,
-      mode,
-      CROP_DATA[cropType].id,
-      amount
-    );
+    // await sendQuestsCalculation(
+    //   fid,
+    //   ActionType.Harvest,
+    //   mode,
+    //   CROP_DATA[cropType].id,
+    //   amount
+    // );
+    await axios({
+      url: `${env.FARVILLE_SERVICE_URL}/api/async-jobs/quests-calculation`,
+      method: "POST",
+      headers: {
+        "x-api-secret": env.FARVILLE_SERVICE_API_KEY,
+      },
+      data: {
+        fid,
+        mode,
+        category: ActionType.Harvest,
+        itemId: CROP_DATA[cropType].id,
+        itemAmount: amount,
+      },
+    });
     Logger.logTest(
       `/api/grid-bulk user ${fid} action harvest step: '11. send quests calculation' date ${new Date()}`
     );
