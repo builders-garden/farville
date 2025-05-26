@@ -10,7 +10,6 @@ import { useFrameContext } from "../context/FrameContext";
 import { useGame } from "../context/GameContext";
 import Header from "./Header";
 import InventoryModal from "./InventoryModal";
-// import toast from "react-hot-toast";
 // import PatchNotesModal from "./PatchNotesModal";
 import PerkIndicator from "./PerkIndicator";
 import PlantingIndicator from "./PlantingIndicator";
@@ -27,6 +26,11 @@ import VoucherModal from "./VoucherModal";
 import MarketplaceModal from "./marketplace";
 import LeaderboardModal from "./leaderboard";
 import { MODE_DEFINITIONS } from "@/lib/modes/constants";
+import FarmersPowerModal from "./farmers-power";
+import { useSocket } from "@/hooks/use-socket";
+// import toast from "react-hot-toast";
+import { toast as sonnerToast } from "sonner";
+import Image from "next/image";
 
 // const WelcomeOverlay = dynamic(() => import("./../components/WelcomeOverlay"), {
 //   ssr: false,
@@ -57,6 +61,19 @@ function StreaksModalContainer() {
   return (
     <AnimatePresence>
       {showStreaks && <StreaksModal onClose={() => setShowStreaks(false)} />}
+    </AnimatePresence>
+  );
+}
+
+// Wrapper component for the donations modal
+function FarmersPowerModalContainer() {
+  const { showFarmersPower, setShowFarmersPower } = useGame();
+
+  return (
+    <AnimatePresence>
+      {showFarmersPower && (
+        <FarmersPowerModal onClose={() => setShowFarmersPower(false)} />
+      )}
     </AnimatePresence>
   );
 }
@@ -175,8 +192,19 @@ function TimelineModalContainer() {
 }
 
 export default function GameWrapper() {
-  const { startBackgroundMusic } = useAudio();
-  const { mode, state, activeOverlay, setActiveOverlay } = useGame();
+  const { startBackgroundMusic, playSound } = useAudio();
+  const {
+    mode,
+    state,
+    activeOverlay,
+    setActiveOverlay,
+    updateUserCommunityBoosterStatus,
+    makeAllGridCellsHarvestable,
+    setShowFarmersPower,
+    refetch,
+  } = useGame();
+
+  const { socket } = useSocket();
 
   const { safeAreaInsets } = useFrameContext();
   // const [showPatchNotes, setShowPatchNotes] = useState(false);
@@ -194,6 +222,91 @@ export default function GameWrapper() {
       startNextStep("mainTour");
     }
   }, [startNextStep, state.showGridCellsTutorial, activeOverlay]);
+
+  // useEffect to check if the other players made a donation
+  useEffect(() => {
+    if (!socket) return;
+
+    socket.on("new-donation", (data) => {
+      console.log(`${JSON.stringify(data)} 🎉`);
+      console.log("AMOUNT TO ADD", data.ptAmount);
+      updateUserCommunityBoosterStatus({
+        pointsToAdd: data.ptAmount,
+        stage: data.stage,
+        combo: data.combo,
+        lastDonation: new Date(data.createdAt),
+      });
+      // Also refresh community donations to ensure they're up to date
+      refetch.communityDonations();
+      if (data.fid !== state.user.fid) {
+        const pfpSize = 28;
+        sonnerToast.custom(
+          (t) => (
+            <div
+              className="flex items-center gap-2 cursor-pointer"
+              onClick={() => {
+                sonnerToast.dismiss(t);
+                setShowFarmersPower(true);
+              }}
+            >
+              {data.pfp && (
+                <Image
+                  src={data.pfp}
+                  alt={data.username}
+                  width={pfpSize}
+                  height={pfpSize}
+                  className={`rounded-full object-cover w-[${pfpSize}px] h-[${pfpSize}px] border-2 border-[#ffdc68]`}
+                />
+              )}
+              <span>{data.username}</span>
+              <span className="text-[#ffdc68]">+{data.ptAmount} FP</span>
+            </div>
+          ),
+          {
+            duration: 10000,
+            position: "top-right",
+          }
+        );
+        playSound("newDonation");
+      }
+    });
+
+    socket.on("harvest-all", (data) => {
+      console.log(`${JSON.stringify(data)}`);
+      updateUserCommunityBoosterStatus({
+        pointsToAdd: 0, // We already add the points on "new-donation"
+        stage: data.newStage,
+        combo: data.combo,
+      });
+      makeAllGridCellsHarvestable();
+      sonnerToast(`x${data.newStage} boost reached!`, {
+        description: `It's harvest time!`,
+        duration: 10000,
+        position: "top-right",
+      });
+    });
+
+    socket.on("new-decrement", (data) => {
+      console.log(`${JSON.stringify(data)}`);
+      updateUserCommunityBoosterStatus({
+        pointsToAdd: 0, // TODO: WE ALREADY SHOW THIS THROGH THE TIMER - TO BE CHECKED
+        stage: data.stage,
+        combo: data.combo,
+      });
+    });
+
+    return () => {
+      socket.off("new-donation");
+      socket.off("harvest-all");
+      socket.off("new-decrement");
+    };
+  }, [
+    socket,
+    updateUserCommunityBoosterStatus,
+    makeAllGridCellsHarvestable,
+    state.user.fid,
+    refetch,
+  ]);
 
   // useEffect(() => {
   //   if (!toastShownRef.current) {
@@ -248,7 +361,10 @@ export default function GameWrapper() {
 
       {activeOverlay?.type === "requests" ? (
         <AnimatePresence>
-          <RequestModal onClose={handleOverlayComplete} id={activeOverlay.id} />
+          <RequestModal
+            onClose={handleOverlayComplete}
+            id={activeOverlay.id}
+          />
         </AnimatePresence>
       ) : activeOverlay?.type === "voucher" ? (
         <AnimatePresence>
@@ -272,7 +388,10 @@ export default function GameWrapper() {
           className="flex flex-col h-[100dvh] w-full max-w-md mx-auto overflow-hidden"
         >
           <Header />
-          <div className="flex-1 relative min-h-0" id="game-grid">
+          <div
+            className="flex-1 relative min-h-0"
+            id="game-grid"
+          >
             <GameGrid />
           </div>
           <Toolbar safeAreaInsets={safeAreaInsets} />
@@ -280,6 +399,7 @@ export default function GameWrapper() {
           <PlantingIndicator />
           <InventoryModalContainer />
           <StreaksModalContainer />
+          <FarmersPowerModalContainer />
           <MarketplaceModalContainer />
           <HelpModalContainer />
           <ProfileModalContainer />

@@ -9,6 +9,7 @@ import { NextStepProvider, NextStep } from "nextstepjs";
 import { steps } from "@/components/tutorial/steps";
 import CustomTutorialCard from "@/components/tutorial/CustomTutorialCard";
 import { env } from "@/lib/env";
+import { SocketProvider } from "@/context/SocketContext";
 
 const WagmiProvider = dynamic(() => import("./../components/WagmiProvider"), {
   ssr: false,
@@ -39,7 +40,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
               noInViewScroll={true}
               scrollToTop={false}
             >
-              <AudioProvider>{children}</AudioProvider>
+              <SocketProvider>
+                <AudioProvider>{children}</AudioProvider>
+              </SocketProvider>
             </NextStep>
           </NextStepProvider>
         </TestProvider>

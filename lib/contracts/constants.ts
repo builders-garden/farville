@@ -5,6 +5,7 @@ export const COOKIE_AGE = 60 * 60 * 24 * 30; // 30 days
 export const NFT_OG_BASE_ADDRESS = "0xd53fc616b700bb9e31aa29c03d776bb06bccd4cc";
 export const PFP_NFT_BASE_ADDRESS =
   "0x503de83d7131bb5b4a6c54f1d6f416b7f3b0021a";
+export const BG_MULTISIG_ADDRESS = "0x0FAEAE8d71E2bc1b559eF2bA85e995F63aF6bED9";
 
 export const BASE_SCAN_BASE_URL = "https://basescan.org";
 

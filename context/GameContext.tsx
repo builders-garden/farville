@@ -87,6 +87,7 @@ interface GameContextType {
   showRequests: boolean;
   showStreaks: boolean;
   showProfile: boolean;
+  showFarmersPower: boolean;
   setShowInventory: (show: boolean) => void;
   setShowMarket: (show: boolean) => void;
   setShowLeaderboard: (show: boolean) => void;
@@ -97,6 +98,7 @@ interface GameContextType {
   setShowRequests: (show: boolean) => void;
   setShowStreaks: (show: boolean) => void;
   setShowProfile: (show: boolean) => void;
+  setShowFarmersPower: (show: boolean) => void;
   isActionInProgress: boolean;
   setIsActionInProgress: (value: boolean) => void;
   activeOverlay: OverlayConfig;
@@ -150,6 +152,25 @@ interface GameContextType {
       mode: Mode;
     }>
   >;
+  updateUserCommunityBoosterStatus: (statusParams: {
+    pointsToAdd: number;
+    stage: number;
+    combo: number;
+    lastDonation?: Date;
+  }) => void;
+  makeAllGridCellsHarvestable: () => void;
+  refetch: {
+    all: () => Promise<void>;
+    userItems: () => Promise<void>;
+    items: () => Promise<void>;
+    user: () => Promise<void>;
+    grid: () => Promise<void>;
+    claimableQuests: () => Promise<void>;
+    streaks: () => Promise<void>;
+    frosts: () => Promise<void>;
+    userModes: () => Promise<void>;
+    communityDonations: () => Promise<void>;
+  };
 }
 
 export const GameContext = createContext<GameContextType | null>(null);
@@ -182,6 +203,7 @@ export function GameProvider({
     show: boolean;
     mode: Mode;
   }>({ show: false, mode: Mode.Classic });
+  const [showFarmersPower, setShowFarmersPower] = useState(false);
   const {
     state,
     refetch,
@@ -191,6 +213,8 @@ export function GameProvider({
     updateUserHarvestedCrops,
     updateUserWeeklyStats,
     updateUserCollectibles,
+    updateUserCommunityBoosterStatus,
+    makeAllGridCellsHarvestable,
   } = useGameState(mode);
   const [selectedSeed, setSelectedSeed] = useState<SeedType | null>(null);
   const [selectedPerk, setSelectedPerk] = useState<UserItem | null>(null);
@@ -559,6 +583,7 @@ export function GameProvider({
         showRequests,
         showStreaks,
         showProfile,
+        showFarmersPower: showFarmersPower,
         setShowInventory,
         setShowMarket,
         setShowLeaderboard,
@@ -569,6 +594,7 @@ export function GameProvider({
         setShowRequests,
         setShowStreaks,
         setShowProfile,
+        setShowFarmersPower: setShowFarmersPower,
         isActionInProgress,
         setIsActionInProgress,
         activeOverlay,
@@ -599,6 +625,9 @@ export function GameProvider({
         initializeMode,
         showNotActiveMode,
         setShowNotActiveMode,
+        updateUserCommunityBoosterStatus,
+        makeAllGridCellsHarvestable,
+        refetch,
       }}
     >
       {children}
