@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 
 interface SliderProps
   extends React.ComponentPropsWithoutRef<typeof SliderPrimitive.Root> {
-  variant?: "default" | "yellow-brown";
+  variant?: "default" | "yellow-brown" | "farcaster-mania";
 }
 
 const Slider = React.forwardRef<
@@ -25,22 +25,28 @@ const Slider = React.forwardRef<
     <SliderPrimitive.Track
       className={cn(
         "relative h-2 w-full grow overflow-hidden rounded-full",
-        variant === "default" ? "bg-secondary" : "bg-[#5A4129]"
+        variant === "default" ? "bg-secondary" : "bg-[#5A4129]" // Brown for both yellow-brown and farcaster-mania
       )}
     >
       <SliderPrimitive.Range
         className={cn(
           "absolute h-full",
-          variant === "default" ? "bg-primary" : "bg-[#FFB938]"
+          variant === "farcaster-mania"
+            ? "bg-[#a590e3]"
+            : variant === "yellow-brown"
+            ? "bg-[#FFB938]"
+            : "bg-primary"
         )}
       />
     </SliderPrimitive.Track>
     <SliderPrimitive.Thumb
       className={cn(
         "block rounded-full border-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
-        variant === "default"
-          ? "h-5 w-5 border-primary bg-background focus-visible:ring-ring"
-          : "h-6 w-6 border-[#7E4E31] bg-[#FFB938] hover:bg-[#ffc661] focus-visible:ring-[#ffc661] shadow-lg"
+        variant === "farcaster-mania"
+          ? "h-6 w-6 border-[#7E4E31] bg-[#a590e3] hover:bg-[#c3b3f3] focus-visible:ring-[#a590e3] shadow-lg" // Purple theme, brown border
+          : variant === "yellow-brown"
+          ? "h-6 w-6 border-[#7E4E31] bg-[#FFB938] hover:bg-[#ffc661] focus-visible:ring-[#ffc661] shadow-lg" // Yellow theme, brown border
+          : "h-5 w-5 border-primary bg-background focus-visible:ring-ring" // Default theme
       )}
     />
   </SliderPrimitive.Root>
