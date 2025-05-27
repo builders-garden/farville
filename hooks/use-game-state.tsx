@@ -388,20 +388,37 @@ export const useGameState = (mode: Mode) => {
 
   // Effect to determine if Farcaster Mania is active
   useEffect(() => {
-    const now = new Date();
-    const dayOfWeek = now.getUTCDay(); // Sunday = 0, Monday = 1, ..., Saturday = 6
-    const hourOfDay = now.getUTCHours();
+    const checkFarcasterMania = () => {
+      const now = new Date();
+      const dayOfWeek = now.getUTCDay();
+      const hourOfDay = now.getUTCHours();
+      const minutesOfDay = now.getUTCMinutes();
 
-    // Farcaster Mania is active from Tuesday 16:00 UTC to Wednesday 16:00 UTC
-    const isFarcasterManiaOn =
-      (dayOfWeek === 2 && hourOfDay >= 16) || // Tuesday after 16:00 UTC
-      (dayOfWeek === 3 && hourOfDay < 16); // Wednesday before 16:00 UTC
+      const isTuesdayOrWednesday = dayOfWeek === 2 || dayOfWeek === 3;
 
-    setState((prevState) => ({
-      ...prevState!,
-      isFarcasterManiaOn,
-    }));
-  }, []); // Runs once on mount and then relies on date changes triggering re-renders if app is open for long
+      const recheckEveryTenSeconds = isTuesdayOrWednesday && hourOfDay === 16;
+
+      const isFarcasterManiaOn =
+        (dayOfWeek === 2 && hourOfDay >= 16 && minutesOfDay >= 30) ||
+        (dayOfWeek === 3 && hourOfDay <= 16 && minutesOfDay <= 30);
+
+      setState((prevState) => ({
+        ...prevState!,
+        isFarcasterManiaOn,
+      }));
+
+      return recheckEveryTenSeconds;
+    };
+
+    // Initial check and get initial recheck status
+    const shouldRecheck = checkFarcasterMania();
+
+    // Set up interval if needed
+    if (shouldRecheck) {
+      const interval = setInterval(checkFarcasterMania, 10000);
+      return () => clearInterval(interval);
+    }
+  }, []); // Runs once on mount
 
   useEffect(() => {
     updateUserState();
