@@ -29,7 +29,7 @@ import { MODE_DEFINITIONS } from "@/lib/modes/constants";
 import FarmersPowerModal from "./farmers-power";
 import { useSocket } from "@/hooks/use-socket";
 // import toast from "react-hot-toast";
-import { toast as sonnerToast } from "sonner";
+import { toast as sonnerToast, Toaster } from "sonner";
 import Image from "next/image";
 
 // const WelcomeOverlay = dynamic(() => import("./../components/WelcomeOverlay"), {
@@ -204,6 +204,8 @@ export default function GameWrapper() {
     refetch,
   } = useGame();
 
+  const { isFarcasterManiaOn } = state;
+
   const { socket } = useSocket();
 
   const { safeAreaInsets } = useFrameContext();
@@ -355,6 +357,29 @@ export default function GameWrapper() {
 
   return (
     <div className="relative z-10">
+      <Toaster
+        // offset={{ bottom: "20rem" }}
+        offset={{ bottom: "4.5rem" }}
+        toastOptions={{
+          style: {
+            padding: "0.375rem 0.75rem",
+            fontSize: "0.7rem",
+            filter: "drop-shadow(0 4px 4px rgb(0 0 0 / 0.15))",
+            backgroundColor: isFarcasterManiaOn ? "#8d76d4" : "#148435",
+            color: "white",
+            marginBottom: "4.5rem",
+            width: "fit-content",
+            marginLeft: "auto",
+            marginRight: "30px",
+            fontFamily: '"Press Start 2P"',
+            border: "none",
+            borderRadius: "1rem",
+          },
+          classNames: {
+            description: "text-white/80",
+          },
+        }}
+      />
       {/* {showPatchNotes && (
         <PatchNotesModal onClose={() => setShowPatchNotes(false)} />
       )} */}

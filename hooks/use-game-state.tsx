@@ -96,6 +96,7 @@ export interface GameState {
     lastDonation: Date;
   } | null;
   communityDonations: UserCommunityDonationEnhanced[];
+  isFarcasterManiaOn: boolean; // Add this line
 }
 
 export const useGameState = (mode: Mode) => {
@@ -142,7 +143,9 @@ export const useGameState = (mode: Mode) => {
     userModes: [],
     communityBoosterStatus: null,
     communityDonations: [],
+    isFarcasterManiaOn: false, // Add this line
   });
+
   const {
     userItems,
     isLoading: userItemsLoading,
@@ -382,6 +385,40 @@ export const useGameState = (mode: Mode) => {
       }));
     }
   }, [userCollectibles]);
+
+  // Effect to determine if Farcaster Mania is active
+  useEffect(() => {
+    const checkFarcasterMania = () => {
+      const now = new Date();
+      const dayOfWeek = now.getUTCDay();
+      const hourOfDay = now.getUTCHours();
+      const minutesOfDay = now.getUTCMinutes();
+
+      const isTuesdayOrWednesday = dayOfWeek === 2 || dayOfWeek === 3;
+
+      const recheckEveryTenSeconds = isTuesdayOrWednesday && hourOfDay === 16;
+
+      const isFarcasterManiaOn =
+        (dayOfWeek === 2 && hourOfDay >= 16 && minutesOfDay >= 30) ||
+        (dayOfWeek === 3 && hourOfDay <= 16 && minutesOfDay <= 30);
+
+      setState((prevState) => ({
+        ...prevState!,
+        isFarcasterManiaOn,
+      }));
+
+      return recheckEveryTenSeconds;
+    };
+
+    // Initial check and get initial recheck status
+    const shouldRecheck = checkFarcasterMania();
+
+    // Set up interval if needed
+    if (shouldRecheck) {
+      const interval = setInterval(checkFarcasterMania, 10000);
+      return () => clearInterval(interval);
+    }
+  }, []); // Runs once on mount
 
   useEffect(() => {
     updateUserState();

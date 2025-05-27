@@ -1,4 +1,3 @@
-import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -6,6 +5,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { X, Loader2 } from "lucide-react";
+import { useState, useCallback, useEffect, useRef } from "react"; // Added useRef
 import { Slider } from "@/components/ui/slider";
 import {
   Accordion,
@@ -13,7 +14,6 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { X, Loader2 } from "lucide-react";
 import { cn, communityContributionFlexCardComposeCastUrl } from "@/lib/utils";
 import { base } from "viem/chains";
 import {
@@ -40,6 +40,7 @@ interface PowerContributionProps {
   address: `0x${string}` | undefined;
   tokenBalancesIsLoading: boolean;
   returnedDonationId: string | null;
+  isFarcasterManiaOn: boolean;
 }
 
 export const PowerContribution = ({
@@ -54,6 +55,7 @@ export const PowerContribution = ({
   address,
   tokenBalancesIsLoading,
   returnedDonationId,
+  isFarcasterManiaOn,
 }: PowerContributionProps) => {
   const { resetPayment } = useDaimoPayUI();
 
@@ -66,27 +68,37 @@ export const PowerContribution = ({
   const [paymentHandled, setPaymentHandled] = useState(false);
   const { state, mode } = useGame();
 
-  const handleSetContributionAmount = (amount: number) => {
-    setContributionAmount(amount);
-    resetPayment({
-      toUnits: amount.toString(),
-      // toUnits: "0.01",
-    });
-  };
+  const handleSetContributionAmount = useCallback(
+    (amount: number) => {
+      setContributionAmount(amount);
+      resetPayment({
+        toUnits: amount.toString(),
+        // toUnits: "0.01",
+      });
+    },
+    [resetPayment]
+  );
 
-  const resetState = () => {
+  const resetState = useCallback(() => {
     handleSetContributionAmount(1);
     setShowCustomSlider(false);
     setPaymentStarted(false);
     setPaymentCompleted(false);
     setErrorMessage("");
     setFinalTxHash("");
-  };
+  }, [handleSetContributionAmount]);
+
+  const resetStateCallbackRef = useRef(resetState); // Create ref for resetState
+
+  useEffect(() => {
+    // Update ref when resetState changes
+    resetStateCallbackRef.current = resetState;
+  }, [resetState]);
 
   // Reset state when dialog opens or closes
   useEffect(() => {
     if (showDialog) {
-      resetState();
+      resetStateCallbackRef.current(); // Call via ref
       if (walletBalance < 1 && !tokenBalancesIsLoading) {
         setErrorMessage(
           "You need at least $1 in your wallet to contribute. Please add funds."
@@ -95,46 +107,52 @@ export const PowerContribution = ({
         setErrorMessage("");
       }
     }
+    // resetState is removed from dependency array
   }, [showDialog, walletBalance, tokenBalancesIsLoading]);
 
-  const handlePaymentStarted = () => {
+  const handlePaymentStartedInternal = useCallback(() => {
     setPaymentHandled(false);
     setPaymentStarted(true);
-  };
+  }, []); // setPaymentHandled and setPaymentStarted are stable setters
 
-  const handlePaymentCompleted = (e: PaymentCompletedEvent) => {
-    if (paymentHandled) return; // Prevent duplicate handling
+  const handlePaymentCompletedInternal = useCallback(
+    (e: PaymentCompletedEvent) => {
+      if (paymentHandled) return; // Prevent duplicate handling
 
-    if (!address) {
-      setErrorMessage("Wallet address is not available.");
-      setPaymentCompleted(false);
-      return;
-    }
+      if (!address) {
+        setErrorMessage("Wallet address is not available.");
+        setPaymentCompleted(false);
+        return;
+      }
 
-    setPaymentCompleted(true);
-    setPaymentStarted(false);
-    setFinalTxHash(e.txHash);
-    setPaymentHandled(true); // Mark this payment as handled
+      setPaymentCompleted(true);
+      setPaymentStarted(false);
+      setFinalTxHash(e.txHash);
+      setPaymentHandled(true); // Mark this payment as handled
 
-    try {
-      onContributionSuccess(e.paymentId);
-      // Modal will stay open so user can see success state and share buttons
-    } catch (error) {
-      console.error("Error adding community donation:", error);
-      setErrorMessage("Failed to record your contribution. Please try again.");
-      setPaymentCompleted(false);
-      setPaymentHandled(false); // Reset if there was an error
-    }
-  };
+      try {
+        onContributionSuccess(e.paymentId);
+        // Modal will stay open so user can see success state and share buttons
+      } catch (error) {
+        console.error("Error adding community donation:", error);
+        setErrorMessage(
+          "Failed to record your contribution. Please try again."
+        );
+        setPaymentCompleted(false);
+        setPaymentHandled(false); // Reset if there was an error
+      }
+    },
+    [paymentHandled, address, onContributionSuccess] // Dependencies
+  );
 
-  const handlePaymentBounced = () => {
+  const handlePaymentBouncedInternal = useCallback(() => {
     setPaymentStarted(false);
     setPaymentCompleted(false);
     setPaymentHandled(false);
     setErrorMessage(
       "There was an error processing your payment. You received back your amount in $USDC on your wallet address. Try again."
     );
-  };
+  }, []); // State setters are stable
 
   const handleSharePower = async () => {
     if (!returnedDonationId) {
@@ -144,7 +162,8 @@ export const PowerContribution = ({
     const { castUrl } = communityContributionFlexCardComposeCastUrl(
       state.user.fid,
       mode,
-      returnedDonationId
+      returnedDonationId,
+      isFarcasterManiaOn
     );
     await sdk.actions.openUrl(castUrl);
   };
@@ -160,7 +179,9 @@ export const PowerContribution = ({
     >
       <DialogContent
         showCloseButton={false}
-        className="bg-[#7e4e31] border-yellow-400/20 max-w-[90%] text-white rounded-lg"
+        className={`bg-[#7e4e31] ${
+          isFarcasterManiaOn ? "border-[#a590e3]/20" : "border-yellow-400/20"
+        } max-w-[90%] text-white rounded-lg`}
         onInteractOutside={(e) => {
           e.preventDefault();
         }}
@@ -186,30 +207,83 @@ export const PowerContribution = ({
 
         <div className="flex flex-col gap-4">
           {/* Amount and Power Display */}
-          <div className="bg-[#4A341A] p-4 rounded-lg border border-yellow-400/10">
+          <div
+            className={`bg-[#4A341A] p-4 rounded-lg border ${
+              isFarcasterManiaOn
+                ? "border-[#a590e3]/10"
+                : "border-yellow-400/10"
+            }`}
+          >
             <div className="flex justify-between items-center mb-3">
               <div className="flex flex-col">
                 <span className="text-white/70 text-xs">Amount</span>
-                <span className="text-2xl font-bold text-yellow-400">
+                <span
+                  className={`text-2xl font-bold ${
+                    isFarcasterManiaOn ? "text-[#a590e3]" : "text-yellow-400"
+                  }`}
+                >
                   ${contributionAmount}
                 </span>
               </div>
               <div className="flex flex-col items-end">
                 <span className="text-white/70 text-xs">Farmers Power</span>
-                <span className="text-2xl font-bold text-yellow-400">
-                  {FP_AMOUNT[contributionAmount] * powerCombo} FP
+                <span
+                  className={`text-2xl font-bold ${
+                    isFarcasterManiaOn ? "text-[#a590e3]" : "text-yellow-400"
+                  }`}
+                >
+                  {FP_AMOUNT[contributionAmount] *
+                    powerCombo *
+                    (isFarcasterManiaOn ? 2 : 1)}{" "}
+                  FP
                 </span>
               </div>
             </div>
-            <div className="flex justify-between gap-2 text-white/70 text-xs text-center pb-2">
-              <span className="text-white/70">FP Amount:</span>
-              <span className="text-yellow-400 font-bold">
-                {FP_AMOUNT[contributionAmount]}
-              </span>
-            </div>
-            <div className="flex justify-between gap-2 text-white/70 text-xs text-center border-t border-yellow-400/10 pt-2">
-              <span className="text-white/70">Current Combo:</span>
-              <span className="text-yellow-400 font-bold">{powerCombo}x</span>
+            <div className="flex flex-col w-full gap-2">
+              <div className="flex justify-between gap-2 text-white/70 text-xs text-center bg-[#6D4C2C] px-2 py-1 rounded-lg">
+                <span className="text-white/70">FP Amount:</span>
+                <span
+                  className={`font-bold ${
+                    isFarcasterManiaOn ? "text-[#a590e3]" : "text-yellow-400"
+                  }`}
+                >
+                  {FP_AMOUNT[contributionAmount]}
+                </span>
+              </div>
+              <div
+                className={`flex justify-between gap-2 text-white/70 text-xs text-center border-t ${
+                  isFarcasterManiaOn
+                    ? "border-[#a590e3]/10"
+                    : "border-yellow-400/10"
+                } bg-[#6D4C2C] px-2 py-1 rounded-lg`}
+              >
+                <span className="text-white/70">Current Combo:</span>
+                <span
+                  className={`font-bold ${
+                    isFarcasterManiaOn ? "text-[#a590e3]" : "text-yellow-400"
+                  }`}
+                >
+                  {powerCombo}x
+                </span>
+              </div>
+              {isFarcasterManiaOn && (
+                <div
+                  className={`flex justify-between gap-2 bg-[#a590e359] px-2 py-1 rounded-lg text-xs text-center border-t ${
+                    isFarcasterManiaOn
+                      ? "border-[#a590e3]/10"
+                      : "border-yellow-400/10"
+                  }`}
+                >
+                  <span className="text-white/90">Farcaster Mania:</span>
+                  <span
+                    className={`font-bold ${
+                      isFarcasterManiaOn ? "text-[#a590e3]" : "text-yellow-400"
+                    }`}
+                  >
+                    2x
+                  </span>
+                </div>
+              )}
             </div>
           </div>
 
@@ -220,7 +294,11 @@ export const PowerContribution = ({
                   Balance:{" "}
                   {tokenBalancesIsLoading ? (
                     <Loader2
-                      className="w-3 h-3 animate-spin text-yellow-400"
+                      className={`w-3 h-3 animate-spin ${
+                        isFarcasterManiaOn
+                          ? "text-[#a590e3]"
+                          : "text-yellow-400"
+                      }`}
                       strokeWidth={3}
                     />
                   ) : (
@@ -238,7 +316,11 @@ export const PowerContribution = ({
                     className={cn(
                       "py-3 text-base font-medium",
                       contributionAmount === amount
-                        ? "text-[#5C4121] bg-yellow-500 hover:bg-yellow-500"
+                        ? isFarcasterManiaOn
+                          ? "text-white bg-[#a590e3] hover:bg-[#a590e3]/90"
+                          : "text-[#5C4121] bg-yellow-500 hover:bg-yellow-500"
+                        : isFarcasterManiaOn
+                        ? "text-[#a590e3]/90 bg-[#4630898f] hover:bg-[#4630898f]/70"
                         : "text-yellow-400/90 bg-[#5C4121] hover:bg-[#5C4121]/70"
                     )}
                     onClick={() => {
@@ -255,7 +337,11 @@ export const PowerContribution = ({
                   className={cn(
                     "py-3 text-base font-medium",
                     showCustomSlider
-                      ? "text-[#5C4121] bg-yellow-500"
+                      ? isFarcasterManiaOn
+                        ? "text-white bg-[#a590e3]"
+                        : "text-[#5C4121] bg-yellow-500"
+                      : isFarcasterManiaOn
+                      ? "text-[#a590e3]/90 bg-[#4630898f] hover:bg-[#4630898f]/80"
                       : "text-yellow-400/90 bg-[#5C4121] hover:bg-[#5C4121]/80"
                   )}
                   onClick={() => setShowCustomSlider(!showCustomSlider)}
@@ -284,12 +370,22 @@ export const PowerContribution = ({
                         <span className="text-white/70 text-sm">
                           Custom amount:
                         </span>
-                        <span className="text-yellow-400 font-bold">
+                        <span
+                          className={`font-bold ${
+                            isFarcasterManiaOn
+                              ? "text-[#a590e3]"
+                              : "text-yellow-400"
+                          }`}
+                        >
                           ${contributionAmount}
                         </span>
                       </div>
                       <Slider
-                        variant="yellow-brown"
+                        variant={
+                          isFarcasterManiaOn
+                            ? "farcaster-mania"
+                            : "yellow-brown"
+                        }
                         value={[contributionAmount]}
                         onValueChange={(value) => {
                           setContributionAmount(value[0]);
@@ -328,9 +424,9 @@ export const PowerContribution = ({
                 toToken={BASE_USDC_ADDRESS}
                 toChain={base.id}
                 connectedWalletOnly={true}
-                onPaymentStarted={handlePaymentStarted}
-                onPaymentCompleted={handlePaymentCompleted}
-                onPaymentBounced={handlePaymentBounced}
+                onPaymentStarted={handlePaymentStartedInternal}
+                onPaymentCompleted={handlePaymentCompletedInternal}
+                onPaymentBounced={handlePaymentBouncedInternal}
                 closeOnSuccess
               >
                 {({ show }) => (
@@ -341,7 +437,11 @@ export const PowerContribution = ({
                       !hasEnoughEthBalance ||
                         !hasEnoughUSDBalance ||
                         tokenBalancesIsLoading
-                        ? "text-yellow-400/50 cursor-not-allowed bg-yellow-500/10"
+                        ? isFarcasterManiaOn
+                          ? "text-[#a590e3]/50 cursor-not-allowed bg-[#a590e3]/10"
+                          : "text-yellow-400/50 cursor-not-allowed bg-yellow-500/10"
+                        : isFarcasterManiaOn
+                        ? "text-white bg-[#a590e3] hover:bg-[#a590e3]/90 hover:text-white"
                         : "text-[#5C4121] bg-yellow-500 hover:bg-yellow-500/80 hover:text-[#5C4121]"
                     )}
                     onClick={show}
@@ -371,13 +471,27 @@ export const PowerContribution = ({
               </DaimoPayButton.Custom>
             )
           ) : (
-            <div className="flex flex-col items-center gap-1.5 p-3 rounded-lg border border-yellow-400/20">
-              <span className="text-yellow-400 font-semibold text-sm text-center">
+            <div
+              className={`flex flex-col items-center gap-1.5 p-3 rounded-lg border ${
+                isFarcasterManiaOn
+                  ? "border-[#a590e3]/20"
+                  : "border-yellow-400/20"
+              }`}
+            >
+              <span
+                className={`font-semibold text-sm text-center ${
+                  isFarcasterManiaOn ? "text-[#a590e3]" : "text-yellow-400"
+                }`}
+              >
                 🎉 Congrats! 🎉
               </span>
               <span className="text-white/90 text-xs text-center">
                 You just contributed{" "}
-                <span className="text-yellow-400 font-bold">
+                <span
+                  className={`font-bold ${
+                    isFarcasterManiaOn ? "text-[#a590e3]" : "text-yellow-400"
+                  }`}
+                >
                   {FP_AMOUNT[contributionAmount] * powerCombo} FP
                 </span>{" "}
                 to help the farmers!
@@ -396,13 +510,21 @@ export const PowerContribution = ({
               {returnedDonationId !== null ? (
                 <Button
                   onClick={handleSharePower}
-                  className="w-full py-3 text-base font-medium text-[#5C4121] bg-yellow-500 hover:bg-yellow-500/80 hover:text-[#5C4121]"
+                  className={`w-full py-3 text-base font-medium ${
+                    isFarcasterManiaOn
+                      ? "text-white bg-[#a590e3] hover:bg-[#a590e3]/90 hover:text-white"
+                      : "text-[#5C4121] bg-yellow-500 hover:bg-yellow-500/80 hover:text-[#5C4121]"
+                  }`}
                 >
                   Share 🎁
                 </Button>
               ) : (
                 <Button
-                  className="w-full py-3 text-base font-medium text-yellow-400/50 cursor-not-allowed bg-yellow-500/10"
+                  className={`w-full py-3 text-base font-medium ${
+                    isFarcasterManiaOn
+                      ? "text-[#a590e3]/50 cursor-not-allowed bg-[#a590e3]/10"
+                      : "text-yellow-400/50 cursor-not-allowed bg-yellow-500/10"
+                  }`}
                   disabled
                 >
                   <div className="flex items-center justify-center gap-2">
@@ -418,7 +540,7 @@ export const PowerContribution = ({
                 className="text-white/70 text-sm text-center underline cursor-pointer"
                 onClick={async () => {
                   await sdk.actions.openUrl(
-                    BASE_SCAN_BASE_URL + `/tx/${finalTxHash}`
+                    `${BASE_SCAN_BASE_URL}/tx/${finalTxHash}`
                   );
                 }}
               >

@@ -27,7 +27,7 @@ export const PowerTab = () => {
   const [donationId, setDonationId] = useState<string | null>(null);
   const [showHowItWorksDialog, setShowHowItWorksDialog] = useState(false);
 
-  const isFarcasterManiaOn = false;
+  const { isFarcasterManiaOn } = state;
 
   // State for power mechanics
   const [currentFP, setCurrentFP] = useState<number>(
@@ -274,7 +274,7 @@ export const PowerTab = () => {
         variant="default"
         className={`w-full py-3 text-base font-medium ${
           isFarcasterManiaOn
-            ? "text-[#573aae] bg-[#ccbef7] hover:bg-[#ccbef7]/80 hover:text-[#573aae]/80"
+            ? "text-white bg-[#a590e3] hover:bg-[#a590e3]/80 hover:text-white/80"
             : "text-[#5C4121] bg-yellow-500 hover:bg-yellow-500/80 hover:text-[#5C4121]"
         }`}
         onClick={() => setShowContributeDialog(true)}
@@ -294,6 +294,7 @@ export const PowerTab = () => {
         address={address}
         tokenBalancesIsLoading={tokenBalancesIsLoading}
         returnedDonationId={donationId}
+        isFarcasterManiaOn={isFarcasterManiaOn}
       />
 
       <ContributionTableSection
