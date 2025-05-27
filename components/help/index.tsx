@@ -62,7 +62,7 @@ export default function HelpModal({ onClose }: { onClose: () => void }) {
               title="Any issues?"
               description="Send a DM to the developers"
               onClick={() =>
-                sdk.actions.openUrl("https://warpcast.com/~/inbox/create/5698")
+                sdk.actions.openUrl("https://farcaster.xyz/~/inbox/create/5698")
               }
             />
 
@@ -72,7 +72,7 @@ export default function HelpModal({ onClose }: { onClose: () => void }) {
               description="Farm together with frens and complete quests"
               onClick={() =>
                 sdk.actions.openUrl(
-                  "https://warpcast.com/~/group/De4zk72jrlBqSoV-rbR5XA"
+                  "https://farcaster.xyz/~/group/De4zk72jrlBqSoV-rbR5XA"
                 )
               }
             />
