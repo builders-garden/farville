@@ -392,15 +392,14 @@ export const useGameState = (mode: Mode) => {
       const now = new Date();
       const dayOfWeek = now.getUTCDay();
       const hourOfDay = now.getUTCHours();
-      const minutesOfDay = now.getUTCMinutes();
 
       const isTuesdayOrWednesday = dayOfWeek === 2 || dayOfWeek === 3;
 
       const recheckEveryTenSeconds = isTuesdayOrWednesday && hourOfDay === 16;
 
       const isFarcasterManiaOn =
-        (dayOfWeek === 2 && hourOfDay >= 16 && minutesOfDay >= 30) ||
-        (dayOfWeek === 3 && hourOfDay <= 16 && minutesOfDay <= 30);
+        (dayOfWeek === 2 && hourOfDay >= 16) ||
+        (dayOfWeek === 3 && hourOfDay <= 16);
 
       setState((prevState) => ({
         ...prevState!,
