@@ -142,10 +142,11 @@ export const streakFlexCardComposeCastUrl = (
 export const communityContributionFlexCardComposeCastUrl = (
   fid: number,
   mode: Mode,
-  contributionId: string
+  contributionId: string,
+  isFarcasterManiaOn: boolean
 ) => {
   const timestamp = Date.now();
-  const frameUrl = `${env.NEXT_PUBLIC_URL}/flex-card/community-booster/${fid}/${timestamp}?mode=${mode}&id=${contributionId}`;
+  const frameUrl = `${env.NEXT_PUBLIC_URL}/flex-card/community-booster/${fid}/${timestamp}?mode=${mode}&id=${contributionId}&farcasterMania=${isFarcasterManiaOn}`;
   const text = `Let's farm together faster! 🚜💨\n\nI just donated some Farmers Power to the Community Booster - Help Farville Farmers and donate`;
   const urlFriendlyText = encodeURIComponent(text);
   return {

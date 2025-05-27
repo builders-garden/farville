@@ -17,6 +17,7 @@ export async function generateMetadata({
   const searchParamsObj = await searchParams;
   const mode = searchParamsObj.mode;
   const donationId = searchParamsObj.id;
+  const isFarcasterManiaOn = searchParamsObj.farcasterMania === "true";
 
   const user = await getUserByMode(Number(fid), Mode.Classic);
 
@@ -31,7 +32,7 @@ export async function generateMetadata({
   }
 
   const imageUrl = new URL(
-    `${appUrl}/api/og/flex-card/community-booster/${fid}/${timestamp}?mode=${mode}&id=${donationId}`
+    `${appUrl}/api/og/flex-card/community-booster/${fid}/${timestamp}?mode=${mode}&id=${donationId}&farcasterMania=${isFarcasterManiaOn}`
   );
 
   const frame = {

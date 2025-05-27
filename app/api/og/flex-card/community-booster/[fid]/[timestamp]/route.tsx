@@ -58,6 +58,7 @@ export async function GET(
     const { searchParams } = new URL(request.url);
     const mode = searchParams.get("mode") as Mode;
     const donationId = searchParams.get("id");
+    const isFarcasterManiaOn = searchParams.get("farcasterMania") === "true";
 
     if (!donationId) {
       return new Response("Donation ID is required", {
@@ -172,6 +173,9 @@ export async function GET(
       "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+-=[]{}|;':,.<>/?"
     );
 
+    const accentColor = isFarcasterManiaOn ? "#B6A4EC" : "#7FFF9B";
+    const secondaryColor = isFarcasterManiaOn ? "#9177e0" : "#FFA726";
+
     return new ImageResponse(
       (
         <div
@@ -265,7 +269,7 @@ export async function GET(
               >
                 <p
                   style={{
-                    color: "#7FFF9B",
+                    color: accentColor,
                     fontWeight: 700,
                     fontSize: "28px",
                   }}
@@ -276,7 +280,7 @@ export async function GET(
                   style={{
                     display: "flex",
                     flexDirection: "column",
-                    color: "#7FFF9B",
+                    color: accentColor,
                     fontWeight: 400,
                     fontSize: "12px",
                     gap: "4px",
@@ -311,7 +315,7 @@ export async function GET(
                   </span>
                   <span
                     style={{
-                      color: "#FFA726",
+                      color: secondaryColor,
                       fontSize: "22px",
                       fontWeight: 700,
                     }}
@@ -329,7 +333,7 @@ export async function GET(
                 height: "26px",
                 background: "rgba(145, 106, 51, 0.2)",
                 borderRadius: "12px",
-                margin: "12px 0 0 0",
+                marginTop: "12px",
                 display: "flex",
                 alignItems: "center",
                 position: "relative",
@@ -342,7 +346,7 @@ export async function GET(
                 style={{
                   width: `${completionPercentage - userDonationPercentage}%`,
                   height: "100%",
-                  background: "#FFA726",
+                  background: secondaryColor,
                   borderRadius: "12px 0 0 12px",
                   transition: "width 0.3s",
                 }}
@@ -356,7 +360,7 @@ export async function GET(
                     userDonationPercentage > 0 ? userDonationPercentage : 0
                   }%`,
                   height: "100%",
-                  background: "#7FFF9B",
+                  background: accentColor,
                   borderRadius: "0 8px 8px 0",
                 }}
               />
@@ -369,7 +373,7 @@ export async function GET(
                 flexDirection: "row",
                 justifyContent: "space-between",
                 alignItems: "flex-end",
-                marginTop: "25px",
+                marginTop: "20px",
               }}
             >
               {/* Top Streaks Users */}
@@ -431,7 +435,7 @@ export async function GET(
                   alignItems: "flex-start",
                   fontSize: "10px",
                   color: "#fff",
-                  gap: "6px",
+                  gap: "4px",
                 }}
               >
                 <span
