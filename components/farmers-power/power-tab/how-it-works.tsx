@@ -11,14 +11,23 @@ import { X } from "lucide-react";
 interface HowItWorksProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
+  isFarcasterManiaOn: boolean;
 }
 
-export const HowItWorks = ({ isOpen, onOpenChange }: HowItWorksProps) => {
+export const HowItWorks = ({
+  isOpen,
+  onOpenChange,
+  isFarcasterManiaOn,
+}: HowItWorksProps) => {
   return (
     <>
       <Button
         size="sm"
-        className="text-yellow-400/80 hover:text-yellow-400 bg-yellow-500/10 hover:bg-yellow-500/20 w-full text-xs h-fit py-2"
+        className={`${
+          isFarcasterManiaOn
+            ? "text-[#ccbef7]/80 hover:text-[#ccbef7] bg-[#4630898f] hover:bg-[#4630898f]/80"
+            : "text-yellow-400/80 hover:text-yellow-400 bg-yellow-500/10 hover:bg-yellow-500/20"
+        } w-full text-xs h-fit py-2`}
         onClick={() => onOpenChange(true)}
       >
         How does this work?
