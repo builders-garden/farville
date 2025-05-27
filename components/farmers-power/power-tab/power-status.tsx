@@ -8,6 +8,7 @@ interface PowerStatsProps {
   fpChangeAnimation: "increase" | "decrease" | null;
   nextStageInfo?: { fpRequired: number; boost: number };
   currentStageInfo: { boost: number; fpRequired: number };
+  isFarcasterManiaOn: boolean;
 }
 
 export const PowerStats = ({
@@ -16,6 +17,7 @@ export const PowerStats = ({
   fpChangeAnimation,
   nextStageInfo,
   currentStageInfo,
+  isFarcasterManiaOn,
 }: PowerStatsProps) => {
   return (
     <div className="flex items-center justify-between w-full">
@@ -25,7 +27,7 @@ export const PowerStats = ({
         }
         min={currentStageInfo.fpRequired}
         value={currentFP}
-        gaugePrimaryColor="#FFB938"
+        gaugePrimaryColor={isFarcasterManiaOn ? "#a590e3" : "#FFB938"}
         gaugeSecondaryColor="rgba(0, 0, 0, 0.3)"
         className="w-[100px] h-[100px] rounded-full bg-[#4A341A] shadow-lg"
       >
@@ -45,6 +47,8 @@ export const PowerStats = ({
                   ? "text-green-500"
                   : fpChangeAnimation === "decrease"
                   ? "text-red-400"
+                  : isFarcasterManiaOn
+                  ? "text-[#a590e3]"
                   : "text-yellow-400"
               )}
               animate={
@@ -76,7 +80,12 @@ export const PowerStats = ({
         {!nextStageInfo && <div className="text-xs text-white/60">MAX FP</div>}
         <div className="flex items-center gap-2">
           <span className="text-white/90 text-xs">Game Speed:</span>
-          <span className="text-amber-500 text-base font-bold">
+          <span
+            className={cn(
+              "text-base font-bold",
+              isFarcasterManiaOn ? "text-[#a590e3]" : "text-amber-500"
+            )}
+          >
             {currentStageInfo.boost}x
           </span>
         </div>

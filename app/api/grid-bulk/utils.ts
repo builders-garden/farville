@@ -109,7 +109,7 @@ export const plantBulk = async (
   const currentCommunityBoost = await getCurrentCommunityBooster(mode);
   const currentCommunityBoostMultiplier = currentCommunityBoost?.stage ?? 1;
 
-  const updatedGridCellsBulk = await updateGridCellsBulk(
+  const updatedCellsCounter: number = (await updateGridCellsBulk(
     fid,
     plantableCells.map((cell) => ({
       ...cell,
@@ -122,77 +122,59 @@ export const plantBulk = async (
             currentCommunityBoostMultiplier
       ),
     }))
-  );
+  )) as number;
   Logger.logTest(
     `/api/grid-bulk user ${fid} action plant step: '4. update grid cells in db' date ${new Date()}`
   );
 
   // TODO: add different track
-  if (updatedGridCellsBulk.length > 0) {
-    await removeUserItem(
-      fid,
-      userSeeds.itemId,
-      updatedGridCellsBulk.length,
-      mode
-    );
+  if (updatedCellsCounter > 0) {
+    await removeUserItem(fid, userSeeds.itemId, updatedCellsCounter, mode);
     Logger.logTest(
       `/api/grid-bulk user ${fid} action plant step: '5. remove user seeds' date ${new Date()}`
     );
 
-    await sendDelayedNotification(
-      fid.toString(),
-      `Harvest time! 🌾`,
-      `Your ${getCropNameFromSeeds(seedType)} are ready to harvest!`,
-      "harvest",
-      mode,
-      getGrowthTime(seedType)
-    );
-    Logger.logTest(
-      `/api/grid-bulk user ${fid} action plant step: '6. send delayed notification' date ${new Date()}`
-    );
-
-    // await sendQuestsCalculation(
-    //   fid,
-    //   "plant",
-    //   mode,
-    //   userSeeds.itemId,
-    //   updatedGridCellsBulk.length
-    // );
-    await axios({
-      url: `${env.FARVILLE_SERVICE_URL}/api/async-jobs/quests-calculation`,
-      method: "POST",
-      headers: {
-        "x-api-secret": env.FARVILLE_SERVICE_API_KEY,
-      },
-      data: {
-        fid,
+    Promise.allSettled([
+      sendDelayedNotification(
+        fid.toString(),
+        `Harvest time! 🌾`,
+        `Your ${getCropNameFromSeeds(seedType)} are ready to harvest!`,
+        "harvest",
         mode,
-        category: "plant",
-        itemId: userSeeds.itemId,
-        itemAmount: updatedGridCellsBulk.length,
-      },
-    });
+        getGrowthTime(seedType)
+      ),
+      axios({
+        url: `${env.FARVILLE_SERVICE_URL}/api/async-jobs/quests-calculation`,
+        method: "POST",
+        headers: {
+          "x-api-secret": env.FARVILLE_SERVICE_API_KEY,
+        },
+        data: {
+          fid,
+          mode,
+          category: "plant",
+          itemId: userSeeds.itemId,
+          itemAmount: updatedCellsCounter,
+        },
+      }),
+      sendBatchToPostHog(
+        fid,
+        "planted-seed",
+        plantableCells.map((cell) => ({
+          seedId: userSeeds.itemId,
+          cropType: cropType,
+          cellId: `${cell.x}/${cell.y}`,
+        }))
+      ),
+    ]);
     Logger.logTest(
-      `/api/grid-bulk user ${fid} action plant step: '7. send quests calculation' date ${new Date()}`
-    );
-
-    await sendBatchToPostHog(
-      fid,
-      "planted-seed",
-      updatedGridCellsBulk.map((cell) => ({
-        seedId: userSeeds.itemId,
-        cropType: cropType,
-        cellId: `${cell.x}/${cell.y}`,
-      }))
-    );
-    Logger.logTest(
-      `/api/grid-bulk user ${fid} action plant step: '8. send batch to posthog' date ${new Date()}`
+      `/api/grid-bulk user ${fid} action plant step: '6. all promises settled' date ${new Date()}`
     );
   }
   return {
     type: ActionType.Plant,
     cells: {
-      ok: updatedGridCellsBulk,
+      ok: updatedCellsCounter,
       nok: notPlantedCells,
     },
   };
@@ -207,11 +189,13 @@ export const harvestBulk = async (
   Logger.logTest(
     `/api/grid-bulk user ${fid} action harvest step: '1. get grid cells' date ${new Date()}`
   );
+  // Use a Map for O(1) lookup
+  const gridCellMap = new Map(gridCells.map((gc) => [`${gc.x},${gc.y}`, gc]));
   const harvestableCells = [];
   const notHarvestableCells = [];
 
   for (const cell of cells) {
-    const gridCell = gridCells.find((gc) => gc.x === cell.x && gc.y === cell.y);
+    const gridCell = gridCellMap.get(`${cell.x},${cell.y}`);
     if (
       !gridCell ||
       !gridCell.plantedAt ||
@@ -264,7 +248,6 @@ export const harvestBulk = async (
   const harvestCropSummary: {
     [x: string]: number;
   } = {};
-
   const goldCrops: {
     crop: string;
     amount: number;
@@ -301,84 +284,102 @@ export const harvestBulk = async (
     );
   }
 
-  // Process each crop type in a single pass
-  for (const cropType in harvestCropSummary) {
-    const amount = harvestCropSummary[cropType];
-    let goldCropCount = 0;
+  // Process each crop type in a single pass, run DB/API ops in parallel
+  const perCropPromises = Object.keys(harvestCropSummary).map(
+    async (cropType) => {
+      const amount = harvestCropSummary[cropType];
+      let goldCropCount = 0;
 
-    if (isHarvestHonoursAndGoldEnabled) {
-      const achievementProgress = getAchievementProgressByCrop(
-        userHarvestedCrops,
-        cropType as CropType
-      );
-      Logger.logTest(
-        `/api/grid-bulk user ${fid} action harvest step: '9. get achievement progress' date ${new Date()}`
-      );
-
-      // Check if the user has reached a new badge
-      if (
-        achievementProgress.step < 4 &&
-        achievementProgress.count + amount >= achievementProgress.currentGoal
-      ) {
-        newBadges.push({
-          crop: cropType,
-          step: achievementProgress.step,
-        });
-      }
-
-      // Check if the user has found gold crops
-      goldCropCount = calculateGoldCropsInBatch(
-        amount,
-        achievementProgress.step
-      );
-
-      if (goldCropCount > 0) {
-        Logger.logTest(
-          `User ${fid} harvested ${goldCropCount} gold ${cropType}! 🌟`
+      if (isHarvestHonoursAndGoldEnabled) {
+        const achievementProgress = getAchievementProgressByCrop(
+          userHarvestedCrops,
+          cropType as CropType
         );
-        await addUserItem(fid, CROP_DATA[cropType].goldId, goldCropCount, mode);
-        goldCrops.push({
-          crop: "gold-" + cropType,
-          amount: goldCropCount,
-        });
+        Logger.logTest(
+          `/api/grid-bulk user ${fid} action harvest step: '9. get achievement progress' date ${new Date()}`
+        );
+
+        // Check if the user has reached a new badge
+        if (
+          achievementProgress.step < 4 &&
+          achievementProgress.count + amount >= achievementProgress.currentGoal
+        ) {
+          newBadges.push({
+            crop: cropType,
+            step: achievementProgress.step,
+          });
+        }
+
+        // Check if the user has found gold crops
+        goldCropCount = calculateGoldCropsInBatch(
+          amount,
+          achievementProgress.step
+        );
+
+        const promises: Promise<unknown>[] = [];
+        if (goldCropCount > 0) {
+          Logger.logTest(
+            `User ${fid} harvested ${goldCropCount} gold ${cropType}! 🌟`
+          );
+          promises.push(
+            addUserItem(fid, CROP_DATA[cropType].goldId, goldCropCount, mode)
+          );
+          goldCrops.push({
+            crop: "gold-" + cropType,
+            amount: goldCropCount,
+          });
+        }
+        promises.push(upsertUserHarvestedCrop(fid, cropType, amount));
+        promises.push(
+          axios({
+            url: `${env.FARVILLE_SERVICE_URL}/api/async-jobs/quests-calculation`,
+            method: "POST",
+            headers: {
+              "x-api-secret": env.FARVILLE_SERVICE_API_KEY,
+            },
+            data: {
+              fid,
+              mode,
+              category: ActionType.Harvest,
+              itemId: CROP_DATA[cropType].id,
+              itemAmount: amount,
+            },
+          })
+        );
+        if (amount - goldCropCount > 0) {
+          promises.push(
+            addUserItem(
+              fid,
+              CROP_DATA[cropType].id,
+              amount - goldCropCount,
+              mode
+            )
+          );
+        }
+        await Promise.all(promises);
+      } else {
+        // If not enabled, just run addUserItem and axios in parallel
+        await Promise.all([
+          addUserItem(fid, CROP_DATA[cropType].id, amount, mode),
+          axios({
+            url: `${env.FARVILLE_SERVICE_URL}/api/async-jobs/quests-calculation`,
+            method: "POST",
+            headers: {
+              "x-api-secret": env.FARVILLE_SERVICE_API_KEY,
+            },
+            data: {
+              fid,
+              mode,
+              category: ActionType.Harvest,
+              itemId: CROP_DATA[cropType].id,
+              itemAmount: amount,
+            },
+          }),
+        ]);
       }
-
-      await upsertUserHarvestedCrop(fid, cropType, amount);
     }
-
-    const regularCropAmount = amount - goldCropCount;
-    if (regularCropAmount > 0) {
-      await addUserItem(fid, CROP_DATA[cropType].id, regularCropAmount, mode);
-      Logger.logTest(
-        `/api/grid-bulk user ${fid} action harvest step: '10. add user item' date ${new Date()}`
-      );
-    }
-
-    // await sendQuestsCalculation(
-    //   fid,
-    //   ActionType.Harvest,
-    //   mode,
-    //   CROP_DATA[cropType].id,
-    //   amount
-    // );
-    await axios({
-      url: `${env.FARVILLE_SERVICE_URL}/api/async-jobs/quests-calculation`,
-      method: "POST",
-      headers: {
-        "x-api-secret": env.FARVILLE_SERVICE_API_KEY,
-      },
-      data: {
-        fid,
-        mode,
-        category: ActionType.Harvest,
-        itemId: CROP_DATA[cropType].id,
-        itemAmount: amount,
-      },
-    });
-    Logger.logTest(
-      `/api/grid-bulk user ${fid} action harvest step: '11. send quests calculation' date ${new Date()}`
-    );
-  }
+  );
+  await Promise.all(perCropPromises);
 
   if (rewards.cropsWithRewards.length > 0) {
     await sendBatchToPostHog(
@@ -503,44 +504,40 @@ export const perkBulk = async (
     }
   }
 
-  const updatedGridCells = await updateGridCellsBulk(fid, perkableCells);
+  const updatedCellsCounter = (await updateGridCellsBulk(
+    fid,
+    perkableCells
+  )) as number;
 
   // track with posthog
-  if (updatedGridCells.length > 0) {
-    await removeUserItem(fid, userPerks.itemId, updatedGridCells.length, mode);
+  if (updatedCellsCounter > 0) {
+    await removeUserItem(fid, userPerks.itemId, updatedCellsCounter, mode);
 
-    // TODO: handle this if we want to add Perk Quests
-    // await sendQuestsCalculation(
-    //   fid,
-    //   "apply-perk",
-    //   userPerks.itemId,
-    //   updatedGridCells.length
-    // );
-
-    await sendDelayedNotification(
-      fid.toString(),
-      `Speed boost expired! ⚡️`,
-      `The speed boost has worn off. Check your crops!`,
-      "boost-expired",
-      mode,
-      SPEED_BOOST[itemSlug].duration / 1000
-    );
-
-    await sendBatchToPostHog(
-      fid,
-      "applied-perk",
-      updatedGridCells.map((cell) => ({
-        cellId: `${cell.x}/${cell.y}`,
-        cropType: cell.cropType,
-        itemSlug,
-      }))
-    );
+    Promise.allSettled([
+      sendDelayedNotification(
+        fid.toString(),
+        `Speed boost expired! ⚡️`,
+        `The speed boost has worn off. Check your crops!`,
+        "boost-expired",
+        mode,
+        SPEED_BOOST[itemSlug].duration / 1000
+      ),
+      sendBatchToPostHog(
+        fid,
+        "applied-perk",
+        perkableCells.map((cell) => ({
+          cellId: `${cell.x}/${cell.y}`,
+          cropType: cell.cropType,
+          itemSlug,
+        }))
+      ),
+    ]);
   }
 
   return {
     type: ActionType.ApplyPerk,
     cells: {
-      ok: updatedGridCells,
+      ok: updatedCellsCounter,
       nok: nonPerkableCells,
     },
   };
@@ -579,15 +576,18 @@ export const fertilizeBulk = async (
     }
   }
 
-  const updatedGridCells = await updateGridCellsBulk(fid, perkableCells);
+  const updatedCellsCounter = (await updateGridCellsBulk(
+    fid,
+    perkableCells
+  )) as number;
 
-  if (updatedGridCells.length > 0) {
-    await removeUserItem(fid, userPerks.itemId, updatedGridCells.length, mode);
+  if (updatedCellsCounter > 0) {
+    await removeUserItem(fid, userPerks.itemId, updatedCellsCounter, mode);
 
     await sendBatchToPostHog(
       fid,
       "applied-perk",
-      updatedGridCells.map((cell) => ({
+      perkableCells.map((cell) => ({
         cellId: `${cell.x}/${cell.y}`,
         cropType: cell.cropType,
         itemSlug: PerkType.Fertilizer,
@@ -598,7 +598,7 @@ export const fertilizeBulk = async (
   return {
     type: ActionType.Fertilize,
     cells: {
-      ok: updatedGridCells,
+      ok: updatedCellsCounter,
       nok: nonPerkableCells,
     },
   };
