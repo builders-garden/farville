@@ -24,12 +24,15 @@ const requestSchema = z.object({
   itemSlug: z
     .union([z.nativeEnum(SeedType), z.nativeEnum(PerkType)])
     .optional(),
-  cells: z.array(
-    z.object({
-      x: z.number(),
-      y: z.number(),
-    })
-  ),
+  cells: z
+    .array(
+      z.object({
+        x: z.number(),
+        y: z.number(),
+      })
+    )
+    .min(1)
+    .max(36),
   mode: z.nativeEnum(Mode),
 });
 
@@ -37,6 +40,13 @@ export const POST = async (req: NextRequest) => {
   let ip: string | undefined = undefined;
   let geolocationDetails: Geo | null = null;
   let userAgentDetails: UserAgent | null = null;
+
+  const fid = req.headers.get("x-user-fid");
+
+  if (!fid) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
     userAgentDetails = userAgent(req);
     // TODO: use this outside of vercel
@@ -48,7 +58,6 @@ export const POST = async (req: NextRequest) => {
   } catch (error) {
     console.error("Error getting geolocation:", error);
   }
-  const fid = req.headers.get("x-user-fid");
   console.log(
     "/api/grid-bulk",
     "fid",
@@ -61,9 +70,6 @@ export const POST = async (req: NextRequest) => {
     JSON.stringify(geolocationDetails)
   );
 
-  if (!fid) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
   Logger.logTest(`/api/grid-bulk user ${fid} started at ${new Date()}`);
 
   const requestJson = await req.json();
