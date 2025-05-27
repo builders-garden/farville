@@ -19,7 +19,8 @@ import ProfileModal from "@/components/ProfileModal";
 export const ContributionTableSection: React.FC<{
   lastContributions: UserCommunityDonationEnhanced[] | undefined;
   yourContributions: UserCommunityDonationEnhanced[] | undefined;
-}> = ({ lastContributions, yourContributions }) => {
+  isFarcasterManiaOn: boolean;
+}> = ({ lastContributions, yourContributions, isFarcasterManiaOn }) => {
   const { state, mode } = useGame();
 
   const [activeTab, setActiveTab] = useState<"latest" | "yours">("latest");
@@ -34,7 +35,8 @@ export const ContributionTableSection: React.FC<{
     const { castUrl } = communityContributionFlexCardComposeCastUrl(
       state.user.fid,
       mode,
-      contributionId
+      contributionId,
+      isFarcasterManiaOn
     );
     await sdk.actions.openUrl(castUrl);
   };

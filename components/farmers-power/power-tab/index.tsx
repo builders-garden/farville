@@ -300,6 +300,7 @@ export const PowerTab = () => {
       <ContributionTableSection
         lastContributions={lastContributions}
         yourContributions={userContributions}
+        isFarcasterManiaOn={isFarcasterManiaOn}
       />
 
       {/* Info Footer */}
