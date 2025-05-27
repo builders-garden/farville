@@ -393,13 +393,13 @@ export const useGameState = (mode: Mode) => {
     const hourOfDay = now.getUTCHours();
 
     // Farcaster Mania is active from Tuesday 16:00 UTC to Wednesday 16:00 UTC
-    const isManiaTime =
+    const isFarcasterManiaOn =
       (dayOfWeek === 2 && hourOfDay >= 16) || // Tuesday after 16:00 UTC
       (dayOfWeek === 3 && hourOfDay < 16); // Wednesday before 16:00 UTC
 
     setState((prevState) => ({
       ...prevState!,
-      isFarcasterManiaOn: isManiaTime,
+      isFarcasterManiaOn,
     }));
   }, []); // Runs once on mount and then relies on date changes triggering re-renders if app is open for long
 

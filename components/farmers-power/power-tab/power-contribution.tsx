@@ -162,7 +162,8 @@ export const PowerContribution = ({
     const { castUrl } = communityContributionFlexCardComposeCastUrl(
       state.user.fid,
       mode,
-      returnedDonationId
+      returnedDonationId,
+      isFarcasterManiaOn
     );
     await sdk.actions.openUrl(castUrl);
   };
