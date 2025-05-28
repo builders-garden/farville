@@ -1,4 +1,4 @@
-import { CROP_DATA, SPEED_BOOST } from "@/lib/game-constants";
+import { CROP_DATA, POWER_STAGES, SPEED_BOOST } from "@/lib/game-constants";
 import {
   getCropNameFromSeeds,
   sendDelayedNotification,
@@ -107,7 +107,9 @@ export const plantBulk = async (
 
   // get current community boost
   const currentCommunityBoost = await getCurrentCommunityBooster(mode);
-  const currentCommunityBoostMultiplier = currentCommunityBoost?.stage ?? 1;
+  const currentCommunityBoostMultiplier =
+    POWER_STAGES.find((power) => power.stage === currentCommunityBoost?.stage)
+      ?.boost ?? POWER_STAGES[1].boost;
 
   const updatedCellsCounter: number = (await updateGridCellsBulk(
     fid,

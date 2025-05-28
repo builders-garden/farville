@@ -2,7 +2,7 @@
 
 import { useAudio } from "@/context/AudioContext";
 import { useUserXp } from "@/hooks/use-user-xp";
-import { CROP_DATA, SPEED_BOOST } from "@/lib/game-constants";
+import { CROP_DATA, POWER_STAGES, SPEED_BOOST } from "@/lib/game-constants";
 import {
   formatTime,
   getBoostTime,
@@ -487,7 +487,10 @@ export default function GridCell({ cell }: GridCellProps) {
         });
 
         const communityBoosterMultiplier =
-          state.communityBoosterStatus?.stage || 1;
+          POWER_STAGES.find(
+            (power) => power.stage === state.communityBoosterStatus?.stage
+          )?.boost ?? POWER_STAGES[1].boost;
+
         updateGridCells([
           {
             x: cell.x,
