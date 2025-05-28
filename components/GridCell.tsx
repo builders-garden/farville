@@ -2,7 +2,7 @@
 
 import { useAudio } from "@/context/AudioContext";
 import { useUserXp } from "@/hooks/use-user-xp";
-import { CROP_DATA, POWER_STAGES, SPEED_BOOST } from "@/lib/game-constants";
+import { CROP_DATA, SPEED_BOOST } from "@/lib/game-constants";
 import {
   formatTime,
   getBoostTime,
