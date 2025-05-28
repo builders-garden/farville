@@ -194,7 +194,7 @@ export const FarmersPowerSpeedometer = ({
         const rad = angle * (Math.PI / 180);
         const cx = 30;
         const cy = 18;
-        const rOuter = 22;
+        const rOuter = 23;
         const rInner = 15; // Tick length of 5 (previously 19 for length 3)
 
         // For SVG, positive y is down. For calculations where 0 angle is 'up':
