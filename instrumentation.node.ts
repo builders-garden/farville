@@ -3,6 +3,10 @@ import { getNodeAutoInstrumentations } from "@opentelemetry/auto-instrumentation
 import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-http";
 import { resourceFromAttributes } from "@opentelemetry/resources";
 import { ATTR_SERVICE_NAME } from "@opentelemetry/semantic-conventions";
+import {
+  ParentBasedSampler,
+  TraceIdRatioBasedSampler,
+} from "@opentelemetry/sdk-trace-node";
 import { NodeSDK } from "@opentelemetry/sdk-node";
 
 import process from "process";
@@ -16,14 +20,19 @@ const traceExporter = new OTLPTraceExporter({
   url: env.SIGNOZ_TRACE_URL, // Set your own data region https://ingest.[region].signoz.cloud:443/v1/traces or set to http://localhost:4318/v1/traces if using selfhost SigNoz
   headers: {
     "signoz-access-token": env.SIGNOZ_INGESTION_KEY,
+    "signoz-ingestion-key": env.SIGNOZ_INGESTION_KEY,
   },
 });
+const sampler = new ParentBasedSampler({
+  root: new TraceIdRatioBasedSampler(0.1), // Sample 10% of traces
+});
 const sdk = new NodeSDK({
-  traceExporter,
-  instrumentations: [getNodeAutoInstrumentations()],
   resource: resourceFromAttributes({
     [ATTR_SERVICE_NAME]: "farville",
   }),
+  instrumentations: [getNodeAutoInstrumentations()],
+  sampler,
+  traceExporter,
 });
 
 // initialize the SDK and register with the OpenTelemetry API

@@ -12,6 +12,12 @@ const nextConfig: NextConfig = {
   devIndicators: {
     appIsrStatus: false,
   },
+  logging: {
+    fetches: {
+      fullUrl: true,
+      hmrRefreshes: true,
+    },
+  },
   images: {
     remotePatterns: [
       {
