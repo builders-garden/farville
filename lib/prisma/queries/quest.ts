@@ -24,6 +24,7 @@ import {
   millisecondsInHour,
   WEEKLY_QUESTS_NUMBER,
 } from "@/lib/game-constants";
+import { getCurrentCommunityBooster } from "./user-community-booster-history";
 
 export const getActiveQuests = async (): Promise<
   (Quest & { item: Item | null })[]
@@ -261,20 +262,38 @@ function maxPerksApplicationsByCrop(
   return k - 1;
 }
 
-const calculateValidAmount = (crop: CropData, level: number, mode: Mode) => {
+const calculateValidAmount = async (
+  crop: CropData,
+  level: number,
+  mode: Mode
+) => {
   const questTimeInHours = 40;
   const userAvailableCells =
     (EXPANSION_COSTS.filter((cost) => cost.level <= level).pop()?.nextSize
       .width ?? 2) ** 2;
 
+  const currentCommunityBoost = await getCurrentCommunityBooster(mode);
+
   let bonusTime = 0;
   // TODO: see if we can refactor this to be more clear without using static ids
   if ([17, 5, 18].includes(crop.id)) {
-    bonusTime = getBoostTime(PerkType.Nitrogen, mode);
+    bonusTime = getBoostTime(
+      PerkType.Nitrogen,
+      mode,
+      currentCommunityBoost?.stage || 1
+    );
   } else if ([19, 8, 20, 21, 7].includes(crop.id)) {
-    bonusTime = getBoostTime(PerkType.Potassium, mode);
+    bonusTime = getBoostTime(
+      PerkType.Potassium,
+      mode,
+      currentCommunityBoost?.stage || 1
+    );
   } else if ([22, 6, 23].includes(crop.id)) {
-    bonusTime = getBoostTime(PerkType.Phosphorus, mode);
+    bonusTime = getBoostTime(
+      PerkType.Phosphorus,
+      mode,
+      currentCommunityBoost?.stage || 1
+    );
   }
   bonusTime = bonusTime / millisecondsInHour;
   const cropGrowthTime = crop.growthTime / millisecondsInHour;
@@ -343,7 +362,7 @@ export const generateWeeklyQuests = async (
     // const amount =
     //   Math.round(Math.floor(chooseRandomItem(amounts) * level * 0.5) / 10) * 10;
     const amount =
-      Math.round(calculateValidAmount(cropData, level, mode) / 10) * 10;
+      Math.round((await calculateValidAmount(cropData, level, mode)) / 10) * 10;
 
     const xp = calculateQuestXP(level, cropData, amount);
     const startAt = new Date();
