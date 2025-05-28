@@ -147,7 +147,8 @@ export default function MarketplaceModal({
         growthTime:
           getGrowthTimeBasedOnMode(
             item.slug.replace("-seeds", "") as CropType,
-            mode
+            mode,
+            1
           ) /
           (60000 * 60),
       };
@@ -248,7 +249,10 @@ export default function MarketplaceModal({
           </div>
 
           {/* Tabs */}
-          <MarketplaceTabs activeTab={activeTab} setActiveTab={setActiveTab} />
+          <MarketplaceTabs
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
+          />
 
           {/* Sub tabs */}
           {activeTab === "buy" && (
