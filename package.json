@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "next dev",
+    "scan": "npx react-scan@latest localhost:3000",
     "typecheck": "tsc --noEmit",
     "build": "yarn typecheck && next build",
     "start": "next start",
@@ -69,6 +70,7 @@
     "react-day-picker": "8.10.1",
     "react-dom": "^19.0.0",
     "react-hot-toast": "^2.5.1",
+    "react-scan": "^0.3.4",
     "socket.io-client": "^4.8.1",
     "sonner": "^2.0.3",
     "supabase": "^2.6.8",
