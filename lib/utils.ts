@@ -316,26 +316,43 @@ export const formatTime = (seconds: number) => {
     .join(" ");
 };
 
-export const getBoostTime = (perkSlug: PerkType, mode: Mode) => {
+export const getCommunityBoostMultiplier = (stage: number) => {
+  return POWER_STAGES.find((power) => power.stage === stage)?.boost ?? 1;
+};
+
+export const getBoostTime = (
+  perkSlug: PerkType,
+  mode: Mode,
+  currentStage: number
+) => {
+  const currentCommunityBoostMultiplier =
+    getCommunityBoostMultiplier(currentStage);
   return (
     Math.floor(
-      SPEED_BOOST[perkSlug].duration / MODE_DEFINITIONS[mode].growthTimeDivisor
+      SPEED_BOOST[perkSlug].duration /
+        MODE_DEFINITIONS[mode].growthTimeDivisor /
+        currentCommunityBoostMultiplier
     ) *
     (1 - 1 / SPEED_BOOST[perkSlug].boost)
   );
 };
 
-// TODO: duration needs to be calculated based on the mode using a different operation
 export const isBoostable = (
   itemSlug: string,
   mode: Mode,
-  lastBoostTime: Date
+  lastBoostTime: Date,
+  currentCommunityBoostStage: number
 ) => {
   const timeSinceBoost = Date.now() - lastBoostTime.getTime();
+  const currentCommunityBoostMultiplier = getCommunityBoostMultiplier(
+    currentCommunityBoostStage
+  );
   return (
     timeSinceBoost <
     Math.floor(
-      SPEED_BOOST[itemSlug].duration / MODE_DEFINITIONS[mode].boosterTimeDivisor
+      SPEED_BOOST[itemSlug].duration /
+        MODE_DEFINITIONS[mode].boosterTimeDivisor /
+        currentCommunityBoostMultiplier
     )
   );
 };
@@ -653,9 +670,15 @@ export const userCanRedeem = (
   };
 };
 
-export const getGrowthTimeBasedOnMode = (crop: CropType, mode: Mode) => {
+export const getGrowthTimeBasedOnMode = (
+  crop: CropType,
+  mode: Mode,
+  communityBoost: number
+) => {
   const baseGrowthTime = CROP_DATA[crop].growthTime;
-  return Math.floor(baseGrowthTime / MODE_DEFINITIONS[mode].growthTimeDivisor);
+  return Math.floor(
+    baseGrowthTime / MODE_DEFINITIONS[mode].growthTimeDivisor / communityBoost
+  );
 };
 
 export const getGrowthTimeBasedOnMultiplier = (

@@ -6,6 +6,7 @@ import { CROP_DATA, SPEED_BOOST } from "@/lib/game-constants";
 import {
   formatTime,
   getBoostTime,
+  getCommunityBoostMultiplier,
   getGrowthTimeBasedOnMode,
 } from "@/lib/utils";
 import { UserGridCell } from "@prisma/client";
@@ -30,6 +31,7 @@ interface SeedDetailPopupProps {
   hasFertilizer: boolean;
   onBoost: (boostType: PerkType) => void;
   onClose: () => void;
+  currentCommunityBoostMultiplier: number;
 }
 
 function SeedDetailPopup({
@@ -38,6 +40,7 @@ function SeedDetailPopup({
   hasFertilizer,
   onBoost,
   onClose,
+  currentCommunityBoostMultiplier,
 }: SeedDetailPopupProps) {
   const { state, remainingUses, mode } = useGame();
   const seedData = state.items.find(
@@ -99,7 +102,11 @@ function SeedDetailPopup({
     : 0;
 
   const formattedGrowthTime = formatTime(
-    getGrowthTimeBasedOnMode(cell.cropType as CropType, mode) / 1000
+    getGrowthTimeBasedOnMode(
+      cell.cropType as CropType,
+      mode,
+      currentCommunityBoostMultiplier
+    ) / 1000
   );
   const formattedPlantAt =
     plantedAt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) +
@@ -211,6 +218,10 @@ export default function GridCell({ cell }: GridCellProps) {
   const cellRef = useRef<HTMLDivElement>(null);
   const [showPopup, setShowPopup] = useState(false);
 
+  const currentCommunityBoostMultiplier = getCommunityBoostMultiplier(
+    state.communityBoosterStatus?.stage || 1
+  );
+
   // Ref to track if the planting help toast has been shown recently
   const hasShownToastRef = useRef(false);
 
@@ -266,7 +277,11 @@ export default function GridCell({ cell }: GridCellProps) {
           y: cell.y,
           harvestAt: new Date(
             new Date(cell.harvestAt!).getTime() -
-              getBoostTime(boostType as PerkType, mode)
+              getBoostTime(
+                boostType as PerkType,
+                mode,
+                state.communityBoosterStatus?.stage || 1
+              )
           ),
           speedBoostedAt: new Date(),
           mode,
@@ -342,7 +357,11 @@ export default function GridCell({ cell }: GridCellProps) {
         });
 
         const itemSlug = selectedPerk.item.slug as PerkType;
-        const boostTime = getBoostTime(itemSlug, mode);
+        const boostTime = getBoostTime(
+          itemSlug,
+          mode,
+          state.communityBoosterStatus?.stage || 1
+        );
 
         updateGridCells([
           {
@@ -486,8 +505,6 @@ export default function GridCell({ cell }: GridCellProps) {
           mode,
         });
 
-        const communityBoosterMultiplier =
-          state.communityBoosterStatus?.stage || 1;
         updateGridCells([
           {
             x: cell.x,
@@ -498,9 +515,9 @@ export default function GridCell({ cell }: GridCellProps) {
               Date.now() +
                 getGrowthTimeBasedOnMode(
                   selectedSeed.replace("-seeds", "") as CropType,
-                  mode
-                ) /
-                  communityBoosterMultiplier
+                  mode,
+                  currentCommunityBoostMultiplier
+                )
             ),
             isReadyToHarvest: false,
             mode,
@@ -634,6 +651,7 @@ export default function GridCell({ cell }: GridCellProps) {
             hasFertilizer={hasFertilizer}
             onBoost={handleBoost}
             onClose={() => setShowPopup(false)}
+            currentCommunityBoostMultiplier={currentCommunityBoostMultiplier}
           />
         )}
 
