@@ -1,4 +1,4 @@
-import { CROP_DATA, POWER_STAGES, SPEED_BOOST } from "@/lib/game-constants";
+import { CROP_DATA, SPEED_BOOST } from "@/lib/game-constants";
 import {
   getCropNameFromSeeds,
   sendDelayedNotification,
@@ -20,6 +20,7 @@ import {
   calculateGoldCropsInBatch,
   getAchievementProgressByCrop,
   getBoostTime,
+  getCommunityBoostMultiplier,
   getGrowthTime,
   getGrowthTimeBasedOnMode,
   isBoostable,
@@ -107,9 +108,9 @@ export const plantBulk = async (
 
   // get current community boost
   const currentCommunityBoost = await getCurrentCommunityBooster(mode);
-  const currentCommunityBoostMultiplier =
-    POWER_STAGES.find((power) => power.stage === currentCommunityBoost?.stage)
-      ?.boost ?? POWER_STAGES[1].boost;
+  const currentCommunityBoostMultiplier = getCommunityBoostMultiplier(
+    currentCommunityBoost?.stage || 1
+  );
 
   const updatedCellsCounter: number = (await updateGridCellsBulk(
     fid,
@@ -120,8 +121,11 @@ export const plantBulk = async (
       plantedAt: new Date(),
       harvestAt: new Date(
         Date.now() +
-          getGrowthTimeBasedOnMode(cropType, mode) /
+          getGrowthTimeBasedOnMode(
+            cropType,
+            mode,
             currentCommunityBoostMultiplier
+          )
       ),
     }))
   )) as number;
@@ -468,6 +472,7 @@ export const perkBulk = async (
   }
 
   const gridCells = await getUserGridCells(fid, mode);
+  const currentCommunityBoost = await getCurrentCommunityBooster(mode);
 
   const nonPerkableCells = [];
   const perkableCells = [];
@@ -484,12 +489,23 @@ export const perkBulk = async (
       // Check if enough time has passed since last speed boost
       if (gridCell.speedBoostedAt) {
         const lastBoostTime = new Date(gridCell.speedBoostedAt);
-        if (isBoostable(itemSlug, mode, lastBoostTime)) {
+        if (
+          isBoostable(
+            itemSlug,
+            mode,
+            lastBoostTime,
+            currentCommunityBoost?.stage || 1
+          )
+        ) {
           nonPerkableCells.push(gridCell);
           continue;
         }
       }
-      const boostTime = getBoostTime(itemSlug, mode);
+      const boostTime = getBoostTime(
+        itemSlug,
+        mode,
+        currentCommunityBoost?.stage || 1
+      );
       await sendDelayedNotification(
         fid.toString(),
         `Harvest time! 🌾`,
