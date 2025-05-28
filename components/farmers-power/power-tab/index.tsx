@@ -18,14 +18,12 @@ import {
   POWER_STAGES,
 } from "@/lib/game-constants";
 import { useCommunityDonation } from "@/hooks/use-community-donation";
-import { HowItWorks } from "./how-it-works";
 
 export const PowerTab = () => {
   const { state, mode } = useGame();
   const { address, chainId } = useAccount();
   const { switchChain } = useSwitchChain();
   const [donationId, setDonationId] = useState<string | null>(null);
-  const [showHowItWorksDialog, setShowHowItWorksDialog] = useState(false);
 
   const { isFarcasterManiaOn } = state;
 
@@ -231,10 +229,9 @@ export const PowerTab = () => {
           </div>
         )}
         {/* Current Status Section */}
-        <div className="w-full bg-[#5C4121]/50 rounded-xl p-6 border border-yellow-400/20">
+        <div className="w-full bg-[#5C4121]/50 rounded-xl p-4 border border-yellow-400/20">
           <div className="flex flex-col gap-4">
             <PowerStats
-              currentPowerStage={currentPowerStage}
               currentFP={currentFP}
               fpChangeAnimation={fpChangeAnimation}
               nextStageInfo={nextStageInfo}
@@ -258,12 +255,6 @@ export const PowerTab = () => {
             <PowerStages
               currentPowerStage={currentPowerStage}
               stages={POWER_STAGES}
-              isFarcasterManiaOn={isFarcasterManiaOn}
-            />
-
-            <HowItWorks
-              isOpen={showHowItWorksDialog}
-              onOpenChange={setShowHowItWorksDialog}
               isFarcasterManiaOn={isFarcasterManiaOn}
             />
           </div>
