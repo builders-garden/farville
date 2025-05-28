@@ -25,6 +25,7 @@ export const useSignIn = (isInMaintenance: boolean) => {
       }
 
       let result;
+      const nonce = Math.random().toString(36).substring(2);
       if (isTestMode) {
         result = {
           signature: "0x123",
@@ -40,11 +41,12 @@ export const useSignIn = (isInMaintenance: boolean) => {
           );
 
         result = await sdk.actions.signIn({
-          nonce: Math.random().toString(36).substring(2),
+          nonce,
           notBefore: new Date().toISOString(),
           expirationTime: new Date(
             Date.now() + MESSAGE_EXPIRATION_TIME
           ).toISOString(),
+          acceptAuthAddress: true,
         });
       }
 
@@ -59,6 +61,7 @@ export const useSignIn = (isInMaintenance: boolean) => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
+          nonce,
           signature: result?.signature,
           message: result?.message,
           fid: context?.user?.fid,

@@ -1,8 +1,8 @@
 import { fetchUser } from "@/lib/neynar";
 import { NextRequest, NextResponse } from "next/server";
-import { verifyMessage } from "viem";
 import * as jose from "jose";
 import { trackEvent } from "@/lib/posthog/server";
+import { createAppClient, viemConnector } from "@farcaster/auth-client";
 import {
   addReferral,
   createUserAndMode,
@@ -19,23 +19,56 @@ import { getRandomTestUserFid } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
+const appClient = createAppClient({
+  relay: "https://relay.farcaster.xyz",
+  ethereum: viemConnector({
+    rpcUrls: [
+      "https://mainnet.optimism.io",
+      "https://1rpc.io/op",
+      "https://optimism-rpc.publicnode.com",
+      "https://optimism.drpc.org",
+    ],
+  }),
+});
+
 export const POST = async (req: NextRequest) => {
-  const data = await req.json();
-  const { referrerFid, signature, message } = data;
+  const { nonce, signature, message, referrerFid } = await req.json();
   const isTestMode =
     !!env.NEXT_PUBLIC_IS_TEST_MODE && env.NEXT_PUBLIC_APP_ENV === "development";
 
-  let fid = data.fid;
+  // Verify signature matches custody address and auth address
+  const {
+    data,
+    success,
+    fid: fidFromSignature,
+  } = await appClient.verifySignInMessage({
+    domain: new URL(env.NEXT_PUBLIC_URL).hostname,
+    nonce,
+    message,
+    signature,
+    acceptAuthAddress: true,
+  });
+  let isValidSignature;
+  if (isTestMode) {
+    isValidSignature = true;
+  } else {
+    isValidSignature = success;
+  }
+
+  // Verify signature matches custody address and auth address (if not in test mode)
+  if (!isValidSignature)
+    return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
+
+  let fid = fidFromSignature;
   if (isTestMode) {
     fid = await getRandomTestUserFid();
   }
 
   let user = await getUserByMode(fid, Mode.Classic);
-
   if (!user) {
-    const newUser = await fetchUser(fid);
+    const newUser = await fetchUser(fid.toString());
     user = await createUserAndMode({
-      fid: fid,
+      fid,
       username: newUser.username,
       displayName: newUser.display_name,
       avatarUrl: newUser.pfp_url,
@@ -50,29 +83,9 @@ export const POST = async (req: NextRequest) => {
       },
     });
 
-    if (referrerFid) {
-      await addReferral(referrerFid, fid);
-    }
+    if (referrerFid) await addReferral(referrerFid, fid);
 
-    trackEvent(fid, "sign_up", {
-      fid,
-    });
-  }
-
-  // Verify signature matches custody address
-  let isValidSignature;
-  if (isTestMode) {
-    isValidSignature = true;
-  } else {
-    isValidSignature = await verifyMessage({
-      address: user.walletAddress as `0x${string}`,
-      message,
-      signature,
-    });
-  }
-
-  if (!isValidSignature) {
-    return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
+    trackEvent(fid, "sign_up", { fid });
   }
 
   // check if the user has already the grid cells
@@ -90,6 +103,7 @@ export const POST = async (req: NextRequest) => {
   // Generate a session token using fid and current timestamp
   const jwtToken = await new jose.SignJWT({
     fid,
+    walletAddress: data.address,
     timestamp: Date.now(),
   })
     .setProtectedHeader({ alg: "HS256" })
