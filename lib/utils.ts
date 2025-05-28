@@ -75,7 +75,7 @@ export const warpcastComposeCastUrl = () => {
   const frameUrl = env.NEXT_PUBLIC_URL;
   const text = `I'm tired of touching grass IRL, and I can't wait to touch PIXEL grass in /farville...\n\nBuild my dream farm and grow quirky crops. It's honest work, but way more fun than real farming!🧑‍🌾`;
   const urlFriendlyText = encodeURIComponent(text);
-  return `https://warpcast.com/~/compose?text=${urlFriendlyText}&embeds[]=${encodeURIComponent(
+  return `https://farcaster.xyz/~/compose?text=${urlFriendlyText}&embeds[]=${encodeURIComponent(
     frameUrl
   )}&channelKey=farville`;
 };
@@ -94,7 +94,7 @@ export const requestItemComposeCastUrl = (
   const urlFriendlyText = encodeURIComponent(text);
   return {
     requestUrl: frameUrl,
-    castUrl: `https://warpcast.com/~/compose?text=${urlFriendlyText}&embeds[]=${encodeURIComponent(
+    castUrl: `https://farcaster.xyz/~/compose?text=${urlFriendlyText}&embeds[]=${encodeURIComponent(
       frameUrl
     )}&channelKey=farville`,
   };
@@ -117,7 +117,7 @@ export const shareWeeklyLeaderboardPositionComposeCastUrl = (
   const urlFriendlyText = encodeURIComponent(text);
   return {
     frameUrl,
-    castUrl: `https://warpcast.com/~/compose?text=${urlFriendlyText}&embeds[]=${encodeURIComponent(
+    castUrl: `https://farcaster.xyz/~/compose?text=${urlFriendlyText}&embeds[]=${encodeURIComponent(
       frameUrl
     )}&channelKey=farville`,
   };
@@ -133,7 +133,7 @@ export const streakFlexCardComposeCastUrl = (
   const urlFriendlyText = encodeURIComponent(text);
   return {
     frameUrl,
-    castUrl: `https://warpcast.com/~/compose?text=${urlFriendlyText}&embeds[]=${encodeURIComponent(
+    castUrl: `https://farcaster.xyz/~/compose?text=${urlFriendlyText}&embeds[]=${encodeURIComponent(
       frameUrl
     )}&channelKey=farville`,
   };
@@ -151,7 +151,7 @@ export const communityContributionFlexCardComposeCastUrl = (
   const urlFriendlyText = encodeURIComponent(text);
   return {
     frameUrl,
-    castUrl: `https://warpcast.com/~/compose?text=${urlFriendlyText}&embeds[]=${encodeURIComponent(
+    castUrl: `https://farcaster.xyz/~/compose?text=${urlFriendlyText}&embeds[]=${encodeURIComponent(
       frameUrl
     )}&channelKey=farville`,
   };
@@ -164,7 +164,7 @@ export const mintedOgFlexCardComposeCastUrl = (fid: number) => {
   const urlFriendlyText = encodeURIComponent(text);
   return {
     frameUrl,
-    castUrl: `https://warpcast.com/~/compose?text=${urlFriendlyText}&embeds[]=${encodeURIComponent(
+    castUrl: `https://farcaster.xyz/~/compose?text=${urlFriendlyText}&embeds[]=${encodeURIComponent(
       frameUrl
     )}&channelKey=farville`,
   };
@@ -180,7 +180,7 @@ export const mintedCollectibleFlexCardComposeCastUrl = (
   const urlFriendlyText = encodeURIComponent(text);
   return {
     frameUrl,
-    castUrl: `https://warpcast.com/~/compose?text=${urlFriendlyText}&embeds[]=${encodeURIComponent(
+    castUrl: `https://farcaster.xyz/~/compose?text=${urlFriendlyText}&embeds[]=${encodeURIComponent(
       frameUrl
     )}&channelKey=farville`,
   };
@@ -193,7 +193,7 @@ export const goldCropFlexCardComposeCastUrl = (fid: number, crop: string) => {
   const urlFriendlyText = encodeURIComponent(text);
   return {
     frameUrl,
-    castUrl: `https://warpcast.com/~/compose?text=${urlFriendlyText}&embeds[]=${encodeURIComponent(
+    castUrl: `https://farcaster.xyz/~/compose?text=${urlFriendlyText}&embeds[]=${encodeURIComponent(
       frameUrl
     )}&channelKey=farville`,
   };
@@ -211,7 +211,7 @@ export const achievementBadgeFlexCardComposeCastUrl = (
   const urlFriendlyText = encodeURIComponent(text);
   return {
     frameUrl,
-    castUrl: `https://warpcast.com/~/compose?text=${urlFriendlyText}&embeds[]=${encodeURIComponent(
+    castUrl: `https://farcaster.xyz/~/compose?text=${urlFriendlyText}&embeds[]=${encodeURIComponent(
       frameUrl
     )}&channelKey=farville`,
   };
@@ -245,7 +245,7 @@ export const leaderboardFlexCardComposeCastUrl = (
 
   return {
     frameUrl,
-    castUrl: `https://warpcast.com/~/compose?text=${urlFriendlyText}&embeds[]=${encodeURIComponent(
+    castUrl: `https://farcaster.xyz/~/compose?text=${urlFriendlyText}&embeds[]=${encodeURIComponent(
       frameUrl
     )}&channelKey=farville`,
   };
@@ -837,7 +837,7 @@ export const getRandomTestUserFid = async (): Promise<number> => {
   const randomUser =
     users.users[Math.floor(Math.random() * users.users.length)];
   console.log(
-    `getRandomTestUserFid randomUser: https://warpcast.com/${randomUser.username} (${randomUser.displayName})`,
+    `getRandomTestUserFid randomUser: https://farcaster.xyz/${randomUser.username} (${randomUser.displayName})`,
     randomUser.fid
   );
   return randomUser.fid;
