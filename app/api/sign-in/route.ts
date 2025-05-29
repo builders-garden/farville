@@ -56,8 +56,16 @@ export const POST = async (req: NextRequest) => {
   }
 
   // Verify signature matches custody address and auth address (if not in test mode)
-  if (!isValidSignature)
+  if (!isValidSignature) {
+    console.error(
+      "Invalid signature",
+      JSON.stringify(data, null, 2),
+      "success",
+      success,
+      fidFromSignature
+    );
     return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
+  }
 
   let fid = fidFromSignature;
   if (isTestMode) {
