@@ -5,6 +5,8 @@ import { X } from "lucide-react";
 import ProfileModal from "../ProfileModal";
 import { LeaderboardTab } from "./leaderboard-tab";
 import { PowerTab } from "./power-tab";
+import { useDonationLeaderboard } from "@/hooks/use-donation-leadeboard";
+import { useGame } from "@/context/GameContext";
 
 interface FarmersPowerModalProps {
   onClose: () => void;
@@ -12,9 +14,16 @@ interface FarmersPowerModalProps {
 
 export default function FarmersPowerModal({ onClose }: FarmersPowerModalProps) {
   const { safeAreaInsets } = useFrameContext();
+  const { state, mode } = useGame();
   const [activeTab, setActiveTab] = useState<"power" | "leaderboard">("power");
   const [selectedUserFid, setSelectedUserFid] = useState<number | undefined>(
     undefined
+  );
+  const { data: leaderboardData } = useDonationLeaderboard(
+    mode,
+    state.user.fid,
+    20,
+    true
   );
 
   const handleCloseProfile = () => {
@@ -24,10 +33,7 @@ export default function FarmersPowerModal({ onClose }: FarmersPowerModalProps) {
   return (
     <div className="fixed inset-0 bg-black/50 flex items-start z-50">
       {selectedUserFid ? (
-        <ProfileModal
-          onClose={handleCloseProfile}
-          userFid={selectedUserFid}
-        />
+        <ProfileModal onClose={handleCloseProfile} userFid={selectedUserFid} />
       ) : (
         <motion.div
           initial={{ opacity: 0, y: 50 }}
@@ -116,9 +122,34 @@ export default function FarmersPowerModal({ onClose }: FarmersPowerModalProps) {
               ))}
             </div>
 
-            {activeTab === "power" && <PowerTab />}
+            {activeTab === "power" && (
+              <PowerTab
+                topDonors={
+                  leaderboardData?.leaderboard.slice(0, 5).map((user) => {
+                    return {
+                      fid: user.fid,
+                      username: user.username,
+                      avatarUrl: user.avatarUrl || undefined,
+                      selectedAvatarUrl: user.selectedAvatarUrl || undefined,
+                      mintedOG: user.mintedOG,
+                    };
+                  }) || []
+                }
+                onSelectUser={setSelectedUserFid}
+              />
+            )}
             {activeTab === "leaderboard" && (
-              <LeaderboardTab onSelectUser={setSelectedUserFid} />
+              <LeaderboardTab
+                onSelectUser={setSelectedUserFid}
+                leaderboardData={leaderboardData}
+                viewerData={{
+                  fid: state.user.fid,
+                  username: state.user.username,
+                  avatarUrl: state.user.avatarUrl || undefined,
+                  selectedAvatarUrl: state.user.selectedAvatarUrl || undefined,
+                  mintedOG: state.user.mintedOG,
+                }}
+              />
             )}
           </div>
         </motion.div>
