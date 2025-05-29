@@ -8,11 +8,6 @@ export const env = createEnv({
     NEYNAR_API_KEY: z.string().min(1),
     // JWT
     JWT_SECRET: z.string().min(1),
-    // QSTASH
-    QSTASH_URL: z.string().url().min(1),
-    QSTASH_TOKEN: z.string().min(1),
-    QSTASH_CURRENT_SIGNING_KEY: z.string().min(1),
-    QSTASH_NEXT_SIGNING_KEY: z.string().min(1),
     // SUPABASE
     SUPABASE_SERVICE_KEY: z.string().min(1),
     SUPABASE_URL: z.string().url().min(1),
