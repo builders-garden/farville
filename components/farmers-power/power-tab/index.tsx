@@ -13,7 +13,7 @@ import { PowerTimer } from "./power-timer";
 import { ContributionTableSection } from "./contribution-table-section";
 import { useCommunityBoosterIncrement } from "@/hooks/use-community-booster";
 import {
-  COMBO_WINDOW,
+  FP_DECREASE_DELAY_MS,
   DECAY_INTERVAL,
   POWER_STAGES,
 } from "@/lib/game-constants";
@@ -81,15 +81,17 @@ export const PowerTab = () => {
     if (!lastDonationTime) return new Date(); // Default to now if no donations yet
     const timeSinceLastDonation = Date.now() - lastDonationTime.getTime();
 
-    if (timeSinceLastDonation < COMBO_WINDOW) {
+    if (timeSinceLastDonation < FP_DECREASE_DELAY_MS) {
       // If the last donation was within the combo window, use that as the reset time
       return lastDonationTime;
     } else {
       // Calculate proper reset time using modulo logic
-      const elapsedCycles = Math.floor(timeSinceLastDonation / COMBO_WINDOW);
+      const elapsedCycles = Math.floor(
+        timeSinceLastDonation / FP_DECREASE_DELAY_MS
+      );
       // This returns the start time of the current cycle we're in
       return new Date(
-        lastDonationTime.getTime() + elapsedCycles * COMBO_WINDOW
+        lastDonationTime.getTime() + elapsedCycles * FP_DECREASE_DELAY_MS
       );
     }
   });
@@ -99,15 +101,17 @@ export const PowerTab = () => {
 
     const timeSinceLastDonation = Date.now() - lastDonationTime.getTime();
 
-    if (timeSinceLastDonation < COMBO_WINDOW) {
+    if (timeSinceLastDonation < FP_DECREASE_DELAY_MS) {
       // If the last donation was within the combo window, reset timer to that point
       setLastTimerReset(lastDonationTime);
     } else {
       // Calculate proper reset time using modulo logic
       // This keeps track of where we are within the current cycle
-      const elapsedCycles = Math.floor(timeSinceLastDonation / COMBO_WINDOW);
+      const elapsedCycles = Math.floor(
+        timeSinceLastDonation / FP_DECREASE_DELAY_MS
+      );
       const currentWindowStart = new Date(
-        lastDonationTime.getTime() + elapsedCycles * COMBO_WINDOW
+        lastDonationTime.getTime() + elapsedCycles * FP_DECREASE_DELAY_MS
       );
       setLastTimerReset(currentWindowStart);
     }
@@ -243,7 +247,7 @@ export const PowerTab = () => {
               <PowerTimer
                 powerCombo={powerCombo}
                 lastDonationTime={lastDonationTime}
-                COMBO_WINDOW={COMBO_WINDOW}
+                COMBO_WINDOW={FP_DECREASE_DELAY_MS}
                 setPowerCombo={setPowerCombo}
                 setCurrentFP={setCurrentFP}
                 lastTimerReset={lastTimerReset}

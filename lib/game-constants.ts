@@ -1089,7 +1089,7 @@ export const POWER_STAGES = [
 ];
 
 export const MAX_COMBO = 10;
-export const COMBO_WINDOW = 10 * 60 * 1000; // 10 minutes in milliseconds
+export const FP_DECREASE_DELAY_MS = 20 * 60 * 1000; // 10 minutes in milliseconds
 export const DECAY_INTERVAL = 600; // 600 minutes (10 hours) for power stage decay
 
 export const FP_AMOUNT: Record<number, number> = {
