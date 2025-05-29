@@ -2,10 +2,7 @@
 
 import { useEffect, useState } from "react";
 import sdk from "@farcaster/frame-sdk";
-import {
-  FrameContext,
-  SafeAreaInsets,
-} from "@farcaster/frame-core/dist/context";
+import { FrameContext, SafeAreaInsets } from "@farcaster/frame-node";
 import { useTestMode } from "./TestContext";
 import { env } from "@/lib/env";
 
