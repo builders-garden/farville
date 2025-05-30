@@ -180,7 +180,7 @@ export const POST = async (
       },
     }),
     sendDelayedNotificationToService(
-      toFid.toString(),
+      toFid,
       "New Donation!",
       `${user?.username} donated ${quantity} ${item.name} to you!`,
       "donation",
