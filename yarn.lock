@@ -1036,6 +1036,14 @@
     "@ethersproject/properties" "^5.8.0"
     "@ethersproject/strings" "^5.8.0"
 
+"@farcaster/auth-client@^0.3.0":
+  version "0.3.0"
+  resolved "https://registry.yarnpkg.com/@farcaster/auth-client/-/auth-client-0.3.0.tgz#3e736fe525b74cf5aea91a2913daf3f9cad68771"
+  integrity sha512-tOQ5r40V7sYKOhk7QEzVnU9wAM0FGpQ2Y3jXpNfNPw61lFpYc4kRAxTJOOc2NF1msYdHGFVDvG8xe9Qf36M1RA==
+  dependencies:
+    neverthrow "^6.1.0"
+    siwe "^2.1.4"
+
 "@farcaster/auth-client@^0.4.0":
   version "0.4.0"
   resolved "https://registry.yarnpkg.com/@farcaster/auth-client/-/auth-client-0.4.0.tgz#f0ca60cee66939f547d04a8b1f13d8005d890dad"
@@ -1043,14 +1051,6 @@
   dependencies:
     neverthrow "^6.1.0"
     siwe "^2.1.4"
-
-"@farcaster/auth-client@^0.6.0":
-  version "0.6.0"
-  resolved "https://registry.yarnpkg.com/@farcaster/auth-client/-/auth-client-0.6.0.tgz#dbe9bc722b47f85fbd3af3d7e1fcb1b2df2001e5"
-  integrity sha512-YXTol6FHglYLXgpQg49ZG0262NzseFV2xf1gzrgvHh4iQqBY9pwSS2+hmW+N16H/tm/UgNg6JUTNAakFsjrJ2Q==
-  dependencies:
-    neverthrow "^6.1.0"
-    viem "^2.29.2"
 
 "@farcaster/auth-kit@^0.6.0":
   version "0.6.1"
@@ -1063,6 +1063,14 @@
     qrcode "^1.5.3"
     react-remove-scroll "^2.5.7"
 
+"@farcaster/frame-core@0.0.21":
+  version "0.0.21"
+  resolved "https://registry.yarnpkg.com/@farcaster/frame-core/-/frame-core-0.0.21.tgz#370315cbb7292951b060bac4eba9f53713c8c28c"
+  integrity sha512-VugoKVo7R/CV3hIHDd+4XDvV1rhSQ8CzXdr/DGzUmp9AeUDvKi+igUE/Ofb85BfK19qHWz0Rx239VdPEE7ZxMg==
+  dependencies:
+    ox "^0.4.0"
+    zod "^3.23.8"
+
 "@farcaster/frame-core@0.0.24":
   version "0.0.24"
   resolved "https://registry.yarnpkg.com/@farcaster/frame-core/-/frame-core-0.0.24.tgz#35c2403f561a74b6551e3032d6d57a730c3dc413"
@@ -1071,33 +1079,13 @@
     ox "^0.4.4"
     zod "^3.24.1"
 
-"@farcaster/frame-core@0.1.0":
-  version "0.1.0"
-  resolved "https://registry.yarnpkg.com/@farcaster/frame-core/-/frame-core-0.1.0.tgz#396e439a7c7dfc1867e84dfaf77d847bcdd5a294"
-  integrity sha512-GkN1uZYrAtmtL5JzDua2izDu2XvCl2aTI2qlhIj4ahtVQ7Qgrp3fft6LNqvsjumaBg9ooiaFTpwUGcXz3mRnjQ==
+"@farcaster/frame-node@^0.0.10":
+  version "0.0.10"
+  resolved "https://registry.yarnpkg.com/@farcaster/frame-node/-/frame-node-0.0.10.tgz#2e1e58e72b83492b3a2f6e1202c1a6f032b81638"
+  integrity sha512-6NB7Q9amWOOyPpqAnYtr3P0D4e63e93hTfHc0DJXBYIDj/F4SOoNt4uUZzNU55Ud82CzvGxYhN7CT5IY7g5vdg==
   dependencies:
-    "@solana/web3.js" "^1.98.2"
-    ox "^0.4.4"
-    zod "^3.24.1"
-
-"@farcaster/frame-core@^0.1.0":
-  version "0.1.2"
-  resolved "https://registry.yarnpkg.com/@farcaster/frame-core/-/frame-core-0.1.2.tgz#50c189efbb6a377dc8d67e44ec82498c8bf8b4bb"
-  integrity sha512-TSzIrCdeQKXq61cvk/ziNpEzH3r8QbDOYHOaPVR/N8e7l8abJWvYZ5cCgbgs8Rzqf/VkNmwJDI/61zfPI76KMQ==
-  dependencies:
-    "@solana/web3.js" "^1.98.2"
-    ox "^0.4.4"
-    zod "^3.24.1"
-
-"@farcaster/frame-node@^0.0.30":
-  version "0.0.30"
-  resolved "https://registry.yarnpkg.com/@farcaster/frame-node/-/frame-node-0.0.30.tgz#ec6d88bd56afa13cd2a9809aaba1ff98a1afff5d"
-  integrity sha512-F+oTxYNxxMYgTp9frAtl2AUiXZzeZe3/A2omRUZQ+VwiWgQzA1gZxyMCl5oaYIo4G9qU9zGImZJqc8gNXJBxqw==
-  dependencies:
-    "@farcaster/frame-core" "0.1.0"
-    "@noble/curves" "^1.7.0"
-    ox "^0.4.4"
-    zod "^3.24.1"
+    "@farcaster/frame-core" "0.0.21"
+    ox "^0.4.0"
 
 "@farcaster/frame-sdk@^0.0.26":
   version "0.0.26"
@@ -1109,29 +1097,10 @@
     eventemitter3 "^5.0.1"
     ox "^0.4.4"
 
-"@farcaster/frame-sdk@^0.0.51":
-  version "0.0.51"
-  resolved "https://registry.yarnpkg.com/@farcaster/frame-sdk/-/frame-sdk-0.0.51.tgz#ad9445f04b350e5eb769c5dfe47b572a74648069"
-  integrity sha512-PALwvTpS21txr5oJWGxf+VFERmpVIvqH1q2QYdijizgmHwPFG+prFyZQgNDvDrAA4fe3do7kTBCuNFTskg5HmA==
-  dependencies:
-    "@farcaster/frame-core" "0.1.0"
-    "@farcaster/quick-auth" "^0.0.5"
-    comlink "^4.4.2"
-    eventemitter3 "^5.0.1"
-    ox "^0.4.4"
-
-"@farcaster/frame-wagmi-connector@^0.0.40":
-  version "0.0.40"
-  resolved "https://registry.yarnpkg.com/@farcaster/frame-wagmi-connector/-/frame-wagmi-connector-0.0.40.tgz#0d20e4bb578638d64934dd4b88e9b199b686aef8"
-  integrity sha512-/yt35NZwQF4SeNNA9lcJhtFT0kgFz5Yc4Oz4UMxQhHVJYuExb/WF17TW5l1y3uLvpc2Fp7OGURcql9l8eo984Q==
-
-"@farcaster/quick-auth@^0.0.5":
-  version "0.0.5"
-  resolved "https://registry.yarnpkg.com/@farcaster/quick-auth/-/quick-auth-0.0.5.tgz#580db82618b9db353cd25e8a8f4fd0f1cad4df31"
-  integrity sha512-Z8hWz/7c33zlmII2AJHja/Wz0C03mm2o+CEBtBylmiun1wC4FMgx1Fal699VQvBUG1lpcJ662WxuRNxKogktDw==
-  dependencies:
-    jose "^5.2.3"
-    zod "^3.25.1"
+"@farcaster/frame-wagmi-connector@^0.0.19":
+  version "0.0.19"
+  resolved "https://registry.yarnpkg.com/@farcaster/frame-wagmi-connector/-/frame-wagmi-connector-0.0.19.tgz#e39be5ab32f63c32aee37e116e4db57898ab2db1"
+  integrity sha512-Ey9lEEk4SudkOiTtqY2eMGVTFZwW1lLMEtnAYqb7dCc/mDQowj3GfxNW9a2bdPoq5UEwAwJxxLiVvdERI+Hy3A==
 
 "@fastify/busboy@^2.0.0":
   version "2.1.1"
@@ -2090,7 +2059,7 @@
   dependencies:
     "@noble/hashes" "1.8.0"
 
-"@noble/curves@1.9.1", "@noble/curves@^1.4.2", "@noble/curves@^1.6.0", "@noble/curves@^1.7.0", "@noble/curves@^1.8.0", "@noble/curves@^1.8.1", "@noble/curves@^1.9.1", "@noble/curves@~1.9.0":
+"@noble/curves@1.9.1", "@noble/curves@^1.4.2", "@noble/curves@^1.6.0", "@noble/curves@^1.8.0", "@noble/curves@^1.8.1", "@noble/curves@^1.9.1", "@noble/curves@~1.9.0":
   version "1.9.1"
   resolved "https://registry.yarnpkg.com/@noble/curves/-/curves-1.9.1.tgz#9654a0bc6c13420ae252ddcf975eaf0f58f0a35c"
   integrity sha512-k11yZxZg+t+gWvBbIswW0yoJlu8cHOC7dhunwOzoWH/mXGBiYyR4YY6hAEK/3EUs4UpB8la1RfdRpeGsFHkWsA==
@@ -7604,7 +7573,7 @@ ox@0.7.1:
     abitype "^1.0.6"
     eventemitter3 "5.0.1"
 
-ox@^0.4.4:
+ox@^0.4.0, ox@^0.4.4:
   version "0.4.4"
   resolved "https://registry.yarnpkg.com/ox/-/ox-0.4.4.tgz#9d1757c026406e60097680d98ffedf9e3bc1fa0b"
   integrity sha512-oJPEeCDs9iNiPs6J0rTx+Y0KGeCGyCAA3zo94yZhm8G5WpOxrwUtn2Ie/Y8IyARSqqY/j9JTKA3Fc1xs1DvFnw==
@@ -9431,7 +9400,7 @@ viem@2.7.15:
     isows "1.0.3"
     ws "8.13.0"
 
-viem@>=2.23.11, viem@^2.1.1, viem@^2.23.14, viem@^2.23.3, viem@^2.24.3, viem@^2.29.2, viem@^2.30.0:
+viem@>=2.23.11, viem@^2.1.1, viem@^2.23.14, viem@^2.23.3, viem@^2.24.3, viem@^2.30.0:
   version "2.30.1"
   resolved "https://registry.yarnpkg.com/viem/-/viem-2.30.1.tgz#22cdd653c57b4ff342524afd6974b08b302a7875"
   integrity sha512-CkoS5Vv6kiRGmRF2xO2z275Gu90vTrKZHf/ckYXxP2J94UvCnFvUcbRdfit6uebj1I8nFwkGlkkOMuOZDHyO4w==
@@ -9752,15 +9721,10 @@ zod@3.22.4:
   resolved "https://registry.yarnpkg.com/zod/-/zod-3.22.4.tgz#f31c3a9386f61b1f228af56faa9255e845cf3fff"
   integrity sha512-iC+8Io04lddc+mVqQ9AZ7OQ2MrUKGN+oIQyq1vemgt46jwCwLfhq7/pwnBnNXXXZb8VTVLKwp9EDkx+ryxIWmg==
 
-zod@^3.22.4, zod@^3.24.1, zod@^3.24.2:
+zod@^3.22.4, zod@^3.23.8, zod@^3.24.1, zod@^3.24.2:
   version "3.25.28"
   resolved "https://registry.yarnpkg.com/zod/-/zod-3.25.28.tgz#8ab13d04afa05933598fd9fca32490ca92c7ea3a"
   integrity sha512-/nt/67WYKnr5by3YS7LroZJbtcCBurDKKPBPWWzaxvVCGuG/NOsiKkrjoOhI8mJ+SQUXEbUzeB3S+6XDUEEj7Q==
-
-zod@^3.25.1:
-  version "3.25.31"
-  resolved "https://registry.yarnpkg.com/zod/-/zod-3.25.31.tgz#beff55c696ea66263310749989f3e63bb7faa11a"
-  integrity sha512-SVCtUpZ1D9TFcRnCY7wlCpGEzV4+2HlXnJiwrgq1T93m98BIT6M5lbxRrEm7v6pYZXV4QNQo1t2KVv93JXk6XA==
 
 zustand@5.0.0:
   version "5.0.0"

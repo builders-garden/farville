@@ -1,8 +1,8 @@
 import { fetchUser } from "@/lib/neynar";
 import { NextRequest, NextResponse } from "next/server";
+import { verifyMessage } from "viem";
 import * as jose from "jose";
 import { trackEvent } from "@/lib/posthog/server";
-import { createAppClient, viemConnector } from "@farcaster/auth-client";
 import {
   addReferral,
   createUserAndMode,
@@ -19,125 +19,85 @@ import { getRandomTestUserFid } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
-const appClient = createAppClient({
-  relay: "https://relay.farcaster.xyz",
-  ethereum: viemConnector({
-    rpcUrls: [
-      "https://mainnet.optimism.io",
-      "https://1rpc.io/op",
-      "https://optimism-rpc.publicnode.com",
-      "https://optimism.drpc.org",
-    ],
-  }),
-});
-
 export const POST = async (req: NextRequest) => {
-  try {
-    const { nonce, signature, message, referrerFid } = await req.json();
-    const isTestMode =
-      !!env.NEXT_PUBLIC_IS_TEST_MODE &&
-      env.NEXT_PUBLIC_APP_ENV === "development";
+  const data = await req.json();
+  const { referrerFid, signature, message } = data;
+  const isTestMode =
+    !!env.NEXT_PUBLIC_IS_TEST_MODE && env.NEXT_PUBLIC_APP_ENV === "development";
 
-    console.log("sign-in request", { nonce, signature, message, referrerFid });
+  let fid = data.fid;
+  if (isTestMode) {
+    fid = await getRandomTestUserFid();
+  }
 
-    // Verify signature matches custody address and auth address
-    const {
-      data,
-      success,
-      fid: fidFromSignature,
-    } = await appClient.verifySignInMessage({
-      domain: new URL(env.NEXT_PUBLIC_URL).hostname,
-      nonce,
+  let user = await getUserByMode(fid, Mode.Classic);
+
+  if (!user) {
+    const newUser = await fetchUser(fid);
+    user = await createUserAndMode({
+      fid: fid,
+      username: newUser.username,
+      displayName: newUser.display_name,
+      avatarUrl: newUser.pfp_url,
+      walletAddress: newUser.custody_address,
+      statistics: {
+        create: {
+          mode: Mode.Classic,
+          xp: 0,
+          coins: 0,
+          expansions: 1,
+        },
+      },
+    });
+
+    if (referrerFid) await addReferral(referrerFid, fid);
+
+    trackEvent(fid, "sign_up", { fid });
+  }
+
+  // Verify signature matches custody address
+  let isValidSignature;
+  if (isTestMode) {
+    isValidSignature = true;
+  } else {
+    isValidSignature = await verifyMessage({
+      address: user.walletAddress as `0x${string}`,
       message,
       signature,
-      acceptAuthAddress: true,
     });
-    console.log("sign-in verifySignInMessage", {
-      data,
-      success,
-      fid: fidFromSignature,
-    });
-    let isValidSignature;
-    if (isTestMode) {
-      isValidSignature = true;
-    } else {
-      isValidSignature = success;
-    }
-
-    // Verify signature matches custody address and auth address (if not in test mode)
-    if (!isValidSignature) {
-      console.error(
-        "Invalid signature",
-        JSON.stringify(data, null, 2),
-        "success",
-        success,
-        fidFromSignature
-      );
-      return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
-    }
-
-    let fid = fidFromSignature;
-    if (isTestMode) {
-      fid = await getRandomTestUserFid();
-    }
-
-    let user = await getUserByMode(fid, Mode.Classic);
-    if (!user) {
-      const newUser = await fetchUser(fid.toString());
-      user = await createUserAndMode({
-        fid,
-        username: newUser.username,
-        displayName: newUser.display_name,
-        avatarUrl: newUser.pfp_url,
-        walletAddress: newUser.custody_address,
-        statistics: {
-          create: {
-            mode: Mode.Classic,
-            xp: 0,
-            coins: 0,
-            expansions: 1,
-          },
-        },
-      });
-
-      if (referrerFid) await addReferral(referrerFid, fid);
-
-      trackEvent(fid, "sign_up", { fid });
-    }
-
-    // check if the user has already the grid cells
-    // if not, initialize the grid
-    const gridCells = await getUserGridCells(fid, Mode.Classic);
-    if (gridCells.length === 0) {
-      await initializeGrid(fid, Mode.Classic);
-      // Give them a starter pack
-      await giftStarterPack(fid, Mode.Classic);
-    }
-
-    const userModes = await getUserModes(fid);
-    await initQuestsAndLeaderboardEntry(fid, userModes);
-
-    // Generate a session token using fid and current timestamp
-    const jwtToken = await new jose.SignJWT({
-      fid,
-      walletAddress: data.address,
-      timestamp: Date.now(),
-    })
-      .setProtectedHeader({ alg: "HS256" })
-      .setExpirationTime("30 days")
-      .sign(new TextEncoder().encode(env.JWT_SECRET));
-
-    const response = NextResponse.json({ success: true, token: jwtToken });
-
-    trackEvent(fid, "sign_in", {
-      fid,
-    });
-
-    return response;
-  } catch (error) {
-    const errorMessage =
-      error instanceof Error ? error.message : "Sign in failed";
-    console.error("sign-in error", errorMessage);
-    return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
+
+  if (!isValidSignature) {
+    return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
+  }
+
+  // check if the user has already the grid cells
+  // if not, initialize the grid
+  const gridCells = await getUserGridCells(fid, Mode.Classic);
+  if (gridCells.length === 0) {
+    await initializeGrid(fid, Mode.Classic);
+    // Give them a starter pack
+    await giftStarterPack(fid, Mode.Classic);
+  }
+
+  const userModes = await getUserModes(fid);
+  await initQuestsAndLeaderboardEntry(fid, userModes);
+
+  // Generate a session token using fid and current timestamp
+  const jwtToken = await new jose.SignJWT({
+    fid,
+    walletAddress: data.address,
+    timestamp: Date.now(),
+  })
+    .setProtectedHeader({ alg: "HS256" })
+    .setExpirationTime("30 days")
+    .sign(new TextEncoder().encode(env.JWT_SECRET));
+
+  const response = NextResponse.json({ success: true, token: jwtToken });
+
+  trackEvent(fid, "sign_in", {
+    fid,
+  });
+
+  return response;
 };
