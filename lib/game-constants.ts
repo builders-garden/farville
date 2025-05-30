@@ -75,7 +75,7 @@ export interface CropData {
   goldId: number;
 }
 
-export const millisecondsInHour = 3600000; // env.NEXT_PUBLIC_IS_TEST_MODE ? 1000 : 3600000;
+export const millisecondsInHour = 30000; // env.NEXT_PUBLIC_IS_TEST_MODE ? 1000 : 3600000;
 
 export const CROP_DATA: { [key: string]: CropData } = {
   wheat: {

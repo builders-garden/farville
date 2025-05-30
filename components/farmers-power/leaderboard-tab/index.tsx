@@ -1,8 +1,7 @@
 import { motion } from "framer-motion";
 import { LeaderboardUserAvatar } from "../../leaderboard/LeaderboardUserAvatar";
 import { FloatingShareButton } from "../../FloatingShareButton";
-import { useGame } from "@/context/GameContext";
-import { useDonationLeaderboard } from "@/hooks/use-donation-leadeboard";
+import { DonationsLeaderboardResponse } from "@/hooks/use-donation-leadeboard";
 
 interface LeaderboardEntry {
   fid: number;
@@ -23,22 +22,27 @@ interface LeaderboardData {
 }
 
 interface LeaderboardTabProps {
+  setActiveTab: (tab: "power" | "leaderboard") => void;
   onSelectUser: (fid: number) => void;
+  leaderboardData?: DonationsLeaderboardResponse;
+  viewerData: {
+    fid: number;
+    username: string;
+    selectedAvatarUrl?: string;
+    avatarUrl?: string;
+    mintedOG?: boolean;
+  };
 }
 
-export const LeaderboardTab = ({ onSelectUser }: LeaderboardTabProps) => {
-  const { state, mode } = useGame();
-
-  // User Donations Leaderboard
-  const { data: leaderboardData } = useDonationLeaderboard(
-    mode,
-    state.user.fid,
-    true
-  );
-
+export const LeaderboardTab = ({
+  setActiveTab,
+  onSelectUser,
+  leaderboardData,
+  viewerData,
+}: LeaderboardTabProps) => {
   const handleShare = async () => {
     // const { castUrl } = leaderboardFlexCardComposeCastUrl(
-    //   state.user.fid,
+    //   viewerData.fid,
     //   mode,
     // );
     // await sdk.actions.openUrl(castUrl);
@@ -67,27 +71,46 @@ export const LeaderboardTab = ({ onSelectUser }: LeaderboardTabProps) => {
 
   return (
     <div className="flex flex-col gap-2 xs:gap-3 w-full">
+      <motion.button
+        onClick={() => setActiveTab("power")}
+        className="w-fit bg-[#6d4c2c] text-white/90 px-4 py-2 rounded-lg font-medium text-sm flex items-center justify-center gap-2 hover:bg-[#5c4121] transition-colors"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+      >
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+        >
+          <path d="M19 12H5M5 12L12 19M5 12L12 5" />
+        </svg>
+        Back
+      </motion.button>
+
       {transformedLeaderboardData?.targetData && (
         <motion.div
-          key={state.user.fid}
+          key={viewerData.fid}
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.02 }}
           className="w-full bg-gradient-to-r from-[#8B5E3C] to-[#6d4c2c] px-1 xs:px-2 py-2 xs:py-3 rounded-lg flex items-center gap-2 xs:gap-3
                        border-2 border-[#FFB938] shadow-lg relative overflow-hidden
                        hover:scale-[1.02] transition-transform duration-200 cursor-pointer"
-          onClick={() => onSelectUser(state.user.fid)}
+          onClick={() => onSelectUser(viewerData.fid)}
         >
           <div className="flex-none text-center px-1.5 py-0.5 xs:py-1 bg-[#5c4121] rounded-lg text-white/90 text-[10px] xs:text-xs font-medium">
             #{transformedLeaderboardData?.targetData.position}
           </div>
-          {state.user.selectedAvatarUrl || state.user.avatarUrl ? (
+          {viewerData.selectedAvatarUrl || viewerData.avatarUrl ? (
             <LeaderboardUserAvatar
               pfpUrl={
-                state.user.selectedAvatarUrl || state.user.avatarUrl || ""
+                viewerData.selectedAvatarUrl || viewerData.avatarUrl || ""
               }
-              username={state.user.username}
-              isOgUser={state.user.mintedOG}
+              username={viewerData.username}
+              isOgUser={viewerData.mintedOG}
             />
           ) : (
             <div className="w-8 h-8 xs:w-10 xs:h-10 rounded-full bg-[#5c4121] flex items-center justify-center text-white/90 flex-none">
@@ -96,7 +119,7 @@ export const LeaderboardTab = ({ onSelectUser }: LeaderboardTabProps) => {
           )}
           <div className="flex flex-col gap-0.5 xs:gap-1 w-full">
             <p className="text-white/90 font-medium truncate text-xs">
-              {state.user.username}
+              {viewerData.username}
             </p>
             <div className="flex flex-row items-center justify-between w-full">
               <div className="text-[#FFB938] rounded-full font-medium text-xs flex gap-1">
@@ -125,7 +148,7 @@ export const LeaderboardTab = ({ onSelectUser }: LeaderboardTabProps) => {
             onClick={() => onSelectUser(entry.fid)}
             className={`px-1 xs:px-2 py-2 xs:py-3 rounded-lg flex items-center gap-2 xs:gap-3 shadow-md cursor-pointer
                         ${
-                          entry.fid === state.user.fid
+                          entry.fid === viewerData.fid
                             ? "bg-gradient-to-r from-[#8B5E3C] to-[#6d4c2c] border-2 border-[#FFB938]"
                             : "bg-[#6d4c2c] border border-[#8B5E3C]/50"
                         }`}

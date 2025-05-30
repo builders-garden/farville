@@ -158,6 +158,26 @@ export const communityContributionFlexCardComposeCastUrl = (
   };
 };
 
+export const communityBoosterTopDonorsFlexCardComposeCastUrl = (
+  fid: number,
+  mode: Mode,
+  donorsUsernames: string[],
+  isFarcasterManiaOn: boolean
+) => {
+  const timestamp = Date.now();
+  const frameUrl = `${env.NEXT_PUBLIC_URL}/flex-card/community-booster/${fid}/${timestamp}/show-love?mode=${mode}&farcasterMania=${isFarcasterManiaOn}`;
+  const text = `Thank you farmer friends 💜🥹\n\ncc: ${
+    donorsUsernames.length > 0 && donorsUsernames.map((u) => `@${u}`).join(", ")
+  }`;
+  const urlFriendlyText = encodeURIComponent(text);
+  return {
+    frameUrl,
+    castUrl: `https://farcaster.xyz/~/compose?text=${urlFriendlyText}&embeds[]=${encodeURIComponent(
+      frameUrl
+    )}&channelKey=farville`,
+  };
+};
+
 export const mintedOgFlexCardComposeCastUrl = (fid: number) => {
   const timestamp = Date.now();
   const frameUrl = `${env.NEXT_PUBLIC_URL}/flex-card/minted-og/${fid}/${timestamp}`;
@@ -708,7 +728,7 @@ function formatMillisecondsToTimeUnit(
   return `${BigInt(Math.floor(seconds))}s`;
 }
 
-export function getGrowthTime(
+export function getGrowthTimeString(
   seedType: SeedType
 ): `${bigint}s` | `${bigint}m` | `${bigint}h` | `${bigint}d` {
   const cropType = seedType.replace("-seeds", "");
@@ -717,6 +737,15 @@ export function getGrowthTime(
     throw new Error(`Unknown seed type: ${seedType}`);
   }
   return formatMillisecondsToTimeUnit(cropData.growthTime);
+}
+
+export function getGrowthTime(seedType: SeedType): number {
+  const cropType = seedType.replace("-seeds", "");
+  const cropData = CROP_DATA[cropType];
+  if (!cropData) {
+    throw new Error(`Unknown seed type: ${seedType}`);
+  }
+  return cropData.growthTime;
 }
 
 export const initQuestsAndLeaderboardEntryByMode = async (

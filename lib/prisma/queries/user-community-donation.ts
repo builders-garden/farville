@@ -220,6 +220,7 @@ export type UserCommunityDonationLeaderboard = {
   displayName: string | null;
   avatarUrl: string | null;
   selectedAvatarUrl: string | null;
+  mintedOG: boolean;
   position: number;
 };
 
@@ -243,6 +244,7 @@ export const getUserCommunityDonationsLeaderboardRaw = async (
       u."displayName",
       u."avatarUrl",
       u."selectedAvatarUrl",
+      u."mintedOG",
       ROW_NUMBER() OVER (ORDER BY SUM(ucd."ptAmount") DESC) as position
     FROM 
       "user_community_donation" ucd
@@ -256,7 +258,8 @@ export const getUserCommunityDonationsLeaderboardRaw = async (
       u."username",
       u."displayName",
       u."avatarUrl",
-      u."selectedAvatarUrl"
+      u."selectedAvatarUrl",
+      u."mintedOG"
   )
   SELECT * FROM RankedDonations
   WHERE
@@ -281,6 +284,7 @@ export const getUserCommunityDonationsLeaderboardRaw = async (
       displayName: string | null;
       avatarUrl: string | null;
       selectedAvatarUrl: string | null;
+      mintedOG: boolean;
       position: number;
     }[]
   >(query, mode, limit, targetFid);

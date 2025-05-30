@@ -1,7 +1,7 @@
 import { CROP_DATA, SPEED_BOOST } from "@/lib/game-constants";
 import {
   getCropNameFromSeeds,
-  sendDelayedNotification,
+  sendDelayedNotificationToService,
 } from "@/lib/game-notifications";
 import { sendBatchToPostHog } from "@/lib/posthog/server";
 import {
@@ -21,7 +21,6 @@ import {
   getAchievementProgressByCrop,
   getBoostTime,
   getCommunityBoostMultiplier,
-  getGrowthTime,
   getGrowthTimeBasedOnMode,
   isBoostable,
 } from "@/lib/utils";
@@ -111,6 +110,11 @@ export const plantBulk = async (
   const currentCommunityBoostMultiplier = getCommunityBoostMultiplier(
     currentCommunityBoost?.stage || 1
   );
+  const seedGrowthTime = getGrowthTimeBasedOnMode(
+    cropType,
+    mode,
+    currentCommunityBoostMultiplier
+  );
 
   const updatedCellsCounter: number = (await updateGridCellsBulk(
     fid,
@@ -119,14 +123,7 @@ export const plantBulk = async (
       mode,
       cropType,
       plantedAt: new Date(),
-      harvestAt: new Date(
-        Date.now() +
-          getGrowthTimeBasedOnMode(
-            cropType,
-            mode,
-            currentCommunityBoostMultiplier
-          )
-      ),
+      harvestAt: new Date(Date.now() + seedGrowthTime),
     }))
   )) as number;
   Logger.logTest(
@@ -141,13 +138,13 @@ export const plantBulk = async (
     );
 
     Promise.allSettled([
-      sendDelayedNotification(
-        fid.toString(),
+      sendDelayedNotificationToService(
+        fid,
         `Harvest time! 🌾`,
         `Your ${getCropNameFromSeeds(seedType)} are ready to harvest!`,
         "harvest",
         mode,
-        getGrowthTime(seedType)
+        seedGrowthTime
       ),
       axios({
         url: `${env.FARVILLE_SERVICE_URL}/api/async-jobs/quests-calculation`,
@@ -501,18 +498,21 @@ export const perkBulk = async (
           continue;
         }
       }
+
       const boostTime = getBoostTime(
         itemSlug,
         mode,
         currentCommunityBoost?.stage || 1
       );
-      await sendDelayedNotification(
-        fid.toString(),
+      await sendDelayedNotificationToService(
+        fid,
         `Harvest time! 🌾`,
         `Your ${gridCell.cropType} are ready to harvest!`,
         "harvest",
         mode,
-        (new Date(gridCell.harvestAt).getTime() - boostTime - Date.now()) / 1000
+        Math.floor(
+          new Date(gridCell.harvestAt).getTime() - boostTime - Date.now()
+        )
       );
       perkableCells.push({
         ...gridCell,
@@ -532,13 +532,13 @@ export const perkBulk = async (
     await removeUserItem(fid, userPerks.itemId, updatedCellsCounter, mode);
 
     Promise.allSettled([
-      sendDelayedNotification(
-        fid.toString(),
+      sendDelayedNotificationToService(
+        fid,
         `Speed boost expired! ⚡️`,
         `The speed boost has worn off. Check your crops!`,
         "boost-expired",
         mode,
-        SPEED_BOOST[itemSlug].duration / 1000
+        SPEED_BOOST[itemSlug].duration
       ),
       sendBatchToPostHog(
         fid,

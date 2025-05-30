@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import * as jose from "jose";
-import { validateQstashRequest } from "./lib/qstash";
 import { env } from "@/lib/env";
 
 export const config = {
@@ -20,21 +19,6 @@ export default async function middleware(req: NextRequest) {
     (req.nextUrl.pathname === "/api/leaderboard" &&
       req.headers.get("user-agent")?.includes("Next.js OG"))
   ) {
-    return NextResponse.next();
-  }
-
-  if (req.nextUrl.pathname.includes("qstash")) {
-    try {
-      await validateQstashRequest(
-        req.headers.get("Upstash-Signature")!,
-        req.nextUrl.pathname
-      );
-    } catch (error) {
-      if (error instanceof Error) {
-        return NextResponse.json({ error: error.toString() }, { status: 401 });
-      }
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
     return NextResponse.next();
   }
 
