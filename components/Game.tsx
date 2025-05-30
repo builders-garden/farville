@@ -58,7 +58,7 @@ export default function Game({
   useEffect(() => {
     if (isRedeemPath && isFromBrowser) {
       const voucherId = pathname.split("/redeem/")[1];
-      const url = `https://warpcast.com/miniapps/WoLihpyQDh7w/farville?redeem=${voucherId}`;
+      const url = `https://farcaster.xyz/miniapps/WoLihpyQDh7w/farville?redeem=${voucherId}`;
       window.location.href = url;
 
       return;
@@ -113,7 +113,9 @@ export default function Game({
               className="bg-[#FFB938] text-[#7E4E31] px-4 py-2 rounded-lg font-bold 
                  hover:bg-[#ffc661] transition-colors"
               onClick={() => {
-                sdk.actions.openUrl("https://warpcast.com/~/inbox/create/5698");
+                sdk.actions.openUrl(
+                  "https://farcaster.xyz/~/inbox/create/5698"
+                );
               }}
             >
               Contact Support

@@ -46,9 +46,6 @@ next-env.d.ts
 # farcaster
 .well-known/farcaster.json
 
-# Sentry Config File
-.env.sentry-build-plugin
-
 supabase/.temp
 
 <<<<<<<<< Temporary merge branch 1

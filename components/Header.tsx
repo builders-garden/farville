@@ -15,6 +15,7 @@ import { Mode } from "@/lib/types/game";
 import { AnimatedCircularProgressBar } from "./ui/animated-circular-progress-bar";
 import { MODE_DEFINITIONS } from "@/lib/modes/constants";
 import { FarmersPowerSpeedometer } from "./FarmersPowerSpeedometer";
+import { POWER_STAGES } from "@/lib/game-constants";
 
 export default function Header() {
   const {
@@ -33,6 +34,15 @@ export default function Header() {
   ).length;
 
   const { isFarcasterManiaOn } = state;
+
+  // Calculate current stage based on FP
+  const currentPowerStage =
+    POWER_STAGES.findIndex(
+      (stage) => stage.fpRequired > (state.communityBoosterStatus?.points || 1)
+    ) || POWER_STAGES.length;
+
+  // Calculate next stage requirements
+  const currentStageInfo = POWER_STAGES[currentPowerStage - 1];
 
   return (
     <div className="bg-[#8B5E3C]/40 px-4 py-2 shadow-lg bg-opacity-95 backdrop-blur-sm border-b-2 border-[#6d4c2c]/50 z-30">
@@ -75,7 +85,7 @@ export default function Header() {
             }}
           >
             <FarmersPowerSpeedometer
-              stage={state.communityBoosterStatus?.stage || 1}
+              stage={currentStageInfo.stage}
               currentFP={state.communityBoosterStatus?.points}
               isFarcasterManiaOn={isFarcasterManiaOn}
             />

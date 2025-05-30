@@ -31,6 +31,7 @@ import { useSocket } from "@/hooks/use-socket";
 // import toast from "react-hot-toast";
 import { toast as sonnerToast, Toaster } from "sonner";
 import Image from "next/image";
+import { FP_DECREASE_DELAY_MS } from "@/lib/game-constants";
 
 // const WelcomeOverlay = dynamic(() => import("./../components/WelcomeOverlay"), {
 //   ssr: false,
@@ -308,6 +309,79 @@ export default function GameWrapper() {
     makeAllGridCellsHarvestable,
     state.user.fid,
     refetch,
+    playSound,
+    setShowFarmersPower,
+  ]);
+
+  useEffect(() => {
+    if (!state.communityBoosterStatus?.lastDonation) return;
+
+    // Create a ref to track if notification has been shown for this cycle
+    const notificationShownRef = { current: false };
+
+    const lastDonation = new Date(state.communityBoosterStatus.lastDonation);
+    const now = Date.now();
+    const timeSinceLastDonation = now - lastDonation.getTime();
+
+    // Calculate time elapsed since the last donation in the current cycle
+    const timeElapsedInCurrentCycle =
+      timeSinceLastDonation % FP_DECREASE_DELAY_MS;
+
+    // Calculate time remaining until next FP decrease
+    const timeUntilNextDecrease =
+      FP_DECREASE_DELAY_MS - timeElapsedInCurrentCycle;
+
+    // Show notification 3 minutes before FP decrease
+    const notificationDelay = timeUntilNextDecrease - 3 * 60 * 1000; // 3 minutes = 180000ms
+
+    const showNotification = async () => {
+      // Check if notification has already been shown for this cycle
+      if (notificationShownRef.current) return;
+
+      notificationShownRef.current = true;
+
+      const combo = state.communityBoosterStatus?.combo;
+      const message =
+        combo && combo > 1
+          ? `🚨 FPs are decreasing soon, keep the ${combo}x combo alive!`
+          : "🚨 FPs are decreasing soon!";
+
+      // wait 10 seconds before showing the notification - this is to avoid issue with loading
+      await new Promise((resolve) => setTimeout(resolve, 10000));
+
+      sonnerToast.custom(
+        (t) => (
+          <div
+            className="flex items-center gap-2 cursor-pointer"
+            onClick={() => {
+              sonnerToast.dismiss(t);
+              setShowFarmersPower(true);
+            }}
+          >
+            <span>{message}</span>
+          </div>
+        ),
+        {
+          duration: 10000,
+          position: "top-right",
+          id: `fp-decrease-${lastDonation.getTime()}`, // Unique ID based on last donation timestamp
+        }
+      );
+    };
+
+    // If notification delay is zero or negative, show notification immediately
+    if (notificationDelay <= 0 && timeUntilNextDecrease >= 30 * 1000) {
+      showNotification();
+      return;
+    }
+
+    const timeout = setTimeout(showNotification, notificationDelay);
+
+    return () => clearTimeout(timeout);
+  }, [
+    state.communityBoosterStatus?.lastDonation,
+    state.communityBoosterStatus?.combo,
+    setShowFarmersPower,
   ]);
 
   // useEffect(() => {

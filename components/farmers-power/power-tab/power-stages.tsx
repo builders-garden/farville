@@ -5,7 +5,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { useRef } from "react";
+import { useRef, useEffect, useState } from "react";
 
 interface PowerStage {
   stage: number;
@@ -25,13 +25,36 @@ export const PowerStages = ({
   isFarcasterManiaOn,
 }: PowerStagesProps) => {
   const stagesContainerRef = useRef<HTMLDivElement>(null);
-  const stagesFromPrevious = stages.slice(Math.max(0, currentPowerStage - 2));
+
+  const stageItemRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const [isAccordionOpen, setIsAccordionOpen] = useState(false);
+
+  useEffect(() => {
+    if (isAccordionOpen && stagesContainerRef.current) {
+      const currentStageIndexInArray = stages.findIndex(
+        (s) => s.stage === currentPowerStage
+      );
+
+      if (
+        currentStageIndexInArray !== -1 &&
+        stageItemRefs.current[currentStageIndexInArray]
+      ) {
+        stageItemRefs.current[currentStageIndexInArray]?.scrollIntoView({
+          behavior: "smooth",
+          block: "nearest",
+        });
+      }
+    }
+  }, [isAccordionOpen, currentPowerStage, stages]);
 
   return (
     <Accordion
       type="single"
       collapsible
       className="w-full"
+      onValueChange={(value) => {
+        setIsAccordionOpen(value === "stages");
+      }}
     >
       <AccordionItem
         value="stages"
@@ -45,9 +68,12 @@ export const PowerStages = ({
             ref={stagesContainerRef}
             className="max-h-48 overflow-y-auto pr-2 -mr-2 no-scrollbar"
           >
-            {stagesFromPrevious.map((stage) => (
+            {stages.map((stage, index) => (
               <div
                 key={stage.stage}
+                ref={(el) => {
+                  stageItemRefs.current[index] = el;
+                }}
                 className={cn(
                   "flex items-center justify-between p-2 rounded mb-2 transition-all duration-200",
                   currentPowerStage === stage.stage
