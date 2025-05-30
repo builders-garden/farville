@@ -7,7 +7,7 @@ import { useSignIn } from "@/hooks/use-sign-in";
 import Image from "next/image";
 import React, { useEffect, useState } from "react";
 import { GameProvider } from "./../context/GameContext";
-import { getThisWeekMonday } from "@/lib/utils";
+// import { getThisWeekMonday } from "@/lib/utils";
 import { Maintenance } from "./home/maintenance";
 import { Website } from "./home/website";
 import sdk from "@farcaster/frame-sdk";
@@ -24,11 +24,11 @@ export default function Game({
   const [isInMaintenance, setIsInMaintenance] = useState(true);
   const { isTestMode } = useTestMode();
 
-  // const monday = new Date("2025-05-26T18:30:00+02:00");
-  const monday = getThisWeekMonday();
+  const monday = new Date("2025-05-30T18:15:00+02:00");
+  // const monday = getThisWeekMonday();
   const maintenanceStart = new Date(monday.getTime() - 5 * 60 * 1000); // 5 minutes before
   // const maintenanceEnd = new Date(monday.getTime() + 30 * 60 * 1000); // 30 minutes after
-  const maintenanceEnd = new Date(monday.getTime() + 60 * 60 * 1000); // 60 minutes after
+  const maintenanceEnd = new Date(monday.getTime() + 30 * 60 * 1000); // 60 minutes after
 
   const checkMaintenance = () => {
     const now = new Date();
