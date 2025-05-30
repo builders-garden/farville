@@ -36,6 +36,8 @@ export const POST = async (req: NextRequest) => {
   const isTestMode =
     !!env.NEXT_PUBLIC_IS_TEST_MODE && env.NEXT_PUBLIC_APP_ENV === "development";
 
+  console.log("sign-in request", { nonce, signature, message, referrerFid });
+
   // Verify signature matches custody address and auth address
   const {
     data,
@@ -47,6 +49,11 @@ export const POST = async (req: NextRequest) => {
     message,
     signature,
     acceptAuthAddress: true,
+  });
+  console.log("sign-in verifySignInMessage", {
+    data,
+    success,
+    fid: fidFromSignature,
   });
   let isValidSignature;
   if (isTestMode) {
