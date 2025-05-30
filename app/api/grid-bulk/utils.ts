@@ -20,6 +20,7 @@ import {
   calculateGoldCropsInBatch,
   getAchievementProgressByCrop,
   getBoostTime,
+  getCommunityBoostMultiplier,
   getGrowthTimeBasedOnMode,
   isBoostable,
 } from "@/lib/utils";
@@ -106,9 +107,13 @@ export const plantBulk = async (
 
   // get current community boost
   const currentCommunityBoost = await getCurrentCommunityBooster(mode);
-  const currentCommunityBoostMultiplier = currentCommunityBoost?.stage ?? 1;
-  const seedGrowthTime = Math.floor(
-    getGrowthTimeBasedOnMode(cropType, mode) / currentCommunityBoostMultiplier
+  const currentCommunityBoostMultiplier = getCommunityBoostMultiplier(
+    currentCommunityBoost?.stage || 1
+  );
+  const seedGrowthTime = getGrowthTimeBasedOnMode(
+    cropType,
+    mode,
+    currentCommunityBoostMultiplier
   );
 
   const updatedCellsCounter: number = (await updateGridCellsBulk(
@@ -464,6 +469,7 @@ export const perkBulk = async (
   }
 
   const gridCells = await getUserGridCells(fid, mode);
+  const currentCommunityBoost = await getCurrentCommunityBooster(mode);
 
   const nonPerkableCells = [];
   const perkableCells = [];
@@ -480,12 +486,24 @@ export const perkBulk = async (
       // Check if enough time has passed since last speed boost
       if (gridCell.speedBoostedAt) {
         const lastBoostTime = new Date(gridCell.speedBoostedAt);
-        if (isBoostable(itemSlug, mode, lastBoostTime)) {
+        if (
+          isBoostable(
+            itemSlug,
+            mode,
+            lastBoostTime,
+            currentCommunityBoost?.stage || 1
+          )
+        ) {
           nonPerkableCells.push(gridCell);
           continue;
         }
       }
-      const boostTime = getBoostTime(itemSlug, mode);
+
+      const boostTime = getBoostTime(
+        itemSlug,
+        mode,
+        currentCommunityBoost?.stage || 1
+      );
       await sendDelayedNotificationToService(
         fid,
         `Harvest time! 🌾`,

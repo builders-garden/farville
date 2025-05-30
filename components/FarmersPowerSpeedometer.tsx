@@ -18,6 +18,7 @@ export const FarmersPowerSpeedometer = ({
   isFarcasterManiaOn = false,
 }: FarmersPowerSpeedometerProps) => {
   const ACTUAL_PATH_LENGTH = Math.PI * 22; // Semicircle with radius 22
+  const boost = POWER_STAGES[stage - 1]?.boost || 0;
 
   // Calculate the arc progress and needle position based on FP
   const { arcProgress, needleRotation } = useMemo(() => {
@@ -85,13 +86,13 @@ export const FarmersPowerSpeedometer = ({
       // New Lighter: rgb(220, 200, 250)
       // New Darker: rgb(160, 140, 220)
       const r = Math.round(
-        160 + (1 - progressForColorCalculation) * (220 - 160) 
+        160 + (1 - progressForColorCalculation) * (220 - 160)
       );
       const g = Math.round(
-        140 + (1 - progressForColorCalculation) * (200 - 140) 
+        140 + (1 - progressForColorCalculation) * (200 - 140)
       );
       const b = Math.round(
-        220 + (1 - progressForColorCalculation) * (250 - 220) 
+        220 + (1 - progressForColorCalculation) * (250 - 220)
       );
       return `rgb(${r}, ${g}, ${b})`;
     } else {
@@ -112,6 +113,18 @@ export const FarmersPowerSpeedometer = ({
     return 0.6 + normalizedStageProgress * 0.4;
   }, [stage]);
 
+  const BG_SHAPE_HEIGHT = 20; // Height of the background shape
+
+  // Set a fixed width for the background
+  const currentBgWidth = 50; // Max width based on previous logic for long decimals
+  const bgRectRx = BG_SHAPE_HEIGHT / 2; // Pill shape for consistency
+
+  // Calculate x, y for the rect to be centered around text position
+  const bgRectX = 30 - currentBgWidth / 2;
+  const bgRectY = 26 - BG_SHAPE_HEIGHT / 2; // Y base changed from 27 to 28
+
+  const bgRectRy = BG_SHAPE_HEIGHT / 2; // Ry is always half of the height for pill/circle
+
   return (
     <motion.svg
       width={width}
@@ -119,14 +132,22 @@ export const FarmersPowerSpeedometer = ({
       viewBox="0 0 60 30"
       preserveAspectRatio="xMidYMid meet"
       style={{
-        filter: `drop-shadow(0 0 3px rgba(${isFarcasterManiaOn ? '160, 140, 220' : '253, 224, 71'}, ${pulseIntensity * 0.7}))`,
+        filter: `drop-shadow(0 0 3px rgba(${
+          isFarcasterManiaOn ? "160, 140, 220" : "253, 224, 71"
+        }, ${pulseIntensity * 0.7}))`,
       }}
       animate={{
         // Animate the filter's opacity for a pulsing aura effect
         filter: [
-          `drop-shadow(0 0 3px rgba(${isFarcasterManiaOn ? '160, 140, 220' : '253, 224, 71'}, ${pulseIntensity * 0.5}))`,
-          `drop-shadow(0 0 6px rgba(${isFarcasterManiaOn ? '160, 140, 220' : '253, 224, 71'}, ${pulseIntensity * 0.8}))`,
-          `drop-shadow(0 0 3px rgba(${isFarcasterManiaOn ? '160, 140, 220' : '253, 224, 71'}, ${pulseIntensity * 0.5}))`,
+          `drop-shadow(0 0 3px rgba(${
+            isFarcasterManiaOn ? "160, 140, 220" : "253, 224, 71"
+          }, ${pulseIntensity * 0.5}))`,
+          `drop-shadow(0 0 6px rgba(${
+            isFarcasterManiaOn ? "160, 140, 220" : "253, 224, 71"
+          }, ${pulseIntensity * 0.8}))`,
+          `drop-shadow(0 0 3px rgba(${
+            isFarcasterManiaOn ? "160, 140, 220" : "253, 224, 71"
+          }, ${pulseIntensity * 0.5}))`,
         ],
       }}
       transition={{
@@ -136,18 +157,71 @@ export const FarmersPowerSpeedometer = ({
         repeatType: "reverse",
       }}
     >
+      {/* Background for the stage number */}
+      <motion.rect
+        x={bgRectX}
+        y={bgRectY}
+        width={currentBgWidth}
+        height={BG_SHAPE_HEIGHT}
+        rx={bgRectRx}
+        ry={bgRectRy}
+        fill="#7E4E31"
+        transition={{
+          duration: 1.0, // Synced
+          ease: "easeInOut",
+          repeat: Infinity,
+          repeatType: "reverse",
+        }}
+      />
+
+      {/* Arc background fill */}
+      <path
+        d="M 8 18 A 22 22 0 1 1 52 18"
+        fill="#7E4E31" // Lighter brown background for the arc area
+      />
+
       {/* Speedometer background */}
       <path
-        d="M 8 20 A 22 22 0 1 1 52 20"
+        d="M 8 18 A 22 22 0 1 1 52 18"
         fill="none"
         stroke="#7E4E31"
         strokeWidth="5"
         strokeLinecap="round"
       />
 
+      {/* Tick Marks */}
+      {[-90, -45, 0, 45, 90].map((angle) => {
+        const rad = angle * (Math.PI / 180);
+        const cx = 30;
+        const cy = 18;
+        const rOuter = 23;
+        const rInner = 15; // Tick length of 5 (previously 19 for length 3)
+
+        // For SVG, positive y is down. For calculations where 0 angle is 'up':
+        // x = cx + r * sin(rad)
+        // y = cy - r * cos(rad)
+        const x1 = cx + rInner * Math.sin(rad);
+        const y1 = cy - rInner * Math.cos(rad);
+        const x2 = cx + rOuter * Math.sin(rad);
+        const y2 = cy - rOuter * Math.cos(rad);
+
+        return (
+          <line
+            key={`tick-${angle}`}
+            x1={x1}
+            y1={y1}
+            x2={x2}
+            y2={y2}
+            stroke="#FFFFFF"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+          />
+        );
+      })}
+
       {/* Colored arc based on FP progress */}
       <motion.path
-        d="M 8 20 A 22 22 0 1 1 52 20"
+        d="M 8 18 A 22 22 0 1 1 52 18"
         fill="none"
         stroke={color}
         strokeWidth="5"
@@ -159,7 +233,6 @@ export const FarmersPowerSpeedometer = ({
             (currentFP !== undefined ? arcProgress : Math.min(stage / 24, 1)))
         }
         animate={{
-          opacity: [1, 0.6, 1], // More pronounced opacity pulse
           strokeWidth: [5, 5 + pulseIntensity * 2, 5], // Stronger width pulse
         }}
         transition={{
@@ -173,12 +246,12 @@ export const FarmersPowerSpeedometer = ({
       {/* Needle - follows the end of the colored arc */}
       <motion.line
         x1="30"
-        y1="20"
+        y1="18"
         x2="30"
         y2="-1"
         stroke={isFarcasterManiaOn ? "#A08CDC" : "#FDE047"} // New lighter purple: #A08CDC
         strokeWidth="2.8"
-        transform={`rotate(${needleRotation}, 30, 20)`}
+        transform={`rotate(${needleRotation}, 30, 18)`}
         strokeLinecap="round"
         animate={{
           strokeWidth: [2.8, 2.8 + pulseIntensity * 0.7, 2.8], // Dynamic and more pronounced
@@ -191,32 +264,14 @@ export const FarmersPowerSpeedometer = ({
         }}
       />
 
-      {/* Center point with background for text */}
-      <motion.circle
-        cx="30"
-        cy="20"
-        r="13"
-        fill="#7E4E31"
-        strokeWidth="0.5"
-        animate={{
-          scale: [1, 1 + pulseIntensity * 0.12, 1], // More noticeable scale
-        }}
-        transition={{
-          duration: 1.0, // Synced
-          ease: "easeInOut",
-          repeat: Infinity,
-          repeatType: "reverse",
-        }}
-      />
-
       {/* Stage number inside the center point */}
       <motion.text
         x="30"
-        y="22"
+        y="28" // Changed from 27 to 28
         textAnchor="middle"
         dominantBaseline="middle"
         fill="#ffffff"
-        fontSize="11"
+        fontSize="8"
         fontWeight="bold"
         style={{ textShadow: "0px 0px 1px rgba(0,0,0,0.5)" }}
         animate={{
@@ -229,7 +284,7 @@ export const FarmersPowerSpeedometer = ({
           repeatType: "reverse",
         }}
       >
-        {stage}
+        {boost}x
       </motion.text>
     </motion.svg>
   );

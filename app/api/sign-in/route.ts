@@ -12,7 +12,10 @@ import {
   giftStarterPack,
   initializeGrid,
 } from "@/lib/prisma/queries";
-import { initQuestsAndLeaderboardEntry } from "@/lib/utils";
+import {
+  initQuestsAndLeaderboardEntry,
+  userIsNotAdminAndIsNotProduction,
+} from "@/lib/utils";
 import { env } from "@/lib/env";
 import { Mode } from "@/lib/types/game";
 import { getRandomTestUserFid } from "@/lib/utils";
@@ -28,6 +31,10 @@ export const POST = async (req: NextRequest) => {
   let fid = data.fid;
   if (isTestMode) {
     fid = await getRandomTestUserFid();
+  }
+
+  if (!isTestMode && userIsNotAdminAndIsNotProduction(Number(fid))) {
+    return NextResponse.json({ message: "Unauthorized" }, { status: 403 });
   }
 
   let user = await getUserByMode(fid, Mode.Classic);

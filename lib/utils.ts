@@ -3,6 +3,7 @@ import { twMerge } from "tailwind-merge";
 import {
   ACHIEVEMENTS_GOLD_MULTIPLIER,
   ACHIEVEMENTS_THRESHOLDS,
+  ADMIN_FIDS,
   BASE_GOLD_CROP_PERCENTAGE,
   CROP_DATA,
   DAILY_QUESTS_NUMBER,
@@ -75,7 +76,7 @@ export const warpcastComposeCastUrl = () => {
   const frameUrl = env.NEXT_PUBLIC_URL;
   const text = `I'm tired of touching grass IRL, and I can't wait to touch PIXEL grass in /farville...\n\nBuild my dream farm and grow quirky crops. It's honest work, but way more fun than real farming!🧑‍🌾`;
   const urlFriendlyText = encodeURIComponent(text);
-  return `https://warpcast.com/~/compose?text=${urlFriendlyText}&embeds[]=${encodeURIComponent(
+  return `https://farcaster.xyz/~/compose?text=${urlFriendlyText}&embeds[]=${encodeURIComponent(
     frameUrl
   )}&channelKey=farville`;
 };
@@ -94,7 +95,7 @@ export const requestItemComposeCastUrl = (
   const urlFriendlyText = encodeURIComponent(text);
   return {
     requestUrl: frameUrl,
-    castUrl: `https://warpcast.com/~/compose?text=${urlFriendlyText}&embeds[]=${encodeURIComponent(
+    castUrl: `https://farcaster.xyz/~/compose?text=${urlFriendlyText}&embeds[]=${encodeURIComponent(
       frameUrl
     )}&channelKey=farville`,
   };
@@ -117,7 +118,7 @@ export const shareWeeklyLeaderboardPositionComposeCastUrl = (
   const urlFriendlyText = encodeURIComponent(text);
   return {
     frameUrl,
-    castUrl: `https://warpcast.com/~/compose?text=${urlFriendlyText}&embeds[]=${encodeURIComponent(
+    castUrl: `https://farcaster.xyz/~/compose?text=${urlFriendlyText}&embeds[]=${encodeURIComponent(
       frameUrl
     )}&channelKey=farville`,
   };
@@ -133,7 +134,7 @@ export const streakFlexCardComposeCastUrl = (
   const urlFriendlyText = encodeURIComponent(text);
   return {
     frameUrl,
-    castUrl: `https://warpcast.com/~/compose?text=${urlFriendlyText}&embeds[]=${encodeURIComponent(
+    castUrl: `https://farcaster.xyz/~/compose?text=${urlFriendlyText}&embeds[]=${encodeURIComponent(
       frameUrl
     )}&channelKey=farville`,
   };
@@ -151,6 +152,26 @@ export const communityContributionFlexCardComposeCastUrl = (
   const urlFriendlyText = encodeURIComponent(text);
   return {
     frameUrl,
+    castUrl: `https://farcaster.xyz/~/compose?text=${urlFriendlyText}&embeds[]=${encodeURIComponent(
+      frameUrl
+    )}&channelKey=farville`,
+  };
+};
+
+export const communityBoosterTopDonorsFlexCardComposeCastUrl = (
+  fid: number,
+  mode: Mode,
+  donorsUsernames: string[],
+  isFarcasterManiaOn: boolean
+) => {
+  const timestamp = Date.now();
+  const frameUrl = `${env.NEXT_PUBLIC_URL}/flex-card/community-booster/${fid}/${timestamp}/show-love?mode=${mode}&farcasterMania=${isFarcasterManiaOn}`;
+  const text = `Thank you farmer friends 💜🥹\n\ncc: ${
+    donorsUsernames.length > 0 && donorsUsernames.map((u) => `@${u}`).join(", ")
+  }`;
+  const urlFriendlyText = encodeURIComponent(text);
+  return {
+    frameUrl,
     castUrl: `https://warpcast.com/~/compose?text=${urlFriendlyText}&embeds[]=${encodeURIComponent(
       frameUrl
     )}&channelKey=farville`,
@@ -164,7 +185,7 @@ export const mintedOgFlexCardComposeCastUrl = (fid: number) => {
   const urlFriendlyText = encodeURIComponent(text);
   return {
     frameUrl,
-    castUrl: `https://warpcast.com/~/compose?text=${urlFriendlyText}&embeds[]=${encodeURIComponent(
+    castUrl: `https://farcaster.xyz/~/compose?text=${urlFriendlyText}&embeds[]=${encodeURIComponent(
       frameUrl
     )}&channelKey=farville`,
   };
@@ -180,7 +201,7 @@ export const mintedCollectibleFlexCardComposeCastUrl = (
   const urlFriendlyText = encodeURIComponent(text);
   return {
     frameUrl,
-    castUrl: `https://warpcast.com/~/compose?text=${urlFriendlyText}&embeds[]=${encodeURIComponent(
+    castUrl: `https://farcaster.xyz/~/compose?text=${urlFriendlyText}&embeds[]=${encodeURIComponent(
       frameUrl
     )}&channelKey=farville`,
   };
@@ -193,7 +214,7 @@ export const goldCropFlexCardComposeCastUrl = (fid: number, crop: string) => {
   const urlFriendlyText = encodeURIComponent(text);
   return {
     frameUrl,
-    castUrl: `https://warpcast.com/~/compose?text=${urlFriendlyText}&embeds[]=${encodeURIComponent(
+    castUrl: `https://farcaster.xyz/~/compose?text=${urlFriendlyText}&embeds[]=${encodeURIComponent(
       frameUrl
     )}&channelKey=farville`,
   };
@@ -211,7 +232,7 @@ export const achievementBadgeFlexCardComposeCastUrl = (
   const urlFriendlyText = encodeURIComponent(text);
   return {
     frameUrl,
-    castUrl: `https://warpcast.com/~/compose?text=${urlFriendlyText}&embeds[]=${encodeURIComponent(
+    castUrl: `https://farcaster.xyz/~/compose?text=${urlFriendlyText}&embeds[]=${encodeURIComponent(
       frameUrl
     )}&channelKey=farville`,
   };
@@ -245,7 +266,7 @@ export const leaderboardFlexCardComposeCastUrl = (
 
   return {
     frameUrl,
-    castUrl: `https://warpcast.com/~/compose?text=${urlFriendlyText}&embeds[]=${encodeURIComponent(
+    castUrl: `https://farcaster.xyz/~/compose?text=${urlFriendlyText}&embeds[]=${encodeURIComponent(
       frameUrl
     )}&channelKey=farville`,
   };
@@ -316,26 +337,43 @@ export const formatTime = (seconds: number) => {
     .join(" ");
 };
 
-export const getBoostTime = (perkSlug: PerkType, mode: Mode) => {
+export const getCommunityBoostMultiplier = (stage: number) => {
+  return POWER_STAGES.find((power) => power.stage === stage)?.boost ?? 1;
+};
+
+export const getBoostTime = (
+  perkSlug: PerkType,
+  mode: Mode,
+  currentStage: number
+) => {
+  const currentCommunityBoostMultiplier =
+    getCommunityBoostMultiplier(currentStage);
   return (
     Math.floor(
-      SPEED_BOOST[perkSlug].duration / MODE_DEFINITIONS[mode].growthTimeDivisor
+      SPEED_BOOST[perkSlug].duration /
+        MODE_DEFINITIONS[mode].growthTimeDivisor /
+        currentCommunityBoostMultiplier
     ) *
     (1 - 1 / SPEED_BOOST[perkSlug].boost)
   );
 };
 
-// TODO: duration needs to be calculated based on the mode using a different operation
 export const isBoostable = (
   itemSlug: string,
   mode: Mode,
-  lastBoostTime: Date
+  lastBoostTime: Date,
+  currentCommunityBoostStage: number
 ) => {
   const timeSinceBoost = Date.now() - lastBoostTime.getTime();
+  const currentCommunityBoostMultiplier = getCommunityBoostMultiplier(
+    currentCommunityBoostStage
+  );
   return (
     timeSinceBoost <
     Math.floor(
-      SPEED_BOOST[itemSlug].duration / MODE_DEFINITIONS[mode].boosterTimeDivisor
+      SPEED_BOOST[itemSlug].duration /
+        MODE_DEFINITIONS[mode].boosterTimeDivisor /
+        currentCommunityBoostMultiplier
     )
   );
 };
@@ -653,9 +691,15 @@ export const userCanRedeem = (
   };
 };
 
-export const getGrowthTimeBasedOnMode = (crop: CropType, mode: Mode) => {
+export const getGrowthTimeBasedOnMode = (
+  crop: CropType,
+  mode: Mode,
+  communityBoost: number
+) => {
   const baseGrowthTime = CROP_DATA[crop].growthTime;
-  return Math.floor(baseGrowthTime / MODE_DEFINITIONS[mode].growthTimeDivisor);
+  return Math.floor(
+    baseGrowthTime / MODE_DEFINITIONS[mode].growthTimeDivisor / communityBoost
+  );
 };
 
 export const getGrowthTimeBasedOnMultiplier = (
@@ -823,8 +867,15 @@ export const getRandomTestUserFid = async (): Promise<number> => {
   const randomUser =
     users.users[Math.floor(Math.random() * users.users.length)];
   console.log(
-    `getRandomTestUserFid randomUser: https://warpcast.com/${randomUser.username} (${randomUser.displayName})`,
+    `getRandomTestUserFid randomUser: https://farcaster.xyz/${randomUser.username} (${randomUser.displayName})`,
     randomUser.fid
   );
   return randomUser.fid;
+};
+
+export const userIsNotAdminAndIsNotProduction = (fid: number): boolean => {
+  return (
+    env.NEXT_PUBLIC_APP_ENV !== "production" &&
+    !ADMIN_FIDS.includes(Number(fid))
+  );
 };

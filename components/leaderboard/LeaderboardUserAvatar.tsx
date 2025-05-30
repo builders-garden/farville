@@ -27,10 +27,12 @@ export function LeaderboardUserAvatar({
         alt={`${username ?? "user"}'s avatar`}
         className={`w-${size.width - 2} h-${size.height - 2} xs:w-${
           size.width
-        } xs:h-${size.height} rounded-full object-cover outline outline-${
-          borderSize - 1
-        } xs:outline-${borderSize} ${
-          isOgUser ? "outline-[#179ef9]" : "outline-[#FFB938]"
+        } xs:h-${size.height} rounded-full object-cover ${
+          borderSize > 0
+            ? `outline outline-${borderSize - 1} xs:outline-${borderSize} ${
+                isOgUser ? "outline-[#179ef9]" : "outline-[#FFB938]"
+              }`
+            : ""
         }`}
         width={40}
         height={40}

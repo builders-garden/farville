@@ -6,19 +6,16 @@ import {
   DialogTitle,
   DialogClose,
 } from "@/components/ui/dialog";
-import { X } from "lucide-react";
+import { Info, X } from "lucide-react";
+import { useState } from "react";
 
 interface HowItWorksProps {
-  isOpen: boolean;
-  onOpenChange: (open: boolean) => void;
   isFarcasterManiaOn: boolean;
 }
 
-export const HowItWorks = ({
-  isOpen,
-  onOpenChange,
-  isFarcasterManiaOn,
-}: HowItWorksProps) => {
+export const HowItWorks = ({ isFarcasterManiaOn }: HowItWorksProps) => {
+  const [isOpen, onOpenChange] = useState(false);
+
   return (
     <>
       <Button
@@ -30,7 +27,8 @@ export const HowItWorks = ({
         } w-full text-xs h-fit py-2`}
         onClick={() => onOpenChange(true)}
       >
-        How does this work?
+        About
+        <Info className="ml-1 w-4 h-4" />
       </Button>
       <Dialog
         open={isOpen}

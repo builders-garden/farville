@@ -13,19 +13,36 @@ import { PowerTimer } from "./power-timer";
 import { ContributionTableSection } from "./contribution-table-section";
 import { useCommunityBoosterIncrement } from "@/hooks/use-community-booster";
 import {
-  COMBO_WINDOW,
+  FP_DECREASE_DELAY_MS,
   DECAY_INTERVAL,
   POWER_STAGES,
 } from "@/lib/game-constants";
 import { useCommunityDonation } from "@/hooks/use-community-donation";
-import { HowItWorks } from "./how-it-works";
+import { TopDonors } from "./top-donors";
 
-export const PowerTab = () => {
+interface PowerTabProps {
+  setActiveTab: (tab: "power" | "leaderboard") => void;
+  topDonors?: {
+    fid: number;
+    username: string;
+    selectedAvatarUrl?: string;
+    avatarUrl?: string;
+    mintedOG?: boolean;
+  }[];
+  isLoadingDonors: boolean;
+  onSelectUser: (fid: number) => void;
+}
+
+export const PowerTab = ({
+  setActiveTab,
+  topDonors = [],
+  onSelectUser,
+  isLoadingDonors,
+}: PowerTabProps) => {
   const { state, mode } = useGame();
   const { address, chainId } = useAccount();
   const { switchChain } = useSwitchChain();
   const [donationId, setDonationId] = useState<string | null>(null);
-  const [showHowItWorksDialog, setShowHowItWorksDialog] = useState(false);
 
   const { isFarcasterManiaOn } = state;
 
@@ -83,15 +100,17 @@ export const PowerTab = () => {
     if (!lastDonationTime) return new Date(); // Default to now if no donations yet
     const timeSinceLastDonation = Date.now() - lastDonationTime.getTime();
 
-    if (timeSinceLastDonation < COMBO_WINDOW) {
+    if (timeSinceLastDonation < FP_DECREASE_DELAY_MS) {
       // If the last donation was within the combo window, use that as the reset time
       return lastDonationTime;
     } else {
       // Calculate proper reset time using modulo logic
-      const elapsedCycles = Math.floor(timeSinceLastDonation / COMBO_WINDOW);
+      const elapsedCycles = Math.floor(
+        timeSinceLastDonation / FP_DECREASE_DELAY_MS
+      );
       // This returns the start time of the current cycle we're in
       return new Date(
-        lastDonationTime.getTime() + elapsedCycles * COMBO_WINDOW
+        lastDonationTime.getTime() + elapsedCycles * FP_DECREASE_DELAY_MS
       );
     }
   });
@@ -101,15 +120,17 @@ export const PowerTab = () => {
 
     const timeSinceLastDonation = Date.now() - lastDonationTime.getTime();
 
-    if (timeSinceLastDonation < COMBO_WINDOW) {
+    if (timeSinceLastDonation < FP_DECREASE_DELAY_MS) {
       // If the last donation was within the combo window, reset timer to that point
       setLastTimerReset(lastDonationTime);
     } else {
       // Calculate proper reset time using modulo logic
       // This keeps track of where we are within the current cycle
-      const elapsedCycles = Math.floor(timeSinceLastDonation / COMBO_WINDOW);
+      const elapsedCycles = Math.floor(
+        timeSinceLastDonation / FP_DECREASE_DELAY_MS
+      );
       const currentWindowStart = new Date(
-        lastDonationTime.getTime() + elapsedCycles * COMBO_WINDOW
+        lastDonationTime.getTime() + elapsedCycles * FP_DECREASE_DELAY_MS
       );
       setLastTimerReset(currentWindowStart);
     }
@@ -230,11 +251,19 @@ export const PowerTab = () => {
             </div>
           </div>
         )}
+
+        <TopDonors
+          setActiveTab={setActiveTab}
+          topDonors={topDonors}
+          isLoadingDonors={isLoadingDonors}
+          onSelectUser={onSelectUser}
+          viewerData={{ fid: state.user.fid }}
+        />
+
         {/* Current Status Section */}
-        <div className="w-full bg-[#5C4121]/50 rounded-xl p-6 border border-yellow-400/20">
+        <div className="w-full bg-[#5C4121]/50 rounded-xl p-4 border border-yellow-400/20">
           <div className="flex flex-col gap-4">
             <PowerStats
-              currentPowerStage={currentPowerStage}
               currentFP={currentFP}
               fpChangeAnimation={fpChangeAnimation}
               nextStageInfo={nextStageInfo}
@@ -246,7 +275,7 @@ export const PowerTab = () => {
               <PowerTimer
                 powerCombo={powerCombo}
                 lastDonationTime={lastDonationTime}
-                COMBO_WINDOW={COMBO_WINDOW}
+                COMBO_WINDOW={FP_DECREASE_DELAY_MS}
                 setPowerCombo={setPowerCombo}
                 setCurrentFP={setCurrentFP}
                 lastTimerReset={lastTimerReset}
@@ -255,32 +284,26 @@ export const PowerTab = () => {
               />
             )}
 
+            <Button
+              variant="default"
+              className={`w-full py-3 text-sm font-medium ${
+                isFarcasterManiaOn
+                  ? "text-white bg-[#a590e3] hover:bg-[#a590e3]/80 hover:text-white/80"
+                  : "text-[#5C4121] bg-yellow-500 hover:bg-yellow-500/80 hover:text-[#5C4121]"
+              }`}
+              onClick={() => setShowContributeDialog(true)}
+            >
+              Contribute Power {true ? "⚡" : "🌟"}
+            </Button>
+
             <PowerStages
               currentPowerStage={currentPowerStage}
               stages={POWER_STAGES}
               isFarcasterManiaOn={isFarcasterManiaOn}
             />
-
-            <HowItWorks
-              isOpen={showHowItWorksDialog}
-              onOpenChange={setShowHowItWorksDialog}
-              isFarcasterManiaOn={isFarcasterManiaOn}
-            />
           </div>
         </div>
       </div>
-
-      <Button
-        variant="default"
-        className={`w-full py-3 text-base font-medium ${
-          isFarcasterManiaOn
-            ? "text-white bg-[#a590e3] hover:bg-[#a590e3]/80 hover:text-white/80"
-            : "text-[#5C4121] bg-yellow-500 hover:bg-yellow-500/80 hover:text-[#5C4121]"
-        }`}
-        onClick={() => setShowContributeDialog(true)}
-      >
-        Contribute Power {true ? "⚡" : "🌟"}
-      </Button>
 
       <PowerContribution
         showDialog={showContributeDialog}
