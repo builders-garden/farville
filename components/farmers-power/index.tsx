@@ -20,7 +20,7 @@ export default function FarmersPowerModal({ onClose }: FarmersPowerModalProps) {
     undefined
   );
   const { data: leaderboardData, isLoading: isLoadingLeaderboard } =
-    useDonationLeaderboard(mode, state.user.fid, 50, true);
+    useDonationLeaderboard(mode, state.user.fid, 100, true);
 
   const handleCloseProfile = () => {
     setSelectedUserFid(undefined);

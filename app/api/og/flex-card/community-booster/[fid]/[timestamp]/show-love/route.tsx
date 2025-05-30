@@ -9,6 +9,7 @@ import {
 } from "@/lib/prisma/queries";
 import { UserWithStatistic } from "@/lib/prisma/types";
 import { Mode } from "@/lib/types/game";
+import { getCommunityBoostMultiplier } from "@/lib/utils";
 import { ImageResponse } from "next/og";
 
 export const dynamic = "force-dynamic";
@@ -95,6 +96,10 @@ export async function GET(
         status: 404,
       });
     }
+
+    const currentGameSpeed = getCommunityBoostMultiplier(
+      currentCommunityBoosterStatus.stage
+    );
 
     const appUrl = env.NEXT_PUBLIC_URL;
 
@@ -338,7 +343,7 @@ export async function GET(
                     color: "#FFEFAE",
                   }}
                 >
-                  Growth time is {currentCommunityBoosterStatus.stage}x now!
+                  Growth time is {currentGameSpeed}x now!
                 </span>
               </div>
             </div>

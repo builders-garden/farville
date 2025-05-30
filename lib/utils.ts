@@ -172,7 +172,7 @@ export const communityBoosterTopDonorsFlexCardComposeCastUrl = (
   const urlFriendlyText = encodeURIComponent(text);
   return {
     frameUrl,
-    castUrl: `https://warpcast.com/~/compose?text=${urlFriendlyText}&embeds[]=${encodeURIComponent(
+    castUrl: `https://farcaster.xyz/~/compose?text=${urlFriendlyText}&embeds[]=${encodeURIComponent(
       frameUrl
     )}&channelKey=farville`,
   };

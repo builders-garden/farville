@@ -114,6 +114,7 @@ export const TopDonors = ({
           className={`px-2 xs:px-3 py-1 xs:py-1 rounded-lg flex items-center justify-center gap-1 xs:gap-1.5 transition-all duration-200 bg-pink-500/30 hover:bg-pink-500/50`}
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
+          disabled={isLoadingDonors || topDonors.length === 0}
         >
           <motion.span
             animate={{ rotate: [0, -3, 3, 0] }}
@@ -135,6 +136,7 @@ export const TopDonors = ({
           className={`px-2 xs:px-3 py-1 xs:py-1 rounded-lg flex items-center justify-center gap-1 xs:gap-1.5 transition-all duration-200 bg-blue-500/30 hover:bg-blue-500/50`}
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
+          disabled={isLoadingDonors || topDonors.length === 0}
         >
           <motion.span
             animate={{ rotate: [0, -3, 3, 0] }}
