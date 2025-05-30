@@ -157,6 +157,26 @@ export const communityContributionFlexCardComposeCastUrl = (
   };
 };
 
+export const communityBoosterTopDonorsFlexCardComposeCastUrl = (
+  fid: number,
+  mode: Mode,
+  donorsUsernames: string[],
+  isFarcasterManiaOn: boolean
+) => {
+  const timestamp = Date.now();
+  const frameUrl = `${env.NEXT_PUBLIC_URL}/flex-card/community-booster/${fid}/${timestamp}/show-love?mode=${mode}&farcasterMania=${isFarcasterManiaOn}`;
+  const text = `Thank you farmer friends 💜🥹\n\ncc: ${
+    donorsUsernames.length > 0 && donorsUsernames.map((u) => `@${u}`).join(", ")
+  }`;
+  const urlFriendlyText = encodeURIComponent(text);
+  return {
+    frameUrl,
+    castUrl: `https://warpcast.com/~/compose?text=${urlFriendlyText}&embeds[]=${encodeURIComponent(
+      frameUrl
+    )}&channelKey=farville`,
+  };
+};
+
 export const mintedOgFlexCardComposeCastUrl = (fid: number) => {
   const timestamp = Date.now();
   const frameUrl = `${env.NEXT_PUBLIC_URL}/flex-card/minted-og/${fid}/${timestamp}`;

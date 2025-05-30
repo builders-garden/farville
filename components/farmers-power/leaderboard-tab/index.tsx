@@ -22,6 +22,7 @@ interface LeaderboardData {
 }
 
 interface LeaderboardTabProps {
+  setActiveTab: (tab: "power" | "leaderboard") => void;
   onSelectUser: (fid: number) => void;
   leaderboardData?: DonationsLeaderboardResponse;
   viewerData: {
@@ -34,6 +35,7 @@ interface LeaderboardTabProps {
 }
 
 export const LeaderboardTab = ({
+  setActiveTab,
   onSelectUser,
   leaderboardData,
   viewerData,
@@ -69,6 +71,25 @@ export const LeaderboardTab = ({
 
   return (
     <div className="flex flex-col gap-2 xs:gap-3 w-full">
+      <motion.button
+        onClick={() => setActiveTab("power")}
+        className="w-fit bg-[#6d4c2c] text-white/90 px-4 py-2 rounded-lg font-medium text-sm flex items-center justify-center gap-2 hover:bg-[#5c4121] transition-colors"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+      >
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+        >
+          <path d="M19 12H5M5 12L12 19M5 12L12 5" />
+        </svg>
+        Back
+      </motion.button>
+
       {transformedLeaderboardData?.targetData && (
         <motion.div
           key={viewerData.fid}

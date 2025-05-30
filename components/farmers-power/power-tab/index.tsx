@@ -22,6 +22,7 @@ import { HowItWorks } from "./how-it-works";
 import { TopDonors } from "./top-donors";
 
 interface PowerTabProps {
+  setActiveTab: (tab: "power" | "leaderboard") => void;
   topDonors?: {
     fid: number;
     username: string;
@@ -29,10 +30,16 @@ interface PowerTabProps {
     avatarUrl?: string;
     mintedOG?: boolean;
   }[];
+  isLoadingDonors: boolean;
   onSelectUser: (fid: number) => void;
 }
 
-export const PowerTab = ({ topDonors = [], onSelectUser }: PowerTabProps) => {
+export const PowerTab = ({
+  setActiveTab,
+  topDonors = [],
+  onSelectUser,
+  isLoadingDonors,
+}: PowerTabProps) => {
   const { state, mode } = useGame();
   const { address, chainId } = useAccount();
   const { switchChain } = useSwitchChain();
@@ -243,9 +250,13 @@ export const PowerTab = ({ topDonors = [], onSelectUser }: PowerTabProps) => {
           </div>
         )}
 
-        {topDonors.length > 0 && (
-          <TopDonors topDonors={topDonors} onSelectUser={onSelectUser} />
-        )}
+        <TopDonors
+          setActiveTab={setActiveTab}
+          topDonors={topDonors}
+          isLoadingDonors={isLoadingDonors}
+          onSelectUser={onSelectUser}
+          viewerData={{ fid: state.user.fid }}
+        />
 
         {/* Current Status Section */}
         <div className="w-full bg-[#5C4121]/50 rounded-xl p-6 border border-yellow-400/20">

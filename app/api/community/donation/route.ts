@@ -9,12 +9,6 @@ export async function GET(request: NextRequest) {
     const mode = searchParams.get("mode");
     const fid = searchParams.get("fid");
 
-    console.log("GET /api/community/donation", {
-      limit,
-      mode,
-      fid,
-    });
-
     if (limit && isNaN(Number(limit))) {
       return NextResponse.json(
         { error: "Invalid limit parameter" },
