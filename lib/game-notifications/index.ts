@@ -10,11 +10,11 @@ export async function sendDelayedNotificationToService(
   mode: Mode,
   delay?: number
 ) {
-  // const isTestMode =
-  //   !!env.NEXT_PUBLIC_IS_TEST_MODE && env.NEXT_PUBLIC_APP_ENV === "development";
-  // if (env.NEXT_PUBLIC_URL === "http://localhost:3000" || isTestMode) {
-  //   return;
-  // }
+  const isTestMode =
+    !!env.NEXT_PUBLIC_IS_TEST_MODE && env.NEXT_PUBLIC_APP_ENV === "development";
+  if (env.NEXT_PUBLIC_URL === "http://localhost:3000" || isTestMode) {
+    return;
+  }
 
   await axios({
     url: `${env.FARVILLE_SERVICE_URL}/api/async-jobs/notifications/schedule`,
