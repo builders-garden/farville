@@ -12,7 +12,10 @@ import {
   giftStarterPack,
   initializeGrid,
 } from "@/lib/prisma/queries";
-import { initQuestsAndLeaderboardEntry } from "@/lib/utils";
+import {
+  initQuestsAndLeaderboardEntry,
+  userIsNotAdminAndIsNotProduction,
+} from "@/lib/utils";
 import { env } from "@/lib/env";
 import { Mode } from "@/lib/types/game";
 import { getRandomTestUserFid } from "@/lib/utils";
@@ -28,6 +31,10 @@ export const POST = async (req: NextRequest) => {
   let fid = data.fid;
   if (isTestMode) {
     fid = await getRandomTestUserFid();
+  }
+
+  if (!isTestMode && userIsNotAdminAndIsNotProduction(Number(fid))) {
+    return NextResponse.json({ message: "Unauthorized" }, { status: 403 });
   }
 
   let user = await getUserByMode(fid, Mode.Classic);
@@ -50,9 +57,29 @@ export const POST = async (req: NextRequest) => {
       },
     });
 
-    if (referrerFid) await addReferral(referrerFid, fid);
+    if (referrerFid) {
+      await addReferral(referrerFid, fid);
+    }
 
-    trackEvent(fid, "sign_up", { fid });
+    trackEvent(fid, "sign_up", {
+      fid,
+    });
+  }
+
+  // Verify signature matches custody address
+  let isValidSignature;
+  if (isTestMode) {
+    isValidSignature = true;
+  } else {
+    isValidSignature = await verifyMessage({
+      address: user.walletAddress as `0x${string}`,
+      message,
+      signature,
+    });
+  }
+
+  if (!isValidSignature) {
+    return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
   }
 
   // Verify signature matches custody address
@@ -86,7 +113,6 @@ export const POST = async (req: NextRequest) => {
   // Generate a session token using fid and current timestamp
   const jwtToken = await new jose.SignJWT({
     fid,
-    walletAddress: data.address,
     timestamp: Date.now(),
   })
     .setProtectedHeader({ alg: "HS256" })

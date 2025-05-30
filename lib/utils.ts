@@ -3,6 +3,7 @@ import { twMerge } from "tailwind-merge";
 import {
   ACHIEVEMENTS_GOLD_MULTIPLIER,
   ACHIEVEMENTS_THRESHOLDS,
+  ADMIN_FIDS,
   BASE_GOLD_CROP_PERCENTAGE,
   CROP_DATA,
   DAILY_QUESTS_NUMBER,
@@ -841,4 +842,11 @@ export const getRandomTestUserFid = async (): Promise<number> => {
     randomUser.fid
   );
   return randomUser.fid;
+};
+
+export const userIsNotAdminAndIsNotProduction = (fid: number): boolean => {
+  return (
+    env.NEXT_PUBLIC_APP_ENV !== "production" &&
+    !ADMIN_FIDS.includes(Number(fid))
+  );
 };
