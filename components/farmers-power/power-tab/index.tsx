@@ -18,8 +18,27 @@ import {
   POWER_STAGES,
 } from "@/lib/game-constants";
 import { useCommunityDonation } from "@/hooks/use-community-donation";
+import { TopDonors } from "./top-donors";
 
-export const PowerTab = () => {
+interface PowerTabProps {
+  setActiveTab: (tab: "power" | "leaderboard") => void;
+  topDonors?: {
+    fid: number;
+    username: string;
+    selectedAvatarUrl?: string;
+    avatarUrl?: string;
+    mintedOG?: boolean;
+  }[];
+  isLoadingDonors: boolean;
+  onSelectUser: (fid: number) => void;
+}
+
+export const PowerTab = ({
+  setActiveTab,
+  topDonors = [],
+  onSelectUser,
+  isLoadingDonors,
+}: PowerTabProps) => {
   const { state, mode } = useGame();
   const { address, chainId } = useAccount();
   const { switchChain } = useSwitchChain();
@@ -232,6 +251,15 @@ export const PowerTab = () => {
             </div>
           </div>
         )}
+
+        <TopDonors
+          setActiveTab={setActiveTab}
+          topDonors={topDonors}
+          isLoadingDonors={isLoadingDonors}
+          onSelectUser={onSelectUser}
+          viewerData={{ fid: state.user.fid }}
+        />
+
         {/* Current Status Section */}
         <div className="w-full bg-[#5C4121]/50 rounded-xl p-4 border border-yellow-400/20">
           <div className="flex flex-col gap-4">
@@ -256,6 +284,18 @@ export const PowerTab = () => {
               />
             )}
 
+            <Button
+              variant="default"
+              className={`w-full py-3 text-sm font-medium ${
+                isFarcasterManiaOn
+                  ? "text-white bg-[#a590e3] hover:bg-[#a590e3]/80 hover:text-white/80"
+                  : "text-[#5C4121] bg-yellow-500 hover:bg-yellow-500/80 hover:text-[#5C4121]"
+              }`}
+              onClick={() => setShowContributeDialog(true)}
+            >
+              Contribute Power {true ? "⚡" : "🌟"}
+            </Button>
+
             <PowerStages
               currentPowerStage={currentPowerStage}
               stages={POWER_STAGES}
@@ -264,18 +304,6 @@ export const PowerTab = () => {
           </div>
         </div>
       </div>
-
-      <Button
-        variant="default"
-        className={`w-full py-3 text-base font-medium ${
-          isFarcasterManiaOn
-            ? "text-white bg-[#a590e3] hover:bg-[#a590e3]/80 hover:text-white/80"
-            : "text-[#5C4121] bg-yellow-500 hover:bg-yellow-500/80 hover:text-[#5C4121]"
-        }`}
-        onClick={() => setShowContributeDialog(true)}
-      >
-        Contribute Power {true ? "⚡" : "🌟"}
-      </Button>
 
       <PowerContribution
         showDialog={showContributeDialog}

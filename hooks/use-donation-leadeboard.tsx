@@ -10,11 +10,13 @@ export interface DonationsLeaderboardResponse {
 export const useDonationLeaderboard = (
   mode: Mode,
   targetFid?: number,
+  limit?: number,
   enabled = true
 ) => {
   const queryParams = new URLSearchParams();
   if (targetFid) queryParams.append("targetFid", targetFid.toString());
   queryParams.append("mode", mode);
+  if (limit) queryParams.append("limit", limit.toString());
 
   const url = `/api/community/donation/leaderboard${
     queryParams.toString() ? `?${queryParams.toString()}` : ""
