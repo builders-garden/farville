@@ -1,36 +1,36 @@
 import { Mode, SeedType } from "@/lib/types/game";
-import { qstashPublishJSON } from "../qstash";
 import { env } from "@/lib/env";
-import Logger from "../logger";
+import axios from "axios";
 
-export async function sendDelayedNotification(
-  fid: string,
+export async function sendDelayedNotificationToService(
+  fid: number,
   title: string,
   text: string,
   category: string,
   mode: Mode,
-  delay?: number | `${bigint}s` | `${bigint}m` | `${bigint}h` | `${bigint}d`
+  delay?: number
 ) {
   const isTestMode =
     !!env.NEXT_PUBLIC_IS_TEST_MODE && env.NEXT_PUBLIC_APP_ENV === "development";
   if (env.NEXT_PUBLIC_URL === "http://localhost:3000" || isTestMode) {
     return;
   }
-  const res = await qstashPublishJSON({
-    url: `${env.NEXT_PUBLIC_URL}/api/qstash/send-notification`,
-    body: {
-      fid: fid.toString(),
+
+  await axios({
+    url: `${env.FARVILLE_SERVICE_URL}/api/async-jobs/notifications/schedule`,
+    method: "post",
+    headers: {
+      "x-api-secret": env.FARVILLE_SERVICE_API_KEY,
+    },
+    data: {
+      fid,
       title,
       text,
       category,
       mode,
+      delay: delay && delay > 0 ? delay : 0, // default to 0 if no delay is provided
     },
-    delay,
   });
-
-  Logger.log(
-    `(QSTASH) - sent delayed notification to QStash with id: ${res?.messageId}`
-  );
 }
 
 export function getCropNameFromSeeds(seedType: SeedType) {

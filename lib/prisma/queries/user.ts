@@ -35,8 +35,6 @@ export const createUserAndMode = async (
     },
   });
 
-  console.log("newUser", newUser);
-
   return {
     ...newUser.statistics[0],
     ...newUser,

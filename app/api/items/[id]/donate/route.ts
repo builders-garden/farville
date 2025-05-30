@@ -1,5 +1,5 @@
 import { XP_PER_DONATED_ITEM } from "@/lib/game-constants";
-import { sendDelayedNotification } from "@/lib/game-notifications";
+import { sendDelayedNotificationToService } from "@/lib/game-notifications";
 import {
   addUserItem,
   getItemById,
@@ -179,7 +179,7 @@ export const POST = async (
         mode,
       },
     }),
-    sendDelayedNotification(
+    sendDelayedNotificationToService(
       toFid.toString(),
       "New Donation!",
       `${user?.username} donated ${quantity} ${item.name} to you!`,
