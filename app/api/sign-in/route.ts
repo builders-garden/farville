@@ -32,104 +32,112 @@ const appClient = createAppClient({
 });
 
 export const POST = async (req: NextRequest) => {
-  const { nonce, signature, message, referrerFid } = await req.json();
-  const isTestMode =
-    !!env.NEXT_PUBLIC_IS_TEST_MODE && env.NEXT_PUBLIC_APP_ENV === "development";
+  try {
+    const { nonce, signature, message, referrerFid } = await req.json();
+    const isTestMode =
+      !!env.NEXT_PUBLIC_IS_TEST_MODE &&
+      env.NEXT_PUBLIC_APP_ENV === "development";
 
-  console.log("sign-in request", { nonce, signature, message, referrerFid });
+    console.log("sign-in request", { nonce, signature, message, referrerFid });
 
-  // Verify signature matches custody address and auth address
-  const {
-    data,
-    success,
-    fid: fidFromSignature,
-  } = await appClient.verifySignInMessage({
-    domain: new URL(env.NEXT_PUBLIC_URL).hostname,
-    nonce,
-    message,
-    signature,
-    acceptAuthAddress: true,
-  });
-  console.log("sign-in verifySignInMessage", {
-    data,
-    success,
-    fid: fidFromSignature,
-  });
-  let isValidSignature;
-  if (isTestMode) {
-    isValidSignature = true;
-  } else {
-    isValidSignature = success;
-  }
-
-  // Verify signature matches custody address and auth address (if not in test mode)
-  if (!isValidSignature) {
-    console.error(
-      "Invalid signature",
-      JSON.stringify(data, null, 2),
-      "success",
+    // Verify signature matches custody address and auth address
+    const {
+      data,
       success,
-      fidFromSignature
-    );
-    return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
-  }
+      fid: fidFromSignature,
+    } = await appClient.verifySignInMessage({
+      domain: new URL(env.NEXT_PUBLIC_URL).hostname,
+      nonce,
+      message,
+      signature,
+      acceptAuthAddress: true,
+    });
+    console.log("sign-in verifySignInMessage", {
+      data,
+      success,
+      fid: fidFromSignature,
+    });
+    let isValidSignature;
+    if (isTestMode) {
+      isValidSignature = true;
+    } else {
+      isValidSignature = success;
+    }
 
-  let fid = fidFromSignature;
-  if (isTestMode) {
-    fid = await getRandomTestUserFid();
-  }
+    // Verify signature matches custody address and auth address (if not in test mode)
+    if (!isValidSignature) {
+      console.error(
+        "Invalid signature",
+        JSON.stringify(data, null, 2),
+        "success",
+        success,
+        fidFromSignature
+      );
+      return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
+    }
 
-  let user = await getUserByMode(fid, Mode.Classic);
-  if (!user) {
-    const newUser = await fetchUser(fid.toString());
-    user = await createUserAndMode({
-      fid,
-      username: newUser.username,
-      displayName: newUser.display_name,
-      avatarUrl: newUser.pfp_url,
-      walletAddress: newUser.custody_address,
-      statistics: {
-        create: {
-          mode: Mode.Classic,
-          xp: 0,
-          coins: 0,
-          expansions: 1,
+    let fid = fidFromSignature;
+    if (isTestMode) {
+      fid = await getRandomTestUserFid();
+    }
+
+    let user = await getUserByMode(fid, Mode.Classic);
+    if (!user) {
+      const newUser = await fetchUser(fid.toString());
+      user = await createUserAndMode({
+        fid,
+        username: newUser.username,
+        displayName: newUser.display_name,
+        avatarUrl: newUser.pfp_url,
+        walletAddress: newUser.custody_address,
+        statistics: {
+          create: {
+            mode: Mode.Classic,
+            xp: 0,
+            coins: 0,
+            expansions: 1,
+          },
         },
-      },
+      });
+
+      if (referrerFid) await addReferral(referrerFid, fid);
+
+      trackEvent(fid, "sign_up", { fid });
+    }
+
+    // check if the user has already the grid cells
+    // if not, initialize the grid
+    const gridCells = await getUserGridCells(fid, Mode.Classic);
+    if (gridCells.length === 0) {
+      await initializeGrid(fid, Mode.Classic);
+      // Give them a starter pack
+      await giftStarterPack(fid, Mode.Classic);
+    }
+
+    const userModes = await getUserModes(fid);
+    await initQuestsAndLeaderboardEntry(fid, userModes);
+
+    // Generate a session token using fid and current timestamp
+    const jwtToken = await new jose.SignJWT({
+      fid,
+      walletAddress: data.address,
+      timestamp: Date.now(),
+    })
+      .setProtectedHeader({ alg: "HS256" })
+      .setExpirationTime("30 days")
+      .sign(new TextEncoder().encode(env.JWT_SECRET));
+
+    const response = NextResponse.json({ success: true, token: jwtToken });
+
+    trackEvent(fid, "sign_in", {
+      fid,
     });
 
-    if (referrerFid) await addReferral(referrerFid, fid);
-
-    trackEvent(fid, "sign_up", { fid });
+    return response;
+  } catch (error) {
+    const errorMessage =
+      error instanceof Error ? error.message : "Sign in failed";
+    console.error("sign-in error", errorMessage);
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
-
-  // check if the user has already the grid cells
-  // if not, initialize the grid
-  const gridCells = await getUserGridCells(fid, Mode.Classic);
-  if (gridCells.length === 0) {
-    await initializeGrid(fid, Mode.Classic);
-    // Give them a starter pack
-    await giftStarterPack(fid, Mode.Classic);
-  }
-
-  const userModes = await getUserModes(fid);
-  await initQuestsAndLeaderboardEntry(fid, userModes);
-
-  // Generate a session token using fid and current timestamp
-  const jwtToken = await new jose.SignJWT({
-    fid,
-    walletAddress: data.address,
-    timestamp: Date.now(),
-  })
-    .setProtectedHeader({ alg: "HS256" })
-    .setExpirationTime("30 days")
-    .sign(new TextEncoder().encode(env.JWT_SECRET));
-
-  const response = NextResponse.json({ success: true, token: jwtToken });
-
-  trackEvent(fid, "sign_in", {
-    fid,
-  });
-
-  return response;
 };
