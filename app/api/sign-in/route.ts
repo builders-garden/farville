@@ -82,22 +82,6 @@ export const POST = async (req: NextRequest) => {
     return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
   }
 
-  // Verify signature matches custody address
-  let isValidSignature;
-  if (isTestMode) {
-    isValidSignature = true;
-  } else {
-    isValidSignature = await verifyMessage({
-      address: user.walletAddress as `0x${string}`,
-      message,
-      signature,
-    });
-  }
-
-  if (!isValidSignature) {
-    return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
-  }
-
   // check if the user has already the grid cells
   // if not, initialize the grid
   const gridCells = await getUserGridCells(fid, Mode.Classic);
