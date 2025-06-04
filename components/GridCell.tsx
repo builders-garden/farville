@@ -14,7 +14,7 @@ import { motion } from "framer-motion";
 import { useNextStep } from "nextstepjs";
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import toast from "react-hot-toast";
+import { toast } from "sonner";
 import { useGame } from "../context/GameContext";
 import { ActionType, CropType, PerkType, SeedType } from "../lib/types/game";
 import CropSprite from "./CropSprite";

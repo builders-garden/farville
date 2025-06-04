@@ -8,7 +8,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getWalletBalance } from "@/lib/lifi";
 import { base } from "viem/chains";
 import { useGame } from "@/context/GameContext";
-import { toast } from "react-hot-toast";
+import { toast } from "sonner";
 import { PowerTimer } from "./power-timer";
 import { ContributionTableSection } from "./contribution-table-section";
 import { useCommunityBoosterIncrement } from "@/hooks/use-community-booster";

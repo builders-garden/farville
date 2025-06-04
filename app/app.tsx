@@ -3,7 +3,6 @@
 import React, { useEffect } from "react";
 import dynamic from "next/dynamic";
 import type { OverlayConfig } from "@/context/GameContext";
-import { Toaster } from "react-hot-toast";
 import { useAccount, useConnect } from "wagmi";
 import farcasterFrame from "@farcaster/frame-wagmi-connector";
 import { useFrameContext } from "@/context/FrameContext";
@@ -15,6 +14,9 @@ export const toasterStyle = {
   color: "#d1fae5",
   fontSize: "0.75rem",
   filter: "drop-shadow(0 4px 4px rgb(0 0 0 / 0.15))",
+  marginBottom: "6rem",
+  marginLeft: "0.4rem",
+  marginRight: "auto",
 };
 
 const Game = dynamic(() => import("./../components/Game"), {
@@ -47,23 +49,6 @@ export default function App({
 
   return (
     <>
-      <Toaster
-        position="bottom-left"
-        toastOptions={{
-          style: toasterStyle,
-          loading: {
-            icon: "🧺",
-          },
-          error: {
-            style: {
-              backgroundColor: "#952020",
-            },
-          },
-        }}
-        containerStyle={{
-          marginBottom: "4rem",
-        }}
-      />
       <Game initialOverlay={initialOverlay}>
         <GameWrapper />
       </Game>
