@@ -5,11 +5,10 @@ import { GridBulkRequest } from "@/app/api/grid-bulk/route";
 import { Dispatch, SetStateAction } from "react";
 import { GridBulkResult } from "@/app/api/grid-bulk/utils";
 import Image from "next/image";
-// import { motion, AnimatePresence } from "framer-motion";
-import { toasterStyle } from "@/app/app";
 import { RefetchType } from "../use-game-state";
 import { ActionType } from "@/lib/types/game";
 import { toast } from "sonner";
+import { toasterStyle } from "@/lib/toast";
 
 export const useGridBulkOperations = ({
   setGridBulkResult,

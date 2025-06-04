@@ -33,8 +33,7 @@ import {
   UserHasCollectible,
 } from "@prisma/client";
 import { useInitializeMode } from "@/hooks/game-actions/use-initialize-mode";
-import { toasterStyle } from "@/app/app";
-// import { validMode } from "@/lib/validators/mode";
+import { toasterStyle } from "@/lib/toast";
 
 // Update the OverlayType to be more flexible with parameters
 export type OverlayConfig =
@@ -277,7 +276,16 @@ export function GameProvider({
             position: "bottom-left",
             style: toasterStyle,
             duration: 40000,
-            icon: "🧺",
+            icon:
+              operation.action === ActionType.Harvest
+                ? "🧺"
+                : operation.action === ActionType.Plant
+                ? "🌱"
+                : operation.action === ActionType.ApplyPerk
+                ? "🧪"
+                : operation.action === ActionType.Fertilize
+                ? "💨"
+                : "⏳",
           }
         )
       );
