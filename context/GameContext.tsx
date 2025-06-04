@@ -23,7 +23,7 @@ import { UserItem } from "@/hooks/use-user-items";
 import { GridBulkRequest } from "@/app/api/grid-bulk/route";
 import { useGridBulkOperations } from "@/hooks/game-actions/use-grid-bulk-operations";
 import { GridBulkResult } from "@/app/api/grid-bulk/utils";
-import toast from "react-hot-toast";
+import { toast } from "sonner";
 import { useClaimReward } from "@/hooks/game-actions/use-claim-reward";
 import { useUpdateUserStreaks } from "@/hooks/use-user-streaks";
 import {
@@ -33,7 +33,7 @@ import {
   UserHasCollectible,
 } from "@prisma/client";
 import { useInitializeMode } from "@/hooks/game-actions/use-initialize-mode";
-// import { validMode } from "@/lib/validators/mode";
+import { toasterStyle } from "@/lib/toast";
 
 // Update the OverlayType to be more flexible with parameters
 export type OverlayConfig =
@@ -237,7 +237,7 @@ export function GameProvider({
   const [gridBulkResult, setGridBulkResult] = useState<
     GridBulkResult | undefined
   >();
-  const [toastIds, setToastIds] = useState<Map<string, string>>(new Map());
+  const [toastIds, setToastIds] = useState<Map<string, number>>(new Map());
   const [newGoldCropsFound, setNewGoldCropsFound] = useState<string[]>([]);
 
   const { mutate: updateUserStreaks } = useUpdateUserStreaks({
@@ -261,23 +261,40 @@ export function GameProvider({
     let toastId = toastIds.get(operation.action);
 
     if (!toastId) {
-      toastId = toast.loading(
-        operation.action === ActionType.Harvest
-          ? "Harvesting..."
-          : operation.action === ActionType.Plant
-          ? "Planting..."
-          : operation.action === ActionType.ApplyPerk
-          ? "Boosting..."
-          : operation.action === ActionType.Fertilize
-          ? "Fertilizing..."
-          : "Processing..."
+      toastId = Number(
+        toast(
+          operation.action === ActionType.Harvest
+            ? "Harvesting..."
+            : operation.action === ActionType.Plant
+            ? "Planting..."
+            : operation.action === ActionType.ApplyPerk
+            ? "Boosting..."
+            : operation.action === ActionType.Fertilize
+            ? "Fertilizing..."
+            : "Processing...",
+          {
+            position: "bottom-left",
+            style: toasterStyle,
+            duration: 40000,
+            icon:
+              operation.action === ActionType.Harvest
+                ? "🧺"
+                : operation.action === ActionType.Plant
+                ? "🌱"
+                : operation.action === ActionType.ApplyPerk
+                ? "🧪"
+                : operation.action === ActionType.Fertilize
+                ? "💨"
+                : "⏳",
+          }
+        )
       );
       setToastIds((prev) => new Map(prev).set(operation.action, toastId!));
     }
 
     if (gridBulkOperations) {
       if (operation.action !== gridBulkOperations.action) {
-        sendGridBulkOperations({ gridBulkOperations, toastId: toastId || "" });
+        sendGridBulkOperations({ gridBulkOperations, toastId });
         setGridBulkOperations(operation);
       } else {
         setGridBulkOperations((prev) => {
@@ -300,7 +317,8 @@ export function GameProvider({
       }
       debounceTimeoutRef.current = setTimeout(() => {
         const toastId = toastIds.get(gridBulkOperations.action);
-        sendGridBulkOperations({ gridBulkOperations, toastId: toastId || "" });
+        console.log("sending grid bulk with toastId:", toastId, typeof toastId);
+        sendGridBulkOperations({ gridBulkOperations, toastId });
         setGridBulkOperations(undefined);
         setToastIds((prev) => {
           const newMap = new Map(prev);

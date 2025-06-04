@@ -1,9 +1,6 @@
-import { NextRequest, NextResponse, userAgent } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { Mode, QuestStatus, QuestType } from "@/lib/types/game";
 import { getUserHasQuests } from "@/lib/prisma/queries";
-import { Geo } from "@vercel/functions";
-import { geolocation, ipAddress } from "@vercel/functions";
-import { UserAgent } from "@/lib/types/user-agent";
 
 export async function GET(
   request: NextRequest,
@@ -11,27 +8,6 @@ export async function GET(
 ) {
   try {
     const { fid: stringFid } = await params; // keep this await
-    let ip: string | undefined = undefined;
-    let geolocationDetails: Geo | null = null;
-    let userAgentDetails: UserAgent | null = null;
-    try {
-      userAgentDetails = userAgent(request);
-      ip = ipAddress(request);
-      geolocationDetails = geolocation(request);
-    } catch (error) {
-      console.error("Error getting geolocation:", error);
-    }
-    console.log(
-      "/api/users/[fid]/quests",
-      "fid",
-      stringFid,
-      "ip",
-      ip,
-      "userAgent",
-      JSON.stringify(userAgentDetails),
-      "geolocation",
-      JSON.stringify(geolocationDetails)
-    );
     const fid = parseInt(stringFid);
     if (isNaN(fid)) {
       return NextResponse.json({ error: "Invalid FID" }, { status: 400 });

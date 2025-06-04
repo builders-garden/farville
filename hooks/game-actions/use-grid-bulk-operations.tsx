@@ -4,12 +4,11 @@ import { useApiMutation } from "@/hooks/use-api-mutation";
 import { GridBulkRequest } from "@/app/api/grid-bulk/route";
 import { Dispatch, SetStateAction } from "react";
 import { GridBulkResult } from "@/app/api/grid-bulk/utils";
-import toast from "react-hot-toast";
 import Image from "next/image";
-import { motion, AnimatePresence } from "framer-motion";
-import { toasterStyle } from "@/app/app";
 import { RefetchType } from "../use-game-state";
 import { ActionType } from "@/lib/types/game";
+import { toast } from "sonner";
+import { toasterStyle } from "@/lib/toast";
 
 export const useGridBulkOperations = ({
   setGridBulkResult,
@@ -28,7 +27,7 @@ export const useGridBulkOperations = ({
       toastId,
     }: {
       gridBulkOperations: GridBulkRequest;
-      toastId: string;
+      toastId: number | undefined;
     }) => gridBulkOperations,
     onMutate: ({}) => {},
     onSuccess: (
@@ -78,23 +77,13 @@ export const useGridBulkOperations = ({
                 );
               })
             : null;
-          toast.custom(
-            <AnimatePresence>
-              <motion.div
-                className="flex flex-col align-start"
-                style={toasterStyle}
-                initial={{ opacity: 1, y: 0 }}
-                animate={{ opacity: 0, y: -20 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ delay: 3, duration: 0.5 }}
-              >
-                {cropMessages}
-              </motion.div>
-            </AnimatePresence>,
-            {
-              id: toastId,
-            }
-          );
+          toast(() => (cropMessages ? <div>{cropMessages}</div> : <div />), {
+            id: toastId,
+            position: "bottom-left",
+            style: toasterStyle,
+            icon: null,
+            duration: 6000,
+          });
           setGridBulkResult(data.data);
         } else {
           toast.error("Operation failed!", { id: toastId });

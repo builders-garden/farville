@@ -124,7 +124,8 @@ export const plantBulk = async (
       cropType,
       plantedAt: new Date(),
       harvestAt: new Date(Date.now() + seedGrowthTime),
-    }))
+    })),
+    ActionType.Plant
   )) as number;
   Logger.logTest(
     `/api/grid-bulk user ${fid} action plant step: '4. update grid cells in db' date ${new Date()}`
@@ -237,7 +238,8 @@ export const harvestBulk = async (
       isReadyToHarvest: false,
       harvestAt: null,
       speedBoostedAt: null,
-    }))
+    })),
+    ActionType.Harvest
   );
   Logger.logTest(
     `/api/grid-bulk user ${fid} action harvest step: '4. update grid cells in db' date ${new Date()}`
@@ -524,7 +526,8 @@ export const perkBulk = async (
 
   const updatedCellsCounter = (await updateGridCellsBulk(
     fid,
-    perkableCells
+    perkableCells,
+    ActionType.ApplyPerk
   )) as number;
 
   // track with posthog
@@ -596,7 +599,8 @@ export const fertilizeBulk = async (
 
   const updatedCellsCounter = (await updateGridCellsBulk(
     fid,
-    perkableCells
+    perkableCells,
+    ActionType.Fertilize
   )) as number;
 
   if (updatedCellsCounter > 0) {

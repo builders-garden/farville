@@ -1,4 +1,4 @@
-import { Mode } from "@/lib/types/game";
+import { ActionType, Mode } from "@/lib/types/game";
 import { prisma } from "../client";
 import { UserGridCell } from "@prisma/client";
 
@@ -25,11 +25,37 @@ export const getUserGridCells = async (
 
 export const updateGridCellsBulk = async (
   fid: number,
-  cells: UserGridCell[]
+  cells: UserGridCell[],
+  action: ActionType
 ) => {
   if (cells.length === 0) return [];
 
-  // destructure used fields
+  if (action === ActionType.ApplyPerk) {
+    // Update each cell individually in a transaction, using its own values
+    const updates = cells.map((cell) =>
+      prisma.userGridCell.update({
+        where: {
+          fid_x_y_mode: {
+            fid,
+            x: cell.x,
+            y: cell.y,
+            mode: cell.mode,
+          },
+        },
+        data: {
+          cropType: cell.cropType,
+          plantedAt: cell.plantedAt,
+          harvestAt: cell.harvestAt,
+          speedBoostedAt: cell.speedBoostedAt,
+          isReadyToHarvest: cell.isReadyToHarvest,
+        },
+      })
+    );
+    const results = await prisma.$transaction(updates);
+    return results.length;
+  }
+
+  // For other actions, use the bulk update approach (all cells get the same values from cells[0])
   const { cropType, plantedAt, harvestAt, speedBoostedAt, isReadyToHarvest } =
     cells[0];
 
