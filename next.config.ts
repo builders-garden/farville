@@ -19,6 +19,7 @@ const nextConfig: NextConfig = {
         hostname: "**",
       },
     ],
+    unoptimized: true, // disables caching and optimization
   },
   logging: {
     fetches: {
