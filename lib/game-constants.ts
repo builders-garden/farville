@@ -1153,3 +1153,23 @@ export const FP_AMOUNT: Record<number, number> = {
   49: 112,
   50: 113,
 };
+
+export const DAYS_OF_WEEK = {
+  SUNDAY: 0,
+  MONDAY: 1,
+  TUESDAY: 2,
+  WEDNESDAY: 3,
+  THURSDAY: 4,
+  FRIDAY: 5,
+  SATURDAY: 6,
+};
+
+// Farmers Power Time configuration
+export const FP_TIME = {
+  START_DAY: DAYS_OF_WEEK.FRIDAY,
+  START_HOUR: 8,
+  START_MINUTE: 52,
+  END_DAY: DAYS_OF_WEEK.SATURDAY,
+  END_HOUR: 8,
+  END_MINUTE: 52,
+};
