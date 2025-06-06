@@ -19,17 +19,12 @@ const requestSchema = z.object({
     .positive("Collectible ID must be a positive integer"),
 });
 
-export async function POST(
-  request: Request,
-  { params }: { params: { inference_id: string } }
-) {
+export async function POST(request: Request) {
   try {
-    const [body, resolvedParams] = await Promise.all([
-      request.json(),
-      Promise.resolve(params),
-    ]);
+    const url = new URL(request.url);
+    const inferenceId = url.pathname.split("/").pop();
+    const body = await request.json();
     const parsedBody = requestSchema.parse(body);
-
     const { fid, collectibleId } = parsedBody;
 
     // check that the user has the collectible
@@ -47,8 +42,6 @@ export async function POST(
         { status: 400 }
       );
     }
-
-    const inferenceId = resolvedParams.inference_id;
 
     const titlesResponse = await axios<TitlesResponse>({
       url: `${TITLES_BASE_URL}/api/v1/inference/text-to-image/${inferenceId}`,
