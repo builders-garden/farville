@@ -4,7 +4,10 @@ import { TITLES_BASE_URL } from "../../utils";
 import { env } from "@/lib/env";
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { updateUserCollectible } from "@/lib/prisma/queries";
+import {
+  getUserCollectibleByCollectibleId,
+  updateUserCollectible,
+} from "@/lib/prisma/queries";
 import { CollectibleStatus } from "@/lib/types/game";
 import { UserHasCollectible } from "@prisma/client";
 
@@ -28,6 +31,22 @@ export async function POST(
     const parsedBody = requestSchema.parse(body);
 
     const { fid, collectibleId } = parsedBody;
+
+    // check that the user has the collectible
+    const userCollectible = await getUserCollectibleByCollectibleId(
+      fid,
+      collectibleId
+    );
+
+    if (
+      !userCollectible ||
+      userCollectible.status !== CollectibleStatus.Pending
+    ) {
+      return NextResponse.json(
+        { error: "Invalid collectible or not in the correct state" },
+        { status: 400 }
+      );
+    }
 
     const inferenceId = resolvedParams.inference_id;
 

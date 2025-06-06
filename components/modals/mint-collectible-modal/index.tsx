@@ -153,30 +153,13 @@ export default function MintCollectibleModal({
     handleUpdateStateCollectibles,
   });
 
-  // Step 2 (new): get image from Titles API
+  // Step 2-3: get image from Titles API and poll for inference status
   const { textToImage, getTitlesImage } = useTitlesImage({
     setIsLoading,
     setTitlesInferenceId,
     inferenceId: titlesInferenceId || undefined,
     handleUpdateStateCollectibles,
   });
-
-  // Step 2: Generate midjourney image
-  // const { mutate: generateMidjourneyImage } = useGenerateMidjourneyImage({
-  //   setMidjourneyTaskId,
-  //   setIsLoading,
-  //   handleUpdateStateCollectibles,
-  //   setErrorMessage,
-  // });
-
-  // // Step 3: Get midjourney image
-  // const { mutate: getMidjourneyImage } = useGetMidjourneyImage({
-  //   setMidjourneyImageUrl,
-  //   setMidjourneyImageUrls,
-  //   setIsLoading,
-  //   handleUpdateStateCollectibles,
-  //   setErrorOnGeneration,
-  // });
 
   // // Step 4: On confirm selection, upload to pinata
   const { mutate: uploadPinata } = usePinata({
@@ -756,6 +739,7 @@ export default function MintCollectibleModal({
                       alt={`User Pfp Generation`}
                       className="rounded-lg [animation:rotate_20s_linear_infinite] 
          [filter:drop-shadow(0_0_10px_rgba(234,179,8,0.5))]"
+                      style={{ objectFit: "cover" }}
                     />
                   </motion.div>
                 </>

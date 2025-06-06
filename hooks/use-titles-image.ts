@@ -20,7 +20,6 @@ export const useTitlesImage = ({
     url: () => `/api/titles/text-to-image`,
     body: ({
       prompt,
-      fid,
       collectibleId,
     }: {
       prompt: string;
@@ -28,7 +27,6 @@ export const useTitlesImage = ({
       collectibleId: number;
     }) => ({
       prompt,
-      fid,
       collectibleId,
     }),
     method: "POST",

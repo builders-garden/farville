@@ -8,12 +8,14 @@ import {
   PFP_NFT_IMAGE_SYSTEM_PROMPT_1,
   PFP_NFT_IMAGE_SYSTEM_PROMPT_2,
 } from "@/lib/constants";
-import { updateUserCollectible } from "@/lib/prisma/queries";
+import {
+  getUserCollectibleByCollectibleId,
+  updateUserCollectible,
+} from "@/lib/prisma/queries";
 import { CollectibleStatus } from "@/lib/types/game";
 
 const requestSchema = z.object({
   prompt: z.string().min(1, "Prompt is required"),
-  fid: z.number().int().positive("Fid must be a positive integer"),
   collectibleId: z
     .number()
     .int()
@@ -22,11 +24,32 @@ const requestSchema = z.object({
 
 export async function POST(request: Request) {
   try {
+    const fid = request.headers.get("x-user-fid");
+
+    if (!fid) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const body = await request.json();
-    console.log("Received request body:", body);
     const parsedBody = requestSchema.parse(body);
 
-    const { prompt, fid, collectibleId } = parsedBody;
+    const { prompt, collectibleId } = parsedBody;
+
+    // before sending to Titles check that the image request is valid
+    const userHasCollectible = await getUserCollectibleByCollectibleId(
+      Number(fid),
+      collectibleId
+    );
+
+    if (
+      !userHasCollectible ||
+      userHasCollectible.status !== CollectibleStatus.Description
+    ) {
+      return NextResponse.json(
+        { error: "Invalid collectible or not in the correct state" },
+        { status: 400 }
+      );
+    }
 
     const titlesResult = await axios<TitlesResponse>({
       url: `${TITLES_BASE_URL}/api/v1/inference/text-to-image`,
@@ -42,11 +65,8 @@ export async function POST(request: Request) {
       },
     });
 
-    console.log("Titles API response:", titlesResult.data);
-
     // save taskId to db
-    console.log("saving inference id to db", titlesResult.data.inference_id);
-    const res = await updateUserCollectible(fid, collectibleId, {
+    const res = await updateUserCollectible(Number(fid), collectibleId, {
       status: CollectibleStatus.Pending,
       generatedTaskId: titlesResult.data.inference_id,
     });
