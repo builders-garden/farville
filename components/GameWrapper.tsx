@@ -232,69 +232,89 @@ export default function GameWrapper() {
     socket.on("new-donation", (data) => {
       console.log(`${JSON.stringify(data)} 🎉`);
       console.log("AMOUNT TO ADD", data.ptAmount);
-      updateUserCommunityBoosterStatus({
-        pointsToAdd: data.ptAmount,
-        stage: data.stage,
-        combo: data.combo,
-        lastDonation: new Date(data.createdAt),
-      });
-      // Also refresh community donations to ensure they're up to date
-      refetch.communityDonations();
-      if (data.fid !== state.user.fid) {
-        const pfpSize = 28;
-        sonnerToast.custom(
-          (t) => (
-            <div
-              className="flex items-center gap-2 cursor-pointer"
-              onClick={() => {
-                sonnerToast.dismiss(t);
-                setShowFarmersPower(true);
-              }}
-            >
-              {data.pfp && (
-                <Image
-                  src={data.pfp}
-                  alt={data.username}
-                  width={pfpSize}
-                  height={pfpSize}
-                  className={`rounded-full object-cover w-[${pfpSize}px] h-[${pfpSize}px] border-2 border-[#ffdc68]`}
-                />
-              )}
-              <span>{data.username}</span>
-              <span className="text-[#ffdc68]">+{data.ptAmount} FP</span>
-            </div>
-          ),
-          {
-            duration: 10000,
-            position: "top-right",
-          }
-        );
-        playSound("newDonation");
+
+      // Only update the status and show notifications if Farmers Power is active
+      if (state.isFarmersPowerOn) {
+        updateUserCommunityBoosterStatus({
+          pointsToAdd: data.ptAmount,
+          stage: data.stage,
+          combo: data.combo,
+          lastDonation: new Date(data.createdAt),
+        });
+
+        // Also refresh community donations to ensure they're up to date
+        refetch.communityDonations();
+
+        if (data.fid !== state.user.fid) {
+          const pfpSize = 28;
+          sonnerToast.custom(
+            (t) => (
+              <div
+                className="flex items-center gap-2 cursor-pointer"
+                onClick={() => {
+                  sonnerToast.dismiss(t);
+                  setShowFarmersPower(true);
+                }}
+              >
+                {data.pfp && (
+                  <Image
+                    src={data.pfp}
+                    alt={data.username}
+                    width={pfpSize}
+                    height={pfpSize}
+                    className={`rounded-full object-cover w-[${pfpSize}px] h-[${pfpSize}px] border-2 border-[#ffdc68]`}
+                  />
+                )}
+                <span>{data.username}</span>
+                <span className="text-[#ffdc68]">+{data.ptAmount} FP</span>
+              </div>
+            ),
+            {
+              duration: 10000,
+              position: "top-right",
+            }
+          );
+          playSound("newDonation");
+        }
+      } else {
+        console.log("Farmers Power is not active, ignoring donation event");
       }
     });
 
     socket.on("harvest-all", (data) => {
       console.log(`${JSON.stringify(data)}`);
-      updateUserCommunityBoosterStatus({
-        pointsToAdd: 0, // We already add the points on "new-donation"
-        stage: data.newStage,
-        combo: data.combo,
-      });
-      makeAllGridCellsHarvestable();
-      sonnerToast(`x${data.newStage} boost reached!`, {
-        description: `It's harvest time!`,
-        duration: 10000,
-        position: "top-right",
-      });
+
+      if (state.isFarmersPowerOn) {
+        updateUserCommunityBoosterStatus({
+          pointsToAdd: 0, // We already add the points on "new-donation"
+          stage: data.newStage,
+          combo: data.combo,
+        });
+        makeAllGridCellsHarvestable();
+        sonnerToast(`x${data.newStage} boost reached!`, {
+          description: `It's harvest time!`,
+          duration: 10000,
+          position: "top-right",
+        });
+      } else {
+        console.log("Farmers Power is not active, ignoring harvest-all event");
+      }
     });
 
     socket.on("new-decrement", (data) => {
       console.log(`${JSON.stringify(data)}`);
-      updateUserCommunityBoosterStatus({
-        pointsToAdd: 0, // TODO: WE ALREADY SHOW THIS THROGH THE TIMER - TO BE CHECKED
-        stage: data.stage,
-        combo: data.combo,
-      });
+
+      if (state.isFarmersPowerOn) {
+        updateUserCommunityBoosterStatus({
+          pointsToAdd: 0, // TODO: WE ALREADY SHOW THIS THROGH THE TIMER - TO BE CHECKED
+          stage: data.stage,
+          combo: data.combo,
+        });
+      } else {
+        console.log(
+          "Farmers Power is not active, ignoring new-decrement event"
+        );
+      }
     });
 
     return () => {
@@ -310,10 +330,13 @@ export default function GameWrapper() {
     refetch,
     playSound,
     setShowFarmersPower,
+    state.isFarmersPowerOn,
   ]);
 
   useEffect(() => {
-    if (!state.communityBoosterStatus?.lastDonation) return;
+    // Don't show notifications if Farmers Power is not active
+    if (!state.communityBoosterStatus?.lastDonation || !state.isFarmersPowerOn)
+      return;
 
     // Create a ref to track if notification has been shown for this cycle
     const notificationShownRef = { current: false };
@@ -334,8 +357,8 @@ export default function GameWrapper() {
     const notificationDelay = timeUntilNextDecrease - 3 * 60 * 1000; // 3 minutes = 180000ms
 
     const showNotification = async () => {
-      // Check if notification has already been shown for this cycle
-      if (notificationShownRef.current) return;
+      // Check if notification has already been shown for this cycle or if Farmers Power is no longer active
+      if (notificationShownRef.current || !state.isFarmersPowerOn) return;
 
       notificationShownRef.current = true;
 
@@ -347,6 +370,9 @@ export default function GameWrapper() {
 
       // wait 10 seconds before showing the notification - this is to avoid issue with loading
       await new Promise((resolve) => setTimeout(resolve, 10000));
+
+      // Check again that Farmers Power is still active before showing notification
+      if (!state.isFarmersPowerOn) return;
 
       sonnerToast.custom(
         (t) => (
@@ -381,6 +407,7 @@ export default function GameWrapper() {
     state.communityBoosterStatus?.lastDonation,
     state.communityBoosterStatus?.combo,
     setShowFarmersPower,
+    state.isFarmersPowerOn,
   ]);
 
   // useEffect(() => {
@@ -459,7 +486,10 @@ export default function GameWrapper() {
 
       {activeOverlay?.type === "requests" ? (
         <AnimatePresence>
-          <RequestModal onClose={handleOverlayComplete} id={activeOverlay.id} />
+          <RequestModal
+            onClose={handleOverlayComplete}
+            id={activeOverlay.id}
+          />
         </AnimatePresence>
       ) : activeOverlay?.type === "voucher" ? (
         <AnimatePresence>
@@ -483,7 +513,10 @@ export default function GameWrapper() {
           className="flex flex-col h-[100dvh] w-full max-w-md mx-auto overflow-hidden"
         >
           <Header />
-          <div className="flex-1 relative min-h-0" id="game-grid">
+          <div
+            className="flex-1 relative min-h-0"
+            id="game-grid"
+          >
             <GameGrid />
           </div>
           <Toolbar safeAreaInsets={safeAreaInsets} />

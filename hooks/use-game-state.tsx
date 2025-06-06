@@ -406,7 +406,7 @@ export const useGameState = (mode: Mode) => {
 
       const isBeforeEndTime =
         hourOfDay < FP_TIME.END_HOUR ||
-        (hourOfDay === FP_TIME.END_HOUR && minuteOfHour <= FP_TIME.END_MINUTE);
+        (hourOfDay === FP_TIME.END_HOUR && minuteOfHour < FP_TIME.END_MINUTE);
 
       const isTransitionHour =
         (isStartDay && hourOfDay === FP_TIME.START_HOUR) ||
@@ -417,10 +417,62 @@ export const useGameState = (mode: Mode) => {
       const isFarmersPowerOn =
         (isStartDay && isPastStartTime) || (isEndDay && isBeforeEndTime);
 
-      setState((prevState) => ({
-        ...prevState!,
+      // Check if Farmers Power state has changed
+      const wasFarmersPowerOn = state?.isFarmersPowerOn;
+
+      console.log({
         isFarmersPowerOn,
-      }));
+        wasFarmersPowerOn,
+        recheckEveryTenSeconds,
+        now: now.toISOString(),
+        dayOfWeek,
+        hourOfDay,
+        minuteOfHour,
+      });
+
+      setState((prevState) => {
+        // If Farmers Power just turned off, reset community booster status
+        if (wasFarmersPowerOn && !isFarmersPowerOn && prevState) {
+          return {
+            ...prevState,
+            isFarmersPowerOn,
+            // Reset community booster values if FP is inactive
+            communityBoosterStatus: prevState.communityBoosterStatus
+              ? {
+                  ...prevState.communityBoosterStatus,
+                  points: 0,
+                  stage: 1,
+                  combo: 1,
+                }
+              : null,
+          };
+        }
+
+        // If Farmers Power just turned on, update the lastDonation to now
+        // This ensures timer starts with full duration when FP is activated
+        if (!wasFarmersPowerOn && isFarmersPowerOn && prevState) {
+          const now = new Date();
+          return {
+            ...prevState,
+            isFarmersPowerOn,
+            // Set lastDonation to now if communityBoosterStatus exists
+            communityBoosterStatus: prevState.communityBoosterStatus
+              ? {
+                  ...prevState.communityBoosterStatus,
+                  points: 0,
+                  stage: 1,
+                  combo: 1,
+                  lastDonation: now,
+                }
+              : null,
+          };
+        }
+
+        return {
+          ...prevState!,
+          isFarmersPowerOn,
+        };
+      });
 
       return recheckEveryTenSeconds;
     };
@@ -433,7 +485,7 @@ export const useGameState = (mode: Mode) => {
       const interval = setInterval(checkFarmersPower, 10000);
       return () => clearInterval(interval);
     }
-  }, []); // Runs once on mount
+  }, [state?.isFarmersPowerOn]); // Include isFarmersPowerOn as a dependency
 
   useEffect(() => {
     updateUserState();
