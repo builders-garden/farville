@@ -9,8 +9,6 @@ import sdk from "@farcaster/frame-sdk";
 
 import { useGame } from "@/context/GameContext";
 import { useGetImageDescription } from "@/hooks/use-get-image-description";
-import { useGenerateMidjourneyImage } from "@/hooks/use-generate-midjourney-image";
-import { useGetMidjourneyImage } from "@/hooks/use-get-midjourney-image";
 import { usePinata } from "@/hooks/use-pinata";
 import { useGetBackendSignature } from "@/hooks/use-get-backend-signature";
 import { useUpdateMintPfpUser } from "@/hooks/use-update-mint-pfp-user";
@@ -47,6 +45,7 @@ import { SelectMintPrice } from "./select-mint-price";
 import { env } from "@/lib/env";
 import { useUpdateUserAvatar } from "@/hooks/use-update-user-avatar";
 import { UserHasCollectible } from "@prisma/client";
+import { useTitlesImage } from "@/hooks/use-titles-image";
 
 interface MintCollectibleModalProps {
   onCancel: () => void;
@@ -63,15 +62,13 @@ export default function MintCollectibleModal({
   const [pfpDescriptionLoading, setPfpDescriptionLoading] = useState(false);
 
   // Step 2
-  const [midjourneyTaskId, setMidjourneyTaskId] = useState<string | null>(null);
-
-  // Step 3
-  const [midjourneyImageUrl, setMidjourneyImageUrl] = useState<string | null>(
+  const [titlesInferenceId, setTitlesInferenceId] = useState<string | null>(
     null
   );
-  const [midjourneyImageUrls, setMidjourneyImageUrls] = useState<
-    string[] | null
-  >(null);
+
+  // Step 3
+  const [titlesImageUrl, setTitlesImageUrl] = useState<string | null>(null);
+  const [titlesImageUrls, setTitlesImageUrls] = useState<string[] | null>(null);
   const [selectedImageUrl, setSelectedImageUrl] = useState<string | null>(null);
   const [confirmedSelection, setConfirmedSelection] = useState(false);
 
@@ -104,10 +101,6 @@ export default function MintCollectibleModal({
     () => state.collectibles.find((collectible) => collectible.id === 1),
     [state.collectibles]
   );
-
-  const isPaused =
-    selectedCollectible?.userHasCollectible?.status !==
-    CollectibleStatus.Minted;
 
   const userPfp = useMemo(() => {
     let avatarUrl = state.user.avatarUrl;
@@ -160,24 +153,15 @@ export default function MintCollectibleModal({
     handleUpdateStateCollectibles,
   });
 
-  // Step 2: Generate midjourney image
-  const { mutate: generateMidjourneyImage } = useGenerateMidjourneyImage({
-    setMidjourneyTaskId,
+  // Step 2-3: get image from Titles API and poll for inference status
+  const { textToImage, getTitlesImage } = useTitlesImage({
     setIsLoading,
+    setTitlesInferenceId,
+    inferenceId: titlesInferenceId || undefined,
     handleUpdateStateCollectibles,
-    setErrorMessage,
   });
 
-  // Step 3: Get midjourney image
-  const { mutate: getMidjourneyImage } = useGetMidjourneyImage({
-    setMidjourneyImageUrl,
-    setMidjourneyImageUrls,
-    setIsLoading,
-    handleUpdateStateCollectibles,
-    setErrorOnGeneration,
-  });
-
-  // Step 4: On confirm selection, upload to pinata
+  // // Step 4: On confirm selection, upload to pinata
   const { mutate: uploadPinata } = usePinata({
     setPinataMetadataCID,
     setConfirmedSelection,
@@ -292,12 +276,12 @@ export default function MintCollectibleModal({
           const generatedImageUrls = selectedCollectible.userHasCollectible
             .generatedImageUrls as string[];
           if (generatedImageUrls && generatedImageUrls.length > 0) {
-            setMidjourneyImageUrl(generatedImageUrls[0]);
-            setMidjourneyImageUrls(generatedImageUrls.slice(1));
+            setTitlesImageUrl(generatedImageUrls[0]);
+            setTitlesImageUrls(generatedImageUrls);
           }
         case CollectibleStatus.Pending:
           if (selectedCollectible.userHasCollectible.generatedTaskId) {
-            setMidjourneyTaskId(
+            setTitlesInferenceId(
               selectedCollectible.userHasCollectible.generatedTaskId
             );
           }
@@ -338,10 +322,10 @@ export default function MintCollectibleModal({
       selectedCollectible.userHasCollectible &&
       (status === CollectibleStatus.Pending ||
         status === CollectibleStatus.Description) &&
-      !midjourneyTaskId &&
+      !titlesInferenceId &&
       !errorOnGeneration // Add this condition
     );
-  }, [midjourneyTaskId, selectedCollectible, errorOnGeneration]);
+  }, [selectedCollectible, titlesInferenceId, errorOnGeneration]);
 
   // Check if user can generate image
   const canGenerate = useMemo(() => {
@@ -362,10 +346,10 @@ export default function MintCollectibleModal({
     return (
       selectedCollectible.userHasCollectible.status ===
         CollectibleStatus.Pending &&
-      midjourneyTaskId &&
-      !midjourneyImageUrl
+      titlesInferenceId &&
+      !titlesImageUrl
     );
-  }, [midjourneyImageUrl, midjourneyTaskId, selectedCollectible]);
+  }, [selectedCollectible, titlesImageUrl, titlesInferenceId]);
 
   // Check if confirm selection button should be shown
   const showConfirmSelectionButton = useMemo(() => {
@@ -375,10 +359,14 @@ export default function MintCollectibleModal({
     return (
       address &&
       (status === CollectibleStatus.Generated ||
-        status === CollectibleStatus.Uploaded) &&
-      midjourneyImageUrl
+        status === CollectibleStatus.Uploaded)
+      // && midjourneyImageUrl
     );
-  }, [address, midjourneyImageUrl, selectedCollectible]);
+  }, [
+    address,
+    // midjourneyImageUrl,
+    selectedCollectible,
+  ]);
 
   // Check if user can mint
   const canMint = useMemo(() => {
@@ -389,18 +377,18 @@ export default function MintCollectibleModal({
       address &&
       (status === CollectibleStatus.Generated ||
         status === CollectibleStatus.Uploaded) &&
-      midjourneyImageUrl &&
+      titlesImageUrl &&
       selectedImageUrl &&
       !finalTxHash &&
       !paymentStarted &&
       !paymentCompleted
     );
   }, [
-    address,
     selectedCollectible,
-    midjourneyImageUrl,
-    finalTxHash,
+    address,
+    titlesImageUrl,
     selectedImageUrl,
+    finalTxHash,
     paymentStarted,
     paymentCompleted,
   ]);
@@ -448,12 +436,13 @@ export default function MintCollectibleModal({
   const handleGenerate = async () => {
     if (
       (errorOnGeneration && pfpDescription) ||
-      (canGenerate && pfpDescription && !midjourneyTaskId)
+      (canGenerate && pfpDescription)
+      // && !midjourneyTaskId
     ) {
       setIsLoading(true);
       setErrorOnGeneration(false);
       try {
-        generateMidjourneyImage({
+        textToImage({
           prompt: pfpDescription,
           fid: state.user.fid,
           collectibleId: selectedCollectible?.id ?? 1,
@@ -471,18 +460,17 @@ export default function MintCollectibleModal({
     const status = selectedCollectible.userHasCollectible.status;
     if (
       status === CollectibleStatus.Pending &&
-      midjourneyTaskId &&
-      !midjourneyImageUrl &&
+      titlesInferenceId &&
+      !titlesImageUrl &&
       !errorOnGeneration // Added this condition
     ) {
       // periodically check if midjourney image is ready
       const retryInterval = 5000;
       const interval = setInterval(() => {
         try {
-          getMidjourneyImage({
-            taskId: midjourneyTaskId,
-            fid: state.user.fid.toString(),
-            collectibleId: selectedCollectible.id.toString(),
+          getTitlesImage({
+            fid: state.user.fid,
+            collectibleId: selectedCollectible.id,
           });
         } catch (error) {
           console.error(error);
@@ -492,12 +480,12 @@ export default function MintCollectibleModal({
       return () => clearInterval(interval);
     }
   }, [
-    midjourneyTaskId,
     selectedCollectible,
-    midjourneyImageUrl,
-    getMidjourneyImage,
     state.user.fid,
-    errorOnGeneration, // Added to dependencies array
+    errorOnGeneration,
+    titlesInferenceId,
+    titlesImageUrl,
+    getTitlesImage,
   ]);
 
   // Step 4. handle confirm selection
@@ -531,7 +519,7 @@ export default function MintCollectibleModal({
         setErrorMessage("Failed to get backend signature. Please try again.");
       }
     }
-  }, [address, pinataMetadataCID, state.user.fid]);
+  }, [address, getBackendSignature, pinataMetadataCID, state.user.fid]);
 
   // Step 6. mint handle daimo events: PaymentStarted, PaymentCompleted, PaymentBounced
   const handlePaymentStarted = (e: PaymentStartedEvent) => {
@@ -703,9 +691,9 @@ export default function MintCollectibleModal({
                   confirmedSelection={confirmedSelection}
                   isAlone={true}
                 />
-              ) : midjourneyImageUrls ? (
+              ) : titlesImageUrls ? (
                 <div className="grid grid-cols-2 gap-x-4 gap-y-2">
-                  {midjourneyImageUrls?.map((imageUrl) => (
+                  {titlesImageUrls?.map((imageUrl) => (
                     <CustomImage
                       key={imageUrl}
                       imageUrl={imageUrl}
@@ -751,6 +739,7 @@ export default function MintCollectibleModal({
                       alt={`User Pfp Generation`}
                       className="rounded-lg [animation:rotate_20s_linear_infinite] 
          [filter:drop-shadow(0_0_10px_rgba(234,179,8,0.5))]"
+                      style={{ objectFit: "cover" }}
                     />
                   </motion.div>
                 </>
@@ -781,53 +770,42 @@ export default function MintCollectibleModal({
               </>
             )}
 
-            {isPaused && (
-              <span className="bg-red-500 text-red-200 text-[10px] p-2 rounded mt-2">
-                We paused the Farville Avatars claimings. It will be available
-                again shortly!
+            {errorMessage && (
+              <span className="bg-red-500 text-red-200 text-[8px] p-2 rounded">
+                {errorMessage}
               </span>
             )}
-
-            {!isPaused && (
-              <>
-                {errorMessage && (
-                  <span className="bg-red-500 text-red-200 text-[8px] p-2 rounded">
-                    {errorMessage}
-                  </span>
-                )}
-                {errorMessage === "API Error: 500" &&
-                selectedCollectible?.userHasCollectible?.status ===
-                  CollectibleStatus.Description ? (
-                  <Button
-                    onClick={() => {
-                      setErrorMessage(null);
-                      setPfpDescription(null);
-                      setIsLoading(true);
-                      getImageDescription({
-                        imageUrl: userPfp || "",
-                        fid: state.user.fid,
-                        collectibleId: selectedCollectible?.id ?? 1,
-                      });
-                    }}
-                    className="w-full py-1 px-2 text-sm bg-red-500/10 text-red-400 hover:bg-red-500/20 border border-red-400/30"
-                  >
-                    Retry
-                  </Button>
-                ) : null}
-                {!isFinalState &&
-                  address !== undefined &&
-                  !!tokenBalancesData &&
-                  (!hasEnoughEthBalance || !hasEnoughUSDBalance) && (
-                    <span className="bg-red-500 text-red-200 text-[8px] p-2 rounded">
-                      Insufficient {!hasEnoughEthBalance ? "ETH" : "USD"}{" "}
-                      balance to mint. Please add some{" "}
-                      {hasEnoughEthBalance ? "USD" : "ETH"} to your wallet.
-                    </span>
-                  )}
-              </>
-            )}
+            {errorMessage === "API Error: 500" &&
+            selectedCollectible?.userHasCollectible?.status ===
+              CollectibleStatus.Description ? (
+              <Button
+                onClick={() => {
+                  setErrorMessage(null);
+                  setPfpDescription(null);
+                  setIsLoading(true);
+                  getImageDescription({
+                    imageUrl: userPfp || "",
+                    fid: state.user.fid,
+                    collectibleId: selectedCollectible?.id ?? 1,
+                  });
+                }}
+                className="w-full py-1 px-2 text-sm bg-red-500/10 text-red-400 hover:bg-red-500/20 border border-red-400/30"
+              >
+                Retry
+              </Button>
+            ) : null}
+            {!isFinalState &&
+              address !== undefined &&
+              !!tokenBalancesData &&
+              (!hasEnoughEthBalance || !hasEnoughUSDBalance) && (
+                <span className="bg-red-500 text-red-200 text-[8px] p-2 rounded">
+                  Insufficient {!hasEnoughEthBalance ? "ETH" : "USD"} balance to
+                  mint. Please add some {hasEnoughEthBalance ? "USD" : "ETH"} to
+                  your wallet.
+                </span>
+              )}
           </div>
-          {!isPaused && !errorOnDescription && (
+          {!errorOnDescription && (
             <div className="flex flex-col gap-3 mt-0">
               {/* PAY PRICE */}
               {showSelectMintPrice ? (
