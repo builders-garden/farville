@@ -20,20 +20,12 @@ import {
 } from "@/lib/game-constants";
 import { useCommunityDonation } from "@/hooks/use-community-donation";
 import { TopDonors } from "./top-donors";
-
-// Helper function to get day name from DAYS_OF_WEEK
-const getDayName = (day: number): string => {
-  const dayNames = [
-    "Sunday",
-    "Monday",
-    "Tuesday",
-    "Wednesday",
-    "Thursday",
-    "Friday",
-    "Saturday",
-  ];
-  return dayNames[day];
-};
+import { Countdown } from "@/components/Countdown";
+import {
+  formatEndTimeDisplay,
+  getDayName,
+  getNextFarmersPowerStartDate,
+} from "./utils";
 
 interface PowerTabProps {
   setActiveTab: (tab: "power" | "leaderboard") => void;
@@ -289,11 +281,11 @@ export const PowerTab = ({
         <div className="w-full bg-[#5C4121]/50 rounded-xl p-4 border border-yellow-400/20">
           <div className="flex flex-col gap-4">
             {!isFarmersPowerOn ? (
-              <div className="bg-[#5C4121]/50 rounded-lg p-4 text-center mb-2">
+              <div className="text-center mb-2">
                 <h3 className="text-yellow-500 font-medium mb-2">
                   Farmers Power is currently inactive
                 </h3>
-                <p className="text-yellow-500/80 text-sm">
+                <p className="text-white/70 text-xs mb-4">
                   Come back between{" "}
                   {new Date(
                     0,
@@ -318,9 +310,25 @@ export const PowerTab = ({
                   })}{" "}
                   on {getDayName(FP_TIME.END_DAY)} UTC.
                 </p>
+
+                {/* Countdown to next Farmers Power start */}
+                <div className="mt-2">
+                  <Countdown
+                    date={getNextFarmersPowerStartDate()}
+                    text="Starts in:"
+                    border={true}
+                  />
+                </div>
               </div>
             ) : (
               <>
+                {/* Active until label */}
+                <div className="bg-[#4A341A] rounded-lg p-2 mb-3 flex items-center justify-center">
+                  <span className="text-yellow-400/90 text-[9px] font-medium">
+                    Active until {formatEndTimeDisplay()}
+                  </span>
+                </div>
+
                 <PowerStats
                   currentFP={currentFP}
                   fpChangeAnimation={fpChangeAnimation}
