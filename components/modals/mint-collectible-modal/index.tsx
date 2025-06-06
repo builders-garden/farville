@@ -38,6 +38,7 @@ import {
   cn,
   getPfpNftTxCalldata,
   mintedCollectibleFlexCardComposeCastUrl,
+  replacePinataWithDweb,
 } from "@/lib/utils";
 import { CollectibleStatus } from "@/lib/types/game";
 import { CustomImage } from "./custom-image";
@@ -261,7 +262,9 @@ export default function MintCollectibleModal({
         case CollectibleStatus.Uploaded:
           if (selectedCollectible.userHasCollectible.mintedMetadataUrl) {
             setSelectedImageUrl(
-              selectedCollectible.userHasCollectible.mintedImageUrl
+              replacePinataWithDweb(
+                selectedCollectible.userHasCollectible.mintedImageUrl!
+              )
             );
             const metadataCID =
               selectedCollectible.userHasCollectible.mintedMetadataUrl.split(
