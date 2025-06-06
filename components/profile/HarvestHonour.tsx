@@ -139,12 +139,9 @@ export const HarvestHonour = ({
             <Image
               src="/images/special/gold.png"
               alt="Gold ingot"
-              width={32}
-              height={32}
+              width={36}
+              height={36}
               priority
-              style={{
-                width: "auto",
-              }}
             />
             <p className="text-[8px] font-bold text-[#FFD700]">
               {goldCropChancePercentage * 100}%
