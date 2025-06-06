@@ -2,7 +2,6 @@ import { sdk } from "@farcaster/frame-sdk";
 import { useFrameContext } from "@/context/FrameContext";
 import { useTestMode } from "@/context/TestContext";
 import { useCallback, useEffect, useState } from "react";
-import { MESSAGE_EXPIRATION_TIME } from "@/lib/contracts/constants";
 import posthog from "posthog-js";
 import { useAuthCheck } from "./use-auth-check";
 
@@ -24,29 +23,18 @@ export const useSignIn = (isInMaintenance: boolean) => {
         throw new Error(`SDK initialization failed: ${contextError}`);
       }
 
-      let result;
+      let token;
       if (isTestMode) {
-        result = {
-          signature: "0x123",
-          message: "<3 from test mode",
-          fid: null,
-          referrerFid: null,
-        };
+        token = "<3 from test mode";
       } else {
         if (!context) throw new Error("Farville must be played from Warpcast!");
         if (!context.user?.fid)
           throw new Error(
             "No FID found. Please make sure you're logged into Warpcast."
           );
-
-        result = await sdk.actions.signIn({
-          nonce: Math.random().toString(36).substring(2),
-          notBefore: new Date().toISOString(),
-          expirationTime: new Date(
-            Date.now() + MESSAGE_EXPIRATION_TIME
-          ).toISOString(),
-        });
-        console.log("farcaster signIn result", result);
+        const { token: farcasterToken } = await sdk.experimental.quickAuth();
+        if (!farcasterToken) throw new Error("Sign in failed");
+        token = farcasterToken;
       }
 
       const referrerFid =
@@ -60,9 +48,7 @@ export const useSignIn = (isInMaintenance: boolean) => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          signature: result?.signature,
-          message: result?.message,
-          fid: context?.user?.fid,
+          token,
           referrerFid,
         }),
       });
