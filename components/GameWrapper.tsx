@@ -345,6 +345,11 @@ export default function GameWrapper() {
     const now = Date.now();
     const timeSinceLastDonation = now - lastDonation.getTime();
 
+    // if last donation was more than 24 hours ago, we don't show the notification
+    if (timeSinceLastDonation > 24 * 60 * 60 * 1000) {
+      return;
+    }
+
     // Calculate time elapsed since the last donation in the current cycle
     const timeElapsedInCurrentCycle =
       timeSinceLastDonation % FP_DECREASE_DELAY_MS;

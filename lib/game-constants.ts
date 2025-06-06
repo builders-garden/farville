@@ -1098,7 +1098,7 @@ export const POWER_STAGES = [
 ];
 
 export const MAX_COMBO = 10;
-export const FP_DECREASE_DELAY_MS = 20 * 60 * 1000; // 10 minutes in milliseconds
+export const FP_DECREASE_DELAY_MS = 10 * 60 * 1000; // 10 minutes in milliseconds
 export const DECAY_INTERVAL = 600; // 600 minutes (10 hours) for power stage decay
 
 export const FP_AMOUNT: Record<number, number> = {
@@ -1166,10 +1166,10 @@ export const DAYS_OF_WEEK = {
 
 // Farmers Power Time configuration
 export const FP_TIME = {
-  START_DAY: DAYS_OF_WEEK.FRIDAY,
-  START_HOUR: 8,
-  START_MINUTE: 52,
-  END_DAY: DAYS_OF_WEEK.SATURDAY,
-  END_HOUR: 8,
-  END_MINUTE: 52,
+  START_DAY: DAYS_OF_WEEK.TUESDAY,
+  START_HOUR: 16,
+  START_MINUTE: 0,
+  END_DAY: DAYS_OF_WEEK.WEDNESDAY,
+  END_HOUR: 16,
+  END_MINUTE: 0,
 };

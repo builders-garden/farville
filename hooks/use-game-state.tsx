@@ -280,16 +280,33 @@ export const useGameState = (mode: Mode) => {
           ? new Date(communityDonations[0].createdAt)
           : new Date(userCommunityBoosterStatus.donation.createdAt);
 
-      setState((prevState) => ({
-        ...prevState!,
-        communityBoosterStatus: {
-          stage: userCommunityBoosterStatus.stage,
-          points: userCommunityBoosterStatus.points,
-          combo: userCommunityBoosterStatus.combo,
-          mode: userCommunityBoosterStatus.mode as Mode,
-          lastDonation: lastDonationDate,
-        },
-      }));
+      setState((prevState) => {
+        // If Farmers Power is not active, reset the values
+        if (!prevState?.isFarmersPowerOn) {
+          return {
+            ...prevState!,
+            communityBoosterStatus: {
+              stage: 1,
+              points: 0,
+              combo: 1,
+              mode: userCommunityBoosterStatus.mode as Mode,
+              lastDonation: lastDonationDate,
+            },
+          };
+        }
+
+        // Otherwise use the values from API
+        return {
+          ...prevState!,
+          communityBoosterStatus: {
+            stage: userCommunityBoosterStatus.stage,
+            points: userCommunityBoosterStatus.points,
+            combo: userCommunityBoosterStatus.combo,
+            mode: userCommunityBoosterStatus.mode as Mode,
+            lastDonation: lastDonationDate,
+          },
+        };
+      });
     }
   }, [userCommunityBoosterStatus, communityDonations]);
 
@@ -419,16 +436,6 @@ export const useGameState = (mode: Mode) => {
 
       // Check if Farmers Power state has changed
       const wasFarmersPowerOn = state?.isFarmersPowerOn;
-
-      console.log({
-        isFarmersPowerOn,
-        wasFarmersPowerOn,
-        recheckEveryTenSeconds,
-        now: now.toISOString(),
-        dayOfWeek,
-        hourOfDay,
-        minuteOfHour,
-      });
 
       setState((prevState) => {
         // If Farmers Power just turned off, reset community booster status
