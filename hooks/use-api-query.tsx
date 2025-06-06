@@ -14,7 +14,7 @@ interface UseApiQueryOptions<TData, TBody = unknown>
 export const useApiQuery = <TData, TBody = unknown>(
   options: UseApiQueryOptions<TData, TBody>
 ) => {
-  const { 
+  const {
     url,
     method = "GET",
     body,
@@ -27,11 +27,12 @@ export const useApiQuery = <TData, TBody = unknown>(
     staleTime,
     ...queryOptions,
     queryFn: async () => {
-      const token = localStorage.getItem("token");
       const response = await fetch(url, {
         method,
+        ...(isProtected && {
+          credentials: "include",
+        }),
         headers: {
-          ...(isProtected && { Authorization: `Bearer ${token}` }),
           ...(body && { "Content-Type": "application/json" }),
         },
         ...(body && { body: JSON.stringify(body) }),

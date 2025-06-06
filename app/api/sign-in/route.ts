@@ -122,6 +122,17 @@ export const POST = async (req: NextRequest) => {
 
   const response = NextResponse.json({ success: true, token: jwtToken });
 
+  // Set the auth cookie with the JWT token
+  response.cookies.set({
+    name: "auth_token",
+    value: jwtToken,
+    httpOnly: true,
+    secure: true,
+    sameSite: "none",
+    maxAge: 7 * 24 * 60 * 60, // 7 days
+    path: "/",
+  });
+
   trackEvent(fid, "sign_in", {
     fid,
   });

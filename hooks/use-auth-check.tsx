@@ -6,6 +6,6 @@ export const useAuthCheck = (isInMaintenance: boolean) => {
     url: "/api/auth/check",
     isProtected: true,
     retry: false,
-    enabled: !!localStorage.getItem("token") && !isInMaintenance,
+    enabled: !isInMaintenance,
   });
 };

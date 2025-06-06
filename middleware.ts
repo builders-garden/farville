@@ -22,12 +22,8 @@ export default async function middleware(req: NextRequest) {
     return NextResponse.next();
   }
 
-  // Get token from Authorization header
-  const authHeader = req.headers.get("Authorization");
-
-  const token = authHeader?.startsWith("Bearer ")
-    ? authHeader.substring(7) // Remove "Bearer " prefix
-    : null;
+  // Get token from auth_token cookie
+  const token = req.cookies.get("auth_token")?.value;
 
   if (!token) {
     return NextResponse.json(

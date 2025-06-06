@@ -11,9 +11,6 @@ export const useSignIn = (isInMaintenance: boolean) => {
   const [isSignedIn, setIsSignedIn] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [token, setToken] = useState<string>(
-    localStorage.getItem("token") || ""
-  );
   const { error: authCheckError } = useAuthCheck(isInMaintenance);
 
   const signIn = useCallback(async () => {
@@ -79,17 +76,13 @@ export const useSignIn = (isInMaintenance: boolean) => {
     try {
       setIsLoading(true);
       setError(null);
-      console.log("handleSignIn", token, isSignedIn, authCheckError);
-      if (token && !isSignedIn && !authCheckError) {
+      console.log("handleSignIn", isSignedIn, authCheckError);
+      if (!isSignedIn && !authCheckError) {
         setIsSignedIn(true);
       } else {
         const data = await signIn();
-        console.log(
-          "handleSignIn sign-in response",
-          JSON.stringify(data, null, 2)
-        );
-        localStorage.setItem("token", data.token);
-        setToken(data.token);
+        if (!data.success) throw new Error(data.error ?? "Sign in failed");
+        if (!data.token) throw new Error("Sign in failed");
       }
       setIsSignedIn(true);
       posthog.identify(context?.user?.fid.toString());
@@ -101,7 +94,7 @@ export const useSignIn = (isInMaintenance: boolean) => {
     } finally {
       setIsLoading(false);
     }
-  }, [authCheckError, context?.user?.fid, isSignedIn, signIn, token]);
+  }, [authCheckError, context?.user?.fid, isSignedIn, signIn]);
 
   useEffect(() => {
     if (
@@ -128,8 +121,6 @@ export const useSignIn = (isInMaintenance: boolean) => {
   useEffect(() => {
     if (!isInMaintenance && authCheckError) {
       console.log("useEffect authCheckError", authCheckError);
-      localStorage.removeItem("token");
-      setToken("");
       setIsSignedIn(false);
     }
   }, [isInMaintenance, authCheckError]);
