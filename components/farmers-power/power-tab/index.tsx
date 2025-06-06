@@ -16,9 +16,24 @@ import {
   FP_DECREASE_DELAY_MS,
   DECAY_INTERVAL,
   POWER_STAGES,
+  FP_TIME,
 } from "@/lib/game-constants";
 import { useCommunityDonation } from "@/hooks/use-community-donation";
 import { TopDonors } from "./top-donors";
+
+// Helper function to get day name from DAYS_OF_WEEK
+const getDayName = (day: number): string => {
+  const dayNames = [
+    "Sunday",
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+  ];
+  return dayNames[day];
+};
 
 interface PowerTabProps {
   setActiveTab: (tab: "power" | "leaderboard") => void;
@@ -44,11 +59,11 @@ export const PowerTab = ({
   const { switchChain } = useSwitchChain();
   const [donationId, setDonationId] = useState<string | null>(null);
 
-  const { isFarcasterManiaOn } = state;
+  const { isFarcasterManiaOn, isFarmersPowerOn } = state;
 
-  // State for power mechanics
+  // State for power mechanics - use 0 for points if Farmers Power is not active
   const [currentFP, setCurrentFP] = useState<number>(
-    state.communityBoosterStatus?.points || 0
+    isFarmersPowerOn ? state.communityBoosterStatus?.points || 0 : 0
   );
 
   const { data: userContributions } = useCommunityDonation(
@@ -57,37 +72,47 @@ export const PowerTab = ({
     state.user.fid
   );
 
-  // Effect to update currentFP when communityBoosterStatus changes
+  // Effect to update currentFP when communityBoosterStatus changes or farmers power state changes
   useEffect(() => {
-    if (state.communityBoosterStatus?.points !== undefined) {
+    if (!isFarmersPowerOn) {
+      // Reset to 0 when Farmers Power is inactive
+      setCurrentFP(0);
+    } else if (state.communityBoosterStatus?.points !== undefined) {
       setCurrentFP(state.communityBoosterStatus.points);
     }
-  }, [state.communityBoosterStatus?.points]);
+  }, [state.communityBoosterStatus?.points, isFarmersPowerOn]);
 
   const [fpChangeAnimation, setFpChangeAnimation] = useState<
     "increase" | "decrease" | null
   >(null);
   const previousFP = useRef(currentFP);
   const [powerCombo, setPowerCombo] = useState<number>(
-    state.communityBoosterStatus?.combo || 0
+    isFarmersPowerOn ? state.communityBoosterStatus?.combo || 1 : 1
   );
 
   // Use communityDonations from GameState instead of direct API call
   const lastContributions = state.communityDonations;
 
   const [lastDonationTime, setLastDonationTime] = useState<Date | null>(
-    state.communityBoosterStatus?.lastDonation || null
+    isFarmersPowerOn ? state.communityBoosterStatus?.lastDonation || null : null
   );
 
   useEffect(() => {
-    if (lastContributions && lastContributions.length > 0) {
+    if (!isFarmersPowerOn) {
+      // Clear last donation time when Farmers Power is inactive
+      setLastDonationTime(null);
+    } else if (lastContributions && lastContributions.length > 0) {
       const lastDonation = lastContributions[0];
       setLastDonationTime(new Date(lastDonation.createdAt));
     } else if (state.communityBoosterStatus?.lastDonation) {
       // Use lastDonation from communityBoosterStatus as fallback
       setLastDonationTime(state.communityBoosterStatus.lastDonation);
     }
-  }, [lastContributions, state.communityBoosterStatus?.lastDonation]);
+  }, [
+    lastContributions,
+    state.communityBoosterStatus?.lastDonation,
+    isFarmersPowerOn,
+  ]);
 
   useEffect(() => {
     // Update powerCombo from state when it changes
@@ -263,25 +288,60 @@ export const PowerTab = ({
         {/* Current Status Section */}
         <div className="w-full bg-[#5C4121]/50 rounded-xl p-4 border border-yellow-400/20">
           <div className="flex flex-col gap-4">
-            <PowerStats
-              currentFP={currentFP}
-              fpChangeAnimation={fpChangeAnimation}
-              nextStageInfo={nextStageInfo}
-              currentStageInfo={currentStageInfo}
-              isFarcasterManiaOn={isFarcasterManiaOn}
-            />
+            {!isFarmersPowerOn ? (
+              <div className="bg-[#5C4121]/50 rounded-lg p-4 text-center mb-2">
+                <h3 className="text-yellow-500 font-medium mb-2">
+                  Farmers Power is currently inactive
+                </h3>
+                <p className="text-yellow-500/80 text-sm">
+                  Come back between{" "}
+                  {new Date(
+                    0,
+                    0,
+                    0,
+                    FP_TIME.START_HOUR,
+                    FP_TIME.START_MINUTE
+                  ).toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}{" "}
+                  on {getDayName(FP_TIME.START_DAY)} and{" "}
+                  {new Date(
+                    0,
+                    0,
+                    0,
+                    FP_TIME.END_HOUR,
+                    FP_TIME.END_MINUTE
+                  ).toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}{" "}
+                  on {getDayName(FP_TIME.END_DAY)} UTC.
+                </p>
+              </div>
+            ) : (
+              <>
+                <PowerStats
+                  currentFP={currentFP}
+                  fpChangeAnimation={fpChangeAnimation}
+                  nextStageInfo={nextStageInfo}
+                  currentStageInfo={currentStageInfo}
+                  isFarcasterManiaOn={isFarcasterManiaOn}
+                />
 
-            {currentFP > 0 && (
-              <PowerTimer
-                powerCombo={powerCombo}
-                lastDonationTime={lastDonationTime}
-                COMBO_WINDOW={FP_DECREASE_DELAY_MS}
-                setPowerCombo={setPowerCombo}
-                setCurrentFP={setCurrentFP}
-                lastTimerReset={lastTimerReset}
-                setLastTimerReset={setLastTimerReset}
-                isFarcasterManiaOn={isFarcasterManiaOn}
-              />
+                {currentFP > 0 && (
+                  <PowerTimer
+                    powerCombo={powerCombo}
+                    lastDonationTime={lastDonationTime}
+                    COMBO_WINDOW={FP_DECREASE_DELAY_MS}
+                    setPowerCombo={setPowerCombo}
+                    setCurrentFP={setCurrentFP}
+                    lastTimerReset={lastTimerReset}
+                    setLastTimerReset={setLastTimerReset}
+                    isFarcasterManiaOn={isFarcasterManiaOn}
+                  />
+                )}
+              </>
             )}
 
             <Button
@@ -290,8 +350,9 @@ export const PowerTab = ({
                 isFarcasterManiaOn
                   ? "text-white bg-[#a590e3] hover:bg-[#a590e3]/80 hover:text-white/80"
                   : "text-[#5C4121] bg-yellow-500 hover:bg-yellow-500/80 hover:text-[#5C4121]"
-              }`}
-              onClick={() => setShowContributeDialog(true)}
+              } ${!isFarmersPowerOn ? "opacity-50 cursor-not-allowed" : ""}`}
+              onClick={() => isFarmersPowerOn && setShowContributeDialog(true)}
+              disabled={!isFarmersPowerOn}
             >
               Contribute Power {true ? "⚡" : "🌟"}
             </Button>
