@@ -879,3 +879,12 @@ export const userIsNotAdminAndIsNotProduction = (fid: number): boolean => {
     !ADMIN_FIDS.includes(Number(fid))
   );
 };
+
+export const replacePinataWithDweb = (url: string): string => {
+  if (!url) return url;
+  if (url.startsWith("https://gateway.pinata.cloud/ipfs/")) {
+    url = url.replace("https://gateway.pinata.cloud/ipfs/", "https://");
+    url += ".ipfs.dweb.link";
+  }
+  return url;
+};

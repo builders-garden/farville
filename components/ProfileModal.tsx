@@ -15,6 +15,7 @@ import {
   calculateHarvestAchievements,
   goldCropFlexCardComposeCastUrl,
   mintedCollectibleFlexCardComposeCastUrl,
+  replacePinataWithDweb,
 } from "@/lib/utils";
 import sdk from "@farcaster/frame-sdk";
 import { useOtherUserProfile } from "@/hooks/use-other-user-profile";
@@ -396,6 +397,8 @@ export default function ProfileModal({
                                   )?.[0] ?? collectible.imageUrl
                                 : collectible.imageUrl
                               : collectible.imageUrl;
+                          const imageUrl =
+                            replacePinataWithDweb(collectibleImage);
                           return collectible ? (
                             <div
                               key={index}
@@ -424,7 +427,7 @@ export default function ProfileModal({
                               ) : null}
 
                               <Image
-                                src={collectibleImage}
+                                src={imageUrl}
                                 alt={collectible.name || "Collectible"}
                                 fill
                                 className={`rounded-md transition-transform duration-300 group-hover:scale-110 ${
@@ -732,6 +735,8 @@ export default function ProfileModal({
                                         )?.[0] ?? collectible.imageUrl
                                       : collectible.imageUrl
                                     : collectible.imageUrl;
+                                const imageUrl =
+                                  replacePinataWithDweb(collectibleImage);
                                 return status &&
                                   status === CollectibleStatus.Minted ? (
                                   <div
@@ -742,13 +747,13 @@ export default function ProfileModal({
                                         name: "Farville Avatar",
                                         title: `Farville Farmer #${userData.user?.fid}`,
                                         description: `This is the custom Farville avatar of ${userData.user?.username}.`,
-                                        badgeUrl: collectibleImage,
+                                        badgeUrl: imageUrl,
                                         type: "collectible",
                                       });
                                     }}
                                   >
                                     <Image
-                                      src={collectibleImage}
+                                      src={imageUrl}
                                       alt={collectible.name || "Collectible"}
                                       fill
                                       className={`rounded-md transition-transform duration-300 ${
