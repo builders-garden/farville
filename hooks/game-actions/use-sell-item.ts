@@ -1,5 +1,6 @@
 import { useApiMutation } from "@/hooks/use-api-mutation";
 import { useAudio } from "@/context/AudioContext";
+import sdk from "@farcaster/frame-sdk";
 
 export const useSellItem = ({
   isActionInProgress,
@@ -21,14 +22,16 @@ export const useSellItem = ({
       action: "sell",
       ...variables,
     }),
-    onMutate: () => {
+    onMutate: async () => {
       if (isActionInProgress) return;
       setIsActionInProgress(true);
+      await sdk.haptics.impactOccurred("light");
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       refetchUser();
       refetchUserItems();
       playSound("coins");
+      await sdk.haptics.notificationOccurred("success");
     },
     onSettled: () => {
       setIsActionInProgress(false);

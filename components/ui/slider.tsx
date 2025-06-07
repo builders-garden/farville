@@ -4,6 +4,7 @@ import * as React from "react";
 import * as SliderPrimitive from "@radix-ui/react-slider";
 
 import { cn } from "@/lib/utils";
+import sdk from "@farcaster/frame-sdk";
 
 interface SliderProps
   extends React.ComponentPropsWithoutRef<typeof SliderPrimitive.Root> {
@@ -13,13 +14,20 @@ interface SliderProps
 const Slider = React.forwardRef<
   React.ElementRef<typeof SliderPrimitive.Root>,
   SliderProps
->(({ className, variant = "default", ...props }, ref) => (
+>(({ className, variant = "default", onValueChange, ...props }, ref) => (
   <SliderPrimitive.Root
     ref={ref}
     className={cn(
       "relative flex w-full touch-none select-none items-center",
       className
     )}
+    onValueChange={async (value) => {
+      // Call the original onValueChange if provided
+      onValueChange?.(value);
+
+      // Trigger haptic feedback
+      await sdk.haptics.impactOccurred("light");
+    }}
     {...props}
   >
     <SliderPrimitive.Track

@@ -20,6 +20,7 @@ import { ActionType, CropType, PerkType, SeedType } from "../lib/types/game";
 import CropSprite from "./CropSprite";
 import Confetti from "./animations/Confetti";
 import FloatingNumber from "./animations/FloatingNumber";
+import sdk from "@farcaster/frame-sdk";
 
 interface GridCellProps {
   cell: UserGridCell;
@@ -349,6 +350,8 @@ export default function GridCell({ cell }: GridCellProps) {
       ) {
         playSound("fertilize");
 
+        await sdk.haptics.impactOccurred("light");
+
         addGridOperation({
           action: ActionType.ApplyPerk,
           itemSlug: selectedPerk.item.slug as SeedType | PerkType,
@@ -400,6 +403,8 @@ export default function GridCell({ cell }: GridCellProps) {
       ) {
         playSound("fertilize");
 
+        await sdk.haptics.impactOccurred("light");
+
         addGridOperation({
           action: ActionType.Fertilize,
           cells: [{ x: cell.x, y: cell.y }],
@@ -446,6 +451,8 @@ export default function GridCell({ cell }: GridCellProps) {
       if (cell.plantedAt && isReadyToHarvest) {
         if (cellRef.current) {
           playSound("harvest");
+
+          await sdk.haptics.impactOccurred("light");
 
           addGridOperation({
             action: ActionType.Harvest,
@@ -497,6 +504,8 @@ export default function GridCell({ cell }: GridCellProps) {
         if (!item) {
           throw new Error("Seed item not found");
         }
+
+        await sdk.haptics.impactOccurred("light");
 
         addGridOperation({
           action: ActionType.Plant,
