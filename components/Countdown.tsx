@@ -12,7 +12,8 @@ export const Countdown = ({ date, text, border = false }: CountdownProps) => {
     days: number;
     hours: number;
     minutes: number;
-  }>({ days: 0, hours: 0, minutes: 0 });
+    seconds: number;
+  }>({ days: 0, hours: 0, minutes: 0, seconds: 0 });
 
   useEffect(() => {
     const calculateTimeBasedOnDate = () => {
@@ -40,15 +41,20 @@ export const Countdown = ({ date, text, border = false }: CountdownProps) => {
         (diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
       );
       const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((diffMs % (1000 * 60)) / 1000);
 
-      setTimeBasedOnDate({ days, hours, minutes });
+      setTimeBasedOnDate({ days, hours, minutes, seconds });
     };
 
     calculateTimeBasedOnDate();
-    const intervalId = setInterval(calculateTimeBasedOnDate, 1000);
+    // Update more frequently when showing seconds (less than a day remaining)
+    const intervalId = setInterval(calculateTimeBasedOnDate, 500);
 
     return () => clearInterval(intervalId);
   }, [date]);
+
+  // Determine if we should show days or hours based on remaining time
+  const showDays = timeBasedOnDate.days > 0;
 
   return (
     <div
@@ -58,22 +64,44 @@ export const Countdown = ({ date, text, border = false }: CountdownProps) => {
     >
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1 xs:gap-2 text-white/80">
-          <Clock size={16} className="text-[#FFB938]" />
+          <Clock
+            size={16}
+            className="text-[#FFB938]"
+          />
           <span className="text-[8px] xs:text-[9px]">{text}</span>
         </div>
         <div className="flex gap-1 text-white font-bold">
-          <div className="bg-[#6d4c2c] px-1.5 xs:px-2 py-0.5 xs:py-1 rounded-md text-[10px] xs:text-xs min-w-[25px] xs:min-w-[30px] flex items-center justify-center">
-            {timeBasedOnDate.days.toString().padStart(2, "0")}
-            <span className="text-[#FFB938]">d</span>
-          </div>
-          <div className="bg-[#6d4c2c] px-1.5 xs:px-2 py-0.5 xs:py-1 rounded-md text-[10px] xs:text-xs min-w-[25px] xs:min-w-[30px] flex items-center justify-center">
-            {timeBasedOnDate.hours.toString().padStart(2, "0")}
-            <span className="text-[#FFB938]">h</span>
-          </div>
-          <div className="bg-[#6d4c2c] px-1.5 xs:px-2 py-0.5 xs:py-1 rounded-md text-[10px] xs:text-xs min-w-[25px] xs:min-w-[30px] flex items-center justify-center">
-            {timeBasedOnDate.minutes.toString().padStart(2, "0")}
-            <span className="text-[#FFB938]">m</span>
-          </div>
+          {showDays ? (
+            <>
+              <div className="bg-[#6d4c2c] px-1.5 xs:px-2 py-0.5 xs:py-1 rounded-md text-[10px] xs:text-xs min-w-[25px] xs:min-w-[30px] flex items-center justify-center">
+                {timeBasedOnDate.days.toString().padStart(2, "0")}
+                <span className="text-[#FFB938]">d</span>
+              </div>
+              <div className="bg-[#6d4c2c] px-1.5 xs:px-2 py-0.5 xs:py-1 rounded-md text-[10px] xs:text-xs min-w-[25px] xs:min-w-[30px] flex items-center justify-center">
+                {timeBasedOnDate.hours.toString().padStart(2, "0")}
+                <span className="text-[#FFB938]">h</span>
+              </div>
+              <div className="bg-[#6d4c2c] px-1.5 xs:px-2 py-0.5 xs:py-1 rounded-md text-[10px] xs:text-xs min-w-[25px] xs:min-w-[30px] flex items-center justify-center">
+                {timeBasedOnDate.minutes.toString().padStart(2, "0")}
+                <span className="text-[#FFB938]">m</span>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="bg-[#6d4c2c] px-1.5 xs:px-2 py-0.5 xs:py-1 rounded-md text-[10px] xs:text-xs min-w-[25px] xs:min-w-[30px] flex items-center justify-center">
+                {timeBasedOnDate.hours.toString().padStart(2, "0")}
+                <span className="text-[#FFB938]">h</span>
+              </div>
+              <div className="bg-[#6d4c2c] px-1.5 xs:px-2 py-0.5 xs:py-1 rounded-md text-[10px] xs:text-xs min-w-[25px] xs:min-w-[30px] flex items-center justify-center">
+                {timeBasedOnDate.minutes.toString().padStart(2, "0")}
+                <span className="text-[#FFB938]">m</span>
+              </div>
+              <div className="bg-[#6d4c2c] px-1.5 xs:px-2 py-0.5 xs:py-1 rounded-md text-[10px] xs:text-xs min-w-[25px] xs:min-w-[30px] flex items-center justify-center">
+                {timeBasedOnDate.seconds.toString().padStart(2, "0")}
+                <span className="text-[#FFB938]">s</span>
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>

@@ -24,7 +24,7 @@ export default function Game({
   const [isInMaintenance, setIsInMaintenance] = useState(true);
   const { isTestMode } = useTestMode();
 
-  // const monday = new Date("2025-05-26T18:30:00+02:00");
+  // const monday = new Date("2025-05-30T18:15:00+02:00");
   const monday = getThisWeekMonday();
   const maintenanceStart = new Date(monday.getTime() - 5 * 60 * 1000); // 5 minutes before
   // const maintenanceEnd = new Date(monday.getTime() + 30 * 60 * 1000); // 30 minutes after

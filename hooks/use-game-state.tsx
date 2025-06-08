@@ -10,7 +10,7 @@ import { useUserFrosts } from "./use-user-frosts";
 import { useUserHarvestedCrops } from "./use-user-harvested-crops";
 import { useWeeklyStats } from "./use-weekly-stats";
 import { useUserCollectibles } from "./use-user-collectibles";
-import { CROP_DATA } from "../lib/game-constants";
+import { CROP_DATA, FP_TIME } from "../lib/game-constants";
 import {
   UserHasQuestWithQuest,
   UserWithStatistic,
@@ -96,7 +96,8 @@ export interface GameState {
     lastDonation: Date;
   } | null;
   communityDonations: UserCommunityDonationEnhanced[];
-  isFarcasterManiaOn: boolean; // Add this line
+  isFarcasterManiaOn: boolean;
+  isFarmersPowerOn: boolean;
 }
 
 export const useGameState = (mode: Mode) => {
@@ -143,7 +144,8 @@ export const useGameState = (mode: Mode) => {
     userModes: [],
     communityBoosterStatus: null,
     communityDonations: [],
-    isFarcasterManiaOn: false, // Add this line
+    isFarcasterManiaOn: false,
+    isFarmersPowerOn: false,
   });
 
   const {
@@ -278,16 +280,33 @@ export const useGameState = (mode: Mode) => {
           ? new Date(communityDonations[0].createdAt)
           : new Date(userCommunityBoosterStatus.donation.createdAt);
 
-      setState((prevState) => ({
-        ...prevState!,
-        communityBoosterStatus: {
-          stage: userCommunityBoosterStatus.stage,
-          points: userCommunityBoosterStatus.points,
-          combo: userCommunityBoosterStatus.combo,
-          mode: userCommunityBoosterStatus.mode as Mode,
-          lastDonation: lastDonationDate,
-        },
-      }));
+      setState((prevState) => {
+        // If Farmers Power is not active, reset the values
+        if (!prevState?.isFarmersPowerOn) {
+          return {
+            ...prevState!,
+            communityBoosterStatus: {
+              stage: 1,
+              points: 0,
+              combo: 1,
+              mode: userCommunityBoosterStatus.mode as Mode,
+              lastDonation: lastDonationDate,
+            },
+          };
+        }
+
+        // Otherwise use the values from API
+        return {
+          ...prevState!,
+          communityBoosterStatus: {
+            stage: userCommunityBoosterStatus.stage,
+            points: userCommunityBoosterStatus.points,
+            combo: userCommunityBoosterStatus.combo,
+            mode: userCommunityBoosterStatus.mode as Mode,
+            lastDonation: lastDonationDate,
+          },
+        };
+      });
     }
   }, [userCommunityBoosterStatus, communityDonations]);
 
@@ -386,38 +405,94 @@ export const useGameState = (mode: Mode) => {
     }
   }, [userCollectibles]);
 
-  // Effect to determine if Farcaster Mania is active
+  // Effect to determine if Farmers Power is active
   useEffect(() => {
-    const checkFarcasterMania = () => {
+    const checkFarmersPower = () => {
       const now = new Date();
       const dayOfWeek = now.getUTCDay();
       const hourOfDay = now.getUTCHours();
+      const minuteOfHour = now.getUTCMinutes();
 
-      const isTuesdayOrWednesday = dayOfWeek === 2 || dayOfWeek === 3;
+      const isStartDay = dayOfWeek === FP_TIME.START_DAY;
+      const isEndDay = dayOfWeek === FP_TIME.END_DAY;
 
-      const recheckEveryTenSeconds = isTuesdayOrWednesday && hourOfDay === 16;
+      const isPastStartTime =
+        hourOfDay > FP_TIME.START_HOUR ||
+        (hourOfDay === FP_TIME.START_HOUR &&
+          minuteOfHour >= FP_TIME.START_MINUTE);
 
-      const isFarcasterManiaOn =
-        (dayOfWeek === 2 && hourOfDay >= 16) ||
-        (dayOfWeek === 3 && hourOfDay <= 16);
+      const isBeforeEndTime =
+        hourOfDay < FP_TIME.END_HOUR ||
+        (hourOfDay === FP_TIME.END_HOUR && minuteOfHour < FP_TIME.END_MINUTE);
 
-      setState((prevState) => ({
-        ...prevState!,
-        isFarcasterManiaOn,
-      }));
+      const isTransitionHour =
+        (isStartDay && hourOfDay === FP_TIME.START_HOUR) ||
+        (isEndDay && hourOfDay === FP_TIME.END_HOUR);
+
+      const recheckEveryTenSeconds = isTransitionHour;
+
+      const isFarmersPowerOn =
+        (isStartDay && isPastStartTime) || (isEndDay && isBeforeEndTime);
+
+      // Check if Farmers Power state has changed
+      const wasFarmersPowerOn = state?.isFarmersPowerOn;
+
+      setState((prevState) => {
+        // If Farmers Power just turned off, reset community booster status
+        if (wasFarmersPowerOn && !isFarmersPowerOn && prevState) {
+          return {
+            ...prevState,
+            isFarmersPowerOn,
+            // Reset community booster values if FP is inactive
+            communityBoosterStatus: prevState.communityBoosterStatus
+              ? {
+                  ...prevState.communityBoosterStatus,
+                  points: 0,
+                  stage: 1,
+                  combo: 1,
+                }
+              : null,
+          };
+        }
+
+        // If Farmers Power just turned on, update the lastDonation to now
+        // This ensures timer starts with full duration when FP is activated
+        if (!wasFarmersPowerOn && isFarmersPowerOn && prevState) {
+          const now = new Date();
+          return {
+            ...prevState,
+            isFarmersPowerOn,
+            // Set lastDonation to now if communityBoosterStatus exists
+            communityBoosterStatus: prevState.communityBoosterStatus
+              ? {
+                  ...prevState.communityBoosterStatus,
+                  points: 0,
+                  stage: 1,
+                  combo: 1,
+                  lastDonation: now,
+                }
+              : null,
+          };
+        }
+
+        return {
+          ...prevState!,
+          isFarmersPowerOn,
+        };
+      });
 
       return recheckEveryTenSeconds;
     };
 
     // Initial check and get initial recheck status
-    const shouldRecheck = checkFarcasterMania();
+    const shouldRecheck = checkFarmersPower();
 
     // Set up interval if needed
     if (shouldRecheck) {
-      const interval = setInterval(checkFarcasterMania, 10000);
+      const interval = setInterval(checkFarmersPower, 10000);
       return () => clearInterval(interval);
     }
-  }, []); // Runs once on mount
+  }, [state?.isFarmersPowerOn]); // Include isFarmersPowerOn as a dependency
 
   useEffect(() => {
     updateUserState();

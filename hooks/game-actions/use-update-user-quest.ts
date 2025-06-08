@@ -1,6 +1,7 @@
 import { Mode, QuestStatus } from "@/lib/types/game";
 import { useApiMutation } from "../use-api-mutation";
 import { useAudio } from "@/context/AudioContext";
+import sdk from "@farcaster/frame-sdk";
 
 type UpdateUserQuestVariables = {
   questId: number;
@@ -26,13 +27,16 @@ export const useUpdateUserQuest = ({
     onMutate: () => {
       if (isActionInProgress) return;
       setIsActionInProgress(true);
+      sdk.haptics.impactOccurred("light");
     },
-    onSuccess: (variables) => {
+    onSuccess: async (variables) => {
       if (variables.status === "claimed") {
         playSound("claimQuest");
+        await sdk.haptics.notificationOccurred("success");
       }
       if (variables.didLevelUp) {
         playSound("levelUp");
+        await sdk.haptics.notificationOccurred("success");
       }
     },
     onSettled: () => {

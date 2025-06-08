@@ -6,6 +6,7 @@ import {
 import { Clock } from "lucide-react";
 import { motion } from "framer-motion";
 import { useEffect, useState, useMemo, useCallback } from "react";
+import { useGame } from "@/context/GameContext";
 
 interface PowerTimerProps {
   powerCombo: number;
@@ -19,7 +20,10 @@ interface PowerTimerProps {
 }
 
 // Helper function to get conditional styling based on power combo
-const usePowerComboStyles = (powerCombo: number, isFarcasterManiaOn: boolean) => {
+const usePowerComboStyles = (
+  powerCombo: number,
+  isFarcasterManiaOn: boolean
+) => {
   return useMemo(
     () => ({
       text: isFarcasterManiaOn
@@ -53,16 +57,26 @@ export const PowerTimer = ({
   const [timerNow, setTimerNow] = useState(Date.now());
   const styles = usePowerComboStyles(powerCombo, isFarcasterManiaOn);
 
-  // Effect for updating timer display
+  // We also need to check isFarmersPowerOn, so we need to update the PowerTimer component to receive this prop
+  const { state } = useGame();
+  const isFarmersPowerOn = state?.isFarmersPowerOn;
+
+  // Effect for updating timer display - only if Farmers Power is active
   useEffect(() => {
+    // Don't run timer if Farmers Power is not active
+    if (!isFarmersPowerOn) return;
+
     const displayInterval = setInterval(() => {
       setTimerNow(Date.now());
     }, 16); // ~60fps update rate for smooth display
     return () => clearInterval(displayInterval);
-  }, []);
+  }, [isFarmersPowerOn]);
 
   // Helper function to handle timer expiration and reset
   const handleTimerExpiration = useCallback(() => {
+    // Don't process expiration if Farmers Power is not active
+    if (!isFarmersPowerOn) return;
+
     // Reset combo and decrease FP once
     if (powerCombo > 1) {
       setPowerCombo(1);
@@ -99,6 +113,7 @@ export const PowerTimer = ({
     }
   }, [
     COMBO_WINDOW,
+    isFarmersPowerOn,
     lastDonationTime,
     powerCombo,
     setCurrentFP,
@@ -108,8 +123,8 @@ export const PowerTimer = ({
 
   // Separate effect for checking window expiration and handling FP/combo decrease
   useEffect(() => {
-    // Only set up the interval if we have a valid lastTimerReset
-    if (!lastTimerReset) return;
+    // Don't set up timeout if Farmers Power is not active or no valid lastTimerReset
+    if (!isFarmersPowerOn || !lastTimerReset) return;
 
     const windowExpiryTime = lastTimerReset.getTime() + COMBO_WINDOW;
     const timeToNextExpiry = windowExpiryTime - Date.now();
@@ -127,6 +142,7 @@ export const PowerTimer = ({
   }, [
     COMBO_WINDOW,
     handleTimerExpiration,
+    isFarmersPowerOn,
     lastDonationTime,
     lastTimerReset,
     powerCombo,
@@ -268,43 +284,73 @@ const BurningFuse = ({
   COMBO_WINDOW: number;
   isFarcasterManiaOn: boolean;
 }) => {
+  // Access isFarmersPowerOn from game state
+  const { state } = useGame();
+  const isFarmersPowerOn = state?.isFarmersPowerOn;
+
   // Calculate remaining time in the current window
-  const timeElapsed = Date.now() - lastTimerReset.getTime();
-  const remainingTime = Math.max(0, COMBO_WINDOW - timeElapsed);
-  const remainingPercentage = (remainingTime / COMBO_WINDOW) * 98;
-  const isExpired = remainingTime <= 0;
+  const now = Date.now();
+  const resetTime = lastTimerReset ? lastTimerReset.getTime() : now;
+  const timeElapsed = now - resetTime;
+
+  // If Farmers Power is inactive, show full timer
+  // Otherwise calculate actual remaining time
+  const remainingTime = !isFarmersPowerOn
+    ? COMBO_WINDOW
+    : Math.max(0, COMBO_WINDOW - timeElapsed);
+
+  // Set percentage based on remaining time (full bar if inactive)
+  const remainingPercentage = !isFarmersPowerOn
+    ? 98
+    : (remainingTime / COMBO_WINDOW) * 98;
+  const isExpired = isFarmersPowerOn && remainingTime <= 0;
 
   return (
     <div className="relative">
       <div className="h-2 bg-[#2A1E12] rounded-full relative">
         <motion.div
-          key={lastTimerReset ? lastTimerReset.getTime() : "initial"}
-          className={`absolute left-0 top-0 h-full ${isFarcasterManiaOn ? "bg-gradient-to-r from-[#a590e3] via-[#c3b3f3] to-[#e0d6ff]" : "bg-gradient-to-r from-red-500 via-orange-500 to-yellow-500"}`}
+          key={`${lastTimerReset ? lastTimerReset.getTime() : "initial"}-${
+            isFarmersPowerOn ? "active" : "inactive"
+          }`}
+          className={`absolute left-0 top-0 h-full ${
+            isFarcasterManiaOn
+              ? "bg-gradient-to-r from-[#a590e3] via-[#c3b3f3] to-[#e0d6ff]"
+              : "bg-gradient-to-r from-red-500 via-orange-500 to-yellow-500"
+          }`}
           style={{
             width: `${remainingPercentage}%`,
           }}
+          initial={{
+            width: `${remainingPercentage}%`,
+          }}
           animate={{
-            width: "2%",
+            width: !isFarmersPowerOn ? `${remainingPercentage}%` : "2%",
           }}
           transition={{
-            duration: remainingTime / 1000,
+            duration: isFarmersPowerOn ? remainingTime / 1000 : 0,
             ease: "linear",
           }}
         >
           <div className="absolute right-[-8px] top-1/2 -translate-y-1/2">
             <motion.div
-              className={`w-4 h-4 rounded-full ${isFarcasterManiaOn ? "bg-[#e0d6ff] shadow-lg shadow-[#a590e3]/80" : "bg-yellow-300 shadow-lg shadow-yellow-400/80"}`}
+              className={`w-4 h-4 rounded-full ${
+                isFarcasterManiaOn
+                  ? "bg-[#e0d6ff] shadow-lg shadow-[#a590e3]/80"
+                  : "bg-yellow-300 shadow-lg shadow-yellow-400/80"
+              }`}
               animate={{
                 scale: [1, 1.2, 1],
-                boxShadow: isFarcasterManiaOn ? [
-                  "0 0 10px 2px rgba(165, 144, 227, 0.8)",
-                  "0 0 15px 4px rgba(165, 144, 227, 0.9)",
-                  "0 0 10px 2px rgba(165, 144, 227, 0.8)",
-                ] : [
-                  "0 0 10px 2px rgba(250, 204, 21, 0.8)",
-                  "0 0 15px 4px rgba(250, 204, 21, 0.9)",
-                  "0 0 10px 2px rgba(250, 204, 21, 0.8)",
-                ],
+                boxShadow: isFarcasterManiaOn
+                  ? [
+                      "0 0 10px 2px rgba(165, 144, 227, 0.8)",
+                      "0 0 15px 4px rgba(165, 144, 227, 0.9)",
+                      "0 0 10px 2px rgba(165, 144, 227, 0.8)",
+                    ]
+                  : [
+                      "0 0 10px 2px rgba(250, 204, 21, 0.8)",
+                      "0 0 15px 4px rgba(250, 204, 21, 0.9)",
+                      "0 0 10px 2px rgba(250, 204, 21, 0.8)",
+                    ],
               }}
               transition={{
                 duration: 0.8,
@@ -336,7 +382,9 @@ const BurningFuse = ({
 
       {isExpired && (
         <motion.div
-          className={`absolute inset-0 ${isFarcasterManiaOn ? "bg-[#a590e3]" : "bg-yellow-400"}`}
+          className={`absolute inset-0 ${
+            isFarcasterManiaOn ? "bg-[#a590e3]" : "bg-yellow-400"
+          }`}
           initial={{ opacity: 0 }}
           animate={{
             opacity: [0, 0.8, 0],
@@ -364,7 +412,9 @@ const SparkParticle = ({
   isFarcasterManiaOn: boolean;
 }) => (
   <motion.div
-    className={`absolute top-1/2 right-1/2 w-2.5 h-2.5 rounded-full ${isFarcasterManiaOn ? "bg-[#e0d6ff]" : "bg-yellow-300"}`}
+    className={`absolute top-1/2 right-1/2 w-2.5 h-2.5 rounded-full ${
+      isFarcasterManiaOn ? "bg-[#e0d6ff]" : "bg-yellow-300"
+    }`}
     animate={{
       y,
       x,

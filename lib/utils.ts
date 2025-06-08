@@ -875,7 +875,16 @@ export const getRandomTestUserFid = async (): Promise<number> => {
 
 export const userIsNotAdminAndIsNotProduction = (fid: number): boolean => {
   return (
-    env.NEXT_PUBLIC_APP_ENV !== "production" &&
+    env.NEXT_PUBLIC_URL !== "https://farville.farm" &&
     !ADMIN_FIDS.includes(Number(fid))
   );
+};
+
+export const replacePinataWithDweb = (url: string): string => {
+  if (!url) return url;
+  if (url.startsWith("https://gateway.pinata.cloud/ipfs/")) {
+    url = url.replace("https://gateway.pinata.cloud/ipfs/", "https://");
+    url += ".ipfs.dweb.link";
+  }
+  return url;
 };

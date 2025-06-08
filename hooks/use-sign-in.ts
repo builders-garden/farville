@@ -76,7 +76,6 @@ export const useSignIn = (isInMaintenance: boolean) => {
     try {
       setIsLoading(true);
       setError(null);
-      console.log("handleSignIn", isSignedIn, authCheckError);
       if (!isSignedIn && !authCheckError) {
         setIsSignedIn(true);
       } else {
@@ -104,7 +103,6 @@ export const useSignIn = (isInMaintenance: boolean) => {
       !isLoading &&
       !error
     ) {
-      console.log("useEffect handleSignIn auto sign-in");
       handleSignIn().catch((err) => {
         console.error("Auto sign-in failed:", err);
       });
