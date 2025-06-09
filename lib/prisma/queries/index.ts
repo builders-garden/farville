@@ -21,5 +21,8 @@ export * from "./user-has-voucher";
 export * from "./user-community-donation";
 export * from "./user-community-booster-history";
 export * from "./community-booster-points";
+export * from "./clan";
+export * from "./clan-invite";
+export * from "./clan-membership";
 
 export * from "./game";

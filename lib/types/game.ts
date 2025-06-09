@@ -159,3 +159,9 @@ export enum Mode {
   Farcon = "farcon",
   Sonic = "sonic",
 }
+
+export enum ClanRole {
+  Leader = "leader",
+  Officer = "officer",
+  Member = "member",
+}

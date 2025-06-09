@@ -23,7 +23,6 @@ export const useTitlesImage = ({
       collectibleId,
     }: {
       prompt: string;
-      fid: number;
       collectibleId: number;
     }) => ({
       prompt,

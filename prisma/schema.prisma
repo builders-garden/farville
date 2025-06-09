@@ -129,9 +129,13 @@ model User {
   items                 UserHasItem[]
   quests                UserHasQuest[]
   vouchers              UserHasVoucher[]
-  leaderboardEntry      UserLeaderboardEntry[]
-  user_notification     UserNotification[]
+  leaderboardEntries    UserLeaderboardEntry[]
+  notifications         UserNotification[]
   statistics            UserStatistic[]
+  createdClans          Clan[]                  @relation("ClanCreator")
+  leaderClans           Clan[]                  @relation("ClanLeader")
+  clan                  ClanMembership?
+  clanInvites           ClanInvite[]
 
   @@map("user")
 }
@@ -338,4 +342,51 @@ model CommunityBoosterPoints {
   combo  Int    @default(1)
 
   @@map("community_booster_points")
+}
+
+model Clan {
+  id         String           @id @default(dbgenerated("gen_random_uuid()"))
+  name       String           @unique
+  motto      String
+  createdBy  Int
+  leaderFid  Int
+  imageUrl   String?
+  isPublic   Boolean          @default(false)
+  maxMembers Int              @default(20)
+  xp         Int              @default(0)
+  txHash     String?
+  createdAt  DateTime         @default(now()) @db.Timestamptz(6)
+  updatedAt  DateTime         @default(now()) @db.Timestamptz(6)
+  creator    User             @relation("ClanCreator", fields: [createdBy], references: [fid], onDelete: NoAction, onUpdate: NoAction, map: "clan_created_by_fkey")
+  leader     User             @relation("ClanLeader", fields: [leaderFid], references: [fid], onDelete: NoAction, onUpdate: NoAction, map: "clan_leader_fid_fkey")
+  members    ClanMembership[]
+  invites    ClanInvite[]
+
+  @@map("clan")
+}
+
+model ClanMembership {
+  fid           Int      @id
+  clanId        String
+  role          String   @default("member")
+  joinedAt      DateTime @default(now()) @db.Timestamptz(6)
+  xpContributed Int      @default(0)
+
+  clan Clan @relation(fields: [clanId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "clan_membership_clanid_fkey")
+  user User @relation(fields: [fid], references: [fid], onDelete: Cascade, onUpdate: NoAction, map: "clan_membership_fid_fkey")
+
+  @@index([clanId], map: "idx_clan_membership_clanid")
+  @@map("clan_membership")
+}
+
+model ClanInvite {
+  id        String   @id @default(dbgenerated("gen_random_uuid()"))
+  clanId    String
+  fid       Int
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  clan      Clan     @relation(fields: [clanId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "clan_invite_clanid_fkey")
+  user      User     @relation(fields: [fid], references: [fid], onDelete: Cascade, onUpdate: NoAction, map: "clan_invite_fid_fkey")
+
+  @@unique([clanId, fid], map: "clan_invite_clanid_fid_key")
+  @@map("clan_invite")
 }
