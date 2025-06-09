@@ -8,6 +8,8 @@ import {
   UserHasVoucher,
   Voucher,
   UserCommunityDonation,
+  ClanMembership,
+  Clan,
 } from "@prisma/client";
 import { Mode } from "../types/game";
 
@@ -72,4 +74,8 @@ export type UserCommunityDonationEnhanced = UserCommunityDonation & {
     selectedAvatarUrl: string | null;
     mintedOG: boolean;
   };
+};
+
+export type UserClan = ClanMembership & {
+  clan: Clan;
 };

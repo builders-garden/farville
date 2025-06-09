@@ -28,7 +28,7 @@ export default function LeaderboardModal({ onClose }: { onClose: () => void }) {
   const { state, mode } = useGame();
   const { data: globalData } = useLeaderboard(false, mode, state?.user.fid);
   const { data: friendsData } = useLeaderboard(true, mode, state?.user.fid);
-  console.log("globalData", globalData);
+
   const { data: questsData } = useLeaderboard(
     false,
     mode,

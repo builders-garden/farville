@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { X } from "lucide-react";
 import { useState } from "react";
 import MainClanTabs, { Tab as MainTab } from "./main-tabs";
+import MyClan from "./my-clan";
 
 interface ClansModalProps {
   onClose: () => void;
@@ -62,6 +63,8 @@ export default function ClansModal({ onClose }: ClansModalProps) {
             setActiveTab={setMainActiveTab}
             activeTab={mainActiveTab}
           />
+
+          {mainActiveTab === "clan" && <MyClan />}
         </div>
       </motion.div>
     </div>
