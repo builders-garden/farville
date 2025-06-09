@@ -7,7 +7,8 @@ export async function GET(req: NextRequest) {
     const searchParams = req.nextUrl.searchParams;
     const strToSearch = searchParams.get("search") || "";
     const isPublicParam = searchParams.get("isPublic");
-    const isPublic = isPublicParam === null ? true : isPublicParam === "true";
+    const isPublic =
+      isPublicParam === null ? undefined : isPublicParam === "true";
 
     const clans = await getClans({ strToSearch, isPublic });
     return NextResponse.json(clans);

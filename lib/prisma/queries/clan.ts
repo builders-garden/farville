@@ -10,17 +10,24 @@ export function getClans(filters?: {
 }) {
   const {
     strToSearch = "",
-    isPublic = true,
+    isPublic,
     includeMembers = false,
     includeLeader: includeClanLeader = false,
   } = filters || {};
 
+  console.log("strToSearch", strToSearch);
+  console.log("isPublic", isPublic);
+
   return prisma.clan.findMany({
     where: {
-      name: {
-        contains: strToSearch,
-        mode: "insensitive",
-      },
+      ...(strToSearch !== ""
+        ? {
+            name: {
+              contains: strToSearch,
+              mode: "insensitive",
+            },
+          }
+        : {}),
       isPublic,
     },
     include: {

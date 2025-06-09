@@ -4,6 +4,7 @@ import { X } from "lucide-react";
 import { useState } from "react";
 import MainClanTabs, { Tab as MainTab } from "./main-tabs";
 import MyClan from "./my-clan";
+import { ClanTab } from "./clan-tab";
 
 interface ClansModalProps {
   onClose: () => void;
@@ -13,6 +14,8 @@ export default function ClansModal({ onClose }: ClansModalProps) {
   const { safeAreaInsets } = useFrameContext();
 
   const [mainActiveTab, setMainActiveTab] = useState<MainTab>("clan");
+
+  const userHasClan = false;
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-start z-50">
@@ -58,13 +61,18 @@ export default function ClansModal({ onClose }: ClansModalProps) {
               Farming together is more fun!
             </p>
           </div>
+        </div>
 
+        <div className="flex flex-col px-4">
           <MainClanTabs
             setActiveTab={setMainActiveTab}
             activeTab={mainActiveTab}
           />
 
-          {mainActiveTab === "clan" && <MyClan />}
+          {mainActiveTab === "clan" && userHasClan && <MyClan />}
+          {mainActiveTab === "clan" && !userHasClan && (
+            <ClanTab userHasClan={userHasClan} />
+          )}
         </div>
       </motion.div>
     </div>
