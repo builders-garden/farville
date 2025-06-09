@@ -88,6 +88,7 @@ interface GameContextType {
   showStreaks: boolean;
   showProfile: boolean;
   showFarmersPower: boolean;
+  showClans: boolean;
   setShowInventory: (show: boolean) => void;
   setShowMarket: (show: boolean) => void;
   setShowLeaderboard: (show: boolean) => void;
@@ -99,6 +100,7 @@ interface GameContextType {
   setShowStreaks: (show: boolean) => void;
   setShowProfile: (show: boolean) => void;
   setShowFarmersPower: (show: boolean) => void;
+  setShowClans: (show: boolean) => void;
   isActionInProgress: boolean;
   setIsActionInProgress: (value: boolean) => void;
   activeOverlay: OverlayConfig;
@@ -204,6 +206,8 @@ export function GameProvider({
     mode: Mode;
   }>({ show: false, mode: Mode.Classic });
   const [showFarmersPower, setShowFarmersPower] = useState(false);
+  const [showClans, setShowClans] = useState(false);
+
   const {
     state,
     refetch,
@@ -601,7 +605,8 @@ export function GameProvider({
         showRequests,
         showStreaks,
         showProfile,
-        showFarmersPower: showFarmersPower,
+        showFarmersPower,
+        showClans,
         setShowInventory,
         setShowMarket,
         setShowLeaderboard,
@@ -612,7 +617,8 @@ export function GameProvider({
         setShowRequests,
         setShowStreaks,
         setShowProfile,
-        setShowFarmersPower: setShowFarmersPower,
+        setShowFarmersPower,
+        setShowClans,
         isActionInProgress,
         setIsActionInProgress,
         activeOverlay,

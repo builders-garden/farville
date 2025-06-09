@@ -31,6 +31,7 @@ import { useSocket } from "@/hooks/use-socket";
 import { toast as sonnerToast, Toaster } from "sonner";
 import Image from "next/image";
 import { FP_DECREASE_DELAY_MS } from "@/lib/game-constants";
+import ClansModal from "./clans";
 
 // const WelcomeOverlay = dynamic(() => import("./../components/WelcomeOverlay"), {
 //   ssr: false,
@@ -101,6 +102,16 @@ function HelpModalContainer() {
   return (
     <AnimatePresence>
       {showHelp && <HelpModal onClose={() => setShowHelp(false)} />}
+    </AnimatePresence>
+  );
+}
+
+function ClansContainer() {
+  const { showClans, setShowClans } = useGame();
+
+  return (
+    <AnimatePresence>
+      {showClans && <ClansModal onClose={() => setShowClans(false)} />}
     </AnimatePresence>
   );
 }
@@ -491,10 +502,7 @@ export default function GameWrapper() {
 
       {activeOverlay?.type === "requests" ? (
         <AnimatePresence>
-          <RequestModal
-            onClose={handleOverlayComplete}
-            id={activeOverlay.id}
-          />
+          <RequestModal onClose={handleOverlayComplete} id={activeOverlay.id} />
         </AnimatePresence>
       ) : activeOverlay?.type === "voucher" ? (
         <AnimatePresence>
@@ -518,10 +526,7 @@ export default function GameWrapper() {
           className="flex flex-col h-[100dvh] w-full max-w-md mx-auto overflow-hidden"
         >
           <Header />
-          <div
-            className="flex-1 relative min-h-0"
-            id="game-grid"
-          >
+          <div className="flex-1 relative min-h-0" id="game-grid">
             <GameGrid />
           </div>
           <Toolbar safeAreaInsets={safeAreaInsets} />
@@ -530,6 +535,7 @@ export default function GameWrapper() {
           <InventoryModalContainer />
           <StreaksModalContainer />
           <FarmersPowerModalContainer />
+          <ClansContainer />
           <MarketplaceModalContainer />
           <HelpModalContainer />
           <ProfileModalContainer />

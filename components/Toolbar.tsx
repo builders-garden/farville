@@ -19,6 +19,7 @@ export default function Toolbar({
     setShowProfile,
     setShowLeaderboard,
     setShowQuests,
+    setShowClans,
     mode,
     state,
     newGoldCropsFound,
@@ -145,6 +146,35 @@ export default function Toolbar({
           </motion.button>
           <span className="text-[4px] xs:text-[6px] text-white mt-1">
             Ranking
+          </span>
+        </div>
+
+        {/* Clans Button */}
+        <div
+          className="flex flex-col items-center w-[48px]"
+          id="market-toolbar-btn"
+        >
+          <motion.button
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => {
+              setShowClans(true);
+            }}
+            data-tutorial="marketplace"
+            className="w-9 h-9 xs:w-12 xs:h-12 rounded-lg flex items-center justify-center bg-[#8B5E3C] hover:bg-[#6d4c2c] transition-colors"
+          >
+            <div className="relative w-6 h-6 xs:w-8 xs:h-8">
+              <Image
+                src="/images/icons/market.png"
+                alt="Marketplace"
+                fill
+                sizes="48"
+                className="object-contain"
+              />
+            </div>
+          </motion.button>
+          <span className="text-[4px] xs:text-[6px] text-white mt-1">
+            Clans
           </span>
         </div>
 
