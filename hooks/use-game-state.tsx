@@ -2,7 +2,11 @@ import { useUserItems, UserItem } from "./use-user-items";
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useGridCells } from "./use-grid-cells";
 import { useItems } from "./use-items";
-import { getCurrentDayStreak, getCurrentLevelAndProgress } from "@/lib/utils";
+import {
+  getCurrentDayStreak,
+  getCurrentLevelAndProgress,
+  isFarmersPowerActive,
+} from "@/lib/utils";
 import { useUserMe } from "./use-user-me";
 import { useUserQuests } from "./use-quests";
 import { useUpdateUserFrosts, useUserStreaks } from "./use-user-streaks";
@@ -411,19 +415,9 @@ export const useGameState = (mode: Mode) => {
       const now = new Date();
       const dayOfWeek = now.getUTCDay();
       const hourOfDay = now.getUTCHours();
-      const minuteOfHour = now.getUTCMinutes();
 
       const isStartDay = dayOfWeek === FP_TIME.START_DAY;
       const isEndDay = dayOfWeek === FP_TIME.END_DAY;
-
-      const isPastStartTime =
-        hourOfDay > FP_TIME.START_HOUR ||
-        (hourOfDay === FP_TIME.START_HOUR &&
-          minuteOfHour >= FP_TIME.START_MINUTE);
-
-      const isBeforeEndTime =
-        hourOfDay < FP_TIME.END_HOUR ||
-        (hourOfDay === FP_TIME.END_HOUR && minuteOfHour < FP_TIME.END_MINUTE);
 
       const isTransitionHour =
         (isStartDay && hourOfDay === FP_TIME.START_HOUR) ||
@@ -431,8 +425,7 @@ export const useGameState = (mode: Mode) => {
 
       const recheckEveryTenSeconds = isTransitionHour;
 
-      const isFarmersPowerOn =
-        (isStartDay && isPastStartTime) || (isEndDay && isBeforeEndTime);
+      const isFarmersPowerOn = isFarmersPowerActive();
 
       // Check if Farmers Power state has changed
       const wasFarmersPowerOn = state?.isFarmersPowerOn;
@@ -492,7 +485,7 @@ export const useGameState = (mode: Mode) => {
       const interval = setInterval(checkFarmersPower, 10000);
       return () => clearInterval(interval);
     }
-  }, [state?.isFarmersPowerOn]); // Include isFarmersPowerOn as a dependency
+  }, [state?.isFarmersPowerOn]); // Include dependencies
 
   useEffect(() => {
     updateUserState();

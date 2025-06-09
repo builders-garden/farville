@@ -7,6 +7,7 @@ import {
   BASE_GOLD_CROP_PERCENTAGE,
   CROP_DATA,
   DAILY_QUESTS_NUMBER,
+  FP_TIME,
   LEVEL_XP_THRESHOLDS,
   POWER_STAGES,
   SPEED_BOOST,
@@ -337,8 +338,30 @@ export const formatTime = (seconds: number) => {
     .join(" ");
 };
 
+export const isFarmersPowerActive = () => {
+  const now = new Date();
+  const dayOfWeek = now.getUTCDay();
+  const hourOfDay = now.getUTCHours();
+  const minuteOfHour = now.getUTCMinutes();
+
+  const isStartDay = dayOfWeek === FP_TIME.START_DAY;
+  const isEndDay = dayOfWeek === FP_TIME.END_DAY;
+
+  const isPastStartTime =
+    hourOfDay > FP_TIME.START_HOUR ||
+    (hourOfDay === FP_TIME.START_HOUR && minuteOfHour >= FP_TIME.START_MINUTE);
+
+  const isBeforeEndTime =
+    hourOfDay < FP_TIME.END_HOUR ||
+    (hourOfDay === FP_TIME.END_HOUR && minuteOfHour < FP_TIME.END_MINUTE);
+
+  return (isStartDay && isPastStartTime) || (isEndDay && isBeforeEndTime);
+};
+
 export const getCommunityBoostMultiplier = (stage: number) => {
-  return POWER_STAGES.find((power) => power.stage === stage)?.boost ?? 1;
+  return isFarmersPowerActive()
+    ? POWER_STAGES.find((power) => power.stage === stage)?.boost ?? 1
+    : 1;
 };
 
 export const getBoostTime = (
