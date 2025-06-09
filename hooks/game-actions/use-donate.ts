@@ -1,6 +1,9 @@
 import { useGame } from "@/context/GameContext";
 import { useApiMutation } from "../use-api-mutation";
-import sdk from "@farcaster/frame-sdk";
+import {
+  hapticsImpactOccurred,
+  hapticsNotificationOccurred,
+} from "@/lib/farcaster";
 
 interface DonateVariables {
   itemId: number | null;
@@ -27,10 +30,10 @@ export const useDonate = () => {
       requestId: variables.requestId,
     }),
     onMutate: async () => {
-      await sdk.haptics.impactOccurred("light");
+      await hapticsImpactOccurred("light");
     },
     onSuccess: async () => {
-      await sdk.haptics.notificationOccurred("success");
+      await hapticsNotificationOccurred("success");
       refetchUserItems();
     },
   });

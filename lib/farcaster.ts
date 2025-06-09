@@ -1,4 +1,9 @@
 import { env } from "@/lib/env";
+import {
+  ImpactOccurredType,
+  NotificationOccurredType,
+} from "@farcaster/frame-core/dist/actions/Haptics";
+import sdk from "@farcaster/frame-sdk";
 
 /**
  * Get the farcaster manifest for the frame, generate yours from Warpcast Mobile
@@ -58,3 +63,17 @@ export async function getFarcasterManifest() {
     },
   };
 }
+
+export const hapticsImpactOccurred = async (type: ImpactOccurredType) => {
+  try {
+    await sdk.haptics.impactOccurred(type);
+  } catch {}
+};
+
+export const hapticsNotificationOccurred = async (
+  type: NotificationOccurredType
+) => {
+  try {
+    await sdk.haptics.notificationOccurred(type);
+  } catch {}
+};

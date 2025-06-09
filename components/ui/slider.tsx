@@ -4,7 +4,7 @@ import * as React from "react";
 import * as SliderPrimitive from "@radix-ui/react-slider";
 
 import { cn } from "@/lib/utils";
-import sdk from "@farcaster/frame-sdk";
+import { hapticsImpactOccurred } from "@/lib/farcaster";
 
 interface SliderProps
   extends React.ComponentPropsWithoutRef<typeof SliderPrimitive.Root> {
@@ -26,7 +26,7 @@ const Slider = React.forwardRef<
       onValueChange?.(value);
 
       // Trigger haptic feedback
-      await sdk.haptics.impactOccurred("light");
+      await hapticsImpactOccurred("light");
     }}
     {...props}
   >

@@ -1,7 +1,10 @@
 import { useAudio } from "@/context/AudioContext";
 import { useApiMutation } from "@/hooks/use-api-mutation";
+import {
+  hapticsImpactOccurred,
+  hapticsNotificationOccurred,
+} from "@/lib/farcaster";
 import { Mode } from "@/lib/types/game";
-import sdk from "@farcaster/frame-sdk";
 
 interface ExpandGridProps {
   mode: Mode;
@@ -27,14 +30,14 @@ export const useExpandGrid = ({
     onMutate: async () => {
       if (isActionInProgress) return;
       setIsActionInProgress(true);
-      await sdk.haptics.impactOccurred("light");
+      await hapticsImpactOccurred("light");
     },
     onSuccess: async () => {
       refetchGridCells();
       refetchUser();
       refetchUser();
       playSound("coins");
-      await sdk.haptics.notificationOccurred("success");
+      await hapticsNotificationOccurred("success");
     },
     onSettled: () => {
       setIsActionInProgress(false);

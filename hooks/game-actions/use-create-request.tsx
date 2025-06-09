@@ -1,6 +1,9 @@
 import { useApiMutation } from "@/hooks/use-api-mutation";
+import {
+  hapticsImpactOccurred,
+  hapticsNotificationOccurred,
+} from "@/lib/farcaster";
 import { Mode } from "@/lib/types/game";
-import sdk from "@farcaster/frame-sdk";
 
 interface CreateRequestVariables {
   itemId: number;
@@ -26,10 +29,10 @@ export const useCreateRequest = () => {
       mode: variables.mode,
     }),
     onMutate: async () => {
-      await sdk.haptics.impactOccurred("light");
+      await hapticsImpactOccurred("light");
     },
     onSuccess: async () => {
-      await sdk.haptics.notificationOccurred("success");
+      await hapticsNotificationOccurred("success");
     },
     isProtected: true,
   });

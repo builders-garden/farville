@@ -1,6 +1,9 @@
 import { useAudio } from "@/context/AudioContext";
 import { useApiMutation } from "@/hooks/use-api-mutation";
-import sdk from "@farcaster/frame-sdk";
+import {
+  hapticsImpactOccurred,
+  hapticsNotificationOccurred,
+} from "@/lib/farcaster";
 
 interface ClaimRewardVariables {
   streakId: string;
@@ -25,13 +28,13 @@ export const useClaimReward = ({
     onMutate: async () => {
       if (isActionInProgress) return;
       setIsActionInProgress(true);
-      await sdk.haptics.impactOccurred("light");
+      await hapticsImpactOccurred("light");
     },
     onSuccess: async () => {
       refetchUserItems();
       refetchStreaks();
       playSound("claimQuest");
-      await sdk.haptics.notificationOccurred("success");
+      await hapticsNotificationOccurred("success");
     },
     onSettled: () => {
       setIsActionInProgress(false);
