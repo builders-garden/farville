@@ -4,6 +4,7 @@ import {
   deleteClanJoinRequest,
   getClanJoinRequestsByClanId,
 } from "@/lib/prisma/queries";
+import { deleteAllClanJoinRequestsByFid } from "@/lib/prisma/queries/clan-join-request-utils";
 import { prisma } from "@/lib/prisma/client";
 import { ClanRole } from "@/lib/types/game";
 import { NextRequest, NextResponse } from "next/server";
@@ -116,9 +117,11 @@ export async function POST(
     }
 
     if (action === "accept") {
-      // Create membership and delete the request
+      // Create membership
       await createClanMembership(clanId, joinRequest.fid);
-      await deleteClanJoinRequest(requestId);
+
+      // Delete all pending join requests from this user to cancel other clan requests
+      await deleteAllClanJoinRequestsByFid(joinRequest.fid);
 
       return NextResponse.json({
         success: true,

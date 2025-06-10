@@ -37,3 +37,15 @@ export function deleteClanJoinRequestById(requestId: string) {
     },
   });
 }
+
+/**
+ * Deletes all clan join requests for a specific user
+ * Used when a user successfully joins a clan or when their request is accepted
+ */
+export function deleteAllClanJoinRequestsByFid(fid: number) {
+  return prisma.clanJoinRequest.deleteMany({
+    where: {
+      fid,
+    },
+  });
+}

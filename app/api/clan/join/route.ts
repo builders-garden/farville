@@ -5,6 +5,7 @@ import {
   createClanJoinRequest,
   getClanJoinRequestByUserAndClan,
 } from "@/lib/prisma/queries";
+import { deleteAllClanJoinRequestsByFid } from "@/lib/prisma/queries/clan-join-request-utils";
 import { NextRequest, NextResponse } from "next/server";
 import z from "zod";
 
@@ -37,6 +38,10 @@ export async function POST(req: NextRequest) {
     if (clanIsPublic) {
       // For public clans, create membership immediately
       const membership = await createClanMembership(clanId, Number(fid));
+
+      // Delete all other pending join requests from this user
+      await deleteAllClanJoinRequestsByFid(Number(fid));
+
       return NextResponse.json({
         success: true,
         message: "Joined clan successfully",

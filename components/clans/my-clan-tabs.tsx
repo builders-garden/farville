@@ -6,12 +6,14 @@ interface MyClanTabsProps {
   activeTab: Tab;
   setActiveTab: (tab: Tab) => void;
   pendingRequestsCount?: number;
+  canManageRequests: boolean;
 }
 
 export default function MyClanTabs({
   activeTab,
   setActiveTab,
   pendingRequestsCount = 0,
+  canManageRequests,
 }: MyClanTabsProps) {
   const tabs: { id: Tab; label: string; count?: number }[] = [
     {
@@ -28,6 +30,11 @@ export default function MyClanTabs({
       count: pendingRequestsCount,
     },
   ];
+
+  if (!canManageRequests) {
+    // If user cannot manage requests, remove the "Joins" tab
+    tabs.pop();
+  }
 
   return (
     <div className="grid grid-cols-3 gap-2 my-4">

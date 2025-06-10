@@ -173,11 +173,19 @@ export function createClan(data: {
       data: clanData,
     });
 
+    // Add the creator as a clan leader
     await tx.clanMembership.create({
       data: {
         clanId: clan.id,
         fid: data.createdBy,
         role: ClanRole.Leader,
+      },
+    });
+
+    // Delete all pending join requests from the creator
+    await tx.clanJoinRequest.deleteMany({
+      where: {
+        fid: data.createdBy,
       },
     });
 
