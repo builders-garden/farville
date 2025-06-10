@@ -50,18 +50,20 @@ export const RequestChatCard: React.FC<RequestChatCardProps> = ({
               />
             )}
             <div className="flex flex-col w-full gap-2">
-              <div className="font-medium text-white text-sm">
-                {itemName} x{quantity}
+              <div className="flex items-center justify-between w-full">
+                <span className="font-medium text-white text-sm leading-none">
+                  {itemName}
+                </span>
+                <span className="text-xs text-white/80 leading-none">
+                  ({quantity - missing}/{quantity})
+                </span>
               </div>
 
-              <div className="flex flex-row items-center text-white/90 w-full gap-2">
+              <div className="flex flex-row items-end text-white/90 w-full gap-2">
                 <Progress
                   value={((quantity - missing) / quantity) * 100}
                   className="bg-[#7e4e31]"
                 />
-                <p className="text-[10px]">
-                  ({quantity - missing}/{quantity})
-                </p>
               </div>
               {!isOwn && missing > 0 && (
                 <button className="bg-[#f2a311] text-white text-xs py-1 px-3 rounded hover:bg-[#f2a311]/80 transition-colors">
@@ -74,10 +76,16 @@ export const RequestChatCard: React.FC<RequestChatCardProps> = ({
       </div>
       {avatarUrl && (
         <div
-          className={`mt-2 flex ${
+          className={`mt-3 pl-1 flex ${
             isOwn ? "justify-end" : "justify-start"
           } w-full gap-2 items-center`}
         >
+          <LeaderboardUserAvatar
+            pfpUrl={avatarUrl}
+            size={{ width: 8, height: 8 }}
+            borderSize={2}
+            username={username}
+          />
           <div className="flex flex-col">
             <span className="text-xs text-white/80">
               {isOwn ? "You" : username}
@@ -89,12 +97,6 @@ export const RequestChatCard: React.FC<RequestChatCardProps> = ({
               })}
             </span>
           </div>
-          <LeaderboardUserAvatar
-            pfpUrl={avatarUrl}
-            size={{ width: 8, height: 8 }}
-            borderSize={2}
-            username={username}
-          />
         </div>
       )}
     </div>

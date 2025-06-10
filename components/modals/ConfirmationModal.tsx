@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { Loader2 } from "lucide-react";
 
 interface ConfirmationModalProps {
   title: string;
@@ -6,6 +7,7 @@ interface ConfirmationModalProps {
   onConfirm: () => void;
   onCancel: () => void;
   confirmDisabled?: boolean;
+  isLoading?: boolean;
 }
 
 export default function ConfirmationModal({
@@ -14,6 +16,7 @@ export default function ConfirmationModal({
   onConfirm,
   onCancel,
   confirmDisabled = false,
+  isLoading = false,
 }: ConfirmationModalProps) {
   return (
     <div className="fixed inset-0 max-w-md mx-auto bg-black/50 flex items-center justify-center z-[60]">
@@ -36,14 +39,21 @@ export default function ConfirmationModal({
           <button
             onClick={onConfirm}
             className={`flex-1 py-2 px-4 rounded bg-[#FFB938] text-[#7E4E31] hover:bg-[#ffc65c] 
-                 transition-colors text-sm font-medium ${
-                   confirmDisabled
+                 transition-colors text-sm font-medium flex items-center justify-center ${
+                   confirmDisabled || isLoading
                      ? "opacity-50 cursor-not-allowed hover:bg-[#FFB938]"
                      : ""
                  }`}
-            disabled={confirmDisabled}
+            disabled={confirmDisabled || isLoading}
           >
-            Confirm
+            {isLoading ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                <span>Leaving...</span>
+              </>
+            ) : (
+              "Confirm"
+            )}
           </button>
         </div>
       </motion.div>

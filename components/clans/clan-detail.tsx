@@ -1,12 +1,37 @@
 import { Card, CardContent } from "../ui/card";
-import { Pencil } from "lucide-react";
+import { Pencil, Loader2 } from "lucide-react";
 import { ClanWithData } from "@/lib/prisma/types";
+import { useClanOperations } from "@/hooks/game-actions/use-clan-operations";
+import { useGame } from "@/context/GameContext";
+import { useState } from "react";
+import ConfirmationModal from "@/components/modals/ConfirmationModal";
 
 interface ClanDetailProps {
   clanData: ClanWithData;
 }
 
 export function ClanDetail({ clanData }: ClanDetailProps) {
+  const { refetch } = useGame();
+  const [isLeaving, setIsLeaving] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const { leaveClan } = useClanOperations(refetch.clan);
+
+  const handleLeaveClan = () => {
+    if (isLeaving) return;
+
+    setIsLeaving(true);
+    leaveClan(undefined, {
+      onSuccess: () => {
+        setIsLeaving(false);
+        setIsModalOpen(false);
+      },
+      onError: () => {
+        setIsLeaving(false);
+        setIsModalOpen(false);
+      },
+    });
+  };
+
   return (
     <Card className="bg-gradient-to-br from-[#6D4C2C] to-[#5B4120] rounded-lg border-none w-full max-w-2xl">
       <CardContent className="flex flex-col w-full gap-3 xs:gap-4 p-3 xs:p-4">
@@ -45,15 +70,28 @@ export function ClanDetail({ clanData }: ClanDetailProps) {
             </div>
             <button
               className="px-3 py-1 bg-red-700 rounded-lg text-xs text-white hover:bg-red-600 transition-colors"
-              onClick={() => {
-                /* Add your join clan function here */
-              }}
+              onClick={() => setIsModalOpen(true)}
+              disabled={isLeaving}
             >
-              Leave
+              {isLeaving ? (
+                <Loader2 className="animate-spin w-4 h-4" />
+              ) : (
+                "Leave"
+              )}
             </button>
           </div>
         </div>
       </CardContent>
+      {isModalOpen && (
+        <ConfirmationModal
+          title="Leave Clan"
+          message="Are you sure you want to leave the clan? This action cannot be undone."
+          onConfirm={handleLeaveClan}
+          onCancel={() => setIsModalOpen(false)}
+          confirmDisabled={isLeaving}
+          isLoading={isLeaving}
+        />
+      )}
     </Card>
   );
 }

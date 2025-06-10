@@ -100,8 +100,53 @@ export const useClanOperations = (
     },
   });
 
+  const { mutate: _leaveClan } = useApiMutation({
+    url: () => `/api/clan/join`,
+    method: "DELETE",
+    onSuccess: () => {
+      refetchClan();
+      toast.success("You've left the clan", {
+        position: "top-center",
+        duration: 3000,
+      });
+      console.log("Left clan successfully");
+    },
+    onError: (error: Error) => {
+      console.error("Error leaving clan:", error);
+      toast.error("Failed to leave clan", {
+        position: "top-center",
+        duration: 3000,
+      });
+    },
+  });
+
+  // Wrapper function for leaveClan that supports callbacks
+  const leaveClan = (
+    _?: unknown, // Not used but kept for consistency with other functions
+    callbacks?: {
+      onSuccess?: () => void;
+      onError?: (error: Error) => void;
+    }
+  ) => {
+    _leaveClan(undefined, {
+      onSuccess: () => {
+        // Call the callback if provided
+        if (callbacks?.onSuccess) {
+          callbacks.onSuccess();
+        }
+      },
+      onError: (error) => {
+        // Call the callback if provided
+        if (callbacks?.onError) {
+          callbacks.onError(error);
+        }
+      },
+    });
+  };
+
   return {
     createClan,
     joinClan,
+    leaveClan,
   };
 };
