@@ -1,6 +1,6 @@
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { useClan } from "@/hooks/use-clan";
+import { useClans } from "@/hooks/use-clans";
 import { Lock, Unlock, Search } from "lucide-react";
 import { Clan } from "@prisma/client";
 import { useState, useEffect, useCallback, useRef } from "react";
@@ -17,7 +17,7 @@ export const SearchClan = () => {
   const [selectedClan, setSelectedClan] = useState<ClanWithDetails | null>(
     null
   );
-  const { items: clans, isLoading, refetch } = useClan(searchValue, undefined);
+  const { items: clans, isLoading, refetch } = useClans(searchValue, undefined);
 
   // Handle debounced search
   const debounceTimeout = useRef<NodeJS.Timeout | null>(null);

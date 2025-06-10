@@ -48,7 +48,7 @@ export default function ClansModal({ onClose }: ClansModalProps) {
           marginLeft: safeAreaInsets.left,
           marginRight: safeAreaInsets.right,
         }}
-        className="bg-[#7e4e31] w-full h-full flex flex-col overflow-y-auto"
+        className="bg-[#7e4e31] w-full h-full flex flex-col"
       >
         {/* Header with Stage Info */}
         <div className="flex flex-col items-start justify-between p-3 xs:p-4 mt-2 border-b border-[#8B5c3C] gap-1">
@@ -82,7 +82,7 @@ export default function ClansModal({ onClose }: ClansModalProps) {
           </div>
         </div>
 
-        <div className="flex flex-col px-4">
+        <div className="flex flex-col px-4 py-2 flex-1 overflow-y-auto no-scrollbar">
           <MainClanTabs
             setActiveTab={setMainActiveTab}
             activeTab={mainActiveTab}

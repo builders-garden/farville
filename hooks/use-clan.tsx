@@ -1,14 +1,13 @@
-import { Clan } from "@prisma/client";
 import { useApiQuery } from "./use-api-query";
+import { ClanWithMembers } from "@/lib/prisma/types";
 
-export const useClan = (strToSearch?: string, isPublic?: boolean) => {
-  const { data, isLoading, refetch } = useApiQuery<Clan[]>({
-    queryKey: ["clans", strToSearch, isPublic],
-    url: `/api/clan?search=${strToSearch || ""}${
-      isPublic !== undefined ? `&isPublic=${isPublic}` : ""
-    }`,
+export const useClan = (id?: string) => {
+  const { data, isLoading, refetch } = useApiQuery<ClanWithMembers>({
+    queryKey: ["clan", id],
+    url: `/api/clan/${id}`,
     isProtected: true,
+    enabled: !!id,
   });
 
-  return { items: data, isLoading, refetch };
+  return { clanData: data, isLoading, refetch };
 };
