@@ -5,7 +5,7 @@ export const useClanOperations = (
   refetchClan: () => void,
   refetchOutgoingRequests?: () => void
 ) => {
-  const { mutate: createClan } = useApiMutation({
+  const { mutate: _createClan } = useApiMutation({
     url: () => `/api/clan`,
     body: (clanData: {
       name: string;
@@ -30,6 +30,36 @@ export const useClanOperations = (
       });
     },
   });
+
+  // Wrapper function for createClan that supports callbacks
+  const createClan = (
+    clanData: {
+      name: string;
+      motto: string;
+      isPublic?: boolean;
+      txHash?: string;
+      imageUrl?: string;
+    },
+    callbacks?: {
+      onSuccess?: () => void;
+      onError?: (error: Error) => void;
+    }
+  ) => {
+    _createClan(clanData, {
+      onSuccess: () => {
+        // Call the callback if provided
+        if (callbacks?.onSuccess) {
+          callbacks.onSuccess();
+        }
+      },
+      onError: (error) => {
+        // Call the callback if provided
+        if (callbacks?.onError) {
+          callbacks.onError(error);
+        }
+      },
+    });
+  };
 
   const { mutate: joinClan } = useApiMutation({
     url: () => `/api/clan/join`,

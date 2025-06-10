@@ -21,6 +21,9 @@ export default function CreateClanModal({
   const [isPublic, setIsPublic] = useState(true);
   const [imageUrl, setImageUrl] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitState, setSubmitState] = useState<
+    "idle" | "creating" | "success"
+  >("idle");
   const [error, setError] = useState("");
 
   const { createClan } = useClanOperations(refetchClan);
@@ -34,26 +37,48 @@ export default function CreateClanModal({
     }
 
     setIsSubmitting(true);
+    setSubmitState("creating");
     setError("");
 
     try {
-      createClan({
-        name,
-        motto,
-        isPublic,
-        ...(imageUrl && { imageUrl }),
-      });
+      // Pass an onSuccess and onError callback to handle the clan creation process
+      createClan(
+        {
+          name,
+          motto,
+          isPublic,
+          ...(imageUrl && { imageUrl }),
+        },
+        {
+          onSuccess: () => {
+            // Update state to success
+            setSubmitState("success");
 
-      if (onSuccess) {
-        onSuccess();
-      }
+            // Only call onSuccess after the API call succeeds
+            if (onSuccess) {
+              onSuccess();
+            }
 
-      onClose();
+            // Close modal after a short delay to show the success state
+            setTimeout(() => {
+              onClose();
+            }, 1000);
+          },
+          onError: (error) => {
+            console.error("Error creating clan:", error);
+            setError("Failed to create clan. Please try again.");
+            setIsSubmitting(false);
+            setSubmitState("idle");
+          },
+        }
+      );
+
+      // Don't close the modal here, wait for the API call to complete
     } catch (err) {
       console.error("Error creating clan:", err);
       setError("Failed to create clan. Please try again.");
-    } finally {
       setIsSubmitting(false);
+      setSubmitState("idle");
     }
   };
 
@@ -173,18 +198,38 @@ export default function CreateClanModal({
               type="submit"
               disabled={isSubmitting || !name}
               className={`
-                flex-1 py-2 px-4 rounded text-[#7E4E31] transition-colors text-sm font-medium
+                flex-1 py-2 px-4 rounded transition-colors text-sm font-medium
                 ${
-                  isSubmitting || !name
-                    ? "bg-[#FFB938]/50 cursor-not-allowed"
-                    : "bg-[#FFB938] hover:bg-[#ffc65c]"
+                  submitState === "success"
+                    ? "bg-green-500 text-white cursor-not-allowed"
+                    : isSubmitting || !name
+                    ? "bg-[#FFB938]/50 text-[#7E4E31]/70 cursor-not-allowed"
+                    : "bg-[#FFB938] text-[#7E4E31] hover:bg-[#ffc65c]"
                 }
               `}
             >
-              {isSubmitting ? (
+              {submitState === "creating" ? (
                 <div className="flex items-center justify-center">
                   <div className="h-5 w-5 border-2 border-t-transparent border-[#7E4E31] rounded-full animate-spin mr-2"></div>
                   Creating...
+                </div>
+              ) : submitState === "success" ? (
+                <div className="flex items-center justify-center">
+                  <svg
+                    className="h-5 w-5 mr-2 text-[#7E4E31]"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M5 13l4 4L19 7"
+                    />
+                  </svg>
+                  Created!
                 </div>
               ) : (
                 "Create Clan"

@@ -14,9 +14,13 @@ interface ClanWithDetails extends Clan {
 
 interface SearchClanProps {
   refetchOutgoingRequests?: () => void;
+  setSearchRefetch?: React.MutableRefObject<(() => void) | null>;
 }
 
-export const SearchClan = ({ refetchOutgoingRequests }: SearchClanProps) => {
+export const SearchClan = ({
+  refetchOutgoingRequests,
+  setSearchRefetch,
+}: SearchClanProps) => {
   const [searchValue, setSearchValue] = useState("");
   const [selectedClan, setSelectedClan] = useState<ClanWithDetails | null>(
     null
@@ -42,13 +46,23 @@ export const SearchClan = ({ refetchOutgoingRequests }: SearchClanProps) => {
   );
 
   useEffect(() => {
+    // Store the refetch function in the parent component if the ref is provided
+    if (setSearchRefetch && refetch) {
+      setSearchRefetch.current = refetch;
+    }
+
     // Cleanup on unmount
     return () => {
       if (debounceTimeout.current) {
         clearTimeout(debounceTimeout.current);
       }
+
+      // Clear the ref on unmount if it was set
+      if (setSearchRefetch && setSearchRefetch.current === refetch) {
+        setSearchRefetch.current = null;
+      }
     };
-  }, []);
+  }, [setSearchRefetch, refetch]);
 
   // Mock clan details that would come from the backend
   const clansWithDetails: ClanWithDetails[] =

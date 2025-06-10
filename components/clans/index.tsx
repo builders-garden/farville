@@ -1,7 +1,7 @@
 import { useFrameContext } from "@/context/FrameContext";
 import { motion } from "framer-motion";
 import { Plus, X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import MainClanTabs, { Tab as MainTab } from "./main-tabs";
 import MyClan from "./my-clan";
 import CreateClanModal from "./create-clan-modal";
@@ -26,6 +26,9 @@ export default function ClansModal({ onClose }: ClansModalProps) {
   );
   const [showCreateClanModal, setShowCreateClanModal] = useState(false);
 
+  // Reference to store the search clan refetch function
+  const searchClansRefetchRef = useRef<(() => void) | null>(null);
+
   // Get outgoing join requests if user doesn't have a clan
   const { data: outgoingRequests = [], refetch: refetchOutgoingRequests } =
     useApiQuery<ClanJoinRequestWithClan[]>({
@@ -43,6 +46,11 @@ export default function ClansModal({ onClose }: ClansModalProps) {
   const handleClanCreationSuccess = () => {
     // Refresh all game state to ensure we get updated clan data
     refetch.clan();
+
+    // Also refresh the clans list in the search tab to show the newly created clan
+    if (searchClansRefetchRef.current) {
+      searchClansRefetchRef.current();
+    }
 
     // Note: The TypeScript declaration in GameContext is missing the 'clan' property
     // but it exists in the implementation in use-game-state.tsx
@@ -105,7 +113,10 @@ export default function ClansModal({ onClose }: ClansModalProps) {
 
           {mainActiveTab === "clan" && <MyClan />}
           {mainActiveTab === "search" && (
-            <SearchClan refetchOutgoingRequests={refetchOutgoingRequests} />
+            <SearchClan
+              refetchOutgoingRequests={refetchOutgoingRequests}
+              setSearchRefetch={searchClansRefetchRef}
+            />
           )}
           {mainActiveTab === "outgoing" && <ClanOutgoingRequests />}
         </div>
