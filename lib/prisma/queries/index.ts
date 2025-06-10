@@ -24,5 +24,7 @@ export * from "./community-booster-points";
 export * from "./clan";
 export * from "./clan-invite";
 export * from "./clan-membership";
+export * from "./clan-join-request";
+export * from "./clan-join-request-utils";
 
 export * from "./game";

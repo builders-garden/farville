@@ -1,11 +1,13 @@
 import { useGame } from "@/context/GameContext";
-
 import { Card, CardContent } from "../ui/card";
 import { Pencil } from "lucide-react";
 import MyClanTabs, { Tab } from "./my-clan-tabs";
 import { useState } from "react";
 import { useClan } from "@/hooks/use-clan";
 import ClanMembers from "./clan-members";
+import ClanJoinRequests from "./clan-join-requests";
+import { useClanJoinRequests } from "@/hooks/use-clan-join-requests";
+import { ClanRole } from "@/lib/types/game";
 
 export default function MyClan() {
   const { state } = useGame();
@@ -15,6 +17,16 @@ export default function MyClan() {
   console.log("ClansModal state:", state.clan);
 
   const { clanData, isLoading } = useClan(state.clan?.clanId);
+
+  // Check if user can manage requests (leader or officer)
+  const canManageRequests =
+    state.clan?.role === ClanRole.Leader ||
+    state.clan?.role === ClanRole.Officer;
+
+  // Get join requests if user can manage them
+  const { requests: joinRequests } = useClanJoinRequests(
+    canManageRequests ? state.clan?.clanId : undefined
+  );
 
   console.log("Clan Data:", clanData);
 
@@ -68,10 +80,19 @@ export default function MyClan() {
         </CardContent>
       </Card>
 
-      <MyClanTabs activeTab={activeTab} setActiveTab={setActiveTab} />
+      <MyClanTabs
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        pendingRequestsCount={joinRequests?.length || 0}
+      />
 
       {activeTab === "members" && !isLoading && clanData && (
         <ClanMembers members={clanData.members} />
+      )}
+      {activeTab === "newcomers" && !isLoading && clanData && (
+        <div className="w-full max-w-2xl">
+          <ClanJoinRequests clanId={state.clan?.clanId} />
+        </div>
       )}
     </div>
   );

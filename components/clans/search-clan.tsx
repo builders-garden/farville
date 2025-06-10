@@ -12,7 +12,11 @@ interface ClanWithDetails extends Clan {
   requiredLevel?: number;
 }
 
-export const SearchClan = () => {
+interface SearchClanProps {
+  refetchOutgoingRequests?: () => void;
+}
+
+export const SearchClan = ({ refetchOutgoingRequests }: SearchClanProps) => {
   const [searchValue, setSearchValue] = useState("");
   const [selectedClan, setSelectedClan] = useState<ClanWithDetails | null>(
     null
@@ -22,17 +26,20 @@ export const SearchClan = () => {
   // Handle debounced search
   const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
 
-  const handleSearch = useCallback((value: string) => {
-    setSearchValue(value);
+  const handleSearch = useCallback(
+    (value: string) => {
+      setSearchValue(value);
 
-    if (debounceTimeout.current) {
-      clearTimeout(debounceTimeout.current);
-    }
+      if (debounceTimeout.current) {
+        clearTimeout(debounceTimeout.current);
+      }
 
-    debounceTimeout.current = setTimeout(() => {
-      refetch();
-    }, 300);
-  }, []);
+      debounceTimeout.current = setTimeout(() => {
+        refetch();
+      }, 300);
+    },
+    [refetch]
+  );
 
   useEffect(() => {
     // Cleanup on unmount
@@ -144,10 +151,6 @@ export const SearchClan = () => {
                     ) : (
                       <span className="text-lg">🛡️</span>
                     )}
-                    {/* Status indicator - yellow for open, locked for closed */}
-                    {clan.isPublic && (
-                      <div className="absolute top-0 right-0 w-3 h-3 bg-[#FFB938] rounded-full border border-[#8B5E3C]" />
-                    )}
                   </div>
 
                   {/* Right - Stats */}
@@ -185,6 +188,7 @@ export const SearchClan = () => {
           clan={selectedClan}
           onClose={() => setSelectedClan(null)}
           refetchClans={refetch}
+          refetchOutgoingRequests={refetchOutgoingRequests}
         />
       )}
     </div>

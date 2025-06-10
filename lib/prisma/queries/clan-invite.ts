@@ -8,7 +8,7 @@ export function getClanInviteByFid(
 ) {
   const { includeClan = false } = options;
 
-  return prisma.clanInvite.findMany({
+  return prisma.clanJoinRequest.findMany({
     where: { fid },
     include: {
       clan: includeClan

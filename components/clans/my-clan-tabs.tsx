@@ -5,13 +5,15 @@ export type Tab = "members" | "requests" | "newcomers";
 interface MyClanTabsProps {
   activeTab: Tab;
   setActiveTab: (tab: Tab) => void;
+  pendingRequestsCount?: number;
 }
 
 export default function MyClanTabs({
   activeTab,
   setActiveTab,
+  pendingRequestsCount = 0,
 }: MyClanTabsProps) {
-  const tabs: { id: Tab; label: string }[] = [
+  const tabs: { id: Tab; label: string; count?: number }[] = [
     {
       id: "members",
       label: "Members",
@@ -22,7 +24,8 @@ export default function MyClanTabs({
     },
     {
       id: "newcomers",
-      label: "Newcomers",
+      label: "Joins",
+      count: pendingRequestsCount,
     },
   ];
 
@@ -57,9 +60,16 @@ export default function MyClanTabs({
             {tab.icon}
           </motion.span> */}
           {/* {activeTab === tab.id && ( */}
-          <span className="text-[10px] xs:text-xs font-medium">
-            {tab.label}
-          </span>
+          <div className="flex items-center gap-1">
+            <span className="text-[10px] xs:text-xs font-medium">
+              {tab.label}
+            </span>
+            {tab.count !== undefined && tab.count > 0 && (
+              <span className="inline-flex items-center justify-center bg-amber-500 text-[9px] rounded-full w-4 h-4 text-white">
+                {tab.count > 9 ? "9+" : tab.count}
+              </span>
+            )}
+          </div>
           {/* )} */}
         </motion.button>
       ))}

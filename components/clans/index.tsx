@@ -7,6 +7,9 @@ import MyClan from "./my-clan";
 import CreateClanModal from "./create-clan-modal";
 import { useGame } from "@/context/GameContext";
 import { SearchClan } from "./search-clan";
+import ClanOutgoingRequests from "./clan-outgoing-requests";
+import { useApiQuery } from "@/hooks/use-api-query";
+import { ClanJoinRequestWithClan } from "@/lib/prisma/types";
 
 interface ClansModalProps {
   onClose: () => void;
@@ -16,11 +19,21 @@ export default function ClansModal({ onClose }: ClansModalProps) {
   const { safeAreaInsets } = useFrameContext();
   const { state, refetch } = useGame();
   const userHasClan = Boolean(state.clan);
+  const userFid = state.user?.fid;
 
   const [mainActiveTab, setMainActiveTab] = useState<MainTab>(
     userHasClan ? "clan" : "search"
   );
   const [showCreateClanModal, setShowCreateClanModal] = useState(false);
+
+  // Get outgoing join requests if user doesn't have a clan
+  const { data: outgoingRequests = [], refetch: refetchOutgoingRequests } =
+    useApiQuery<ClanJoinRequestWithClan[]>({
+      queryKey: ["outgoing-join-requests", userFid],
+      url: userFid && !userHasClan ? `/api/user/clan-requests` : "",
+      isProtected: true,
+      enabled: !!userFid && !userHasClan,
+    });
 
   useEffect(() => {
     setMainActiveTab(userHasClan ? "clan" : "search");
@@ -87,10 +100,14 @@ export default function ClansModal({ onClose }: ClansModalProps) {
             setActiveTab={setMainActiveTab}
             activeTab={mainActiveTab}
             userHasClan={userHasClan}
+            outgoingRequestsCount={outgoingRequests?.length || 0}
           />
 
           {mainActiveTab === "clan" && <MyClan />}
-          {mainActiveTab === "search" && <SearchClan />}
+          {mainActiveTab === "search" && (
+            <SearchClan refetchOutgoingRequests={refetchOutgoingRequests} />
+          )}
+          {mainActiveTab === "outgoing" && <ClanOutgoingRequests />}
         </div>
 
         {/* Floating Create Clan Button */}

@@ -5,7 +5,7 @@ import { Lock, Unlock, X, Shield, Users, Trophy } from "lucide-react";
 import { Clan } from "@prisma/client";
 import { useClanOperations } from "@/hooks/game-actions/use-clan-operations";
 import { useGame } from "@/context/GameContext";
-import { toast } from "sonner";
+import { useCheckClanJoinRequest } from "@/hooks/use-check-clan-join-request";
 
 interface ClanWithDetails extends Clan {
   memberCount?: number;
@@ -17,33 +17,45 @@ interface ClanDetailModalProps {
   clan: ClanWithDetails;
   onClose: () => void;
   refetchClans: () => void;
+  refetchOutgoingRequests?: () => void;
 }
 
 export default function ClanDetailModal({
   clan,
   onClose,
   refetchClans,
+  refetchOutgoingRequests,
 }: ClanDetailModalProps) {
   const { state, refetch } = useGame();
   const [isJoining, setIsJoining] = useState(false);
-  const { joinClan } = useClanOperations(() => {
-    refetch.clan();
-    refetchClans();
-  });
+
+  const { joinClan } = useClanOperations(
+    () => {
+      refetch.clan();
+      refetchClans();
+    },
+    // If refetchOutgoingRequests is provided as a prop, use it, otherwise it will be undefined
+    refetchOutgoingRequests
+  );
+
+  // Check if the user has a pending join request for this clan
+  const { hasPendingRequest } = useCheckClanJoinRequest(clan?.id);
 
   const userHasClan = Boolean(state.clan);
   const userCanJoin = !userHasClan && state.level >= (clan.requiredLevel || 1);
 
   // Handle joining a clan
   const handleJoinClan = () => {
-    if (!userCanJoin || isJoining) return;
+    if (!userCanJoin || isJoining || (!clan.isPublic && hasPendingRequest))
+      return;
 
     setIsJoining(true);
-    joinClan(clan.id);
 
-    toast.success("You've joined " + clan.name + "!", {
-      position: "top-center",
-      duration: 3000,
+    // Add clan name to the join parameters for toast messages
+    joinClan({
+      clanId: clan.id,
+      isPublic: clan.isPublic,
+      clanName: clan.name,
     });
 
     // Close modal after a brief delay to show loading state
@@ -103,10 +115,6 @@ export default function ClanDetailModal({
                 />
               ) : (
                 <span className="text-2xl">🛡️</span>
-              )}
-              {/* Status indicator */}
-              {clan.isPublic && (
-                <div className="absolute top-0 right-0 w-3 h-3 bg-[#FFB938] rounded-full border border-[#8B5E3C]" />
               )}
             </div>
             <div className="flex flex-col">
@@ -190,12 +198,18 @@ export default function ClanDetailModal({
             {!userHasClan ? (
               <button
                 type="button"
-                disabled={!userCanJoin || isJoining}
+                disabled={
+                  !userCanJoin ||
+                  isJoining ||
+                  (!clan.isPublic && hasPendingRequest)
+                }
                 onClick={handleJoinClan}
                 className={`
                   flex-1 py-2 px-4 rounded text-[#7E4E31] transition-colors text-sm font-medium
                   ${
-                    !userCanJoin || isJoining
+                    !userCanJoin ||
+                    isJoining ||
+                    (!clan.isPublic && hasPendingRequest)
                       ? "bg-[#FFB938]/50 cursor-not-allowed"
                       : "bg-[#FFB938] hover:bg-[#ffc65c]"
                   }
@@ -204,28 +218,30 @@ export default function ClanDetailModal({
                 {isJoining ? (
                   <div className="flex items-center justify-center">
                     <div className="h-5 w-5 border-2 border-t-transparent border-[#7E4E31] rounded-full animate-spin mr-2"></div>
-                    Joining...
+                    Loading...
                   </div>
-                ) : (
+                ) : clan.isPublic ? (
                   "Join Clan"
+                ) : hasPendingRequest ? (
+                  "Request Pending"
+                ) : (
+                  "Request to Join"
                 )}
               </button>
-            ) : (
-              <button
-                type="button"
-                className="flex-1 py-2 px-4 rounded bg-[#6D4C2C] text-white/70 cursor-not-allowed text-sm font-medium"
-              >
-                {state.clan?.clanId === clan.id
-                  ? "Your Clan"
-                  : "Already in Clan"}
-              </button>
-            )}
+            ) : null}
           </div>
 
           {/* Message for users who don't meet the level requirement */}
           {!userHasClan && state.level < (clan.requiredLevel || 1) && (
             <p className="text-amber-400/90 text-xs text-center mt-2">
               You must be level {clan.requiredLevel} to join this clan
+            </p>
+          )}
+
+          {/* Message for users who have a pending request */}
+          {!userHasClan && !clan.isPublic && hasPendingRequest && (
+            <p className="text-amber-400/90 text-xs text-center mt-2">
+              Your request to join this clan is pending approval
             </p>
           )}
         </div>

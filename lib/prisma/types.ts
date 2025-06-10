@@ -10,6 +10,7 @@ import {
   UserCommunityDonation,
   ClanMembership,
   Clan,
+  ClanJoinRequest,
 } from "@prisma/client";
 import { Mode } from "../types/game";
 
@@ -94,3 +95,13 @@ export type ClanMember = ClanMembership & {
 export type ClanWithMembers = Clan & {
   members: ClanMember[];
 };
+
+export interface ClanJoinRequestWithClan extends ClanJoinRequest {
+  clan: {
+    id: string;
+    name: string;
+    motto: string | null;
+    imageUrl: string | null;
+    isPublic: boolean;
+  };
+}

@@ -1,12 +1,16 @@
 import {
   createClanMembership,
   deleteClanMembership,
+  getClanById,
+  createClanJoinRequest,
+  getClanJoinRequestByUserAndClan,
 } from "@/lib/prisma/queries";
 import { NextRequest, NextResponse } from "next/server";
 import z from "zod";
 
 const joinClanSchema = z.object({
   clanId: z.string().min(1, "Clan ID is required"),
+  isPublic: z.boolean().optional(),
 });
 
 export async function POST(req: NextRequest) {
@@ -20,8 +24,47 @@ export async function POST(req: NextRequest) {
     const parsedData = joinClanSchema.parse(body);
     const { clanId } = parsedData;
 
-    const membership = await createClanMembership(clanId, Number(fid));
-    return NextResponse.json(membership);
+    // Fetch the clan to double check its visibility
+    const clan = await getClanById(clanId, {});
+
+    if (!clan) {
+      return NextResponse.json({ error: "Clan not found" }, { status: 404 });
+    }
+
+    // Use the clan's actual isPublic status for security
+    const clanIsPublic = clan.isPublic;
+
+    if (clanIsPublic) {
+      // For public clans, create membership immediately
+      const membership = await createClanMembership(clanId, Number(fid));
+      return NextResponse.json({
+        success: true,
+        message: "Joined clan successfully",
+        ...membership,
+      });
+    } else {
+      // For private clans, check if a request already exists
+      const existingRequest = await getClanJoinRequestByUserAndClan(
+        Number(fid),
+        clanId
+      );
+
+      if (existingRequest) {
+        return NextResponse.json({
+          success: true,
+          message: "Join request already exists",
+          ...existingRequest,
+        });
+      }
+
+      // Create a join request
+      const joinRequest = await createClanJoinRequest(clanId, Number(fid));
+      return NextResponse.json({
+        success: true,
+        message: "Join request sent",
+        ...joinRequest,
+      });
+    }
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
