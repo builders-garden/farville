@@ -4,6 +4,7 @@ import { useClan } from "@/hooks/use-clan";
 import { Lock, Unlock, Search } from "lucide-react";
 import { Clan } from "@prisma/client";
 import { useState, useEffect, useCallback, useRef } from "react";
+import ClanDetailModal from "./clan-detail-modal";
 
 interface ClanWithDetails extends Clan {
   memberCount?: number;
@@ -13,7 +14,10 @@ interface ClanWithDetails extends Clan {
 
 export const SearchClan = () => {
   const [searchValue, setSearchValue] = useState("");
-  const { items: clans, isLoading } = useClan(searchValue, undefined);
+  const [selectedClan, setSelectedClan] = useState<ClanWithDetails | null>(
+    null
+  );
+  const { items: clans, isLoading, refetch } = useClan(searchValue, undefined);
 
   // Handle debounced search
   const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
@@ -25,7 +29,9 @@ export const SearchClan = () => {
       clearTimeout(debounceTimeout.current);
     }
 
-    debounceTimeout.current = setTimeout(() => {}, 300);
+    debounceTimeout.current = setTimeout(() => {
+      refetch();
+    }, 300);
   }, []);
 
   useEffect(() => {
@@ -101,7 +107,7 @@ export const SearchClan = () => {
                 boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
               }}
               whileTap={{ scale: 0.99 }}
-              onClick={() => {}}
+              onClick={() => setSelectedClan(clan)}
             >
               <div className="flex flex-col p-3 w-full">
                 {/* Row 1: Clan Name / Open-Closed Status */}
@@ -171,6 +177,15 @@ export const SearchClan = () => {
             </motion.div>
           ))}
         </div>
+      )}
+
+      {/* Clan Detail Modal */}
+      {selectedClan && (
+        <ClanDetailModal
+          clan={selectedClan}
+          onClose={() => setSelectedClan(null)}
+          refetchClans={refetch}
+        />
       )}
     </div>
   );

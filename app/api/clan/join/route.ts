@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const body = req.json();
+    const body = await req.json();
     const parsedData = joinClanSchema.parse(body);
     const { clanId } = parsedData;
 

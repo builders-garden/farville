@@ -24,6 +24,7 @@ export const useClanOperations = (refetchClan: () => void) => {
     body: (clanId: string) => ({ clanId }),
     method: "POST",
     onSuccess: (data) => {
+      refetchClan();
       console.log("Joined clan successfully:", data);
     },
     onError: (error: Error) => {
