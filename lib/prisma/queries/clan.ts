@@ -15,9 +15,6 @@ export function getClans(filters?: {
     includeLeader: includeClanLeader = false,
   } = filters || {};
 
-  console.log("strToSearch", strToSearch);
-  console.log("isPublic", isPublic);
-
   return prisma.clan.findMany({
     where: {
       ...(strToSearch !== ""

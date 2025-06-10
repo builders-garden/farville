@@ -8,11 +8,13 @@ import { Checkbox } from "@/components/ui/checkbox";
 interface CreateClanModalProps {
   onClose: () => void;
   onSuccess?: () => void;
+  refetchClan: () => void;
 }
 
 export default function CreateClanModal({
   onClose,
   onSuccess,
+  refetchClan,
 }: CreateClanModalProps) {
   const [name, setName] = useState("");
   const [motto, setMotto] = useState("");
@@ -21,7 +23,7 @@ export default function CreateClanModal({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
 
-  const { createClan } = useClanOperations();
+  const { createClan } = useClanOperations(refetchClan);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

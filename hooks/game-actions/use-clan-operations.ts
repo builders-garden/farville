@@ -1,6 +1,6 @@
 import { useApiMutation } from "../use-api-mutation";
 
-export const useClanOperations = () => {
+export const useClanOperations = (refetchClan: () => void) => {
   const { mutate: createClan } = useApiMutation({
     url: () => `/api/clan`,
     body: (clanData: {
@@ -11,6 +11,7 @@ export const useClanOperations = () => {
     }) => clanData,
     method: "POST",
     onSuccess: (data) => {
+      refetchClan();
       console.log("Clan created successfully:", data);
     },
     onError: (error: Error) => {

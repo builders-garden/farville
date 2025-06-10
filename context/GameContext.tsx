@@ -15,7 +15,7 @@ import {
   type CropType,
   type SeedType,
 } from "../lib/types/game";
-import { GameState, useGameState } from "@/hooks/use-game-state";
+import { GameState, RefetchType, useGameState } from "@/hooks/use-game-state";
 import { useBuyItem } from "@/hooks/game-actions/use-buy-item";
 import { useExpandGrid } from "@/hooks/game-actions/use-expand-grid";
 import { useSellItem } from "@/hooks/game-actions/use-sell-item";
@@ -161,18 +161,7 @@ interface GameContextType {
     lastDonation?: Date;
   }) => void;
   makeAllGridCellsHarvestable: () => void;
-  refetch: {
-    all: () => Promise<void>;
-    userItems: () => Promise<void>;
-    items: () => Promise<void>;
-    user: () => Promise<void>;
-    grid: () => Promise<void>;
-    claimableQuests: () => Promise<void>;
-    streaks: () => Promise<void>;
-    frosts: () => Promise<void>;
-    userModes: () => Promise<void>;
-    communityDonations: () => Promise<void>;
-  };
+  refetch: RefetchType;
 }
 
 export const GameContext = createContext<GameContextType | null>(null);

@@ -1,7 +1,7 @@
 import { useFrameContext } from "@/context/FrameContext";
 import { motion } from "framer-motion";
 import { Plus, X } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import MainClanTabs, { Tab as MainTab } from "./main-tabs";
 import MyClan from "./my-clan";
 import CreateClanModal from "./create-clan-modal";
@@ -22,10 +22,14 @@ export default function ClansModal({ onClose }: ClansModalProps) {
   );
   const [showCreateClanModal, setShowCreateClanModal] = useState(false);
 
+  useEffect(() => {
+    setMainActiveTab(userHasClan ? "clan" : "search");
+  }, [state.clan, userHasClan]);
+
   // Function to handle successful clan creation
   const handleClanCreationSuccess = () => {
     // Refresh all game state to ensure we get updated clan data
-    refetch.all();
+    refetch.clan();
 
     // Note: The TypeScript declaration in GameContext is missing the 'clan' property
     // but it exists in the implementation in use-game-state.tsx
@@ -111,6 +115,7 @@ export default function ClansModal({ onClose }: ClansModalProps) {
           <CreateClanModal
             onClose={() => setShowCreateClanModal(false)}
             onSuccess={handleClanCreationSuccess}
+            refetchClan={refetch.clan}
           />
         )}
       </motion.div>
