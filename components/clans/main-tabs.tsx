@@ -5,13 +5,15 @@ export type Tab = "clan" | "search" | "leaderboard";
 interface MainClanTabsProps {
   activeTab: Tab;
   setActiveTab: (tab: Tab) => void;
+  userHasClan: boolean;
 }
 
 export default function MainClanTabs({
   activeTab,
   setActiveTab,
+  userHasClan,
 }: MainClanTabsProps) {
-  const tabs: { id: Tab; label: string; icon: string }[] = [
+  const allTabs: { id: Tab; label: string; icon: string }[] = [
     {
       id: "clan",
       label: "Clan",
@@ -28,6 +30,9 @@ export default function MainClanTabs({
       icon: "📊", // Replace with your actual icon component
     },
   ];
+
+  // Filter out the clan tab if user doesn't have a clan
+  const tabs = allTabs.filter((tab) => userHasClan || tab.id !== "clan");
 
   return (
     <div className="grid grid-cols-3 gap-2 my-4">
