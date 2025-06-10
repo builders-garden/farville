@@ -10,6 +10,8 @@ export async function GET(
 
     const clanData = await getClanById(id, {
       includeMembers: true,
+      includeRequests: true,
+      includeJoinRequests: true,
     });
 
     return NextResponse.json(clanData);
