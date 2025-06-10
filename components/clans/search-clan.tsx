@@ -1,6 +1,6 @@
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { useClan } from "@/hooks/use-clan";
+import { useClans } from "@/hooks/use-clans";
 import { Lock, Unlock, Search } from "lucide-react";
 import { Clan } from "@prisma/client";
 import { useState, useEffect, useCallback, useRef } from "react";
@@ -13,7 +13,7 @@ interface ClanWithDetails extends Clan {
 
 export const SearchClan = () => {
   const [searchValue, setSearchValue] = useState("");
-  const { items: clans, isLoading } = useClan(searchValue, undefined);
+  const { items: clans, isLoading } = useClans(searchValue, undefined);
 
   // Handle debounced search
   const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
@@ -61,10 +61,7 @@ export const SearchClan = () => {
     <div className="flex flex-col w-full">
       {/* Search Bar - Always visible */}
       <div className="flex items-center bg-[#6D4C2C] rounded-lg p-2 mb-3 border border-[#8B5E3C]/50">
-        <Search
-          size={16}
-          className="text-white/70 mr-2"
-        />
+        <Search size={16} className="text-white/70 mr-2" />
         <input
           type="text"
           placeholder="Clan Name..."
@@ -111,15 +108,9 @@ export const SearchClan = () => {
                   </h3>
                   <div className="flex items-center text-xs text-white/70">
                     {clan.isPublic ? (
-                      <Unlock
-                        size={14}
-                        className="mr-1"
-                      />
+                      <Unlock size={14} className="mr-1" />
                     ) : (
-                      <Lock
-                        size={14}
-                        className="mr-1"
-                      />
+                      <Lock size={14} className="mr-1" />
                     )}
                   </div>
                 </div>
