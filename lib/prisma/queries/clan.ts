@@ -54,10 +54,16 @@ export function getClanById(
   options?: {
     includeMembers?: boolean;
     includeLeader?: boolean;
+    includeRequests?: boolean;
+    includeJoinRequests?: boolean;
   }
 ) {
-  const { includeMembers = false, includeLeader: includeClanLeader = false } =
-    options || {};
+  const {
+    includeMembers = false,
+    includeLeader: includeClanLeader = false,
+    includeRequests = false,
+    includeJoinRequests = false,
+  } = options || {};
 
   return prisma.clan.findUnique({
     where: { id: clanId },
@@ -89,6 +95,53 @@ export function getClanById(
             select: {
               fid: true,
               username: true,
+            },
+          }
+        : false,
+      requests: includeRequests
+        ? {
+            select: {
+              requestId: true,
+              request: {
+                select: {
+                  fid: true,
+                  itemId: true,
+                  quantity: true,
+                  filledQuantity: true,
+                  createdAt: true,
+                  item: {
+                    select: {
+                      id: true,
+                      name: true,
+                      icon: true,
+                      slug: true,
+                      category: true,
+                    },
+                  },
+                },
+              },
+            },
+            orderBy: {
+              request: {
+                createdAt: "desc",
+              },
+            },
+          }
+        : false,
+      joinRequests: includeJoinRequests
+        ? {
+            select: {
+              fid: true,
+              user: {
+                select: {
+                  username: true,
+                  displayName: true,
+                  avatarUrl: true,
+                  selectedAvatarUrl: true,
+                  mintedOG: true,
+                },
+              },
+              createdAt: true,
             },
           }
         : false,

@@ -10,6 +10,7 @@ import {
   UserCommunityDonation,
   ClanMembership,
   Clan,
+  ClanRequest,
 } from "@prisma/client";
 import { Mode } from "../types/game";
 
@@ -91,6 +92,25 @@ export type ClanMember = ClanMembership & {
   };
 };
 
-export type ClanWithMembers = Clan & {
+export type ClanRequestWithItemData = ClanRequest & {
+  request: {
+    fid: number;
+    itemId: string;
+    quantity: number;
+    filledQuantity: number;
+    createdAt: Date;
+    item: Item | null;
+  };
+};
+
+export type ClanRequestToJoin = {
+  fid: number;
+  user: ClanMember["user"];
+  createdAt: Date;
+};
+
+export type ClanWithData = Clan & {
   members: ClanMember[];
+  requests: ClanRequestWithItemData[];
+  joinRequests: ClanRequestToJoin[];
 };

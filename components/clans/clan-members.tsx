@@ -18,6 +18,10 @@ export default function ClanMembers({ members }: ClanMembersProps) {
   return (
     <>
       <div className="w-full max-w-2xl space-y-2">
+        <div className="flex justify-between items-center p-3 text-white/70 text-sm">
+          <span>Your farmers</span>
+          <span>{members.length}/20</span>
+        </div>
         {members.map((member, index) => (
           <Card
             key={member.fid}
@@ -78,6 +82,7 @@ export default function ClanMembers({ members }: ClanMembersProps) {
 
       {selectedMember && (
         <ClanMemberModal
+          fid={selectedMember.fid}
           username={selectedMember.user.username}
           displayName={selectedMember.user.displayName || ""}
           role={selectedMember.role}

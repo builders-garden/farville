@@ -80,15 +80,16 @@ model Referral {
 }
 
 model Request {
-  id             String   @id @default(dbgenerated("gen_random_uuid()"))
+  id             String        @id @default(dbgenerated("gen_random_uuid()"))
   fid            Int
   itemId         Int?
   quantity       Int
   filledQuantity Int
-  createdAt      DateTime @default(dbgenerated("(now() AT TIME ZONE 'utc'::text)")) @db.Timestamptz(6)
-  mode           String   @default("classic")
-  user           User     @relation(fields: [fid], references: [fid], onDelete: NoAction, onUpdate: NoAction)
-  item           Item?    @relation(fields: [itemId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "request_itemid_fkey")
+  createdAt      DateTime      @default(dbgenerated("(now() AT TIME ZONE 'utc'::text)")) @db.Timestamptz(6)
+  mode           String        @default("classic")
+  user           User          @relation(fields: [fid], references: [fid], onDelete: NoAction, onUpdate: NoAction)
+  item           Item?         @relation(fields: [itemId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "request_itemid_fkey")
+  clan           ClanRequest[]
 
   @@map("request")
 }
@@ -117,6 +118,10 @@ model User {
   mintedOG              Boolean                 @default(false)
   createdAt             DateTime                @default(now()) @db.Timestamptz(6)
   selectedAvatarUrl     String?
+  createdClans          Clan[]                  @relation("ClanCreator")
+  leaderClans           Clan[]                  @relation("ClanLeader")
+  clan_join_request     ClanJoinRequest[]
+  clan                  ClanMembership?
   referrals             Referral[]
   requests              Request[]
   streaks               Streak[]
@@ -132,10 +137,6 @@ model User {
   leaderboardEntries    UserLeaderboardEntry[]
   notifications         UserNotification[]
   statistics            UserStatistic[]
-  createdClans          Clan[]                  @relation("ClanCreator")
-  leaderClans           Clan[]                  @relation("ClanLeader")
-  clan                  ClanMembership?
-  clanInvites           ClanInvite[]
 
   @@map("user")
 }
@@ -345,22 +346,23 @@ model CommunityBoosterPoints {
 }
 
 model Clan {
-  id         String           @id @default(dbgenerated("gen_random_uuid()"))
-  name       String           @unique
-  motto      String
-  createdBy  Int
-  leaderFid  Int
-  imageUrl   String?
-  isPublic   Boolean          @default(false)
-  maxMembers Int              @default(20)
-  xp         Int              @default(0)
-  txHash     String?
-  createdAt  DateTime         @default(now()) @db.Timestamptz(6)
-  updatedAt  DateTime         @default(now()) @db.Timestamptz(6)
-  creator    User             @relation("ClanCreator", fields: [createdBy], references: [fid], onDelete: NoAction, onUpdate: NoAction, map: "clan_created_by_fkey")
-  leader     User             @relation("ClanLeader", fields: [leaderFid], references: [fid], onDelete: NoAction, onUpdate: NoAction, map: "clan_leader_fid_fkey")
-  members    ClanMembership[]
-  invites    ClanInvite[]
+  id           String            @id @default(dbgenerated("gen_random_uuid()"))
+  name         String            @unique
+  motto        String
+  createdBy    Int
+  leaderFid    Int
+  imageUrl     String?
+  isPublic     Boolean           @default(false)
+  maxMembers   Int               @default(20)
+  xp           Int               @default(0)
+  txHash       String?
+  createdAt    DateTime          @default(now()) @db.Timestamptz(6)
+  updatedAt    DateTime          @default(now()) @db.Timestamptz(6)
+  creator      User              @relation("ClanCreator", fields: [createdBy], references: [fid], onDelete: NoAction, onUpdate: NoAction, map: "clan_created_by_fkey")
+  leader       User              @relation("ClanLeader", fields: [leaderFid], references: [fid], onDelete: NoAction, onUpdate: NoAction, map: "clan_leader_fid_fkey")
+  joinRequests ClanJoinRequest[]
+  members      ClanMembership[]
+  requests     ClanRequest[]
 
   @@map("clan")
 }
@@ -371,16 +373,16 @@ model ClanMembership {
   role          String   @default("member")
   joinedAt      DateTime @default(now()) @db.Timestamptz(6)
   xpContributed Int      @default(0)
-
-  clan Clan @relation(fields: [clanId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "clan_membership_clanid_fkey")
-  user User @relation(fields: [fid], references: [fid], onDelete: Cascade, onUpdate: NoAction, map: "clan_membership_fid_fkey")
+  clan          Clan     @relation(fields: [clanId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "clan_membership_clanid_fkey")
+  user          User     @relation(fields: [fid], references: [fid], onDelete: Cascade, onUpdate: NoAction, map: "clan_membership_fid_fkey")
 
   @@index([clanId], map: "idx_clan_membership_clanid")
   @@map("clan_membership")
 }
 
-model ClanInvite {
-  id        String   @id @default(dbgenerated("gen_random_uuid()"))
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model ClanJoinRequest {
+  id        String   @id(map: "clan_invite_pkey") @default(dbgenerated("gen_random_uuid()"))
   clanId    String
   fid       Int
   createdAt DateTime @default(now()) @db.Timestamptz(6)
@@ -388,5 +390,15 @@ model ClanInvite {
   user      User     @relation(fields: [fid], references: [fid], onDelete: Cascade, onUpdate: NoAction, map: "clan_invite_fid_fkey")
 
   @@unique([clanId, fid], map: "clan_invite_clanid_fid_key")
-  @@map("clan_invite")
+  @@map("clan_join_request")
+}
+
+model ClanRequest {
+  requestId String
+  clanId    String
+  request   Request @relation(fields: [requestId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "clan_request_requestid_fkey")
+  clan      Clan    @relation(fields: [clanId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "clan_request_clanid_fkey")
+
+  @@id([requestId, clanId], map: "clan_request_pkey")
+  @@map("clan_request")
 }

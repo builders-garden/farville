@@ -1,8 +1,8 @@
 import { useApiQuery } from "./use-api-query";
-import { ClanWithMembers } from "@/lib/prisma/types";
+import { ClanWithData } from "@/lib/prisma/types";
 
 export const useClan = (id?: string) => {
-  const { data, isLoading, refetch } = useApiQuery<ClanWithMembers>({
+  const { data, isLoading, refetch } = useApiQuery<ClanWithData>({
     queryKey: ["clan", id],
     url: `/api/clan/${id}`,
     isProtected: true,
