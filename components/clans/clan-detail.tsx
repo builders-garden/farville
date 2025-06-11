@@ -7,7 +7,7 @@ import { useState } from "react";
 import ConfirmationModal from "@/components/modals/ConfirmationModal";
 
 interface ClanDetailProps {
-  clanData: ClanWithData;
+  clanData: ClanWithData | undefined;
 }
 
 export function ClanDetail({ clanData }: ClanDetailProps) {
@@ -31,6 +31,16 @@ export function ClanDetail({ clanData }: ClanDetailProps) {
       },
     });
   };
+
+  if (!clanData) {
+    return (
+      <Card className="bg-gradient-to-br from-[#6D4C2C] to-[#5B4120] rounded-lg border-none w-full max-w-2xl">
+        <CardContent className="flex items-center justify-center p-6">
+          <Loader2 className="w-8 h-8 animate-spin text-white/70" />
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="bg-gradient-to-br from-[#6D4C2C] to-[#5B4120] rounded-lg border-none w-full max-w-2xl">
@@ -65,7 +75,10 @@ export function ClanDetail({ clanData }: ClanDetailProps) {
         <div className="flex flex-col w-full gap-2">
           <div className="flex flex-row justify-between text-white/70">
             <div className="flex flex-col gap-2 text-xs font-semibold">
-              <span>Required Level: 2</span>
+              <span>
+                Min Level:{" "}
+                {clanData.requiredLevel ? clanData.requiredLevel : "None"}
+              </span>
               <span>1.34M XP</span>
             </div>
             <button

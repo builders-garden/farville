@@ -12,6 +12,7 @@ import z from "zod";
 const joinClanSchema = z.object({
   clanId: z.string().min(1, "Clan ID is required"),
   isPublic: z.boolean().optional(),
+  userLevel: z.number().optional(),
 });
 
 export async function POST(req: NextRequest) {
@@ -23,7 +24,7 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const parsedData = joinClanSchema.parse(body);
-    const { clanId } = parsedData;
+    const { clanId, userLevel } = parsedData;
 
     // Fetch the clan to double check its visibility
     const clan = await getClanById(clanId, {});
@@ -34,6 +35,16 @@ export async function POST(req: NextRequest) {
 
     // Use the clan's actual isPublic status for security
     const clanIsPublic = clan.isPublic;
+
+    // Check if the user meets the level requirement (if the clan has one)
+    if (clan.requiredLevel && userLevel && userLevel < clan.requiredLevel) {
+      return NextResponse.json(
+        {
+          error: `You need to be level ${clan.requiredLevel} to join this clan`,
+        },
+        { status: 403 }
+      );
+    }
 
     if (clanIsPublic) {
       // For public clans, create membership immediately

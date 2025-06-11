@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { useClanOperations } from "@/hooks/game-actions/use-clan-operations";
+import { useGame } from "@/context/GameContext";
 import Image from "next/image";
 import { X } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -16,10 +17,14 @@ export default function CreateClanModal({
   onSuccess,
   refetchClan,
 }: CreateClanModalProps) {
+  const { state } = useGame();
+  const userLevel = state.level;
+  
   const [name, setName] = useState("");
   const [motto, setMotto] = useState("");
   const [isPublic, setIsPublic] = useState(true);
   const [imageUrl, setImageUrl] = useState("");
+  const [requiredLevel, setRequiredLevel] = useState<number | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitState, setSubmitState] = useState<
     "idle" | "creating" | "success"
@@ -48,6 +53,7 @@ export default function CreateClanModal({
           motto,
           isPublic,
           ...(imageUrl && { imageUrl }),
+          ...(requiredLevel && { requiredLevel }),
         },
         {
           onSuccess: () => {
@@ -97,7 +103,7 @@ export default function CreateClanModal({
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-white/90 font-bold text-lg flex items-center gap-2">
             <span className="text-xl">🛡️</span>
-            Create a New Clan
+            New Clan
           </h3>
           <button
             onClick={onClose}
@@ -121,13 +127,13 @@ export default function CreateClanModal({
 
           <div className="space-y-2">
             <label className="block text-white/80 text-sm font-medium">
-              Clan Name*
+              Name*
             </label>
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Enter clan name"
+              placeholder="Clan name"
               className="w-full bg-[#5A4129] border border-[#8B5E3C] text-white/90 rounded-md px-3 py-2 placeholder:text-white/40 focus:outline-none focus:border-[#FFB938]"
               maxLength={20}
             />
@@ -141,7 +147,7 @@ export default function CreateClanModal({
               type="text"
               value={motto}
               onChange={(e) => setMotto(e.target.value)}
-              placeholder="Enter clan motto"
+              placeholder="Clan slogan"
               className="w-full bg-[#5A4129] border border-[#8B5E3C] text-white/90 rounded-md px-3 py-2 placeholder:text-white/40 focus:outline-none focus:border-[#FFB938]"
               maxLength={40}
             />
@@ -149,13 +155,13 @@ export default function CreateClanModal({
 
           <div className="space-y-2">
             <label className="block text-white/80 text-sm font-medium">
-              Image URL (optional)
+              Image URL
             </label>
             <input
               type="text"
               value={imageUrl}
               onChange={(e) => setImageUrl(e.target.value)}
-              placeholder="Enter image URL"
+              placeholder="Optional clan image"
               className="w-full bg-[#5A4129] border border-[#8B5E3C] text-white/90 rounded-md px-3 py-2 placeholder:text-white/40 focus:outline-none focus:border-[#FFB938]"
             />
             {imageUrl && (
@@ -171,6 +177,34 @@ export default function CreateClanModal({
             )}
           </div>
 
+          {userLevel > 1 && (
+            <div className="space-y-2">
+              <label className="block text-white/80 text-sm font-medium">
+                Min Level
+              </label>
+              <select
+                value={requiredLevel || ""}
+                onChange={(e) =>
+                  setRequiredLevel(e.target.value ? Number(e.target.value) : null)
+                }
+                className="w-full bg-[#5A4129] border border-[#8B5E3C] text-white/90 rounded-md px-3 py-2 focus:outline-none focus:border-[#FFB938]"
+              >
+                <option value="">None</option>
+                {Array.from(
+                  { length: Math.min(userLevel - 1, 19) }, 
+                  (_, i) => i + 2
+                ).map((level) => (
+                  <option
+                    key={level}
+                    value={level}
+                  >
+                    Lvl {level}+
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
           <div className="flex items-center space-x-2">
             <Checkbox
               id="public"
@@ -182,7 +216,7 @@ export default function CreateClanModal({
               htmlFor="public"
               className="text-sm text-white/80"
             >
-              Make clan public
+              Public clan
             </label>
           </div>
 
@@ -229,10 +263,10 @@ export default function CreateClanModal({
                       d="M5 13l4 4L19 7"
                     />
                   </svg>
-                  Created!
+                  Done!
                 </div>
               ) : (
-                "Create Clan"
+                "Create"
               )}
             </button>
           </div>

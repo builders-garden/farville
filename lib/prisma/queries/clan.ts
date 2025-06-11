@@ -157,6 +157,7 @@ export function createClan(data: {
   isPublic?: boolean;
   imageUrl?: string;
   txHash?: string;
+  requiredLevel?: number;
 }) {
   return prisma.$transaction(async (tx) => {
     const clanData: Prisma.ClanUncheckedCreateInput = {
@@ -167,6 +168,7 @@ export function createClan(data: {
       isPublic: data.isPublic ?? true,
       imageUrl: data.imageUrl ?? "",
       txHash: data.txHash ?? "",
+      requiredLevel: data.requiredLevel ?? null,
     };
 
     const clan = await tx.clan.create({

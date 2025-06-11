@@ -10,7 +10,6 @@ import { useCheckClanJoinRequest } from "@/hooks/use-check-clan-join-request";
 interface ClanWithDetails extends Clan {
   memberCount?: number;
   level?: number;
-  requiredLevel?: number;
 }
 
 interface ClanDetailModalProps {
@@ -42,7 +41,9 @@ export default function ClanDetailModal({
   const { hasPendingRequest } = useCheckClanJoinRequest(clan?.id);
 
   const userHasClan = Boolean(state.clan);
-  const userCanJoin = !userHasClan && state.level >= (clan.requiredLevel || 1);
+  // If no required level is set, any level can join
+  const userCanJoin =
+    !userHasClan && (!clan.requiredLevel || state.level >= clan.requiredLevel);
 
   // Handle joining a clan
   const handleJoinClan = () => {
@@ -51,11 +52,12 @@ export default function ClanDetailModal({
 
     setIsJoining(true);
 
-    // Add clan name to the join parameters for toast messages
+    // Add clan name and user level to the join parameters for level validation and toast messages
     joinClan({
       clanId: clan.id,
       isPublic: clan.isPublic,
       clanName: clan.name,
+      userLevel: state.level,
     });
 
     // Close modal after a brief delay to show loading state
@@ -180,7 +182,7 @@ export default function ClanDetailModal({
                 className="text-white/80 mb-1"
               />
               <span className="text-xs font-medium text-white/90">
-                Lvl {clan.requiredLevel}
+                {clan.requiredLevel ? `Lvl ${clan.requiredLevel}` : "No Req"}
               </span>
               <span className="text-[10px] text-white/70">required</span>
             </div>
@@ -221,22 +223,24 @@ export default function ClanDetailModal({
                     Loading...
                   </div>
                 ) : clan.isPublic ? (
-                  "Join Clan"
+                  "Join"
                 ) : hasPendingRequest ? (
-                  "Request Pending"
+                  "Pending"
                 ) : (
-                  "Request to Join"
+                  "Request"
                 )}
               </button>
             ) : null}
           </div>
 
           {/* Message for users who don't meet the level requirement */}
-          {!userHasClan && state.level < (clan.requiredLevel || 1) && (
-            <p className="text-amber-400/90 text-xs text-center mt-2">
-              You must be level {clan.requiredLevel} to join this clan
-            </p>
-          )}
+          {!userHasClan &&
+            clan.requiredLevel &&
+            state.level < clan.requiredLevel && (
+              <p className="text-amber-400/90 text-xs text-center mt-2">
+                You must be level {clan.requiredLevel} to join this clan
+              </p>
+            )}
 
           {/* Message for users who have a pending request */}
           {!userHasClan && !clan.isPublic && hasPendingRequest && (

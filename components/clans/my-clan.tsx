@@ -34,7 +34,7 @@ export default function MyClan() {
 
   return (
     <div className="flex flex-col items-center justify-center w-full pb-8 gap-2">
-      <ClanDetail clanData={clanData!} />
+      <ClanDetail clanData={clanData} />
 
       <MyClanTabs
         activeTab={activeTab}

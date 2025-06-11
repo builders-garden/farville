@@ -9,7 +9,6 @@ import ClanDetailModal from "./clan-detail-modal";
 interface ClanWithDetails extends Clan {
   memberCount?: number;
   level?: number;
-  requiredLevel?: number;
 }
 
 interface SearchClanProps {
@@ -64,13 +63,12 @@ export const SearchClan = ({
     };
   }, [setSearchRefetch, refetch]);
 
-  // Mock clan details that would come from the backend
+  // Add member count and level info to clan data
   const clansWithDetails: ClanWithDetails[] =
     clans?.map((clan) => ({
       ...clan,
-      memberCount: 12,
-      level: 2,
-      requiredLevel: 2,
+      memberCount: 0, // This would come from the backend in a real implementation
+      level: 1, // This would come from the backend in a real implementation
     })) || [];
 
   // Format XP for display
@@ -182,7 +180,8 @@ export const SearchClan = ({
                     {/* Stats Row 2: Required Level / Members */}
                     <div className="flex justify-between items-center mt-2">
                       <span className="text-[10px] text-white/80">
-                        Required Lvl: {clan.requiredLevel}
+                        Min Lvl:{" "}
+                        {clan.requiredLevel ? clan.requiredLevel : "None"}
                       </span>
                       <span className="text-[9px] text-white/90">
                         {clan.memberCount}/{clan.maxMembers}

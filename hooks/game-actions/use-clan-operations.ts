@@ -12,6 +12,7 @@ export const useClanOperations = (
       motto: string;
       isPublic?: boolean;
       txHash?: string;
+      requiredLevel?: number;
     }) => clanData,
     method: "POST",
     onSuccess: (data) => {
@@ -39,6 +40,7 @@ export const useClanOperations = (
       isPublic?: boolean;
       txHash?: string;
       imageUrl?: string;
+      requiredLevel?: number;
     },
     callbacks?: {
       onSuccess?: () => void;
@@ -63,9 +65,15 @@ export const useClanOperations = (
 
   const { mutate: joinClan } = useApiMutation({
     url: () => `/api/clan/join`,
-    body: (data: { clanId: string; isPublic: boolean; clanName: string }) => ({
+    body: (data: {
+      clanId: string;
+      isPublic: boolean;
+      clanName: string;
+      userLevel?: number;
+    }) => ({
       clanId: data.clanId,
       isPublic: data.isPublic,
+      userLevel: data.userLevel,
     }),
     method: "POST",
     onSuccess: (data, variables) => {

@@ -346,23 +346,24 @@ model CommunityBoosterPoints {
 }
 
 model Clan {
-  id           String            @id @default(dbgenerated("gen_random_uuid()"))
-  name         String            @unique
-  motto        String
-  createdBy    Int
-  leaderFid    Int
-  imageUrl     String?
-  isPublic     Boolean           @default(false)
-  maxMembers   Int               @default(20)
-  xp           Int               @default(0)
-  txHash       String?
-  createdAt    DateTime          @default(now()) @db.Timestamptz(6)
-  updatedAt    DateTime          @default(now()) @db.Timestamptz(6)
-  creator      User              @relation("ClanCreator", fields: [createdBy], references: [fid], onDelete: NoAction, onUpdate: NoAction, map: "clan_created_by_fkey")
-  leader       User              @relation("ClanLeader", fields: [leaderFid], references: [fid], onDelete: NoAction, onUpdate: NoAction, map: "clan_leader_fid_fkey")
-  joinRequests ClanJoinRequest[]
-  members      ClanMembership[]
-  requests     ClanRequest[]
+  id            String            @id @default(dbgenerated("gen_random_uuid()"))
+  name          String            @unique
+  motto         String
+  createdBy     Int
+  leaderFid     Int
+  imageUrl      String?
+  isPublic      Boolean           @default(false)
+  maxMembers    Int               @default(20)
+  xp            Int               @default(0)
+  txHash        String?
+  createdAt     DateTime          @default(now()) @db.Timestamptz(6)
+  updatedAt     DateTime          @default(now()) @db.Timestamptz(6)
+  requiredLevel Int?
+  creator       User              @relation("ClanCreator", fields: [createdBy], references: [fid], onDelete: NoAction, onUpdate: NoAction, map: "clan_created_by_fkey")
+  leader        User              @relation("ClanLeader", fields: [leaderFid], references: [fid], onDelete: NoAction, onUpdate: NoAction, map: "clan_leader_fid_fkey")
+  joinRequests  ClanJoinRequest[]
+  members       ClanMembership[]
+  requests      ClanRequest[]
 
   @@map("clan")
 }

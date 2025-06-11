@@ -26,6 +26,7 @@ const createClanSchema = z.object({
   isPublic: z.boolean().optional(),
   imageUrl: z.string().url().optional(),
   txHash: z.string().max(66).optional(),
+  requiredLevel: z.number().int().min(1).optional(),
 });
 
 export async function POST(req: NextRequest) {
