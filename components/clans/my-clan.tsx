@@ -50,7 +50,11 @@ export default function MyClan() {
       />
 
       {activeTab === "members" && !isLoading && clanData && (
-        <ClanMembers members={clanData.members} />
+        <ClanMembers
+          members={clanData.members}
+          clanId={clanData.id}
+          onMemberUpdate={refetchClan}
+        />
       )}
 
       {activeTab === "newcomers" && !isLoading && clanData && (

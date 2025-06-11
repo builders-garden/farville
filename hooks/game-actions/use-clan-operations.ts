@@ -209,10 +209,73 @@ export const useClanOperations = (
     });
   };
 
+  const { mutate: _manageMember } = useApiMutation({
+    url: (data: { fid: number }) => `/api/clan/members/${data.fid}`,
+    body: (data: {
+      fid: number;
+      action: "promote" | "demote" | "kick";
+      clanId: string;
+    }) => ({
+      action: data.action,
+      clanId: data.clanId,
+    }),
+    method: "PATCH",
+    onSuccess: (data, variables) => {
+      refetchClan();
+      const actionText =
+        variables.action === "promote"
+          ? "promoted"
+          : variables.action === "demote"
+          ? "demoted"
+          : "kicked";
+      toast.success(`Member ${actionText} successfully!`, {
+        position: "top-center",
+        duration: 3000,
+      });
+      console.log("Member action completed successfully:", data);
+    },
+    onError: (error: Error) => {
+      console.error("Error managing member:", error);
+      toast.error("Failed to perform member action", {
+        position: "top-center",
+        duration: 3000,
+      });
+    },
+  });
+
+  // Wrapper function for manageMember that supports callbacks
+  const manageMember = (
+    data: {
+      fid: number;
+      action: "promote" | "demote" | "kick";
+      clanId: string;
+    },
+    callbacks?: {
+      onSuccess?: () => void;
+      onError?: (error: Error) => void;
+    }
+  ) => {
+    _manageMember(data, {
+      onSuccess: () => {
+        // Call the callback if provided
+        if (callbacks?.onSuccess) {
+          callbacks.onSuccess();
+        }
+      },
+      onError: (error) => {
+        // Call the callback if provided
+        if (callbacks?.onError) {
+          callbacks.onError(error);
+        }
+      },
+    });
+  };
+
   return {
     createClan,
     joinClan,
     leaveClan,
     updateClan,
+    manageMember,
   };
 };

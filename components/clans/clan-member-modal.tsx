@@ -8,6 +8,8 @@ import {
 } from "@/components/ui/dialog";
 import { useState } from "react";
 import ProfileModal from "../ProfileModal";
+import { useClanOperations } from "@/hooks/game-actions/use-clan-operations";
+import { ClanRole } from "@/lib/types/game";
 
 interface ClanMemberModalProps {
   fid: number;
@@ -20,6 +22,9 @@ interface ClanMemberModalProps {
   joinedAt: Date;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  currentUserRole?: string;
+  clanId?: string;
+  onMemberUpdate?: () => void;
 }
 
 export default function ClanMemberModal({
@@ -33,21 +38,75 @@ export default function ClanMemberModal({
   joinedAt,
   open,
   onOpenChange,
+  currentUserRole,
+  clanId,
+  onMemberUpdate,
 }: ClanMemberModalProps) {
   const [selectedUserFid, setSelectedUserFid] = useState<number | undefined>(
     undefined
   );
+  const [processingAction, setProcessingAction] = useState<"promote" | "demote" | "kick" | null>(null);
+
+  const { manageMember } = useClanOperations(() => {
+    // Call the refetch function passed from parent instead of full page reload
+    if (onMemberUpdate) {
+      onMemberUpdate();
+    }
+  });
 
   const handleCloseProfile = () => {
     setSelectedUserFid(undefined);
   };
 
+  const handleMemberAction = (action: "promote" | "demote" | "kick") => {
+    if (!clanId || processingAction) return;
+
+    setProcessingAction(action);
+    manageMember(
+      {
+        fid,
+        action,
+        clanId,
+      },
+      {
+        onSuccess: () => {
+          setProcessingAction(null);
+          onOpenChange(false);
+        },
+        onError: () => {
+          setProcessingAction(null);
+        },
+      }
+    );
+  };
+
+  // Determine what buttons to show based on current user's role
+  const currentUserIsLeaderOrOfficer =
+    currentUserRole === ClanRole.Leader || currentUserRole === ClanRole.Officer;
+
+  const currentUserIsLeader = currentUserRole === ClanRole.Leader;
+
+  // Can promote if: current user is leader AND target is member
+  const canPromote = currentUserIsLeader && role === ClanRole.Member;
+
+  // Can demote if: current user is leader AND target is officer
+  const canDemote = currentUserIsLeader && role === ClanRole.Officer;
+
+  // Can kick if: current user is leader/officer AND target is not leader AND not targeting self
+  const canKick = currentUserIsLeaderOrOfficer && role !== ClanRole.Leader;
+
   return (
     <>
       {selectedUserFid ? (
-        <ProfileModal onClose={handleCloseProfile} userFid={selectedUserFid} />
+        <ProfileModal
+          onClose={handleCloseProfile}
+          userFid={selectedUserFid}
+        />
       ) : (
-        <Dialog open={open} onOpenChange={onOpenChange}>
+        <Dialog
+          open={open}
+          onOpenChange={onOpenChange}
+        >
           <DialogContent className="w-[360px] bg-[#7E4E31] border-[#8B5E3C]/50 rounded-lg">
             <DialogHeader hidden>
               <DialogTitle hidden>{username}&apos;s profile</DialogTitle>
@@ -96,25 +155,52 @@ export default function ClanMemberModal({
               />
             </div>
             {/* Buttons */}
-            <div className="flex flex-row w-full justify-between gap-2 mt-3">
+            <div className="flex flex-col w-full gap-2 mt-3">
+              {/* Always show View Profile button */}
               <button
-                className="px-3 py-1 bg-[#8B5E3C] rounded-lg text-xs text-white hover:bg-[#7B5B30] transition-colors"
+                className="w-full px-3 py-2 bg-[#8B5E3C] rounded-lg text-xs text-white hover:bg-[#7B5B30] transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[#8B5E3C]"
                 onClick={() => {
-                  // Set the selected user FID to open the profile modal
-                  setSelectedUserFid(fid); // Replace with actual user FID
+                  setSelectedUserFid(fid);
                 }}
+                disabled={!!processingAction}
               >
                 View Profile
               </button>
-              <button
-                className="px-3 py-1 bg-[#8B5E3C] rounded-lg text-xs text-white hover:bg-[#7B5B30] transition-colors"
-                onClick={() => {
-                  // Add your remove function here
-                  console.log("Remove button clicked");
-                }}
-              >
-                Kick out
-              </button>
+
+              {/* Show role management buttons only if user has permissions */}
+              {currentUserIsLeaderOrOfficer && (
+                <>
+                  {canPromote && (
+                    <button
+                      className="w-full px-3 py-2 bg-green-600 rounded-lg text-xs text-white hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-green-600"
+                      onClick={() => handleMemberAction("promote")}
+                      disabled={!!processingAction}
+                    >
+                      {processingAction === "promote" ? "Processing..." : "Promote to Officer"}
+                    </button>
+                  )}
+
+                  {canDemote && (
+                    <button
+                      className="w-full px-3 py-2 bg-yellow-500 rounded-lg text-xs text-white hover:bg-yellow-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-yellow-500"
+                      onClick={() => handleMemberAction("demote")}
+                      disabled={!!processingAction}
+                    >
+                      {processingAction === "demote" ? "Processing..." : "Demote to Member"}
+                    </button>
+                  )}
+
+                  {canKick && (
+                    <button
+                      className="w-full px-3 py-2 bg-red-500 rounded-lg text-xs text-white hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-red-500"
+                      onClick={() => handleMemberAction("kick")}
+                      disabled={!!processingAction}
+                    >
+                      {processingAction === "kick" ? "Processing..." : "Kick Out"}
+                    </button>
+                  )}
+                </>
+              )}
             </div>
           </DialogContent>
         </Dialog>

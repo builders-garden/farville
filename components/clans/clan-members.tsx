@@ -3,12 +3,20 @@ import { Card, CardContent } from "../ui/card";
 import { LeaderboardUserAvatar } from "../leaderboard/LeaderboardUserAvatar";
 import { useState } from "react";
 import ClanMemberModal from "./clan-member-modal";
+import { useGame } from "@/context/GameContext";
 
 interface ClanMembersProps {
   members: ClanMember[];
+  clanId?: string;
+  onMemberUpdate?: () => void;
 }
 
-export default function ClanMembers({ members }: ClanMembersProps) {
+export default function ClanMembers({
+  members,
+  clanId,
+  onMemberUpdate,
+}: ClanMembersProps) {
+  const { state } = useGame();
   const [selectedMember, setSelectedMember] = useState<ClanMember | null>(null);
 
   const handleModalChange = (open: boolean) => {
@@ -65,7 +73,7 @@ export default function ClanMembers({ members }: ClanMembersProps) {
                   </span>
                 </div>
               </div>
-              <div className="flex items-end flex-row items-center gap-1 text-right">
+              <div className="flex flex-row items-center gap-1 text-right">
                 <span className="text-white/90 text-sm">
                   {member.xpContributed
                     ? member.xpContributed >= 1000
@@ -96,6 +104,9 @@ export default function ClanMembers({ members }: ClanMembersProps) {
           joinedAt={new Date(selectedMember.joinedAt)}
           open={!!selectedMember}
           onOpenChange={handleModalChange}
+          currentUserRole={state.clan?.role}
+          clanId={clanId || state.clan?.clanId}
+          onMemberUpdate={onMemberUpdate}
         />
       )}
     </>

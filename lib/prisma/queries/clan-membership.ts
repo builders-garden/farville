@@ -40,3 +40,10 @@ export function getClanByFid(fid: number) {
     },
   });
 }
+
+export function updateClanMembership(fid: number, role: ClanRole) {
+  return prisma.clanMembership.update({
+    where: { fid },
+    data: { role },
+  });
+}
