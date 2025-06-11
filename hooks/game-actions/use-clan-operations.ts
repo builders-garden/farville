@@ -218,7 +218,7 @@ export const useClanOperations = (
     url: (data: { fid: number }) => `/api/clan/members/${data.fid}`,
     body: (data: {
       fid: number;
-      action: "promote" | "demote" | "kick";
+      action: "promote" | "demote" | "kick" | "promote_to_leader";
       clanId: string;
     }) => ({
       action: data.action,
@@ -232,6 +232,8 @@ export const useClanOperations = (
           ? "promoted"
           : variables.action === "demote"
           ? "demoted"
+          : variables.action === "promote_to_leader"
+          ? "promoted to leader"
           : "kicked";
       toast.success(`Member ${actionText} successfully!`, {
         position: "top-center",
@@ -252,7 +254,7 @@ export const useClanOperations = (
   const manageMember = (
     data: {
       fid: number;
-      action: "promote" | "demote" | "kick";
+      action: "promote" | "demote" | "kick" | "promote_to_leader";
       clanId: string;
     },
     callbacks?: {

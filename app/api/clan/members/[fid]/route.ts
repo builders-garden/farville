@@ -4,11 +4,12 @@ import {
   deleteClanMembership,
   updateClanMembership,
 } from "@/lib/prisma/queries/clan-membership";
+import { prisma } from "@/lib/prisma/client";
 import { ClanRole } from "@/lib/types/game";
 import z from "zod";
 
 const memberActionSchema = z.object({
-  action: z.enum(["promote", "demote", "kick"]),
+  action: z.enum(["promote", "demote", "kick", "promote_to_leader"]),
   clanId: z.string().min(1, "Clan ID is required"),
 });
 
@@ -142,6 +143,45 @@ export async function PATCH(
       return NextResponse.json({
         success: true,
         message: "Officer demoted to member",
+      });
+    } else if (action === "promote_to_leader") {
+      // Only leaders can promote others to leader
+      if (currentUserMembership.role !== ClanRole.Leader) {
+        return NextResponse.json(
+          { error: "Only leaders can promote others to leader" },
+          { status: 403 }
+        );
+      }
+
+      // Can only promote officers to leader
+      if (targetMembership.role !== ClanRole.Officer) {
+        return NextResponse.json(
+          { error: "Can only promote officers to leader" },
+          { status: 400 }
+        );
+      }
+
+      // Cannot promote yourself
+      if (targetFid === Number(userFid)) {
+        return NextResponse.json(
+          { error: "You cannot promote yourself to leader" },
+          { status: 400 }
+        );
+      }
+
+      // Transfer leadership: promote target to leader and demote current leader to officer
+      await updateClanMembership(targetFid, ClanRole.Leader);
+      await updateClanMembership(Number(userFid), ClanRole.Officer);
+
+      // Also update the clan's leaderFid field
+      await prisma.clan.update({
+        where: { id: clanId },
+        data: { leaderFid: targetFid },
+      });
+
+      return NextResponse.json({
+        success: true,
+        message: "Leadership transferred successfully",
       });
     }
 

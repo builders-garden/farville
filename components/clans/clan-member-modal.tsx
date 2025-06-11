@@ -45,7 +45,9 @@ export default function ClanMemberModal({
   const [selectedUserFid, setSelectedUserFid] = useState<number | undefined>(
     undefined
   );
-  const [processingAction, setProcessingAction] = useState<"promote" | "demote" | "kick" | null>(null);
+  const [processingAction, setProcessingAction] = useState<
+    "promote" | "demote" | "kick" | "promote_to_leader" | null
+  >(null);
 
   const { manageMember } = useClanOperations(() => {
     // Call the refetch function passed from parent instead of full page reload
@@ -58,7 +60,9 @@ export default function ClanMemberModal({
     setSelectedUserFid(undefined);
   };
 
-  const handleMemberAction = (action: "promote" | "demote" | "kick") => {
+  const handleMemberAction = (
+    action: "promote" | "demote" | "kick" | "promote_to_leader"
+  ) => {
     if (!clanId || processingAction) return;
 
     setProcessingAction(action);
@@ -88,6 +92,9 @@ export default function ClanMemberModal({
 
   // Can promote if: current user is leader AND target is member
   const canPromote = currentUserIsLeader && role === ClanRole.Member;
+
+  // Can promote to leader if: current user is leader AND target is officer
+  const canPromoteToLeader = currentUserIsLeader && role === ClanRole.Officer;
 
   // Can demote if: current user is leader AND target is officer
   const canDemote = currentUserIsLeader && role === ClanRole.Officer;
@@ -176,17 +183,33 @@ export default function ClanMemberModal({
                       onClick={() => handleMemberAction("promote")}
                       disabled={!!processingAction}
                     >
-                      {processingAction === "promote" ? "Processing..." : "Promote to Officer"}
+                      {processingAction === "promote"
+                        ? "Processing..."
+                        : "Promote to Officer"}
+                    </button>
+                  )}
+
+                  {canPromoteToLeader && (
+                    <button
+                      className="w-full px-3 py-2 bg-yellow-600 rounded-lg text-xs text-white hover:bg-yellow-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-yellow-600"
+                      onClick={() => handleMemberAction("promote_to_leader")}
+                      disabled={!!processingAction}
+                    >
+                      {processingAction === "promote_to_leader"
+                        ? "Processing..."
+                        : "Promote to Leader"}
                     </button>
                   )}
 
                   {canDemote && (
                     <button
-                      className="w-full px-3 py-2 bg-yellow-500 rounded-lg text-xs text-white hover:bg-yellow-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-yellow-500"
+                      className="w-full px-3 py-2 bg-orange-500 rounded-lg text-xs text-white hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-orange-500"
                       onClick={() => handleMemberAction("demote")}
                       disabled={!!processingAction}
                     >
-                      {processingAction === "demote" ? "Processing..." : "Demote to Member"}
+                      {processingAction === "demote"
+                        ? "Processing..."
+                        : "Demote to Member"}
                     </button>
                   )}
 
@@ -196,7 +219,9 @@ export default function ClanMemberModal({
                       onClick={() => handleMemberAction("kick")}
                       disabled={!!processingAction}
                     >
-                      {processingAction === "kick" ? "Processing..." : "Kick Out"}
+                      {processingAction === "kick"
+                        ? "Processing..."
+                        : "Kick Out"}
                     </button>
                   )}
                 </>
