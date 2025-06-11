@@ -201,8 +201,9 @@ export function updateClan(
     name?: string;
     motto?: string;
     isPublic?: boolean;
-    imageUrl?: string;
+    imageUrl?: string | null;
     txHash?: string;
+    requiredLevel?: number | null;
   }
 ) {
   return prisma.clan.update({
@@ -213,6 +214,7 @@ export function updateClan(
       isPublic: data.isPublic,
       imageUrl: data.imageUrl,
       txHash: data.txHash,
+      requiredLevel: data.requiredLevel,
     },
   });
 }

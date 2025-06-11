@@ -14,7 +14,7 @@ export default function MyClan() {
 
   const [activeTab, setActiveTab] = useState<Tab>("members");
 
-  const { clanData, isLoading } = useClan(state.clan?.clanId);
+  const { clanData, isLoading, refetch } = useClan(state.clan?.clanId);
 
   // Check if user can manage requests (leader or officer)
   const canManageRequests =
@@ -26,15 +26,16 @@ export default function MyClan() {
     canManageRequests ? state.clan?.clanId : undefined
   );
 
-  console.log("Clan Data:", clanData);
-
   const membersMap = Object.fromEntries(
     clanData?.members?.map((m) => [m.fid, m.user]) ?? []
   );
 
   return (
     <div className="flex flex-col items-center justify-center w-full pb-8 gap-2">
-      <ClanDetail clanData={clanData} />
+      <ClanDetail
+        clanData={clanData}
+        refetchClan={refetch}
+      />
 
       <MyClanTabs
         activeTab={activeTab}

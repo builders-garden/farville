@@ -152,9 +152,67 @@ export const useClanOperations = (
     });
   };
 
+  const { mutate: _updateClan } = useApiMutation({
+    url: () => `/api/clan`,
+    body: (clanData: {
+      clanId: string;
+      motto?: string;
+      isPublic?: boolean;
+      imageUrl?: string;
+      requiredLevel?: number | null;
+    }) => clanData,
+    method: "PATCH",
+    onSuccess: (data) => {
+      // Don't automatically refetch here - let the calling component handle it
+      console.log("Clan updated successfully:", data);
+      toast.success("Clan updated successfully!", {
+        position: "top-center",
+        duration: 3000,
+      });
+    },
+    onError: (error: Error) => {
+      console.error("Error updating clan:", error);
+      toast.error("Failed to update clan", {
+        position: "top-center",
+        duration: 3000,
+      });
+    },
+  });
+
+  // Wrapper function for updateClan that supports callbacks
+  const updateClan = (
+    clanData: {
+      clanId: string;
+      motto?: string;
+      isPublic?: boolean;
+      imageUrl?: string;
+      requiredLevel?: number | null;
+    },
+    callbacks?: {
+      onSuccess?: () => void;
+      onError?: (error: Error) => void;
+    }
+  ) => {
+    _updateClan(clanData, {
+      onSuccess: () => {
+        // Call the callback if provided
+        if (callbacks?.onSuccess) {
+          callbacks.onSuccess();
+        }
+      },
+      onError: (error) => {
+        // Call the callback if provided
+        if (callbacks?.onError) {
+          callbacks.onError(error);
+        }
+      },
+    });
+  };
+
   return {
     createClan,
     joinClan,
     leaveClan,
+    updateClan,
   };
 };

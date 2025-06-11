@@ -5,16 +5,23 @@ import { useClanOperations } from "@/hooks/game-actions/use-clan-operations";
 import { useGame } from "@/context/GameContext";
 import { useState } from "react";
 import ConfirmationModal from "@/components/modals/ConfirmationModal";
+import EditClanModal from "./edit-clan-modal";
 
 interface ClanDetailProps {
   clanData: ClanWithData | undefined;
+  refetchClan: () => void;
 }
 
-export function ClanDetail({ clanData }: ClanDetailProps) {
-  const { refetch } = useGame();
+export function ClanDetail({ clanData, refetchClan }: ClanDetailProps) {
+  const { state } = useGame();
   const [isLeaving, setIsLeaving] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const { leaveClan } = useClanOperations(refetch.clan);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const { leaveClan } = useClanOperations(refetchClan);
+
+  // Check if the current user is a leader or officer
+  const userRole = state.clan?.role;
+  const canEdit = userRole === "leader" || userRole === "officer";
 
   const handleLeaveClan = () => {
     if (isLeaving) return;
@@ -54,14 +61,15 @@ export function ClanDetail({ clanData }: ClanDetailProps) {
                   ? clanData.name.slice(0, 14) + "..."
                   : clanData?.name}
               </h3>
-              <button
-                className="p-2 rounded-lg hover:bg-white/10 transition-colors"
-                onClick={() => {
-                  /* Add your edit function here */
-                }}
-              >
-                <Pencil className="text-white/80 hover:text-white w-4 h-4" />
-              </button>
+              {canEdit && (
+                <button
+                  className="p-2 rounded-lg hover:bg-white/10 transition-colors"
+                  onClick={() => setIsEditModalOpen(true)}
+                  aria-label="Edit clan"
+                >
+                  <Pencil className="text-white/80 hover:text-white w-4 h-4" />
+                </button>
+              )}
             </div>
             <div className="flex w-full">
               <div className="text-[#f2a311] text-[10px]">
@@ -95,6 +103,7 @@ export function ClanDetail({ clanData }: ClanDetailProps) {
           </div>
         </div>
       </CardContent>
+
       {isModalOpen && (
         <ConfirmationModal
           title="Leave Clan"
@@ -103,6 +112,15 @@ export function ClanDetail({ clanData }: ClanDetailProps) {
           onCancel={() => setIsModalOpen(false)}
           confirmDisabled={isLeaving}
           isLoading={isLeaving}
+        />
+      )}
+
+      {isEditModalOpen && clanData && (
+        <EditClanModal
+          clan={clanData}
+          onClose={() => setIsEditModalOpen(false)}
+          onSuccess={() => refetchClan()}
+          refetchClan={refetchClan}
         />
       )}
     </Card>
