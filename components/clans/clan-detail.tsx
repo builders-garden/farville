@@ -14,7 +14,7 @@ export function ClanDetail({ clanData }: ClanDetailProps) {
   const { refetch } = useGame();
   const [isLeaving, setIsLeaving] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const { leaveClan } = useClanOperations(refetch.clan);
+  const { leaveClan } = useClanOperations(refetch.userClan);
 
   const handleLeaveClan = () => {
     if (isLeaving) return;
@@ -66,7 +66,15 @@ export function ClanDetail({ clanData }: ClanDetailProps) {
           <div className="flex flex-row justify-between text-white/70">
             <div className="flex flex-col gap-2 text-xs font-semibold">
               <span>Required Level: 2</span>
-              <span>1.34M XP</span>
+              <span>
+                Farmed:{" "}
+                {clanData.xp >= 1000000
+                  ? `${(clanData.xp / 1000000).toFixed(2)}M`
+                  : clanData.xp >= 1000
+                  ? `${(clanData.xp / 1000).toFixed(2)}K`
+                  : clanData.xp}{" "}
+                XP
+              </span>
             </div>
             <button
               className="px-3 py-1 bg-red-700 rounded-lg text-xs text-white hover:bg-red-600 transition-colors"

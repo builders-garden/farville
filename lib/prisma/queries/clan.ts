@@ -201,6 +201,7 @@ export function updateClan(
     isPublic?: boolean;
     imageUrl?: string;
     txHash?: string;
+    xp?: number;
   }
 ) {
   return prisma.clan.update({
@@ -211,6 +212,18 @@ export function updateClan(
       isPublic: data.isPublic,
       imageUrl: data.imageUrl,
       txHash: data.txHash,
+      xp: data.xp,
+    },
+  });
+}
+
+export function incrementClanXp(clanId: string, amount: number) {
+  return prisma.clan.update({
+    where: { id: clanId },
+    data: {
+      xp: {
+        increment: amount,
+      },
     },
   });
 }
