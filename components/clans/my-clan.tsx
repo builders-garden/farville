@@ -10,11 +10,15 @@ import { ClanDetail } from "./clan-detail";
 import ClanRequests from "./clan-requests";
 
 export default function MyClan() {
-  const { state } = useGame();
+  const { state, refetch } = useGame();
 
   const [activeTab, setActiveTab] = useState<Tab>("members");
 
-  const { clanData, isLoading, refetch } = useClan(state.clan?.clanId);
+  const {
+    clanData,
+    isLoading,
+    refetch: refetchClan,
+  } = useClan(state.clan?.clanId);
 
   // Check if user can manage requests (leader or officer)
   const canManageRequests =
@@ -34,7 +38,8 @@ export default function MyClan() {
     <div className="flex flex-col items-center justify-center w-full pb-8 gap-2">
       <ClanDetail
         clanData={clanData}
-        refetchClan={refetch}
+        refetchClan={refetchClan}
+        refetchStateClan={refetch.clan}
       />
 
       <MyClanTabs

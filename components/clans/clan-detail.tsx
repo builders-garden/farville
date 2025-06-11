@@ -10,14 +10,19 @@ import EditClanModal from "./edit-clan-modal";
 interface ClanDetailProps {
   clanData: ClanWithData | undefined;
   refetchClan: () => void;
+  refetchStateClan: () => void;
 }
 
-export function ClanDetail({ clanData, refetchClan }: ClanDetailProps) {
+export function ClanDetail({
+  clanData,
+  refetchClan,
+  refetchStateClan,
+}: ClanDetailProps) {
   const { state } = useGame();
   const [isLeaving, setIsLeaving] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const { leaveClan } = useClanOperations(refetchClan);
+  const { leaveClan } = useClanOperations(refetchStateClan);
 
   // Check if the current user is a leader or officer
   const userRole = state.clan?.role;
