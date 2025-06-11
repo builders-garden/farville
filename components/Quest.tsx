@@ -12,6 +12,7 @@ import sdk from "@farcaster/frame-sdk";
 import RequestButton from "./ui/request-button";
 import { QuestWithItem, UserHasQuestWithQuest } from "@/lib/prisma/types";
 import { type Quest } from "@prisma/client";
+import { useClanOperations } from "@/hooks/game-actions/use-clan-operations";
 
 interface QuestProps {
   quest: UserHasQuestWithQuest;
@@ -55,10 +56,7 @@ const renderQuestRewards = (
     </div>
 
     {showRequestButton && (
-      <RequestButton
-        variant="secondary"
-        onClick={onRequestClick}
-      />
+      <RequestButton variant="secondary" onClick={onRequestClick} />
     )}
   </div>
 );
@@ -131,7 +129,9 @@ export default function Quest({
     isActionInProgress,
     setIsActionInProgress,
   });
+  const [requestId, setRequestId] = useState<string | null>(null);
   const { mutate: createRequest } = useCreateRequest();
+  const { shareRequestToClan } = useClanOperations();
   const [selectedItem, setSelectedItem] = useState<
     QuestWithItem["item"] | null
   >(null);
@@ -162,6 +162,20 @@ export default function Quest({
     return userInventoryItem;
   };
 
+  const handleShareRequestToClan = async () => {
+    if (!requestId || !selectedItem) return;
+
+    try {
+      shareRequestToClan({
+        requestId,
+        clanId: state.clan?.clanId || "",
+      });
+      setRequestId(null);
+    } catch (error) {
+      console.error("Error sharing request to clan:", error);
+    }
+  };
+
   // Handle requesting an item - similar to InventoryModal
   const handleRequestItem = async () => {
     if (!context?.user.fid || !selectedItem) return;
@@ -181,6 +195,7 @@ export default function Quest({
               requestQuantity,
               mode
             );
+            setRequestId(data.id);
             setCastUrl(castUrl);
             setRequestUrl(requestUrl);
           },
@@ -337,6 +352,8 @@ export default function Quest({
           onRequest={handleRequestItem}
           onShareRequest={handleShareRequest}
           requestUrl={requestUrl}
+          clanEnabled={!!state.clan}
+          onShareRequestToClan={handleShareRequestToClan}
         />
       )}
     </motion.div>

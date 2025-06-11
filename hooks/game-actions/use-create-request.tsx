@@ -12,7 +12,7 @@ interface CreateRequestVariables {
 }
 
 interface CreateRequestResponse {
-  id: number;
+  id: string;
   fid: number;
   itemId: number;
   quantity: number;

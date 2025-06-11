@@ -83,7 +83,7 @@ export const warpcastComposeCastUrl = () => {
 };
 
 export const requestItemComposeCastUrl = (
-  requestId: number,
+  requestId: string,
   item: Item,
   quantity: number,
   mode: Mode
