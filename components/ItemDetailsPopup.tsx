@@ -14,7 +14,9 @@ interface ItemDetailsPopupProps {
   requestQuantity: number;
   onRequestQuantityChange: (quantity: number) => void;
   onShareRequest: () => void;
+  onShareRequestToClan: () => void; // Add this new prop for sharing request to clan
   requestUrl: string | null; // Add this new prop to pass the URL
+  clanEnabled?: boolean; // Optional prop to check if clan is enabled
 }
 
 export default function ItemDetailsPopup({
@@ -26,11 +28,14 @@ export default function ItemDetailsPopup({
   requestQuantity,
   onRequestQuantityChange,
   onShareRequest,
-  requestUrl, // Destructure the new prop
+  onShareRequestToClan,
+  requestUrl,
+  clanEnabled = false, // Default to false if not provided
 }: ItemDetailsPopupProps) {
   const [copied, setCopied] = useState(false);
   const [errorCopying, setErrorCopying] = useState(false);
   const [isCreatingRequest, setIsCreatingRequest] = useState(false);
+  const [sharedToClan, setSharedToClan] = useState(false); // State to track if shared to clan
 
   const maxRequestAmount = item.category === "perk" ? 1 : 10;
 
@@ -152,31 +157,50 @@ export default function ItemDetailsPopup({
                   )}
                 </button>
               ) : (
-                <div className="flex gap-2">
+                <div className="flex flex-col gap-2">
+                  <div className="flex gap-2">
+                    <button
+                      className="flex-1 border-2 border-[#FFB938] text-[#FFB938] px-4 py-2 rounded-lg font-bold
+                   hover:bg-[#FFB938]/10 transition-colors relative"
+                      onClick={handleCopy}
+                      disabled={!requestUrl}
+                    >
+                      {copied ? "Copied!" : "Copy"}
+                      {copied && (
+                        <motion.span
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0 }}
+                          className="absolute inset-0 bg-green-500 text-white rounded-md flex items-center justify-center"
+                        >
+                          Copied!
+                        </motion.span>
+                      )}
+                    </button>
+                    <button
+                      className="flex-1 bg-[#FFB938] text-[#7E4E31] px-4 py-2 rounded-lg font-bold 
+                   hover:bg-[#ffc661] transition-colors"
+                      onClick={onShareRequest}
+                    >
+                      Share
+                    </button>
+                  </div>
+
+                  {/* Add the useState at the top of the component: const [sharedToClan, setSharedToClan] = useState(false); */}
                   <button
-                    className="flex-1 border-2 border-[#FFB938] text-[#FFB938] px-4 py-2 rounded-lg font-bold
-                     hover:bg-[#FFB938]/10 transition-colors relative"
-                    onClick={handleCopy}
-                    disabled={!requestUrl}
+                    onClick={() => {
+                      onShareRequestToClan();
+                      setSharedToClan(true);
+                    }}
+                    className="flex-1 bg-[#2B593B] text-white/80 px-4 py-2 rounded-lg font-bold 
+                     hover:bg-[#56b056] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled={!clanEnabled || sharedToClan}
                   >
-                    {copied ? "Copied!" : "Copy"}
-                    {copied && (
-                      <motion.span
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0 }}
-                        className="absolute inset-0 bg-green-500 text-white rounded-md flex items-center justify-center"
-                      >
-                        Copied!
-                      </motion.span>
-                    )}
-                  </button>
-                  <button
-                    className="flex-1 bg-[#FFB938] text-[#7E4E31] px-4 py-2 rounded-lg font-bold 
-                     hover:bg-[#ffc661] transition-colors"
-                    onClick={onShareRequest}
-                  >
-                    Share
+                    {!clanEnabled
+                      ? "Not part of a clan"
+                      : sharedToClan
+                      ? "Shared!"
+                      : "Share to Clan"}
                   </button>
                 </div>
               )}

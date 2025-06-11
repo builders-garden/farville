@@ -12,13 +12,16 @@ import sdk from "@farcaster/frame-sdk";
 import { useCreateRequest } from "@/hooks/game-actions/use-create-request";
 import InventoryItem from "./InventoryItem";
 import { Item } from "@prisma/client";
+import { useClanOperations } from "@/hooks/game-actions/use-clan-operations";
 
 export default function InventoryModal({ onClose }: { onClose: () => void }) {
   const { state, setSelectedSeed, setSelectedPerk, mode } = useGame();
   const { safeAreaInsets, context } = useFrameContext();
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
   const [requestQuantity, setRequestQuantity] = useState(1);
+  const [requestId, setRequestId] = useState<string | null>(null);
   const { mutate: createRequest } = useCreateRequest();
+  const { shareRequestToClan } = useClanOperations();
   const [castUrl, setCastUrl] = useState<string | null>(null);
   const [requestUrl, setRequestUrl] = useState<string | null>(null);
 
@@ -62,6 +65,7 @@ export default function InventoryModal({ onClose }: { onClose: () => void }) {
               requestQuantity,
               mode
             );
+            setRequestId(data.id);
             setCastUrl(castUrl);
             setRequestUrl(requestUrl);
           },
@@ -84,6 +88,20 @@ export default function InventoryModal({ onClose }: { onClose: () => void }) {
       setRequestQuantity(1);
     } catch (error) {
       console.error("Error sharing request URL:", error);
+    }
+  };
+
+  const handleShareRequestToClan = async () => {
+    if (!requestId || !selectedItem) return;
+
+    try {
+      shareRequestToClan({
+        requestId,
+        clanId: state.clan?.clanId || "",
+      });
+      setRequestId(null);
+    } catch (error) {
+      console.error("Error sharing request to clan:", error);
     }
   };
 
@@ -117,12 +135,7 @@ export default function InventoryModal({ onClose }: { onClose: () => void }) {
           animate={{ x: 0, opacity: 1 }}
         >
           {isImageUrl ? (
-            <Image
-              src={icon}
-              alt={title}
-              width={28}
-              height={28}
-            />
+            <Image src={icon} alt={title} width={28} height={28} />
           ) : (
             <span className="text-2xl">{icon}</span>
           )}
@@ -244,6 +257,8 @@ export default function InventoryModal({ onClose }: { onClose: () => void }) {
           }
           onShareRequest={handleShareRequest}
           requestUrl={requestUrl}
+          clanEnabled={!!state.clan}
+          onShareRequestToClan={handleShareRequestToClan}
         />
       )}
     </div>

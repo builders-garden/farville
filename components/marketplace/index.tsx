@@ -22,6 +22,7 @@ import ItemDetailsModal from "./ItemDetailsModal";
 import { useNextStep } from "nextstepjs";
 import { Item } from "@prisma/client";
 import { CropType } from "@/lib/types/game";
+import { useClanOperations } from "@/hooks/game-actions/use-clan-operations";
 
 // Add new type for selected item details
 type SelectedItemDetails = {
@@ -45,7 +46,6 @@ export default function MarketplaceModal({
   const { mode, state, buyItem, sellItem, expandGrid, isActionInProgress } =
     useGame();
   const { context } = useFrameContext();
-  const { mutate: createRequest } = useCreateRequest();
   const [activeTab, setActiveTab] = useState<Tab>("buy");
   const [buySubTab, setBuySubTab] = useState<"seeds" | "perks">("seeds");
   const [confirmAction, setConfirmAction] = useState<{
@@ -61,6 +61,9 @@ export default function MarketplaceModal({
   const [requestQuantity, setRequestQuantity] = useState(1);
   const [castUrl, setCastUrl] = useState<string | null>(null);
   const [requestUrl, setRequestUrl] = useState<string | null>(null);
+  const [requestId, setRequestId] = useState<string | null>(null);
+  const { mutate: createRequest } = useCreateRequest();
+  const { shareRequestToClan } = useClanOperations();
 
   const gridSize = state.gridSize.width * state.gridSize.height;
 
@@ -91,6 +94,7 @@ export default function MarketplaceModal({
               requestQuantity,
               mode
             );
+            setRequestId(data.id);
             setCastUrl(castUrl);
             setRequestUrl(requestUrl);
           },
@@ -113,6 +117,20 @@ export default function MarketplaceModal({
       setRequestQuantity(1);
     } catch (error) {
       console.error("Error sharing request URL:", error);
+    }
+  };
+
+  const handleShareRequestToClan = async () => {
+    if (!requestId || !selectedItemForRequest) return;
+
+    try {
+      shareRequestToClan({
+        requestId,
+        clanId: state.clan?.clanId || "",
+      });
+      setRequestId(null);
+    } catch (error) {
+      console.error("Error sharing request to clan:", error);
     }
   };
 
@@ -249,10 +267,7 @@ export default function MarketplaceModal({
           </div>
 
           {/* Tabs */}
-          <MarketplaceTabs
-            activeTab={activeTab}
-            setActiveTab={setActiveTab}
-          />
+          <MarketplaceTabs activeTab={activeTab} setActiveTab={setActiveTab} />
 
           {/* Sub tabs */}
           {activeTab === "buy" && (
@@ -410,7 +425,9 @@ export default function MarketplaceModal({
           onRequestQuantityChange={setRequestQuantity}
           onRequest={handleRequestItem}
           onShareRequest={handleShareRequest}
+          onShareRequestToClan={handleShareRequestToClan}
           requestUrl={requestUrl}
+          clanEnabled={!!state.clan}
         />
       )}
 

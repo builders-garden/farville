@@ -2,7 +2,7 @@ import { useApiMutation } from "../use-api-mutation";
 import { toast } from "sonner";
 
 export const useClanOperations = (
-  refetchClan: () => void,
+  refetchClan?: () => void,
   refetchOutgoingRequests?: () => void
 ) => {
   const { mutate: _createClan } = useApiMutation({
@@ -15,7 +15,9 @@ export const useClanOperations = (
     }) => clanData,
     method: "POST",
     onSuccess: (data) => {
-      refetchClan();
+      if (refetchClan) {
+        refetchClan();
+      }
       console.log("Clan created successfully:", data);
       toast.success("Clan created successfully!", {
         position: "top-center",
@@ -69,7 +71,9 @@ export const useClanOperations = (
     }),
     method: "POST",
     onSuccess: (data, variables) => {
-      refetchClan();
+      if (refetchClan) {
+        refetchClan();
+      }
 
       // Different toast based on whether the clan is public or private
       if (variables.isPublic) {
@@ -104,7 +108,9 @@ export const useClanOperations = (
     url: () => `/api/clan/join`,
     method: "DELETE",
     onSuccess: () => {
-      refetchClan();
+      if (refetchClan) {
+        refetchClan();
+      }
       toast.success("You've left the clan", {
         position: "top-center",
         duration: 3000,
@@ -144,9 +150,33 @@ export const useClanOperations = (
     });
   };
 
+  const { mutate: shareRequestToClan } = useApiMutation({
+    url: () => `/api/clan/request`,
+    body: (data: { requestId: string; clanId: string }) => ({
+      requestId: data.requestId,
+      clanId: data.clanId,
+    }),
+    method: "POST",
+    onSuccess: (data) => {
+      toast.success("Request shared to clan successfully!", {
+        position: "top-center",
+        duration: 3000,
+      });
+      console.log("Request shared to clan successfully:", data);
+    },
+    onError: (error: Error) => {
+      console.error("Error sharing request to clan:", error);
+      toast.error("Failed to share request to clan", {
+        position: "top-center",
+        duration: 3000,
+      });
+    },
+  });
+
   return {
     createClan,
     joinClan,
     leaveClan,
+    shareRequestToClan,
   };
 };

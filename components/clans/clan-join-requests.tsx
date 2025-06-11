@@ -5,29 +5,28 @@ import { ClanRole } from "@/lib/types/game";
 import { Button } from "../ui/button";
 import { Check, Loader2, X } from "lucide-react";
 import Image from "next/image";
-import { useClan } from "@/hooks/use-clan";
 
 interface ClanJoinRequestsProps {
   clanId?: string;
+  refetchClanData: () => void;
   // We can add joinRequests in the future if needed
 }
 
 export default function ClanJoinRequests({
-  clanId: propClanId,
+  clanId,
+  refetchClanData,
 }: ClanJoinRequestsProps) {
   const { state } = useGame();
   const userClan = state.clan as
     | { clan: { id: string }; role: ClanRole }
     | undefined;
-  const clanId = propClanId || userClan?.clan?.id;
 
   // Only show this component for clan leaders and officers
   const canManageRequests =
     userClan?.role === ClanRole.Leader || userClan?.role === ClanRole.Officer;
 
-  // Get clan data to refresh members list when accepting new members
-  const { refetch: refetchClanData } = useClan(clanId);
-
+  // TODO: this data is available in the parent component, so we should use this hook only to update the requests
+  // so this needs to be fixed
   const { requests, isLoading, respondToJoinRequest } = useClanJoinRequests(
     canManageRequests ? clanId : undefined
   );

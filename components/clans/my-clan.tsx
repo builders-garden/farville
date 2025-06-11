@@ -14,7 +14,11 @@ export default function MyClan() {
 
   const [activeTab, setActiveTab] = useState<Tab>("members");
 
-  const { clanData, isLoading } = useClan(state.clan?.clanId);
+  const {
+    clanData,
+    isLoading,
+    refetch: refetchClanData,
+  } = useClan(state.clan?.clanId);
 
   // Check if user can manage requests (leader or officer)
   const canManageRequests =
@@ -49,7 +53,10 @@ export default function MyClan() {
 
       {activeTab === "newcomers" && !isLoading && clanData && (
         <div className="w-full max-w-2xl">
-          <ClanJoinRequests clanId={state.clan?.clanId} />
+          <ClanJoinRequests
+            clanId={clanData.id}
+            refetchClanData={refetchClanData}
+          />
         </div>
       )}
 
@@ -60,6 +67,7 @@ export default function MyClan() {
             user: membersMap[req.request.fid],
           }))}
           viewerFid={state.user.fid}
+          refetchClanData={refetchClanData}
         />
       )}
     </div>

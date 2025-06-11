@@ -6,10 +6,12 @@ import {
 import { sendBatchToPostHog } from "@/lib/posthog/server";
 import {
   addUserItem,
+  getClanByFid,
   getCurrentCommunityBooster,
   getUserGridCells,
   getUserHarvestedCrops,
   getUserItemBySlug,
+  incrementClanXp,
   removeUserItem,
   updateGridCellsBulk,
   updateUserWeeklyScore,
@@ -439,14 +441,26 @@ const rewardUserBulk = async (
   Logger.logTest(
     `/api/grid-bulk user ${fid} action harvest step: '4.c update user xp' date ${new Date()}`
   );
-  await updateUserWeeklyScore(
-    fid,
-    totalXp,
-    updateResult.newLevel,
-    updateResult.oldXp,
-    updateResult.didLevelUp,
-    mode
-  );
+  // update user weekly score and clan XP if the user is in a clan
+  const userClan = await getClanByFid(fid, {
+    includeClan: false,
+  });
+
+  const promises: Promise<unknown>[] = [
+    updateUserWeeklyScore(
+      fid,
+      totalXp,
+      updateResult.newLevel,
+      updateResult.oldXp,
+      updateResult.didLevelUp,
+      mode
+    ),
+  ];
+  if (userClan && userClan.clanId) {
+    promises.push(incrementClanXp(userClan.clanId, totalXp));
+  }
+  await Promise.all(promises);
+
   Logger.logTest(
     `/api/grid-bulk user ${fid} action harvest step: '4.d update user weekly score' date ${new Date()}`
   );
