@@ -110,10 +110,15 @@ export const useClanOperations = (
 
   const { mutate: _leaveClan } = useApiMutation({
     url: () => `/api/clan/join`,
+    body: (data?: { successorFid?: number }) =>
+      data ? { successorFid: data.successorFid } : undefined,
     method: "DELETE",
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       refetchClan();
-      toast.success("You've left the clan", {
+      const message = variables?.successorFid
+        ? "You've left the clan and transferred leadership"
+        : "You've left the clan";
+      toast.success(message, {
         position: "top-center",
         duration: 3000,
       });
@@ -128,15 +133,15 @@ export const useClanOperations = (
     },
   });
 
-  // Wrapper function for leaveClan that supports callbacks
+  // Wrapper function for leaveClan that supports callbacks and successor selection
   const leaveClan = (
-    _?: unknown, // Not used but kept for consistency with other functions
+    data?: { successorFid?: number },
     callbacks?: {
       onSuccess?: () => void;
       onError?: (error: Error) => void;
     }
   ) => {
-    _leaveClan(undefined, {
+    _leaveClan(data, {
       onSuccess: () => {
         // Call the callback if provided
         if (callbacks?.onSuccess) {

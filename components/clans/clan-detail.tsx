@@ -6,6 +6,7 @@ import { useGame } from "@/context/GameContext";
 import { useState } from "react";
 import ConfirmationModal from "@/components/modals/ConfirmationModal";
 import EditClanModal from "./edit-clan-modal";
+import LeaderSuccessionModal from "./leader-succession-modal";
 
 interface ClanDetailProps {
   clanData: ClanWithData | undefined;
@@ -22,15 +23,28 @@ export function ClanDetail({
   const [isLeaving, setIsLeaving] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const { leaveClan } = useClanOperations(refetchStateClan);
+  const [isSuccessionModalOpen, setIsSuccessionModalOpen] = useState(false);
+  const { leaveClan } = useClanOperations(() => {
+    refetchStateClan();
+    refetchClan();
+  });
 
   // Check if the current user is a leader or officer
   const userRole = state.clan?.role;
   const canEdit = userRole === "leader" || userRole === "officer";
+  const isLeader = userRole === "leader";
 
   const handleLeaveClan = () => {
     if (isLeaving) return;
 
+    // If user is a leader and there are other members, show succession modal
+    if (isLeader && clanData && clanData.members.length > 1) {
+      setIsModalOpen(false);
+      setIsSuccessionModalOpen(true);
+      return;
+    }
+
+    // Otherwise proceed with normal leave
     setIsLeaving(true);
     leaveClan(undefined, {
       onSuccess: () => {
@@ -42,6 +56,23 @@ export function ClanDetail({
         setIsModalOpen(false);
       },
     });
+  };
+
+  const handleSuccessorSelection = (successorFid: number) => {
+    setIsLeaving(true);
+    leaveClan(
+      { successorFid },
+      {
+        onSuccess: () => {
+          setIsLeaving(false);
+          setIsSuccessionModalOpen(false);
+        },
+        onError: () => {
+          setIsLeaving(false);
+          setIsSuccessionModalOpen(false);
+        },
+      }
+    );
   };
 
   if (!clanData) {
@@ -112,7 +143,11 @@ export function ClanDetail({
       {isModalOpen && (
         <ConfirmationModal
           title="Leave Clan"
-          message="Are you sure you want to leave the clan? This action cannot be undone."
+          message={
+            isLeader && clanData && clanData.members.length > 1
+              ? "As the leader, you need to select a successor before leaving the clan."
+              : "Are you sure you want to leave the clan? This action cannot be undone."
+          }
           onConfirm={handleLeaveClan}
           onCancel={() => setIsModalOpen(false)}
           confirmDisabled={isLeaving}
@@ -126,6 +161,17 @@ export function ClanDetail({
           onClose={() => setIsEditModalOpen(false)}
           onSuccess={() => refetchClan()}
           refetchClan={refetchClan}
+        />
+      )}
+
+      {isSuccessionModalOpen && clanData && (
+        <LeaderSuccessionModal
+          isOpen={isSuccessionModalOpen}
+          onClose={() => setIsSuccessionModalOpen(false)}
+          members={clanData.members}
+          onSelectSuccessor={handleSuccessorSelection}
+          isLoading={isLeaving}
+          currentUserFid={state.user.fid}
         />
       )}
     </Card>

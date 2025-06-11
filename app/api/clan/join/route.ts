@@ -5,7 +5,12 @@ import {
   createClanJoinRequest,
   getClanJoinRequestByUserAndClan,
 } from "@/lib/prisma/queries";
+import {
+  updateClanMembership,
+  getClanByFid,
+} from "@/lib/prisma/queries/clan-membership";
 import { deleteAllClanJoinRequestsByFid } from "@/lib/prisma/queries/clan-join-request-utils";
+import { ClanRole } from "@/lib/types/game";
 import { NextRequest, NextResponse } from "next/server";
 import z from "zod";
 
@@ -102,10 +107,67 @@ export async function DELETE(req: NextRequest) {
   if (!fid) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
   try {
+    // Check if there's a request body for leader succession
+    let body = null;
+    try {
+      const text = await req.text();
+      if (text) {
+        body = JSON.parse(text);
+      }
+    } catch {
+      // No body or invalid JSON, proceed without succession
+    }
+
+    const successorFid = body?.successorFid;
+
+    // Get user's current clan membership to check if they're a leader
+    const userClan = await getClanByFid(Number(fid));
+
+    if (!userClan) {
+      return NextResponse.json(
+        { error: "You are not in a clan" },
+        { status: 400 }
+      );
+    }
+
+    const isLeader = userClan.role === ClanRole.Leader;
+
+    // If user is a leader and no successor is provided, check if there are other members
+    if (isLeader && !successorFid) {
+      const clanData = await getClanById(userClan.clanId, {
+        includeMembers: true,
+      });
+      const otherMembers =
+        clanData?.members?.filter((m) => m.fid !== Number(fid)) || [];
+
+      if (otherMembers.length > 0) {
+        return NextResponse.json(
+          {
+            error:
+              "As a leader, you must select a successor before leaving the clan",
+            requiresSuccessor: true,
+            members: otherMembers,
+          },
+          { status: 400 }
+        );
+      }
+    }
+
+    // If a successor is provided, promote them to leader
+    if (successorFid && isLeader) {
+      await updateClanMembership(successorFid, ClanRole.Leader);
+    }
+
+    // Remove the user from the clan
     await deleteClanMembership(Number(fid));
 
-    return NextResponse.json({ message: "Left clan successfully" });
+    const message = successorFid
+      ? "Left clan successfully and transferred leadership"
+      : "Left clan successfully";
+
+    return NextResponse.json({ message });
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
