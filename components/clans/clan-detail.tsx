@@ -68,11 +68,13 @@ export function ClanDetail({ clanData }: ClanDetailProps) {
               <span>Required Level: 2</span>
               <span>
                 Farmed:{" "}
-                {clanData.xp >= 1000000
-                  ? `${(clanData.xp / 1000000).toFixed(2)}M`
-                  : clanData.xp >= 1000
-                  ? `${(clanData.xp / 1000).toFixed(2)}K`
-                  : clanData.xp}{" "}
+                {clanData
+                  ? clanData.xp >= 1000000
+                    ? `${(clanData.xp / 1000000).toFixed(2)}M`
+                    : clanData.xp >= 1000
+                    ? `${(clanData.xp / 1000).toFixed(2)}K`
+                    : clanData.xp
+                  : undefined}{" "}
                 XP
               </span>
             </div>
