@@ -17,6 +17,7 @@ interface ClanDetailModalProps {
   onClose: () => void;
   refetchClans: () => void;
   refetchOutgoingRequests?: () => void;
+  onClickView: () => void;
 }
 
 export default function ClanDetailModal({
@@ -24,6 +25,7 @@ export default function ClanDetailModal({
   onClose,
   refetchClans,
   refetchOutgoingRequests,
+  onClickView,
 }: ClanDetailModalProps) {
   const { state, refetch } = useGame();
   const [isJoining, setIsJoining] = useState(false);
@@ -124,18 +126,12 @@ export default function ClanDetailModal({
               <div className="flex items-center text-xs text-white/70">
                 {clan.isPublic ? (
                   <>
-                    <Unlock
-                      size={14}
-                      className="mr-1"
-                    />
+                    <Unlock size={14} className="mr-1" />
                     <span>Public Clan</span>
                   </>
                 ) : (
                   <>
-                    <Lock
-                      size={14}
-                      className="mr-1"
-                    />
+                    <Lock size={14} className="mr-1" />
                     <span>Private Clan</span>
                   </>
                 )}
@@ -155,10 +151,7 @@ export default function ClanDetailModal({
           {/* Clan Stats */}
           <div className="grid grid-cols-3 gap-2">
             <div className="bg-[#6D4C2C]/80 p-3 rounded-lg flex flex-col items-center justify-center">
-              <Trophy
-                size={16}
-                className="text-[#FFB938] mb-1"
-              />
+              <Trophy size={16} className="text-[#FFB938] mb-1" />
               <span className="text-xs font-bold text-[#FFB938]">
                 LVL {clan.level}
               </span>
@@ -167,20 +160,14 @@ export default function ClanDetailModal({
               </span>
             </div>
             <div className="bg-[#6D4C2C]/80 p-3 rounded-lg flex flex-col items-center justify-center">
-              <Users
-                size={16}
-                className="text-white/80 mb-1"
-              />
+              <Users size={16} className="text-white/80 mb-1" />
               <span className="text-xs font-medium text-white/90">
                 {clan.memberCount || 0}
               </span>
               <span className="text-[10px] text-white/70">members</span>
             </div>
             <div className="bg-[#6D4C2C]/80 p-3 rounded-lg flex flex-col items-center justify-center">
-              <Shield
-                size={16}
-                className="text-white/80 mb-1"
-              />
+              <Shield size={16} className="text-white/80 mb-1" />
               <span className="text-xs font-medium text-white/90">
                 {clan.requiredLevel ? `Lvl ${clan.requiredLevel}` : "No Req"}
               </span>
@@ -192,7 +179,7 @@ export default function ClanDetailModal({
           <div className="flex gap-3 pt-2">
             <button
               type="button"
-              onClick={onClose}
+              onClick={onClickView}
               className="flex-1 py-2 px-4 rounded bg-[#6D4C2C] text-white/90 hover:bg-[#8B5E3C] transition-colors text-sm font-medium flex items-center justify-center"
             >
               View

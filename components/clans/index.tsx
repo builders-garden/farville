@@ -25,6 +25,7 @@ export default function ClansModal({ onClose }: ClansModalProps) {
     userHasClan ? "feud" : "search"
   );
   const [showCreateClanModal, setShowCreateClanModal] = useState(false);
+  const [isViewingClan, setIsViewingClan] = useState(false);
 
   // Reference to store the search clan refetch function
   const searchClansRefetchRef = useRef<(() => void) | null>(null);
@@ -104,18 +105,22 @@ export default function ClansModal({ onClose }: ClansModalProps) {
         </div>
 
         <div className="flex flex-col px-4 py-2 flex-1 overflow-y-auto no-scrollbar">
-          <MainClanTabs
-            setActiveTab={setMainActiveTab}
-            activeTab={mainActiveTab}
-            userHasClan={userHasClan}
-            outgoingRequestsCount={outgoingRequests?.length || 0}
-          />
+          {!isViewingClan && (
+            <MainClanTabs
+              setActiveTab={setMainActiveTab}
+              activeTab={mainActiveTab}
+              userHasClan={userHasClan}
+              outgoingRequestsCount={outgoingRequests?.length || 0}
+            />
+          )}
 
           {mainActiveTab === "feud" && <MyClan />}
           {mainActiveTab === "search" && (
             <SearchClan
               refetchOutgoingRequests={refetchOutgoingRequests}
               setSearchRefetch={searchClansRefetchRef}
+              setIsViewingClan={setIsViewingClan}
+              isViewingClan={isViewingClan}
             />
           )}
           {mainActiveTab === "outgoing" && <ClanOutgoingRequests />}

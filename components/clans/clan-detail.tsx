@@ -1,5 +1,5 @@
 import { Card, CardContent } from "../ui/card";
-import { Pencil, Loader2 } from "lucide-react";
+import { Pencil, Loader2, LogOut } from "lucide-react";
 import { ClanWithData } from "@/lib/prisma/types";
 import { useClanOperations } from "@/hooks/game-actions/use-clan-operations";
 import { useGame } from "@/context/GameContext";
@@ -7,6 +7,8 @@ import { useState } from "react";
 import ConfirmationModal from "@/components/modals/ConfirmationModal";
 import EditClanModal from "./edit-clan-modal";
 import LeaderSuccessionModal from "./leader-succession-modal";
+import { ClanStatus } from "./clan-status";
+import Image from "next/image";
 
 interface ClanDetailProps {
   clanData: ClanWithData | undefined;
@@ -31,6 +33,8 @@ export function ClanDetail({
 
   // Check if the current user is a leader or officer
   const userRole = state.clan?.role;
+  const isDisplayingMyClan =
+    state.clan && clanData ? state.clan.clanId === clanData.id : false;
   const canEdit = userRole === "leader" || userRole === "officer";
   const isLeader = userRole === "leader";
 
@@ -89,7 +93,17 @@ export function ClanDetail({
     <Card className="bg-gradient-to-br from-[#6D4C2C] to-[#5B4120] rounded-lg border-none w-full max-w-2xl">
       <CardContent className="flex flex-col w-full gap-3 xs:gap-4 p-3 xs:p-4">
         <div className="flex flex-row items-start gap-3 xs:gap-4">
-          <div className="relative w-12 h-12 xs:w-16 xs:h-16 shrink-0 rounded-lg bg-[#7B5B30]" />
+          <div className="relative w-12 h-12 xs:w-16 xs:h-16 shrink-0 rounded-lg bg-[#7B5B30] overflow-hidden">
+            {clanData.imageUrl && (
+              <Image
+                src={clanData.imageUrl}
+                alt={clanData.name}
+                className="w-full h-full object-cover"
+                fill
+                sizes="(max-width: 640px) 64px, (min-width: 641px) 80px"
+              />
+            )}
+          </div>
           <div className="flex flex-col w-full gap-1 xs:gap-2">
             <div className="flex justify-between items-start">
               <h3 className="text-white/90 font-bold text-xs xs:text-sm">
@@ -97,19 +111,11 @@ export function ClanDetail({
                   ? clanData.name.slice(0, 14) + "..."
                   : clanData?.name}
               </h3>
-              {canEdit && (
-                <button
-                  className="p-2 rounded-lg hover:bg-white/10 transition-colors"
-                  onClick={() => setIsEditModalOpen(true)}
-                  aria-label="Edit clan"
-                >
-                  <Pencil className="text-white/80 hover:text-white w-4 h-4" />
-                </button>
-              )}
+              <ClanStatus isPublic={clanData.isPublic} short />
             </div>
             <div className="flex w-full">
               <div className="text-[#f2a311] text-[10px]">
-                {clanData && clanData.motto.length > 45
+                {clanData && clanData.motto.length > 45 && isDisplayingMyClan
                   ? clanData.motto.slice(0, 42) + "..."
                   : clanData?.motto}
               </div>
@@ -134,18 +140,38 @@ export function ClanDetail({
                   : undefined}{" "}
                 XP
               </span>
-            </div>
-            <button
-              className="px-3 py-1 bg-red-700 rounded-lg text-xs text-white hover:bg-red-600 transition-colors"
-              onClick={() => setIsModalOpen(true)}
-              disabled={isLeaving}
-            >
-              {isLeaving ? (
-                <Loader2 className="animate-spin w-4 h-4" />
-              ) : (
-                "Leave"
+              {!isDisplayingMyClan && (
+                <span>Shared requests: {clanData.requests.length}</span>
               )}
-            </button>
+            </div>
+            {isDisplayingMyClan && (
+              <div className="flex flex-col items-center gap-2">
+                {canEdit && (
+                  <button
+                    className="flex flex-row text-[10px] text-white/90 items-center justify-center gap-2 w-24 h-8 rounded-lg hover:bg-yellow-800 transition-colors bg-yellow-700"
+                    onClick={() => setIsEditModalOpen(true)}
+                    aria-label="Edit clan"
+                  >
+                    <Pencil className="w-4 h-4" />
+                    <span>Edit</span>
+                  </button>
+                )}
+                <button
+                  className="flex flex-row items-center justify-center gap-2 w-24 h-8 bg-red-700 rounded-lg text-[10px] text-white/90 hover:bg-red-600 transition-colors"
+                  onClick={() => setIsModalOpen(true)}
+                  disabled={isLeaving}
+                >
+                  {isLeaving ? (
+                    <Loader2 className="animate-spin w-4 h-4" />
+                  ) : (
+                    <>
+                      <LogOut className="w-4 h-4" />
+                      <span>Leave</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </CardContent>

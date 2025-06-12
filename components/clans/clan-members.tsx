@@ -27,7 +27,7 @@ export default function ClanMembers({
     <>
       <div className="w-full max-w-2xl space-y-2">
         <div className="flex justify-between items-center p-3 text-white/70 text-sm">
-          <span>Your farmers</span>
+          <span>Farmers</span>
           <span>{members.length}/20</span>
         </div>
         {members.map((member, index) => (
