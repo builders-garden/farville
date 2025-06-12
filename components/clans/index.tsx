@@ -10,6 +10,7 @@ import { SearchClan } from "./search-clan";
 import ClanOutgoingRequests from "./clan-outgoing-requests";
 import { useApiQuery } from "@/hooks/use-api-query";
 import { ClanJoinRequestWithClan } from "@/lib/prisma/types";
+import Image from "next/image";
 
 interface ClansModalProps {
   onClose: () => void;
@@ -84,7 +85,13 @@ export default function ClansModal({ onClose }: ClansModalProps) {
                 repeatDelay: 5,
               }}
             >
-              <span className="text-xl">🛡️</span>
+              <Image
+                src="/images/icons/clans.png"
+                alt="Feuds and Clans Icon"
+                width={28}
+                height={28}
+                className="w-[28px] h-[28px] xs:w-[36px] xs:h-[36px]"
+              />
               Feuds
             </motion.h2>
 

@@ -2,9 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { Mode, QuestStatus } from "@/lib/types/game";
 import {
+  getClanByFid,
   getQuestById,
   getUserByMode,
   getUserQuestById,
+  incrementClanXp,
+  incrementUserContributedXp,
   updateUserCoins,
   updateUserQuest,
   updateUserWeeklyScore,
@@ -134,6 +137,15 @@ export async function POST(
             mode
           )
         );
+
+        // check also if we need to update user's clan XP
+        const userClan = await getClanByFid(Number(fid));
+        if (userClan) {
+          promises.push(incrementClanXp(userClan.clanId, userQuest.quest.xp));
+          promises.push(
+            incrementUserContributedXp(Number(fid), userQuest.quest.xp)
+          );
+        }
       }
       didLevelUp = xp.didLevelUp;
     }

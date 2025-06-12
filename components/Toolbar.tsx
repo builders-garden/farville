@@ -165,8 +165,8 @@ export default function Toolbar({
           >
             <div className="relative w-6 h-6 xs:w-8 xs:h-8">
               <Image
-                src="/images/icons/market.png"
-                alt="Marketplace"
+                src="/images/icons/clans.png"
+                alt="Feuds and Clans"
                 fill
                 sizes="48"
                 className="object-contain"

@@ -34,14 +34,6 @@ export default function MyClan() {
     clanData?.members?.map((m) => [m.fid, m.user]) ?? []
   );
 
-  console.log("MyClan render", {
-    clanData,
-    isLoading,
-    activeTab,
-    canManageRequests,
-    joinRequests,
-  });
-
   return (
     <div className="flex flex-col items-center justify-center w-full pb-8 gap-2">
       <ClanDetail

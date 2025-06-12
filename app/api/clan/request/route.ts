@@ -1,4 +1,13 @@
-import { createClanRequest } from "@/lib/prisma/queries";
+import { sendDelayedNotificationToService } from "@/lib/game-notifications";
+import {
+  createClanRequest,
+  getClanByFid,
+  getItemById,
+  getRequestById,
+  getUser,
+} from "@/lib/prisma/queries";
+import { UserClan } from "@/lib/prisma/types";
+import { Mode } from "@/lib/types/game";
 import { NextRequest, NextResponse } from "next/server";
 import z from "zod";
 
@@ -14,6 +23,10 @@ export async function POST(req: NextRequest) {
     const fid = req.headers.get("x-user-fid");
     if (!fid) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    if (isNaN(Number(fid))) {
+      return NextResponse.json({ error: "Invalid FID" }, { status: 400 });
     }
 
     const body = await req.json();
@@ -32,6 +45,27 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const user = await getUser(Number(fid));
+
+    if (!user) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
+    const item = itemId ? await getItemById(itemId) : null;
+    const userRequest = requestId ? await getRequestById(requestId) : null;
+
+    const clanData = (await getClanByFid(Number(fid), {
+      includeClan: true,
+      includeMembers: true,
+    })) as UserClan | null;
+
+    if (!clanData) {
+      return NextResponse.json(
+        { error: "You are not a member of any clan" },
+        { status: 404 }
+      );
+    }
+
     console.log("Creating clan request with data:", {
       requestId,
       clanId,
@@ -40,13 +74,34 @@ export async function POST(req: NextRequest) {
       fid: Number(fid),
     });
 
-    await createClanRequest({
-      requestId,
-      clanId,
-      itemId,
-      quantity,
-      fid: Number(fid),
-    });
+    const notificationTitle = requestId
+      ? "A new clan request was shared"
+      : "Someone needs your help!";
+
+    const notificationText = requestId
+      ? `${user.username} share a new request. Donate ${userRequest?.item?.name} x${userRequest?.quantity}`
+      : `${user.username} needs to donate ${item?.name} x${quantity}. Create a request to help them!`;
+
+    await Promise.all([
+      createClanRequest({
+        requestId,
+        clanId,
+        itemId,
+        quantity,
+        fid: Number(fid),
+      }),
+      clanData.clan.members.map((member) => {
+        if (member.fid === Number(fid)) return; // Skip notifying self
+        return sendDelayedNotificationToService(
+          member.fid,
+          notificationTitle,
+          notificationText,
+          "clan-request",
+          Mode.Classic,
+          0
+        );
+      }),
+    ]);
 
     return NextResponse.json(
       {

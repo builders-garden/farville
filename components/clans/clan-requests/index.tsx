@@ -42,7 +42,7 @@ export default function ClanRequests({
               }
               return (
                 <RequestChatCard
-                  key={req.requestId}
+                  key={req.id}
                   isOwn={isOwn}
                   request={req}
                   requestor={{

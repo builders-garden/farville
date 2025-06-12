@@ -8,7 +8,14 @@ import { Statistic } from "./profile/Statistic";
 import { useEffect, useState } from "react";
 import InfoModal from "./modals/InfoModal";
 import { HarvestHonour } from "./profile/HarvestHonour";
-import { ChevronDown, ChevronUp, Info } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronUp,
+  Info,
+  Unlock,
+  Users,
+  Lock,
+} from "lucide-react";
 import { UserItem } from "@/hooks/use-user-items";
 import {
   achievementBadgeFlexCardComposeCastUrl,
@@ -24,6 +31,7 @@ import { ACHIEVEMENTS_THRESHOLDS } from "@/lib/game-constants";
 import { OG_FIDS_LIST } from "@/lib/contracts/constants";
 import { CollectibleStatus } from "@/lib/types/game";
 import { LeaderboardUserAvatar } from "./leaderboard/LeaderboardUserAvatar";
+import { ClanImage } from "./clans/clan-image";
 
 export interface BadgeModalData {
   name: string;
@@ -150,6 +158,18 @@ export default function ProfileModal({
       </div>
     );
   }
+
+  console.log("Profile Modal Rendered", userData);
+
+  const formatXP = (xp: number): string => {
+    if (xp >= 1000000) {
+      return `${(xp / 1000000).toFixed(1)}M`;
+    } else if (xp >= 1000) {
+      return `${(xp / 1000).toFixed(1)}k`;
+    } else {
+      return `${xp}`;
+    }
+  };
 
   return (
     <div className="fixed inset-0 max-w-md mx-auto bg-black/50 flex items-start z-50">
@@ -631,6 +651,90 @@ export default function ProfileModal({
                 <>
                   {/* Collectibles section */}
                   <div className="w-full flex flex-col gap-4">
+                    {userData.clan && (
+                      <>
+                        <div className="flex w-full justify-between text-white/90 text-xs xs:text-sm font-bold">
+                          <h3>Clan</h3>
+                        </div>
+                        <Card className="bg-gradient-to-br from-[#6D4C2C] to-[#5B4120] rounded-lg border-none">
+                          <CardContent className="flex flex-col p-3 xs:p-4 space-y-4 xs:space-y-6">
+                            <div className="flex flex-row items-start gap-2">
+                              <ClanImage
+                                imageUrl={userData.clan.clan.imageUrl}
+                                clanName={userData.clan.clan.name}
+                              />
+                              <div className="flex flex-col w-full gap-2">
+                                <div className="flex justify-between items-start">
+                                  <h3 className="text-white/90 font-bold text-xs">
+                                    {userData.clan.clan &&
+                                    userData.clan.clan.name.length > 17
+                                      ? userData.clan.clan.name.slice(0, 14) +
+                                        "..."
+                                      : userData.clan.clan.name}
+                                  </h3>
+                                </div>
+                                <div className="flex w-full">
+                                  <div className="text-[#f2a311] text-[10px]">
+                                    {userData.clan.clan.motto}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                            <div className="flex flex-row items-center justify-between gap-2 w-full">
+                              <div className="w-[30%] bg-[#6D4C2C]/80 p-3 rounded-lg flex flex-col items-center justify-center h-[80px]">
+                                <Users
+                                  size={16}
+                                  className="text-white/80 mb-1"
+                                />
+                                <span className="text-xs font-medium text-white/90">
+                                  {userData.clan.clan.members.length}/20
+                                </span>
+                                <span className="text-[10px] text-white/70">
+                                  members
+                                </span>
+                              </div>
+                              <div className="w-[30%] bg-[#6D4C2C]/80 p-3 rounded-lg flex flex-col items-center justify-center h-[80px]">
+                                <Image
+                                  src="/images/icons/experience.png"
+                                  alt="XP Icon"
+                                  width={16}
+                                  height={16}
+                                  className="mb-1"
+                                />
+                                <span className="text-xs font-medium text-white/90">
+                                  {formatXP(userData.clan.clan.xp || 0)}
+                                </span>
+                                <span className="text-[10px] text-white/70">
+                                  XP
+                                </span>
+                              </div>
+                              <div className="w-[30%] bg-[#6D4C2C]/80 p-3 rounded-lg flex flex-col items-center justify-center h-[80px]">
+                                {userData.clan.clan.isPublic ? (
+                                  <Unlock
+                                    size={16}
+                                    className="text-white/80 mb-1"
+                                  />
+                                ) : (
+                                  <Lock
+                                    size={16}
+                                    className="text-white/80 mb-1"
+                                  />
+                                )}
+                                <span className="text-xs font-medium text-white/90">
+                                  {userData.clan.clan.isPublic
+                                    ? "Public"
+                                    : "Private"}
+                                </span>
+                                <span className="text-[10px] text-white/70">
+                                  status
+                                </span>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      </>
+                    )}
+
                     <div className="flex w-full justify-between text-white/90 text-xs xs:text-sm font-bold">
                       <h3>Achievements</h3>
                       <span>

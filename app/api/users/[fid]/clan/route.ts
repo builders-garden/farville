@@ -12,7 +12,10 @@ export async function GET(
       return NextResponse.json({ error: "Invalid FID" }, { status: 400 });
     }
 
-    const userClan = await getClanByFid(fid);
+    const userClan = await getClanByFid(fid, {
+      includeClan: true,
+      includeMembers: true,
+    });
 
     return NextResponse.json(userClan);
   } catch (error) {

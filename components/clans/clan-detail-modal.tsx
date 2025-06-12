@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import Image from "next/image";
 import { Lock, Unlock, X, Shield, Users, Trophy } from "lucide-react";
 import { Clan } from "@prisma/client";
 import { useClanOperations } from "@/hooks/game-actions/use-clan-operations";
 import { useGame } from "@/context/GameContext";
 import { useCheckClanJoinRequest } from "@/hooks/use-check-clan-join-request";
+import { ClanImage } from "./clan-image";
 
 interface ClanWithDetails extends Clan {
   memberCount?: number;
@@ -109,18 +109,7 @@ export default function ClanDetailModal({
         <div className="space-y-4">
           {/* Clan Header with Icon and Name */}
           <div className="flex items-center gap-4">
-            <div className="relative w-16 h-16 rounded-md border-2 border-[#8B5E3C] overflow-hidden bg-[#5A4129] flex items-center justify-center shadow-inner">
-              {clan.imageUrl ? (
-                <Image
-                  src={clan.imageUrl}
-                  alt={clan.name}
-                  fill
-                  className="object-cover"
-                />
-              ) : (
-                <span className="text-2xl">🛡️</span>
-              )}
-            </div>
+            <ClanImage imageUrl={clan.imageUrl} clanName={clan.name} />
             <div className="flex flex-col">
               <h3 className="text-white font-bold text-lg">{clan.name}</h3>
               <div className="flex items-center text-xs text-white/70">

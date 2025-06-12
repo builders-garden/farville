@@ -1,4 +1,3 @@
-import Image from "next/image";
 import { motion } from "framer-motion";
 import { useClans } from "@/hooks/use-clans";
 import { Search } from "lucide-react";
@@ -7,6 +6,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import ClanDetailModal from "./clan-detail-modal";
 import { ClanView } from "./clan-view";
 import { ClanStatus } from "./clan-status";
+import { ClanImage } from "./clan-image";
 
 interface ClanWithDetails extends Clan {
   memberCount?: number;
@@ -166,18 +166,10 @@ export const SearchClan = ({
                     {/* Row 2: Image on left, stats on right */}
                     <div className="flex">
                       {/* Left - Clan Image */}
-                      <div className="relative w-16 h-16 rounded-md border-2 border-[#8B5E3C] overflow-hidden mr-3 bg-[#5A4129] flex items-center justify-center shadow-inner">
-                        {clan.imageUrl ? (
-                          <Image
-                            src={clan.imageUrl}
-                            alt={clan.name}
-                            fill
-                            className="object-cover"
-                          />
-                        ) : (
-                          <span className="text-lg">🛡️</span>
-                        )}
-                      </div>
+                      <ClanImage
+                        imageUrl={clan.imageUrl}
+                        clanName={clan.name}
+                      />
 
                       {/* Right - Stats */}
                       <div className="flex-1 flex flex-col justify-center">

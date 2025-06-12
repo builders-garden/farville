@@ -14,6 +14,7 @@ import {
   getRequestById,
   getClanByFid,
   incrementClanXp,
+  incrementUserContributedXp,
 } from "@/lib/prisma/queries";
 import { userCanDonate } from "@/lib/utils";
 import { Mode, PerkType, SpecialItemType } from "@/lib/types/game";
@@ -191,6 +192,7 @@ export const POST = async (
 
   if (userClan) {
     promises.push(incrementClanXp(userClan.clanId, totalXp));
+    promises.push(incrementUserContributedXp(Number(fid), totalXp));
   }
 
   await Promise.all(promises);

@@ -15,6 +15,17 @@ export function createClanMembership(
   });
 }
 
+export function incrementUserContributedXp(fid: number, amount: number) {
+  return prisma.clanMembership.update({
+    where: { fid },
+    data: {
+      xpContributed: {
+        increment: amount,
+      },
+    },
+  });
+}
+
 export function deleteClanMembership(fid: number) {
   return prisma.clanMembership.delete({
     where: {
@@ -27,13 +38,14 @@ export function getClanByFid(
   fid: number,
   options: {
     includeClan?: boolean;
+    includeMembers?: boolean;
   } = {}
 ) {
   return prisma.clanMembership.findFirst({
     where: { fid },
-    include: options.includeClan
-      ? {
-          clan: {
+    include: {
+      clan: options.includeClan
+        ? {
             select: {
               id: true,
               name: true,
@@ -41,10 +53,21 @@ export function getClanByFid(
               createdAt: true,
               isPublic: true,
               imageUrl: true,
+              xp: true,
+              members: options.includeMembers
+                ? {
+                    select: {
+                      fid: true,
+                      role: true,
+                      joinedAt: true,
+                      xpContributed: true,
+                    },
+                  }
+                : false,
             },
-          },
-        }
-      : undefined,
+          }
+        : false,
+    },
   });
 }
 

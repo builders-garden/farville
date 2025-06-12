@@ -79,7 +79,13 @@ export type UserCommunityDonationEnhanced = UserCommunityDonation & {
 };
 
 export type UserClan = ClanMembership & {
-  clan: Clan;
+  clan: Clan & {
+    members: {
+      fid: number;
+      role: string;
+      xpContributed: number;
+    }[];
+  };
 };
 
 export type ClanMember = ClanMembership & {

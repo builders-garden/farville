@@ -7,8 +7,13 @@ import { useUserFrosts } from "./use-user-frosts";
 import { useEffect, useState } from "react";
 import { useUserCollectibles } from "./use-user-collectibles";
 import { UserHarvestedCrop } from "@prisma/client";
-import { UserCompleteCollectible, UserWithStatistic } from "@/lib/prisma/types";
+import {
+  UserClan,
+  UserCompleteCollectible,
+  UserWithStatistic,
+} from "@/lib/prisma/types";
 import { Mode } from "@/lib/types/game";
+import { useUserClan } from "./use-user-clan";
 
 interface OtherUserProfileData {
   user: UserWithStatistic | undefined;
@@ -17,6 +22,7 @@ interface OtherUserProfileData {
   level: number;
   currentStreakDays: number;
   collectibles: UserCompleteCollectible[] | undefined;
+  clan: UserClan | undefined;
 }
 
 export function useOtherUserProfile(
@@ -35,6 +41,8 @@ export function useOtherUserProfile(
   const { userCollectibles, isLoading: userCollectiblesLoading } =
     useUserCollectibles(fid);
 
+  const { userClan, isLoading: isLoadingUserClan } = useUserClan(fid);
+
   const [userData, setUserData] = useState<OtherUserProfileData>({
     user: undefined,
     specialCrops: undefined,
@@ -42,6 +50,7 @@ export function useOtherUserProfile(
     level: 0,
     currentStreakDays: 0,
     collectibles: undefined,
+    clan: undefined,
   });
 
   const isLoading =
@@ -50,7 +59,8 @@ export function useOtherUserProfile(
     isUserHarvestedCropsLoading ||
     streaksLoading ||
     frostsLoading ||
-    userCollectiblesLoading;
+    userCollectiblesLoading ||
+    isLoadingUserClan;
 
   useEffect(() => {
     if (user) {
@@ -109,6 +119,15 @@ export function useOtherUserProfile(
       }));
     }
   }, [userStreaks, userFrosts?.lastStreakDates]);
+
+  useEffect(() => {
+    if (userClan) {
+      setUserData((prev) => ({
+        ...prev,
+        clan: userClan,
+      }));
+    }
+  }, [userClan]);
 
   return {
     userData,

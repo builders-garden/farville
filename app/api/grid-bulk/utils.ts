@@ -12,6 +12,7 @@ import {
   getUserHarvestedCrops,
   getUserItemBySlug,
   incrementClanXp,
+  incrementUserContributedXp,
   removeUserItem,
   updateGridCellsBulk,
   updateUserWeeklyScore,
@@ -458,6 +459,7 @@ const rewardUserBulk = async (
   ];
   if (userClan && userClan.clanId) {
     promises.push(incrementClanXp(userClan.clanId, totalXp));
+    promises.push(incrementUserContributedXp(fid, totalXp));
   }
   await Promise.all(promises);
 
