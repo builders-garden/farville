@@ -49,6 +49,53 @@ export function getClans(filters?: {
   });
 }
 
+export function getClansLeaderboard(
+  limit: number = 50,
+  options?: {
+    includeMembers?: boolean;
+    includeLeader?: boolean;
+  }
+) {
+  return prisma.clan.findMany({
+    orderBy: {
+      xp: "desc",
+    },
+    take: limit,
+    include: {
+      members: options?.includeMembers
+        ? {
+            select: {
+              fid: true,
+              role: true,
+              joinedAt: true,
+              xpContributed: true,
+              user: {
+                select: {
+                  username: true,
+                  displayName: true,
+                  avatarUrl: true,
+                  selectedAvatarUrl: true,
+                  mintedOG: true,
+                },
+              },
+            },
+            orderBy: {
+              xpContributed: "desc",
+            },
+          }
+        : false,
+      leader: options?.includeLeader
+        ? {
+            select: {
+              fid: true,
+              username: true,
+            },
+          }
+        : false,
+    },
+  });
+}
+
 export function getClanById(
   clanId: string,
   options?: {
@@ -102,6 +149,10 @@ export function getClanById(
         ? {
             select: {
               requestId: true,
+              createdAt: true,
+              itemId: true,
+              fid: true,
+              quantity: true,
               request: {
                 select: {
                   fid: true,
@@ -122,9 +173,7 @@ export function getClanById(
               },
             },
             orderBy: {
-              request: {
-                createdAt: "desc",
-              },
+              createdAt: "desc",
             },
           }
         : false,

@@ -288,9 +288,16 @@ export const useClanOperations = (
 
   const { mutate: shareRequestToClan } = useApiMutation({
     url: () => `/api/clan/request`,
-    body: (data: { requestId: string; clanId: string }) => ({
+    body: (data: {
+      requestId?: string;
+      clanId: string;
+      itemId?: number;
+      quantity?: number;
+    }) => ({
       requestId: data.requestId,
       clanId: data.clanId,
+      itemId: data.itemId,
+      quantity: data.quantity,
     }),
     method: "POST",
     onSuccess: (data) => {

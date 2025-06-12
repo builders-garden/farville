@@ -4,6 +4,7 @@ import {
   getClanById,
   createClanJoinRequest,
   getClanJoinRequestByUserAndClan,
+  deleteClanRequestsByFid,
 } from "@/lib/prisma/queries";
 import {
   updateClanMembership,
@@ -160,8 +161,12 @@ export async function DELETE(req: NextRequest) {
       await updateClanMembership(successorFid, ClanRole.Leader);
     }
 
-    // Remove the user from the clan
-    await deleteClanMembership(Number(fid));
+    await Promise.all([
+      // Remove the user from the clan
+      deleteClanMembership(Number(fid)),
+      // Remove user requests from the clan
+      deleteClanRequestsByFid(userClan.clanId, Number(fid)),
+    ]);
 
     const message = successorFid
       ? "Left clan successfully and transferred leadership"

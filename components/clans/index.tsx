@@ -22,7 +22,7 @@ export default function ClansModal({ onClose }: ClansModalProps) {
   const userFid = state.user?.fid;
 
   const [mainActiveTab, setMainActiveTab] = useState<MainTab>(
-    userHasClan ? "clan" : "search"
+    userHasClan ? "feud" : "search"
   );
   const [showCreateClanModal, setShowCreateClanModal] = useState(false);
 
@@ -39,7 +39,7 @@ export default function ClansModal({ onClose }: ClansModalProps) {
     });
 
   useEffect(() => {
-    setMainActiveTab(userHasClan ? "clan" : "search");
+    setMainActiveTab(userHasClan ? "feud" : "search");
   }, [state.clan, userHasClan]);
 
   // Function to handle successful clan creation
@@ -84,7 +84,7 @@ export default function ClansModal({ onClose }: ClansModalProps) {
               }}
             >
               <span className="text-xl">🛡️</span>
-              Clans
+              Feuds
             </motion.h2>
 
             <button
@@ -111,7 +111,7 @@ export default function ClansModal({ onClose }: ClansModalProps) {
             outgoingRequestsCount={outgoingRequests?.length || 0}
           />
 
-          {mainActiveTab === "clan" && <MyClan />}
+          {mainActiveTab === "feud" && <MyClan />}
           {mainActiveTab === "search" && (
             <SearchClan
               refetchOutgoingRequests={refetchOutgoingRequests}

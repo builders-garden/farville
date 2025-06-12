@@ -94,7 +94,7 @@ export type ClanMember = ClanMembership & {
 };
 
 export type ClanRequestWithItemData = ClanRequest & {
-  request: {
+  request?: {
     fid: number;
     itemId: string;
     quantity: number;

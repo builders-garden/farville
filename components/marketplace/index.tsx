@@ -121,12 +121,12 @@ export default function MarketplaceModal({
   };
 
   const handleShareRequestToClan = async () => {
-    if (!requestId || !selectedItemForRequest) return;
+    if (!requestId || !selectedItemForRequest || !state.clan) return;
 
     try {
       shareRequestToClan({
         requestId,
-        clanId: state.clan?.clanId || "",
+        clanId: state.clan.clanId,
       });
       setRequestId(null);
     } catch (error) {

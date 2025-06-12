@@ -37,6 +37,7 @@ model Item {
   userHarvestedCrops UserHarvestedCrop[]
   userItems          UserHasItem[]
   vouchers           Voucher[]
+  clanRequests       ClanRequest[]
 
   @@map("item")
 }
@@ -109,34 +110,35 @@ model Streak {
 }
 
 model User {
-  fid                   Int                     @id
-  username              String
-  displayName           String
-  avatarUrl             String?
-  walletAddress         String
-  notificationDetails   Json?                   @db.Json
-  mintedOG              Boolean                 @default(false)
-  createdAt             DateTime                @default(now()) @db.Timestamptz(6)
-  selectedAvatarUrl     String?
-  createdClans          Clan[]                  @relation("ClanCreator")
-  leaderClans           Clan[]                  @relation("ClanLeader")
-  clan_join_request     ClanJoinRequest[]
-  clan                  ClanMembership?
-  referrals             Referral[]
-  requests              Request[]
-  streaks               Streak[]
-  UserCommunityDonation UserCommunityDonation[]
-  donationsAsDonator    UserDonationHistory[]   @relation("user_donation_history_donatorFidTouser")
-  donationsAsReceiver   UserDonationHistory[]   @relation("user_donation_history_receiverFidTouser")
-  gridCells             UserGridCell[]
-  harvestedCrops        UserHarvestedCrop[]
-  collectibles          UserHasCollectible[]
-  items                 UserHasItem[]
-  quests                UserHasQuest[]
-  vouchers              UserHasVoucher[]
-  leaderboardEntries    UserLeaderboardEntry[]
-  notifications         UserNotification[]
-  statistics            UserStatistic[]
+  fid                    Int                     @id
+  username               String
+  displayName            String
+  avatarUrl              String?
+  walletAddress          String
+  notificationDetails    Json?                   @db.Json
+  mintedOG               Boolean                 @default(false)
+  createdAt              DateTime                @default(now()) @db.Timestamptz(6)
+  selectedAvatarUrl      String?
+  createdClans           Clan[]                  @relation("ClanCreator")
+  leaderClans            Clan[]                  @relation("ClanLeader")
+  clan_join_request      ClanJoinRequest[]
+  clan                   ClanMembership?
+  referrals              Referral[]
+  requests               Request[]
+  streaks                Streak[]
+  userCommunityDonations UserCommunityDonation[]
+  donationsAsDonator     UserDonationHistory[]   @relation("user_donation_history_donatorFidTouser")
+  donationsAsReceiver    UserDonationHistory[]   @relation("user_donation_history_receiverFidTouser")
+  gridCells              UserGridCell[]
+  harvestedCrops         UserHarvestedCrop[]
+  collectibles           UserHasCollectible[]
+  items                  UserHasItem[]
+  quests                 UserHasQuest[]
+  vouchers               UserHasVoucher[]
+  leaderboardEntries     UserLeaderboardEntry[]
+  notifications          UserNotification[]
+  statistics             UserStatistic[]
+  clanRequests           ClanRequest[]
 
   @@map("user")
 }
@@ -395,11 +397,17 @@ model ClanJoinRequest {
 }
 
 model ClanRequest {
-  requestId String
+  id        String   @id @default(dbgenerated("gen_random_uuid()"))
+  requestId String?  @unique
   clanId    String
-  clan      Clan    @relation(fields: [clanId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "clan_request_clanid_fkey")
-  request   Request @relation(fields: [requestId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "clan_request_requestid_fkey")
+  fid       Int
+  itemId    Int?
+  quantity  Int?
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  clan      Clan     @relation(fields: [clanId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "clan_request_clanid_fkey")
+  request   Request? @relation(fields: [requestId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "clan_request_requestid_fkey")
+  item      Item?    @relation(fields: [itemId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "clan_request_itemid_fkey")
+  user      User     @relation(fields: [fid], references: [fid], onDelete: Cascade, onUpdate: NoAction, map: "clan_request_fid_fkey")
 
-  @@id([requestId, clanId])
   @@map("clan_request")
 }

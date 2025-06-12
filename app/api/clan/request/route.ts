@@ -3,8 +3,10 @@ import { NextRequest, NextResponse } from "next/server";
 import z from "zod";
 
 const createClanRequestSchema = z.object({
-  requestId: z.string().min(1, "Request ID is required"),
+  requestId: z.string().min(1, "Request ID is required").optional(),
   clanId: z.string().min(1, "Clan ID is required"),
+  itemId: z.number().min(1).optional(),
+  quantity: z.number().min(1, "Quantity must be at least 1").optional(),
 });
 
 export async function POST(req: NextRequest) {
@@ -17,9 +19,34 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const parsedData = createClanRequestSchema.parse(body);
 
-    const { requestId, clanId } = parsedData;
+    const { requestId, clanId, itemId, quantity } = parsedData;
 
-    await createClanRequest(requestId, clanId);
+    // if requestId is not provided, itemId and quantity must be provided
+    if (!requestId && (!itemId || !quantity)) {
+      return NextResponse.json(
+        {
+          error:
+            "If requestId is not provided, itemId and quantity are required",
+        },
+        { status: 400 }
+      );
+    }
+
+    console.log("Creating clan request with data:", {
+      requestId,
+      clanId,
+      itemId,
+      quantity,
+      fid: Number(fid),
+    });
+
+    await createClanRequest({
+      requestId,
+      clanId,
+      itemId,
+      quantity,
+      fid: Number(fid),
+    });
 
     return NextResponse.json(
       {

@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 
-export type Tab = "clan" | "search" | "outgoing" | "leaderboard";
+export type Tab = "feud" | "search" | "outgoing" | "leaderboard";
 
 interface MainClanTabsProps {
   activeTab: Tab;
@@ -17,8 +17,8 @@ export default function MainClanTabs({
 }: MainClanTabsProps) {
   const allTabs: { id: Tab; label: string; icon: string; count?: number }[] = [
     {
-      id: "clan",
-      label: "Clan",
+      id: "feud",
+      label: "Feud",
       icon: "🏰", // Replace with your actual icon component
     },
     {
@@ -44,7 +44,7 @@ export default function MainClanTabs({
   const tabs = allTabs.filter(
     (tab) =>
       (userHasClan && tab.id !== "outgoing") ||
-      (!userHasClan && tab.id !== "clan")
+      (!userHasClan && tab.id !== "feud")
   );
 
   return (

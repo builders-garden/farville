@@ -174,7 +174,7 @@ export default function Toolbar({
             </div>
           </motion.button>
           <span className="text-[4px] xs:text-[6px] text-white mt-1">
-            Clans
+            Feuds
           </span>
         </div>
 
