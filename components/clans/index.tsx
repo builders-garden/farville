@@ -45,7 +45,7 @@ export default function ClansModal({ onClose }: ClansModalProps) {
   // Function to handle successful clan creation
   const handleClanCreationSuccess = () => {
     // Refresh all game state to ensure we get updated clan data
-    refetch.clan();
+    refetch.userClan();
 
     // Also refresh the clans list in the search tab to show the newly created clan
     if (searchClansRefetchRef.current) {
@@ -143,7 +143,7 @@ export default function ClansModal({ onClose }: ClansModalProps) {
           <CreateClanModal
             onClose={() => setShowCreateClanModal(false)}
             onSuccess={handleClanCreationSuccess}
-            refetchClan={refetch.clan}
+            refetchClan={refetch.userClan}
           />
         )}
       </motion.div>

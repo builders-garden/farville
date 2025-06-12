@@ -30,7 +30,7 @@ export default function ClanDetailModal({
 
   const { joinClan } = useClanOperations(
     () => {
-      refetch.clan();
+      refetch.userClan();
       refetchClans();
     },
     // If refetchOutgoingRequests is provided as a prop, use it, otherwise it will be undefined

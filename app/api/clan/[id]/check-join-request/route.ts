@@ -3,10 +3,10 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { clanId: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const fid = req.headers.get("x-user-fid");
-  const { clanId } = params;
+  const { id } = await params;
 
   if (!fid) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -16,7 +16,7 @@ export async function GET(
     // Check if the user already has a pending join request for this clan
     const existingRequest = await getClanJoinRequestByUserAndClan(
       Number(fid),
-      clanId
+      id
     );
 
     return NextResponse.json({

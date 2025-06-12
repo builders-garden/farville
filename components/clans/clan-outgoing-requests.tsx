@@ -52,7 +52,7 @@ export default function ClanOutgoingRequests() {
       });
 
       refetchRequests();
-      refetch.clan();
+      refetch.userClan();
       toast.success("Request cancelled successfully");
     },
     onError: (_, requestId) => {
