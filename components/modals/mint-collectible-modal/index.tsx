@@ -447,7 +447,6 @@ export default function MintCollectibleModal({
       try {
         textToImage({
           prompt: pfpDescription,
-          fid: state.user.fid,
           collectibleId: selectedCollectible?.id ?? 1,
         });
       } catch (error) {

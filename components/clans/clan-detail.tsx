@@ -123,7 +123,17 @@ export function ClanDetail({
                 Min Level:{" "}
                 {clanData.requiredLevel ? clanData.requiredLevel : "None"}
               </span>
-              <span>1.34M XP</span>
+              <span>
+                Farmed:{" "}
+                {clanData
+                  ? clanData.xp >= 1000000
+                    ? `${(clanData.xp / 1000000).toFixed(2)}M`
+                    : clanData.xp >= 1000
+                    ? `${(clanData.xp / 1000).toFixed(2)}K`
+                    : clanData.xp
+                  : undefined}{" "}
+                XP
+              </span>
             </div>
             <button
               className="px-3 py-1 bg-red-700 rounded-lg text-xs text-white hover:bg-red-600 transition-colors"

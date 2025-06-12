@@ -204,6 +204,7 @@ export function updateClan(
     imageUrl?: string | null;
     txHash?: string;
     requiredLevel?: number | null;
+    xp?: number;
   }
 ) {
   return prisma.clan.update({
@@ -215,6 +216,18 @@ export function updateClan(
       imageUrl: data.imageUrl,
       txHash: data.txHash,
       requiredLevel: data.requiredLevel,
+      xp: data.xp,
+    },
+  });
+}
+
+export function incrementClanXp(clanId: string, amount: number) {
+  return prisma.clan.update({
+    where: { id: clanId },
+    data: {
+      xp: {
+        increment: amount,
+      },
     },
   });
 }

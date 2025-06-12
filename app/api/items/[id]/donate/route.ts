@@ -12,6 +12,8 @@ import {
   updateUserXP,
   incrementRequestFilledQuantity,
   getRequestById,
+  getClanByFid,
+  incrementClanXp,
 } from "@/lib/prisma/queries";
 import { userCanDonate } from "@/lib/utils";
 import { Mode, PerkType, SpecialItemType } from "@/lib/types/game";
@@ -115,42 +117,40 @@ export const POST = async (
     );
   }
 
-  await removeUserItem(Number(fid), itemId, quantity, mode);
-  await addUserItem(Number(toFid), itemId, quantity, mode);
-  const userAfterUpdate = await updateUserXP(
-    Number(fid),
-    quantity * XP_PER_DONATED_ITEM,
-    mode
-  );
-  await updateUserWeeklyScore(
-    Number(fid),
-    quantity * XP_PER_DONATED_ITEM,
-    userAfterUpdate.newLevel,
-    user.xp,
-    userAfterUpdate.didLevelUp,
-    mode
-  );
+  const totalXp = quantity * XP_PER_DONATED_ITEM;
 
-  await incrementRequestFilledQuantity(requestId, quantity);
+  const userAfterUpdate = await updateUserXP(Number(fid), totalXp, mode);
 
-  // POST: the user can donate
-  // create or update here the user donation history
-  await updateUserDonationHistory({
-    donatorFid: Number(fid),
-    receiverFid: Number(toFid),
-    times:
-      !lastDonationToReceiver ||
-      new Date(lastDonationToReceiver.lastDonation).toDateString() !==
-        new Date().toDateString()
-        ? 1
-        : (lastDonationToReceiver?.times ?? 0) + 1,
-    lastDonation: new Date(),
-    mode,
+  // also check if we need to update the user's clan XP
+  const userClan = await getClanByFid(Number(fid), {
+    includeClan: false,
   });
 
-  await Promise.all([
-    // sendQuestsCalculation(Number(fid), "donate", mode, itemId, quantity),
-    // sendQuestsCalculation(Number(toFid), "receive", mode, itemId, quantity),
+  const promises: Promise<unknown>[] = [
+    removeUserItem(Number(fid), itemId, quantity, mode),
+    addUserItem(Number(toFid), itemId, quantity, mode),
+    updateUserWeeklyScore(
+      Number(fid),
+      totalXp,
+      userAfterUpdate.newLevel,
+      user.xp,
+      userAfterUpdate.didLevelUp,
+      mode
+    ),
+    incrementRequestFilledQuantity(requestId, quantity),
+    // create or update here the user donation history
+    updateUserDonationHistory({
+      donatorFid: Number(fid),
+      receiverFid: Number(toFid),
+      times:
+        !lastDonationToReceiver ||
+        new Date(lastDonationToReceiver.lastDonation).toDateString() !==
+          new Date().toDateString()
+          ? 1
+          : (lastDonationToReceiver?.times ?? 0) + 1,
+      lastDonation: new Date(),
+      mode,
+    }),
     axios({
       url: `${env.FARVILLE_SERVICE_URL}/api/async-jobs/quests-calculation`,
       method: "POST",
@@ -187,7 +187,13 @@ export const POST = async (
       mode,
       0
     ),
-  ]);
+  ];
+
+  if (userClan) {
+    promises.push(incrementClanXp(userClan.clanId, totalXp));
+  }
+
+  await Promise.all(promises);
 
   return NextResponse.json({ message: "Item donated" }, { status: 200 });
 };

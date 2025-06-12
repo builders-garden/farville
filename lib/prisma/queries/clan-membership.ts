@@ -23,21 +23,28 @@ export function deleteClanMembership(fid: number) {
   });
 }
 
-export function getClanByFid(fid: number) {
+export function getClanByFid(
+  fid: number,
+  options: {
+    includeClan?: boolean;
+  } = {}
+) {
   return prisma.clanMembership.findFirst({
     where: { fid },
-    include: {
-      clan: {
-        select: {
-          id: true,
-          name: true,
-          motto: true,
-          createdAt: true,
-          isPublic: true,
-          imageUrl: true,
-        },
-      },
-    },
+    include: options.includeClan
+      ? {
+          clan: {
+            select: {
+              id: true,
+              name: true,
+              motto: true,
+              createdAt: true,
+              isPublic: true,
+              imageUrl: true,
+            },
+          },
+        }
+      : undefined,
   });
 }
 

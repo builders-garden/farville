@@ -105,15 +105,16 @@ export async function POST(
     );
   }
 
-  // Update the user quest status
-  await updateUserQuest(Number(fid), Number(id), { status });
+  const promises: Promise<unknown>[] = [
+    // Update the user quest status
+    updateUserQuest(Number(fid), Number(id), { status }),
+  ];
+
   let didLevelUp = false;
   if (status === "claimed") {
     if (userQuest.quest.coins) {
-      await updateUserCoins(
-        Number(fid),
-        user.coins + userQuest.quest.coins,
-        mode
+      promises.push(
+        updateUserCoins(Number(fid), user.coins + userQuest.quest.coins, mode)
       );
     }
     if (userQuest.quest.xp) {
@@ -123,18 +124,23 @@ export async function POST(
         userQuest.quest.startAt &&
         new Date(userQuest.quest.startAt) >= thisWeekMonday
       ) {
-        await updateUserWeeklyScore(
-          Number(fid),
-          userQuest.quest.xp,
-          xp.newLevel,
-          user.xp,
-          xp.didLevelUp,
-          mode
+        promises.push(
+          updateUserWeeklyScore(
+            Number(fid),
+            userQuest.quest.xp,
+            xp.newLevel,
+            user.xp,
+            xp.didLevelUp,
+            mode
+          )
         );
       }
       didLevelUp = xp.didLevelUp;
     }
   }
+
+  // Execute all promises in parallel
+  await Promise.all(promises);
 
   return NextResponse.json({ success: true, status, didLevelUp });
 }
