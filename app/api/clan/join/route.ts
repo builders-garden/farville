@@ -34,10 +34,16 @@ export async function POST(req: NextRequest) {
     const { clanId, userLevel } = parsedData;
 
     // Fetch the clan to double check its visibility
-    const clan = await getClanById(clanId, {});
+    const clan = await getClanById(clanId, {
+      includeMembers: true,
+    });
 
     if (!clan) {
       return NextResponse.json({ error: "Clan not found" }, { status: 404 });
+    }
+
+    if (clan.members.length >= clan.maxMembers) {
+      return NextResponse.json({ error: "Clan is full" }, { status: 403 });
     }
 
     // Use the clan's actual isPublic status for security

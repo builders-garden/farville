@@ -104,6 +104,17 @@ export async function GET(
     const username = user?.username || "Farmer";
     const memberCount = clan.members?.length || 0;
 
+    // Format XP for display
+    const formatXP = (xp: number): string => {
+      if (xp >= 1000000) {
+        return `${(xp / 1000000).toFixed(2)}M XP`;
+      } else if (xp >= 1000) {
+        return `${(xp / 1000).toFixed(1)}K XP`;
+      } else {
+        return `${xp} XP`;
+      }
+    };
+
     const fontData = await loadGoogleFont(
       "Press+Start+2P",
       "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+-=[]{}|;':,.<>/?"
@@ -309,7 +320,7 @@ export async function GET(
                         marginBottom: "4px",
                       }}
                     >
-                      Level {Math.floor(clan.xp / 1000) || 1}
+                      {formatXP(clan.xp || 0)}
                     </span>
                     <span
                       style={{

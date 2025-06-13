@@ -43,13 +43,24 @@ export default function ClanDetailModal({
   const { hasPendingRequest } = useCheckClanJoinRequest(clan?.id);
 
   const userHasClan = Boolean(state.clan);
+
+  // Check if clan is full
+  const isClanFull = (clan.memberCount || 0) >= (clan.maxMembers || 20);
+
   // If no required level is set, any level can join
   const userCanJoin =
-    !userHasClan && (!clan.requiredLevel || state.level >= clan.requiredLevel);
+    !userHasClan &&
+    !isClanFull &&
+    (!clan.requiredLevel || state.level >= clan.requiredLevel);
 
   // Handle joining a clan
   const handleJoinClan = () => {
-    if (!userCanJoin || isJoining || (!clan.isPublic && hasPendingRequest))
+    if (
+      !userCanJoin ||
+      isJoining ||
+      isClanFull ||
+      (!clan.isPublic && hasPendingRequest)
+    )
       return;
 
     setIsJoining(true);
@@ -109,18 +120,27 @@ export default function ClanDetailModal({
         <div className="space-y-4">
           {/* Clan Header with Icon and Name */}
           <div className="flex items-center gap-4">
-            <ClanImage imageUrl={clan.imageUrl} clanName={clan.name} />
+            <ClanImage
+              imageUrl={clan.imageUrl}
+              clanName={clan.name}
+            />
             <div className="flex flex-col">
               <h3 className="text-white font-bold text-lg">{clan.name}</h3>
               <div className="flex items-center text-xs text-white/70">
                 {clan.isPublic ? (
                   <>
-                    <Unlock size={14} className="mr-1" />
+                    <Unlock
+                      size={14}
+                      className="mr-1"
+                    />
                     <span>Public Clan</span>
                   </>
                 ) : (
                   <>
-                    <Lock size={14} className="mr-1" />
+                    <Lock
+                      size={14}
+                      className="mr-1"
+                    />
                     <span>Private Clan</span>
                   </>
                 )}
@@ -140,7 +160,10 @@ export default function ClanDetailModal({
           {/* Clan Stats */}
           <div className="grid grid-cols-3 gap-2">
             <div className="bg-[#6D4C2C]/80 p-3 rounded-lg flex flex-col items-center justify-center">
-              <Trophy size={16} className="text-[#FFB938] mb-1" />
+              <Trophy
+                size={16}
+                className="text-[#FFB938] mb-1"
+              />
               <span className="text-xs font-bold text-[#FFB938]">
                 LVL {clan.level}
               </span>
@@ -149,14 +172,20 @@ export default function ClanDetailModal({
               </span>
             </div>
             <div className="bg-[#6D4C2C]/80 p-3 rounded-lg flex flex-col items-center justify-center">
-              <Users size={16} className="text-white/80 mb-1" />
+              <Users
+                size={16}
+                className="text-white/80 mb-1"
+              />
               <span className="text-xs font-medium text-white/90">
-                {clan.memberCount || 0}
+                {clan.memberCount || 0}/{clan.maxMembers || 20}
               </span>
               <span className="text-[10px] text-white/70">members</span>
             </div>
             <div className="bg-[#6D4C2C]/80 p-3 rounded-lg flex flex-col items-center justify-center">
-              <Shield size={16} className="text-white/80 mb-1" />
+              <Shield
+                size={16}
+                className="text-white/80 mb-1"
+              />
               <span className="text-xs font-medium text-white/90">
                 {clan.requiredLevel ? `Lvl ${clan.requiredLevel}` : "No Req"}
               </span>
@@ -179,6 +208,7 @@ export default function ClanDetailModal({
                 disabled={
                   !userCanJoin ||
                   isJoining ||
+                  isClanFull ||
                   (!clan.isPublic && hasPendingRequest)
                 }
                 onClick={handleJoinClan}
@@ -187,6 +217,7 @@ export default function ClanDetailModal({
                   ${
                     !userCanJoin ||
                     isJoining ||
+                    isClanFull ||
                     (!clan.isPublic && hasPendingRequest)
                       ? "bg-[#FFB938]/50 cursor-not-allowed"
                       : "bg-[#FFB938] hover:bg-[#ffc65c]"
@@ -198,6 +229,8 @@ export default function ClanDetailModal({
                     <div className="h-5 w-5 border-2 border-t-transparent border-[#7E4E31] rounded-full animate-spin mr-2"></div>
                     Loading...
                   </div>
+                ) : isClanFull ? (
+                  "Clan is Full"
                 ) : clan.isPublic ? (
                   "Join"
                 ) : hasPendingRequest ? (
@@ -217,6 +250,14 @@ export default function ClanDetailModal({
                 You must be level {clan.requiredLevel} to join this clan
               </p>
             )}
+
+          {/* Message for clan being full */}
+          {!userHasClan && isClanFull && (
+            <p className="text-red-400/90 text-xs text-center mt-2">
+              This clan is full ({clan.memberCount || 0}/{clan.maxMembers || 20}
+              )
+            </p>
+          )}
 
           {/* Message for users who have a pending request */}
           {!userHasClan && !clan.isPublic && hasPendingRequest && (

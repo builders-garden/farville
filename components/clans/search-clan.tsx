@@ -98,7 +98,10 @@ export const SearchClan = ({
       {/* Search Bar - Always visible */}
       {!isViewingClan && (
         <div className="flex items-center bg-[#6D4C2C] rounded-lg p-2 mb-3 border border-[#8B5E3C]/50">
-          <Search size={16} className="text-white/70 mr-2" />
+          <Search
+            size={16}
+            className="text-white/70 mr-2"
+          />
           <input
             type="text"
             placeholder="Clan Name..."
@@ -197,7 +200,7 @@ export const SearchClan = ({
                         {/* Stats Row 3: Clan Level */}
                         <div className="flex justify-between items-center mt-2">
                           <span className="text-[10px] text-white/80">
-                            Level
+                            Required Level
                           </span>
                           <span className="text-[9px] text-white/90">
                             {clan.requiredLevel ? clan.requiredLevel : "None"}

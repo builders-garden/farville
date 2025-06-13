@@ -248,12 +248,15 @@ export default function CreateClanModal({
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form
+          onSubmit={handleSubmit}
+          className="space-y-4"
+        >
           {/* Wallet Balance and Cost Display */}
           {address && (
             <div className="bg-[#4A341A] p-3 rounded-lg border border-[#8B5E3C]/10">
               <div className="flex justify-between items-center text-sm">
-                <span className="text-white/70">Cost to create clan:</span>
+                <span className="text-white/70">Cost:</span>
                 <span className="text-[#FFB938] font-bold">
                   ${CLAN_CREATION_COST_USD} USDC
                 </span>
@@ -384,7 +387,10 @@ export default function CreateClanModal({
                   { length: Math.min(userLevel - 1, 19) },
                   (_, i) => i + 2
                 ).map((level) => (
-                  <option key={level} value={level}>
+                  <option
+                    key={level}
+                    value={level}
+                  >
                     Lvl {level}+
                   </option>
                 ))}
@@ -399,7 +405,10 @@ export default function CreateClanModal({
               onCheckedChange={(checked) => setIsPublic(Boolean(checked))}
               className="data-[state=checked]:bg-[#FFB938] data-[state=checked]:border-[#FFB938]"
             />
-            <label htmlFor="public" className="text-sm text-white/80">
+            <label
+              htmlFor="public"
+              className="text-sm text-white/80"
+            >
               Public clan
             </label>
           </div>

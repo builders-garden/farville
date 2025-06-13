@@ -24,10 +24,11 @@ export default function ClanOverlay({
   const [isJoining, setIsJoining] = useState(false);
 
   // Fetch clan data
-  const { clanData: clan, isLoading } = useClan(clanId);
+  const { clanData: clan, isLoading: clanDataIsLoading } = useClan(clanId);
 
   // Check if user has pending request
-  const { hasPendingRequest } = useCheckClanJoinRequest(clanId);
+  const { hasPendingRequest, isLoading: joinRequestsIsLoading } =
+    useCheckClanJoinRequest(clanId);
 
   // Clan operations hook
   const { joinClan } = useClanOperations(() => {
@@ -40,24 +41,32 @@ export default function ClanOverlay({
   });
 
   const userHasClan = Boolean(state.clan);
+
+  // Get member count from members array
+  const memberCount = clan?.members?.length || 0;
+  const isClanFull = memberCount >= (clan?.maxMembers || 20);
+
   const userCanJoin =
     !userHasClan &&
     clan &&
+    !isClanFull &&
     (!clan.requiredLevel || state.level >= clan.requiredLevel);
+
+  // Check if we're still loading any necessary data
+  const isLoading = clanDataIsLoading || joinRequestsIsLoading;
 
   // Calculate clan level from XP (assuming 1000 XP per level)
   const calculateClanLevel = (xp: number): number => {
     return Math.floor(xp / 1000) + 1;
   };
 
-  // Get member count from members array
-  const memberCount = clan?.members?.length || 0;
   const clanLevel = clan ? calculateClanLevel(clan.xp) : 1;
 
   const handleJoinClan = () => {
     if (
       !userCanJoin ||
       isJoining ||
+      isClanFull ||
       (!clan?.isPublic && hasPendingRequest) ||
       !clan
     )
@@ -262,7 +271,9 @@ export default function ClanOverlay({
                   <Users size={14} />
                   Feud Members
                 </h4>
-                <span className="text-white/70 text-xs">{memberCount}/20</span>
+                <span className="text-white/70 text-xs">
+                  {memberCount}/{clan.maxMembers || 20}
+                </span>
               </div>
               <div
                 className="max-h-32 overflow-y-auto space-y-2"
@@ -271,7 +282,7 @@ export default function ClanOverlay({
                   scrollbarColor: "#8B5E3C #5A4129",
                 }}
               >
-                {clan.members.slice(0, 10).map((member, index) => (
+                {clan.members.map((member, index) => (
                   <div
                     key={member.fid}
                     className="flex items-center justify-between p-2 bg-[#5A4129]/50 rounded"
@@ -322,13 +333,6 @@ export default function ClanOverlay({
                     </div>
                   </div>
                 ))}
-                {memberCount > 10 && (
-                  <div className="text-center py-1">
-                    <span className="text-white/50 text-xs">
-                      +{memberCount - 10} more members
-                    </span>
-                  </div>
-                )}
               </div>
             </div>
           )}
@@ -336,7 +340,7 @@ export default function ClanOverlay({
       </motion.div>
 
       {/* Fixed Action buttons */}
-      <div 
+      <div
         className="fixed bottom-0 left-0 right-0 bg-[#7E4E31] pt-4 pb-4 px-6 border-t border-[#8B5E3C]/50 z-50"
         style={{
           paddingBottom: safeAreaInsets.bottom + 16,
@@ -349,27 +353,40 @@ export default function ClanOverlay({
             <button
               type="button"
               disabled={
+                isLoading ||
+                !clan ||
                 !userCanJoin ||
                 isJoining ||
+                isClanFull ||
                 (!clan.isPublic && hasPendingRequest)
               }
               onClick={handleJoinClan}
               className={`
                 flex-1 py-2 px-4 rounded text-[#7E4E31] transition-colors text-sm font-medium
                 ${
+                  isLoading ||
+                  !clan ||
                   !userCanJoin ||
                   isJoining ||
+                  isClanFull ||
                   (!clan.isPublic && hasPendingRequest)
                     ? "bg-[#FFB938]/50 cursor-not-allowed"
                     : "bg-[#FFB938] hover:bg-[#ffc65c]"
                 }
               `}
             >
-              {isJoining ? (
+              {isLoading || !clan ? (
                 <div className="flex items-center justify-center">
                   <div className="h-5 w-5 border-2 border-t-transparent border-[#7E4E31] rounded-full animate-spin mr-2"></div>
                   Loading...
                 </div>
+              ) : isJoining ? (
+                <div className="flex items-center justify-center">
+                  <div className="h-5 w-5 border-2 border-t-transparent border-[#7E4E31] rounded-full animate-spin mr-2"></div>
+                  Loading...
+                </div>
+              ) : isClanFull ? (
+                "Feud is Full"
               ) : clan.isPublic ? (
                 "Join"
               ) : hasPendingRequest ? (
@@ -390,7 +407,9 @@ export default function ClanOverlay({
         </div>
 
         {/* Message for users who don't meet the level requirement */}
-        {!userHasClan &&
+        {!isLoading &&
+          clan &&
+          !userHasClan &&
           clan.requiredLevel &&
           state.level < clan.requiredLevel && (
             <p className="text-amber-400/90 text-xs text-center mt-2">
@@ -398,12 +417,23 @@ export default function ClanOverlay({
             </p>
           )}
 
-        {/* Message for users who have a pending request */}
-        {!userHasClan && !clan.isPublic && hasPendingRequest && (
-          <p className="text-amber-400/90 text-xs text-center mt-2">
-            Your request to join this feud is pending approval
+        {/* Message for clan being full */}
+        {!isLoading && clan && !userHasClan && isClanFull && (
+          <p className="text-red-400/90 text-xs text-center mt-2">
+            This feud is full ({memberCount}/{clan.maxMembers || 20})
           </p>
         )}
+
+        {/* Message for users who have a pending request */}
+        {!isLoading &&
+          clan &&
+          !userHasClan &&
+          !clan.isPublic &&
+          hasPendingRequest && (
+            <p className="text-amber-400/90 text-xs text-center mt-2">
+              Your request to join this feud is pending approval
+            </p>
+          )}
       </div>
     </div>
   );
