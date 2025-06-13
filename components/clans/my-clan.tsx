@@ -8,6 +8,7 @@ import { useClanJoinRequests } from "@/hooks/use-clan-join-requests";
 import { ClanRole } from "@/lib/types/game";
 import { ClanDetail } from "./clan-detail";
 import ClanRequests from "./clan-requests";
+import { ClanQuests } from "./clan-quests";
 
 export default function MyClan() {
   const { state, refetch } = useGame();
@@ -56,6 +57,8 @@ export default function MyClan() {
           onMemberUpdate={refetchClanData}
         />
       )}
+
+      {activeTab === "quests" && !isLoading && clanData && <ClanQuests />}
 
       {activeTab === "newcomers" && !isLoading && clanData && (
         <div className="w-full max-w-2xl">
