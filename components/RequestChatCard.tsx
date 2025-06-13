@@ -83,7 +83,7 @@ export const RequestChatCard: React.FC<RequestChatCardProps> = ({
                         </span>
                       </div>
                     </div>
-                    {!isOwn && !requestFullfilled && (
+                    {!isOwn && !requestFullfilled && type !== "ask" && (
                       <button
                         className="bg-[#f2a311] text-white text-xs py-1 px-3 rounded hover:bg-[#f2a311]/80 transition-colors ml-auto"
                         onClick={() => setShowRequestModal(true)}
