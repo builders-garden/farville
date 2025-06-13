@@ -20,6 +20,7 @@ import { env } from "@/lib/env";
 import sdk from "@farcaster/frame-sdk";
 import { PaymentCompletedEvent } from "@daimo/pay-common";
 import { DaimoPayButton } from "@daimo/pay";
+import { CLAN_CREATION_COST_USD } from "@/lib/game-constants";
 
 interface CreateClanModalProps {
   onClose: () => void;
@@ -89,18 +90,18 @@ export default function CreateClanModal({
   const hasEnoughUSDBalance = useMemo(() => {
     if (!tokenBalancesData || !tokenBalancesData.totalBalanceUSD || !address)
       return false;
-    return tokenBalancesData.totalBalanceUSD >= 3; // $3 required
+    return tokenBalancesData.totalBalanceUSD >= CLAN_CREATION_COST_USD;
   }, [tokenBalancesData, address]);
 
   const walletBalance = tokenBalancesData?.totalBalanceUSD || 0;
 
   // Reset state when modal opens
   useEffect(() => {
-    if (walletBalance < 3 && !tokenBalancesIsLoading) {
+    if (walletBalance < CLAN_CREATION_COST_USD && !tokenBalancesIsLoading) {
       setError(
-        "You need at least $3 in your wallet to create a clan. Please add funds."
+        `You need at least $${CLAN_CREATION_COST_USD} in your wallet to create a clan. Please add funds.`
       );
-    } else if (walletBalance >= 3) {
+    } else if (walletBalance >= CLAN_CREATION_COST_USD) {
       setError("");
     }
   }, [walletBalance, tokenBalancesIsLoading]);
@@ -136,6 +137,7 @@ export default function CreateClanModal({
           motto,
           isPublic,
           txHash: e.txHash,
+          paymentId: e.paymentId,
           ...(imageUrl && { imageUrl }),
           ...(requiredLevel && { requiredLevel }),
         },
@@ -196,8 +198,10 @@ export default function CreateClanModal({
       return;
     }
 
-    if (walletBalance < 3) {
-      setError("You need at least $3 in your wallet to create a clan");
+    if (walletBalance < CLAN_CREATION_COST_USD) {
+      setError(
+        `You need at least $${CLAN_CREATION_COST_USD} in your wallet to create a clan`
+      );
       return;
     }
 
@@ -240,14 +244,18 @@ export default function CreateClanModal({
             <div className="bg-[#4A341A] p-3 rounded-lg border border-[#8B5E3C]/10">
               <div className="flex justify-between items-center text-sm">
                 <span className="text-white/70">Cost to create clan:</span>
-                <span className="text-[#FFB938] font-bold">$3 USDC</span>
+                <span className="text-[#FFB938] font-bold">
+                  ${CLAN_CREATION_COST_USD} USDC
+                </span>
               </div>
               <div className="flex justify-between items-center text-sm mt-1">
                 <span className="text-white/70">Your balance:</span>
                 <span
                   className={cn(
                     "font-bold",
-                    walletBalance >= 3 ? "text-green-400" : "text-red-400"
+                    walletBalance >= CLAN_CREATION_COST_USD
+                      ? "text-green-400"
+                      : "text-red-400"
                   )}
                 >
                   {tokenBalancesIsLoading ? (
@@ -379,7 +387,7 @@ export default function CreateClanModal({
                     { chain: base.id, address: BASE_USDC_ADDRESS },
                   ]}
                   toAddress={BG_MULTISIG_ADDRESS}
-                  toUnits="3"
+                  toUnits={CLAN_CREATION_COST_USD.toString()}
                   toToken={BASE_USDC_ADDRESS}
                   toChain={base.id}
                   connectedWalletOnly={true}
@@ -406,7 +414,7 @@ export default function CreateClanModal({
                           Processing...
                         </div>
                       ) : (
-                        "Pay $3 & Create"
+                        `Pay $${CLAN_CREATION_COST_USD} & Create`
                       )}
                     </Button>
                   )}

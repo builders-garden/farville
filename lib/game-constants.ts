@@ -1173,3 +1173,5 @@ export const FP_TIME = {
   END_HOUR: 16,
   END_MINUTE: 0,
 };
+
+export const CLAN_CREATION_COST_USD = 3;

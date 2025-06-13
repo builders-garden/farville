@@ -14,6 +14,7 @@ export const useClanOperations = (
       txHash: string; // Now required
       imageUrl?: string;
       requiredLevel?: number;
+      paymentId: string;
     }) => clanData,
     method: "POST",
     onSuccess: (data) => {
@@ -44,6 +45,7 @@ export const useClanOperations = (
       txHash: string; // Now required
       imageUrl?: string;
       requiredLevel?: number;
+      paymentId: string;
     },
     callbacks?: {
       onSuccess?: () => void;

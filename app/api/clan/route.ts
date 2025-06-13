@@ -7,7 +7,14 @@ import {
 } from "@/lib/prisma/queries";
 import { ClanRole } from "@/lib/types/game";
 import { prisma } from "@/lib/prisma/client";
+import { fetchDaimoPayment } from "@/lib/daimo";
+import {
+  BG_MULTISIG_ADDRESS,
+  BASE_USDC_ADDRESS,
+} from "@/lib/contracts/constants";
+import { base } from "viem/chains";
 import z from "zod";
+import { CLAN_CREATION_COST_USD } from "@/lib/game-constants";
 
 // Basic payment validation - checks if txHash exists and follows expected format
 // In a production environment, you might want to verify the transaction on-chain
@@ -15,6 +22,82 @@ const validatePaymentTxHash = (txHash: string): boolean => {
   // Check if it's a valid transaction hash format (66 characters, starts with 0x)
   const txHashRegex = /^0x[a-fA-F0-9]{64}$/;
   return txHashRegex.test(txHash);
+};
+
+// Comprehensive payment validation using Daimo API
+const validateClanPayment = async (
+  paymentId: string
+): Promise<{
+  isValid: boolean;
+  error?: string;
+  txHash?: string;
+}> => {
+  try {
+    // Fetch payment details from Daimo
+    const daimoPayment = await fetchDaimoPayment(paymentId);
+
+    console.log("Daimo payment data:", JSON.stringify(daimoPayment, null, 2));
+
+    // Check payment status
+    if (daimoPayment.status !== "payment_completed") {
+      return {
+        isValid: false,
+        error: `Payment status is ${daimoPayment.status}, expected payment_completed`,
+      };
+    }
+
+    // Check payment amount
+    const paymentAmount = Number(daimoPayment.display.paymentValue);
+    if (paymentAmount !== CLAN_CREATION_COST_USD) {
+      return {
+        isValid: false,
+        error: `Payment amount is $${paymentAmount}, expected $${CLAN_CREATION_COST_USD}`,
+      };
+    }
+
+    // Check destination address
+    if (
+      daimoPayment.destination.destinationAddress.toLowerCase() !==
+      BG_MULTISIG_ADDRESS.toLowerCase()
+    ) {
+      return {
+        isValid: false,
+        error: `Payment sent to wrong address: ${daimoPayment.destination.destinationAddress}`,
+      };
+    }
+
+    // Check token address (should be USDC)
+    if (
+      daimoPayment.destination.tokenAddress.toLowerCase() !==
+      BASE_USDC_ADDRESS.toLowerCase()
+    ) {
+      return {
+        isValid: false,
+        error: `Payment made with wrong token: ${daimoPayment.destination.tokenAddress}`,
+      };
+    }
+
+    // Check chain ID (should be Base)
+    if (Number(daimoPayment.destination.chainId) !== base.id) {
+      return {
+        isValid: false,
+        error: `Payment made on wrong chain: ${daimoPayment.destination.chainId}`,
+      };
+    }
+
+    return {
+      isValid: true,
+      txHash: daimoPayment.source.txHash,
+    };
+  } catch (error) {
+    console.error("Error validating clan payment:", error);
+    return {
+      isValid: false,
+      error: `Failed to validate payment: ${
+        error instanceof Error ? error.message : "Unknown error"
+      }`,
+    };
+  }
 };
 
 export async function GET(req: NextRequest) {
@@ -42,6 +125,7 @@ const createClanSchema = z.object({
   imageUrl: z.string().url().optional(),
   txHash: z.string().min(1, "Payment transaction hash is required").max(66),
   requiredLevel: z.number().int().min(1).optional(),
+  paymentId: z.string().min(1),
 });
 
 export async function POST(req: NextRequest) {
@@ -54,7 +138,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const parsedData = createClanSchema.parse(body);
 
-    // Validate payment transaction hash
+    // Basic transaction hash format validation
     if (!validatePaymentTxHash(parsedData.txHash)) {
       return NextResponse.json(
         { error: "Invalid payment transaction hash format" },
@@ -62,8 +146,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Additional validation: Ensure the transaction hash is not already used by another clan
-    // This prevents reusing the same payment for multiple clan creations
+    // Check if transaction hash is already used by another clan
     const existingClanWithTxHash = await prisma.clan.findFirst({
       where: { txHash: parsedData.txHash },
     });
@@ -75,9 +158,19 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Create the clan with the validated payment
+    // Comprehensive payment validation using Daimo API
+    const paymentValidation = await validateClanPayment(parsedData.paymentId);
+    if (!paymentValidation.isValid) {
+      return NextResponse.json(
+        { error: `Payment validation failed: ${paymentValidation.error}` },
+        { status: 400 }
+      );
+    }
+
+    // Create the clan with the validated payment transaction hash
     const clan = await createClan({
       ...parsedData,
+      txHash: paymentValidation.txHash || parsedData.txHash,
       createdBy: Number(fid),
       leaderFid: Number(fid),
     });
