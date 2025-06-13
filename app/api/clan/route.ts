@@ -126,7 +126,7 @@ export async function GET(req: NextRequest) {
 const fileSizeLimit = 3 * 1024 * 1024; // 3MB
 
 // Image Schema
-export const IMAGE_SCHEMA = z
+const IMAGE_SCHEMA = z
   .instanceof(File)
   .refine(
     (file) =>
