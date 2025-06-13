@@ -147,7 +147,7 @@ export default function ClansModal({ onClose }: ClansModalProps) {
             aria-label="Create Clan"
           >
             <Plus size={20} />
-            <span className="font-medium text-xs">Create Clan</span>
+            <span className="font-medium text-xs">Create Feud</span>
           </motion.button>
         )}
 

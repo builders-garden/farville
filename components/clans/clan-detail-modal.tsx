@@ -105,7 +105,7 @@ export default function ClanDetailModal({
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-white/90 font-bold text-lg flex items-center gap-2">
             <span className="text-xl">🛡️</span>
-            Clan Details
+            Feud Details
           </h3>
           <button
             onClick={onClose}
@@ -133,7 +133,7 @@ export default function ClanDetailModal({
                       size={14}
                       className="mr-1"
                     />
-                    <span>Public Clan</span>
+                    <span>Public Feud</span>
                   </>
                 ) : (
                   <>
@@ -141,7 +141,7 @@ export default function ClanDetailModal({
                       size={14}
                       className="mr-1"
                     />
-                    <span>Private Clan</span>
+                    <span>Private Feud</span>
                   </>
                 )}
               </div>
@@ -230,7 +230,7 @@ export default function ClanDetailModal({
                     Loading...
                   </div>
                 ) : isClanFull ? (
-                  "Clan is Full"
+                  "Feud is Full"
                 ) : clan.isPublic ? (
                   "Join"
                 ) : hasPendingRequest ? (
@@ -247,14 +247,14 @@ export default function ClanDetailModal({
             clan.requiredLevel &&
             state.level < clan.requiredLevel && (
               <p className="text-amber-400/90 text-xs text-center mt-2">
-                You must be level {clan.requiredLevel} to join this clan
+                You must be level {clan.requiredLevel} to join this feud.
               </p>
             )}
 
           {/* Message for clan being full */}
           {!userHasClan && isClanFull && (
             <p className="text-red-400/90 text-xs text-center mt-2">
-              This clan is full ({clan.memberCount || 0}/{clan.maxMembers || 20}
+              This feud is full ({clan.memberCount || 0}/{clan.maxMembers || 20}
               )
             </p>
           )}
@@ -262,7 +262,7 @@ export default function ClanDetailModal({
           {/* Message for users who have a pending request */}
           {!userHasClan && !clan.isPublic && hasPendingRequest && (
             <p className="text-amber-400/90 text-xs text-center mt-2">
-              Your request to join this clan is pending approval
+              Your request to join this feud is pending approval
             </p>
           )}
         </div>

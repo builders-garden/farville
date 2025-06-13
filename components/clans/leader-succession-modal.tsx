@@ -64,7 +64,7 @@ export default function LeaderSuccessionModal({
         <div className="space-y-4">
           <p className="text-white/80 text-xs">
             As the current leader, you must select a new leader before leaving
-            the clan.
+            the feud.
           </p>
 
           <div className="space-y-2 max-h-60 overflow-y-auto">

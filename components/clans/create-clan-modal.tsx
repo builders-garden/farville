@@ -100,7 +100,7 @@ export default function CreateClanModal({
   useEffect(() => {
     if (walletBalance < CLAN_CREATION_COST_USD && !tokenBalancesIsLoading) {
       setError(
-        `You need at least $${CLAN_CREATION_COST_USD} in your wallet to create a clan. Please add funds.`
+        `You need at least $${CLAN_CREATION_COST_USD} in your wallet to create a feud. Please add funds.`
       );
     } else if (walletBalance >= CLAN_CREATION_COST_USD) {
       setError("");
@@ -156,8 +156,8 @@ export default function CreateClanModal({
               }, 1000);
             },
             onError: (error) => {
-              console.error("Error creating clan:", error);
-              setError("Failed to create clan. Please try again.");
+              console.error("Error creating feud:", error);
+              setError("Failed to create feud. Please try again.");
               setIsSubmitting(false);
               setSubmitState("idle");
               setPaymentCompleted(false);
@@ -166,8 +166,8 @@ export default function CreateClanModal({
           }
         );
       } catch (error) {
-        console.error("Error creating clan:", error);
-        setError("Failed to create clan. Please try again.");
+        console.error("Error creating feud:", error);
+        setError("Failed to create feud. Please try again.");
         setIsSubmitting(false);
         setSubmitState("idle");
         setPaymentCompleted(false);
@@ -202,18 +202,18 @@ export default function CreateClanModal({
     e.preventDefault();
 
     if (!name) {
-      setError("Clan name is required");
+      setError("Feud name is required");
       return;
     }
 
     if (!address) {
-      setError("Please connect your wallet to create a clan");
+      setError("Please connect your wallet to create a feud");
       return;
     }
 
     if (walletBalance < CLAN_CREATION_COST_USD) {
       setError(
-        `You need at least $${CLAN_CREATION_COST_USD} in your wallet to create a clan`
+        `You need at least $${CLAN_CREATION_COST_USD} in your wallet to create a feud`
       );
       return;
     }
@@ -236,7 +236,7 @@ export default function CreateClanModal({
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-white/90 font-bold text-lg flex items-center gap-2">
             <span className="text-xl">🛡️</span>
-            New Clan
+            New Feud
           </h3>
           <button
             onClick={onClose}
@@ -295,7 +295,7 @@ export default function CreateClanModal({
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Clan name"
+              placeholder="Feud name"
               className="w-full bg-[#5A4129] border border-[#8B5E3C] text-white/90 rounded-md px-3 py-2 placeholder:text-white/40 focus:outline-none focus:border-[#FFB938]"
               maxLength={20}
             />
@@ -309,7 +309,7 @@ export default function CreateClanModal({
               type="text"
               value={motto}
               onChange={(e) => setMotto(e.target.value)}
-              placeholder="Clan slogan"
+              placeholder="Feud slogan"
               className="w-full bg-[#5A4129] border border-[#8B5E3C] text-white/90 rounded-md px-3 py-2 placeholder:text-white/40 focus:outline-none focus:border-[#FFB938]"
               maxLength={40}
             />
@@ -409,7 +409,7 @@ export default function CreateClanModal({
               htmlFor="public"
               className="text-sm text-white/80"
             >
-              Public clan
+              Public feud
             </label>
           </div>
 
@@ -526,7 +526,7 @@ export default function CreateClanModal({
             submitState !== "success" && (
               <div className="mt-4 p-3 bg-green-500/20 border border-green-500/50 rounded-md">
                 <p className="text-green-300 text-sm text-center">
-                  Payment successful! Creating your clan...
+                  Payment successful! Creating your feud...
                 </p>
                 <p
                   className="text-green-200/70 text-xs text-center underline cursor-pointer mt-1"

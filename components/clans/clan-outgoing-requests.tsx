@@ -83,7 +83,7 @@ export default function ClanOutgoingRequests() {
   if (!outgoingRequests || outgoingRequests.length === 0) {
     return (
       <div className="text-center p-4 text-white/70 w-full max-w-2xl">
-        No pending requests to join clans
+        No pending requests to join feuds
       </div>
     );
   }
