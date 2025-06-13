@@ -8,6 +8,9 @@ import { useClanJoinRequests } from "@/hooks/use-clan-join-requests";
 import { ClanRole } from "@/lib/types/game";
 import { ClanDetail } from "./clan-detail";
 import ClanRequests from "./clan-requests";
+import { FloatingShareButton } from "../FloatingShareButton";
+import { clanFlexCardComposeCastUrl } from "@/lib/utils";
+import sdk from "@farcaster/frame-sdk";
 
 export default function MyClan() {
   const { state, refetch } = useGame();
@@ -33,6 +36,17 @@ export default function MyClan() {
   const membersMap = Object.fromEntries(
     clanData?.members?.map((m) => [m.fid, m.user]) ?? []
   );
+
+  const handleShareClan = async () => {
+    if (!clanData) return;
+
+    const { castUrl } = clanFlexCardComposeCastUrl(
+      state.user.fid,
+      clanData.id,
+      clanData.name
+    );
+    await sdk.actions.openUrl(castUrl);
+  };
 
   return (
     <div className="flex flex-col items-center justify-center w-full pb-8 gap-2">
@@ -76,6 +90,9 @@ export default function MyClan() {
           refetchClanData={refetchClanData}
         />
       )}
+
+      {/* Floating Share Button */}
+      {clanData && <FloatingShareButton onClick={handleShareClan} />}
     </div>
   );
 }

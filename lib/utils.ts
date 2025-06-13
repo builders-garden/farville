@@ -273,6 +273,23 @@ export const leaderboardFlexCardComposeCastUrl = (
   };
 };
 
+export const clanFlexCardComposeCastUrl = (
+  fid: number,
+  clanId: string,
+  clanName: string
+) => {
+  const timestamp = Date.now();
+  const frameUrl = `${env.NEXT_PUBLIC_URL}/flex-card/clan/${fid}/${clanId}/${timestamp}`;
+  const text = `Join me in ${clanName} clan on /farville! 🛡️\n\nTogether we farm stronger! 🚜💨`;
+  const urlFriendlyText = encodeURIComponent(text);
+  return {
+    frameUrl,
+    castUrl: `https://farcaster.xyz/~/compose?text=${urlFriendlyText}&embeds[]=${encodeURIComponent(
+      frameUrl
+    )}&channelKey=farville`,
+  };
+};
+
 export const getCurrentLevelAndProgress = (experience: number) => {
   const currentLevel = LEVEL_XP_THRESHOLDS.findIndex(
     (threshold) => experience < threshold
