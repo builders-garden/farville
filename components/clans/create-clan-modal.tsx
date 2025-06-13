@@ -41,6 +41,7 @@ export default function CreateClanModal({
   const [motto, setMotto] = useState("");
   const [isPublic, setIsPublic] = useState(true);
   const [imageUrl, setImageUrl] = useState("");
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const [requiredLevel, setRequiredLevel] = useState<number | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitState, setSubmitState] = useState<
@@ -131,46 +132,58 @@ export default function CreateClanModal({
       setIsSubmitting(true);
       setSubmitState("creating");
 
-      createClan(
-        {
-          name,
-          motto,
-          isPublic,
-          txHash: e.txHash,
-          paymentId: e.paymentId,
-          ...(imageUrl && { imageUrl }),
-          ...(requiredLevel && { requiredLevel }),
-        },
-        {
-          onSuccess: () => {
-            setSubmitState("success");
-            if (onSuccess) {
-              onSuccess();
-            }
-            setTimeout(() => {
-              onClose();
-            }, 1000);
+      try {
+        // Pass an onSuccess and onError callback to handle the clan creation process
+        createClan(
+          {
+            name,
+            motto,
+            isPublic,
+            txHash: e.txHash,
+            paymentId: e.paymentId,
+            ...(imageUrl && { imageUrl }),
+            ...(imageFile && { imageFile }),
+            ...(requiredLevel && { requiredLevel }),
           },
-          onError: (error) => {
-            console.error("Error creating clan:", error);
-            setError("Failed to create clan. Please try again.");
-            setIsSubmitting(false);
-            setSubmitState("idle");
-            setPaymentCompleted(false);
-            setPaymentHandled(false);
-          },
-        }
-      );
+          {
+            onSuccess: () => {
+              setSubmitState("success");
+              if (onSuccess) {
+                onSuccess();
+              }
+              setTimeout(() => {
+                onClose();
+              }, 1000);
+            },
+            onError: (error) => {
+              console.error("Error creating clan:", error);
+              setError("Failed to create clan. Please try again.");
+              setIsSubmitting(false);
+              setSubmitState("idle");
+              setPaymentCompleted(false);
+              setPaymentHandled(false);
+            },
+          }
+        );
+      } catch (error) {
+        console.error("Error creating clan:", error);
+        setError("Failed to create clan. Please try again.");
+        setIsSubmitting(false);
+        setSubmitState("idle");
+        setPaymentCompleted(false);
+        setPaymentHandled(false);
+      }
     },
     [
       paymentHandled,
       address,
+      createClan,
       name,
       motto,
       isPublic,
       imageUrl,
+      imageFile,
       requiredLevel,
-      createClan,
       onSuccess,
       onClose,
     ]
@@ -217,7 +230,7 @@ export default function CreateClanModal({
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.95 }}
-        className="bg-[#7E4E31] p-6 rounded-lg max-w-sm w-full mx-4 border border-[#8B5E3C]/50"
+        className="bg-[#7E4E31] p-6 rounded-lg max-w-sm w-full mx-4 border border-[#8B5E3C]/50 overflow-y-auto no-scrollbar max-h-[90vh]"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex justify-between items-center mb-4">
@@ -235,10 +248,7 @@ export default function CreateClanModal({
           </button>
         </div>
 
-        <form
-          onSubmit={handleSubmit}
-          className="space-y-4"
-        >
+        <form onSubmit={handleSubmit} className="space-y-4">
           {/* Wallet Balance and Cost Display */}
           {address && (
             <div className="bg-[#4A341A] p-3 rounded-lg border border-[#8B5E3C]/10">
@@ -304,24 +314,53 @@ export default function CreateClanModal({
 
           <div className="space-y-2">
             <label className="block text-white/80 text-sm font-medium">
-              Image URL
+              Image
             </label>
-            <input
-              type="text"
-              value={imageUrl}
-              onChange={(e) => setImageUrl(e.target.value)}
-              placeholder="Optional clan image"
-              className="w-full bg-[#5A4129] border border-[#8B5E3C] text-white/90 rounded-md px-3 py-2 placeholder:text-white/40 focus:outline-none focus:border-[#FFB938]"
-            />
-            {imageUrl && (
-              <div className="relative h-20 w-20 mx-auto mt-2 rounded-md border-2 border-[#8B5E3C] overflow-hidden bg-[#5A4129] flex items-center justify-center">
-                <Image
-                  src={imageUrl}
-                  alt="Preview"
-                  fill
-                  className="object-cover"
-                  onError={() => setImageUrl("")}
+            <div className="flex flex-col gap-2 mt-2">
+              <label
+                className="flex items-center justify-center px-4 py-2 bg-[#5A4129] border border-[#FFB938] text-[#FFB938] rounded-md hover:bg-[#6A5139] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{ opacity: imageUrl ? 0.5 : 1 }}
+              >
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0] || null;
+                    setImageFile(file);
+                    if (file) setImageUrl(""); // Clear URL if file is set
+                  }}
+                  className="hidden"
+                  disabled={!!imageUrl}
                 />
+                <span className="text-[#FFB938] text-sm">
+                  Choose image file
+                </span>
+              </label>
+              {imageFile && (
+                <span className="text-white/60 text-xs text-center">
+                  {imageFile.name.length > 20
+                    ? `${imageFile.name.slice(0, 20)}...`
+                    : imageFile.name}
+                </span>
+              )}
+            </div>
+            {(imageFile || imageUrl) && (
+              <div className="relative h-20 w-20 mx-auto mt-2 rounded-md border-2 border-[#8B5E3C] overflow-hidden bg-[#5A4129] flex items-center justify-center">
+                {imageFile ? (
+                  <img
+                    src={URL.createObjectURL(imageFile)}
+                    alt="Preview"
+                    className="object-cover w-full h-full"
+                  />
+                ) : (
+                  <Image
+                    src={imageUrl}
+                    alt="Preview"
+                    fill
+                    className="object-cover"
+                    onError={() => setImageUrl("")}
+                  />
+                )}
               </div>
             )}
           </div>
@@ -345,10 +384,7 @@ export default function CreateClanModal({
                   { length: Math.min(userLevel - 1, 19) },
                   (_, i) => i + 2
                 ).map((level) => (
-                  <option
-                    key={level}
-                    value={level}
-                  >
+                  <option key={level} value={level}>
                     Lvl {level}+
                   </option>
                 ))}
@@ -363,10 +399,7 @@ export default function CreateClanModal({
               onCheckedChange={(checked) => setIsPublic(Boolean(checked))}
               className="data-[state=checked]:bg-[#FFB938] data-[state=checked]:border-[#FFB938]"
             />
-            <label
-              htmlFor="public"
-              className="text-sm text-white/80"
-            >
+            <label htmlFor="public" className="text-sm text-white/80">
               Public clan
             </label>
           </div>

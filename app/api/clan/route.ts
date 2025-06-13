@@ -15,6 +15,7 @@ import {
 import { base } from "viem/chains";
 import z from "zod";
 import { CLAN_CREATION_COST_USD } from "@/lib/game-constants";
+import { uploadImage } from "@/lib/imagekit";
 
 // Basic payment validation - checks if txHash exists and follows expected format
 // In a production environment, you might want to verify the transaction on-chain
@@ -108,7 +109,11 @@ export async function GET(req: NextRequest) {
     const isPublic =
       isPublicParam === null ? undefined : isPublicParam === "true";
 
-    const clans = await getClans({ strToSearch, isPublic });
+    const clans = await getClans({
+      strToSearch,
+      isPublic,
+      includeMembers: true,
+    });
     return NextResponse.json(clans);
   } catch (error) {
     return NextResponse.json(
@@ -118,12 +123,33 @@ export async function GET(req: NextRequest) {
   }
 }
 
+const fileSizeLimit = 3 * 1024 * 1024; // 3MB
+
+// Image Schema
+export const IMAGE_SCHEMA = z
+  .instanceof(File)
+  .refine(
+    (file) =>
+      [
+        "image/png",
+        "image/jpeg",
+        "image/jpg",
+        "image/svg+xml",
+        "image/gif",
+      ].includes(file.type),
+    { message: "Invalid image file type" }
+  )
+  .refine((file) => file.size <= fileSizeLimit, {
+    message: "File size should not exceed 5MB",
+  });
+
 const createClanSchema = z.object({
   name: z.string().min(3).max(50),
   motto: z.string().max(100).optional(),
   isPublic: z.boolean().optional(),
   imageUrl: z.string().url().optional(),
   txHash: z.string().min(1, "Payment transaction hash is required").max(66),
+  imageFile: IMAGE_SCHEMA.optional(),
   requiredLevel: z.number().int().min(1).optional(),
   paymentId: z.string().min(1),
 });
@@ -135,8 +161,46 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const body = await req.json();
-    const parsedData = createClanSchema.parse(body);
+    let parsedData;
+    let imageFile: File | undefined;
+    let clanImage: string | undefined;
+
+    const contentType = req.headers.get("content-type") || "";
+    if (contentType.startsWith("multipart/form-data")) {
+      const form = await req.formData();
+      // Convert FormData to plain object for zod
+      const data: Record<string, unknown> = {};
+      form.forEach((value, key) => {
+        if (value instanceof File && value.size > 0) {
+          data[key] = value;
+        } else {
+          // Try to parse booleans and numbers
+          if (key === "isPublic") {
+            data[key] = value === "true";
+          } else if (key === "requiredLevel") {
+            data[key] = value ? Number(value) : undefined;
+          } else {
+            data[key] = value;
+          }
+        }
+      });
+
+      console.log("Form Data:", data);
+      parsedData = createClanSchema.parse(data);
+      imageFile = data.imageFile as File | undefined;
+    } else {
+      const body = await req.json();
+      parsedData = createClanSchema.parse(body);
+      imageFile = parsedData.imageFile;
+    }
+
+    clanImage = parsedData.imageUrl ? parsedData.imageUrl : undefined;
+    if (imageFile) {
+      clanImage = await uploadImage(imageFile, `clan-${Date.now()}`);
+    }
+
+    console.log("Parsed Data:", parsedData);
+    console.log("Clan Image URL:", clanImage);
 
     // Basic transaction hash format validation
     if (!validatePaymentTxHash(parsedData.txHash)) {
@@ -171,6 +235,7 @@ export async function POST(req: NextRequest) {
     const clan = await createClan({
       ...parsedData,
       txHash: paymentValidation.txHash || parsedData.txHash,
+      imageUrl: clanImage,
       createdBy: Number(fid),
       leaderFid: Number(fid),
     });
@@ -210,28 +275,47 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const body = await req.json();
-    const parsedData = updateClanSchema.parse(body);
+    let parsedData;
+    let imageFile: File | undefined;
+
+    const contentType = req.headers.get("content-type") || "";
+    if (contentType.startsWith("multipart/form-data")) {
+      const form = await req.formData();
+      const data: Record<string, unknown> = {};
+      form.forEach((value, key) => {
+        if (value instanceof File && value.size > 0) {
+          data[key] = value;
+        } else {
+          if (key === "isPublic") {
+            data[key] = value === "true";
+          } else if (key === "requiredLevel") {
+            data[key] = value ? Number(value) : undefined;
+          } else {
+            data[key] = value;
+          }
+        }
+      });
+      parsedData = updateClanSchema.parse(data);
+      imageFile = data.imageFile as File | undefined;
+    } else {
+      const body = await req.json();
+      parsedData = updateClanSchema.parse(body);
+    }
 
     // Get the clan to check permissions
     const clan = await getClanById(parsedData.clanId, { includeMembers: true });
-
     if (!clan) {
       return NextResponse.json({ error: "Clan not found" }, { status: 404 });
     }
-
-    // Check if user is leader or officer
     const userMembership = clan.members?.find(
       (member) => member.fid === Number(fid)
     );
-
     if (!userMembership) {
       return NextResponse.json(
         { error: "You are not a member of this clan" },
         { status: 403 }
       );
     }
-
     if (
       userMembership.role !== ClanRole.Leader &&
       userMembership.role !== ClanRole.Officer
@@ -253,21 +337,20 @@ export async function PATCH(req: NextRequest) {
     if (parsedData.motto !== undefined) {
       updateData.motto = parsedData.motto;
     }
-
     if (parsedData.isPublic !== undefined) {
       updateData.isPublic = parsedData.isPublic;
     }
-
-    if (parsedData.imageUrl !== undefined) {
+    if (imageFile) {
+      // If a new image file is uploaded, upload and use its URL
+      updateData.imageUrl = await uploadImage(imageFile, `clan-${Date.now()}`);
+    } else if (parsedData.imageUrl !== undefined) {
       updateData.imageUrl = parsedData.imageUrl || null;
     }
-
     if (parsedData.requiredLevel !== undefined) {
       updateData.requiredLevel = parsedData.requiredLevel;
     }
 
     const updatedClan = await updateClan(parsedData.clanId, updateData);
-
     return NextResponse.json(updatedClan);
   } catch (error) {
     if (error instanceof z.ZodError) {
@@ -276,11 +359,9 @@ export async function PATCH(req: NextRequest) {
         { status: 400 }
       );
     }
-
     if (error instanceof Error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
-
     return NextResponse.json(
       { error: "An unexpected error occurred" },
       { status: 500 }

@@ -78,7 +78,7 @@ export const SearchClan = ({
   const clansWithDetails: ClanWithDetails[] =
     clans?.map((clan) => ({
       ...clan,
-      memberCount: 0, // This would come from the backend in a real implementation
+      memberCount: clan.members.length, // This would come from the backend in a real implementation
       level: 1, // This would come from the backend in a real implementation
     })) || [];
 
@@ -98,10 +98,7 @@ export const SearchClan = ({
       {/* Search Bar - Always visible */}
       {!isViewingClan && (
         <div className="flex items-center bg-[#6D4C2C] rounded-lg p-2 mb-3 border border-[#8B5E3C]/50">
-          <Search
-            size={16}
-            className="text-white/70 mr-2"
-          />
+          <Search size={16} className="text-white/70 mr-2" />
           <input
             type="text"
             placeholder="Clan Name..."
@@ -179,22 +176,31 @@ export const SearchClan = ({
                       <div className="flex-1 flex flex-col justify-center">
                         {/* Stats Row 1: Level / XP */}
                         <div className="flex justify-between items-center">
-                          <span className="text-xs font-bold text-[#FFB938]">
-                            LVL {clan.level}
+                          <span className="text-[10px] text-white/80">
+                            Members
                           </span>
                           <span className="text-[10px] text-white/80">
-                            {formatXP(clan.xp || 0)}
+                            {clan.memberCount}/{clan.maxMembers}
                           </span>
                         </div>
 
                         {/* Stats Row 2: Required Level / Members */}
                         <div className="flex justify-between items-center mt-2">
                           <span className="text-[10px] text-white/80">
-                            Min Lvl:{" "}
-                            {clan.requiredLevel ? clan.requiredLevel : "None"}
+                            Experience
                           </span>
                           <span className="text-[9px] text-white/90">
-                            {clan.memberCount}/{clan.maxMembers}
+                            {formatXP(clan.xp || 0)}
+                          </span>
+                        </div>
+
+                        {/* Stats Row 3: Clan Level */}
+                        <div className="flex justify-between items-center mt-2">
+                          <span className="text-[10px] text-white/80">
+                            Level
+                          </span>
+                          <span className="text-[9px] text-white/90">
+                            {clan.requiredLevel ? clan.requiredLevel : "None"}
                           </span>
                         </div>
                       </div>
