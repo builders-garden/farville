@@ -32,6 +32,7 @@ import { toast as sonnerToast, Toaster } from "sonner";
 import Image from "next/image";
 import { FP_DECREASE_DELAY_MS } from "@/lib/game-constants";
 import ClansModal from "./clans";
+import ClanOverlay from "./ClanOverlay";
 
 // const WelcomeOverlay = dynamic(() => import("./../components/WelcomeOverlay"), {
 //   ssr: false,
@@ -502,13 +503,23 @@ export default function GameWrapper() {
 
       {activeOverlay?.type === "requests" ? (
         <AnimatePresence>
-          <RequestModal onClose={handleOverlayComplete} id={activeOverlay.id} />
+          <RequestModal
+            onClose={handleOverlayComplete}
+            id={activeOverlay.id}
+          />
         </AnimatePresence>
       ) : activeOverlay?.type === "voucher" ? (
         <AnimatePresence>
           <VoucherModal
             onClose={handleOverlayComplete}
             slug={activeOverlay.slug}
+          />
+        </AnimatePresence>
+      ) : activeOverlay?.type === "clan" ? (
+        <AnimatePresence>
+          <ClanOverlay
+            onClose={handleOverlayComplete}
+            clanId={activeOverlay.clanId}
           />
         </AnimatePresence>
       ) : !activeOverlay ? (
@@ -526,7 +537,10 @@ export default function GameWrapper() {
           className="flex flex-col h-[100dvh] w-full max-w-md mx-auto overflow-hidden"
         >
           <Header />
-          <div className="flex-1 relative min-h-0" id="game-grid">
+          <div
+            className="flex-1 relative min-h-0"
+            id="game-grid"
+          >
             <GameGrid />
           </div>
           <Toolbar safeAreaInsets={safeAreaInsets} />

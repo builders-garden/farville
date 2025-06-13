@@ -40,6 +40,7 @@ export type OverlayConfig =
   | { type: "welcome" }
   | { type: "requests"; id: string }
   | { type: "voucher"; slug: string }
+  | { type: "clan"; clanId: string }
   | null;
 
 // Update the floatingNumbers type to be an array

@@ -37,7 +37,7 @@ export async function generateMetadata({
       action: {
         type: "launch_frame",
         name: "Farville",
-        url: `${appUrl}`,
+        url: `${appUrl}/flex-card/clan/${fid}/${clanId}/${timestamp}`,
         splashImageUrl: `${appUrl}/images/splash.png`,
         splashBackgroundColor: "#f7f7f7",
       },
@@ -57,6 +57,12 @@ export async function generateMetadata({
   };
 }
 
-export default async function ClanFlex() {
-  return <App />;
+export default async function ClanPage({
+  params,
+}: {
+  params: Promise<{ clanId: string }>;
+}) {
+  const clanId = (await params).clanId;
+
+  return <App initialOverlay={{ type: "clan", clanId }} />;
 }

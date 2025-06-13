@@ -154,7 +154,6 @@ export async function GET(
               position: "relative",
               flexDirection: "column",
               padding: "15px",
-              justifyContent: "space-between",
             }}
           >
             {/* Additional inner shadow for better text contrast */}
@@ -177,11 +176,11 @@ export async function GET(
                 color: "#ffffff",
                 fontFamily: "PressStart2P",
                 textShadow: "0px 2px 4px rgba(0, 0, 0, 0.5)",
-                marginBottom: "12px",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
                 width: "100%",
+                marginBottom: "15px",
               }}
             >
               {/* User */}
@@ -240,6 +239,7 @@ export async function GET(
             <div
               style={{
                 display: "flex",
+                flex: "1",
                 background:
                   "linear-gradient(145deg, rgba(43, 27, 16, 0.7) 0%, rgba(0, 0, 0, 0.4) 100%)",
                 borderRadius: "10px",
@@ -247,6 +247,7 @@ export async function GET(
                 width: "100%",
                 boxShadow:
                   "inset 0 0 10px rgba(0, 0, 0, 0.3), 0 0 5px rgba(255, 215, 0, 0.15)",
+                minHeight: "0",
               }}
             >
               {/* Left Part */}
@@ -258,101 +259,122 @@ export async function GET(
                   padding: "15px",
                   fontFamily: "PressStart2P",
                   alignItems: "flex-start",
-                  gap: "10px",
+                  justifyContent: "space-between",
+                  height: "100%",
                 }}
               >
-                <span
-                  style={{
-                    fontSize: "14px",
-                    color: "#ffffff",
-                    textShadow: "0px 2px 4px rgba(0, 0, 0, 0.7)",
-                    marginBottom: "8px",
-                  }}
-                >
-                  Join my Feud
-                </span>
-                <span
-                  style={{
-                    fontSize: "24px",
-                    color: "#FFB938",
-                    textShadow: "0px 3px 10px rgba(255, 185, 56, 0.6)",
-                    marginBottom: "8px",
-                    position: "relative",
-                  }}
-                >
-                  {clan.name}
-                </span>
+                {/* Top content */}
                 <div
                   style={{
                     display: "flex",
                     flexDirection: "column",
                     alignItems: "flex-start",
-                    gap: "4px",
+                    gap: "10px",
                   }}
                 >
                   <span
                     style={{
-                      fontSize: "12px",
+                      fontSize: "14px",
                       color: "#ffffff",
                       textShadow: "0px 2px 4px rgba(0, 0, 0, 0.7)",
                       marginBottom: "8px",
                     }}
                   >
-                    Level {Math.floor(clan.xp / 1000) || 1} •{" "}
-                    {clan.isPublic ? "Public" : "Closed"}
+                    Join my Feud
                   </span>
-                  {/* Clan Members */}
+                  <span
+                    style={{
+                      fontSize: "24px",
+                      color: "#FFB938",
+                      textShadow: "0px 3px 10px rgba(255, 185, 56, 0.6)",
+                      marginBottom: "8px",
+                      position: "relative",
+                    }}
+                  >
+                    {clan.name}
+                  </span>
                   <div
                     style={{
                       display: "flex",
                       flexDirection: "column",
-                      gap: "7px",
-                      marginTop: "10px",
+                      alignItems: "flex-start",
+                      gap: "4px",
                     }}
                   >
-                    <div
-                      style={{
-                        display: "flex",
-                        flexDirection: "row",
-                        alignItems: "center",
-                        gap: "7px",
-                      }}
-                    >
-                      {clanMembers.slice(0, 5).map(
-                        (member, index: number) =>
-                          (member.user?.selectedAvatarUrl ||
-                            member.user?.avatarUrl) && (
-                            <img
-                              key={index}
-                              src={
-                                member.user.selectedAvatarUrl ||
-                                member.user.avatarUrl ||
-                                ""
-                              }
-                              alt={`Clan member ${index + 1} avatar`}
-                              width="30px"
-                              height="30px"
-                              style={{
-                                objectFit: "cover",
-                                border: "1px solid #322214",
-                                borderRadius: "100%",
-                                marginLeft: index > 0 ? "-12px" : "0",
-                                boxShadow: "0 0 3px rgba(0, 0, 0, 0.5)",
-                                zIndex: 5 - index,
-                              }}
-                            />
-                          )
-                      )}
-                    </div>
                     <span
                       style={{
-                        fontSize: "9px",
+                        fontSize: "12px",
                         color: "#ffffff",
+                        textShadow: "0px 2px 4px rgba(0, 0, 0, 0.7)",
+                        marginBottom: "4px",
                       }}
                     >
-                      {memberCount} {memberCount === 1 ? "member" : "members"}
+                      Level {Math.floor(clan.xp / 1000) || 1}
+                    </span>
+                    <span
+                      style={{
+                        fontSize: "10px",
+                        color: clan.isPublic ? "#4ADE80" : "#F87171",
+                        textShadow: "0px 2px 4px rgba(0, 0, 0, 0.7)",
+                        marginBottom: "8px",
+                      }}
+                    >
+                      {clan.isPublic ? "Public" : "Private"}
                     </span>
                   </div>
+                </div>
+
+                {/* Clan Members - positioned at bottom */}
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "7px",
+                    width: "100%",
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "row",
+                      alignItems: "center",
+                      gap: "7px",
+                    }}
+                  >
+                    {clanMembers.slice(0, 5).map(
+                      (member, index: number) =>
+                        (member.user?.selectedAvatarUrl ||
+                          member.user?.avatarUrl) && (
+                          <img
+                            key={index}
+                            src={
+                              member.user.selectedAvatarUrl ||
+                              member.user.avatarUrl ||
+                              ""
+                            }
+                            alt={`Clan member ${index + 1} avatar`}
+                            width="30px"
+                            height="30px"
+                            style={{
+                              objectFit: "cover",
+                              border: "1px solid #322214",
+                              borderRadius: "100%",
+                              marginLeft: index > 0 ? "-12px" : "0",
+                              boxShadow: "0 0 3px rgba(0, 0, 0, 0.5)",
+                              zIndex: 5 - index,
+                            }}
+                          />
+                        )
+                    )}
+                  </div>
+                  <span
+                    style={{
+                      fontSize: "9px",
+                      color: "#ffffff",
+                    }}
+                  >
+                    {memberCount} {memberCount === 1 ? "member" : "members"}
+                  </span>
                 </div>
               </div>
 
@@ -364,7 +386,7 @@ export async function GET(
                   justifyContent: "center",
                   alignItems: "center",
                   position: "relative",
-                  marginLeft: "-10px",
+                  marginLeft: "-20px",
                 }}
               >
                 {/* Gold aura around clan image */}
@@ -422,7 +444,7 @@ export async function GET(
                 {/* Small shield icons around clan image */}
                 {[
                   {
-                    top: "-10px",
+                    top: "10px",
                     left: "65%",
                     marginLeft: "-15px",
                     rotation: "-20deg",
@@ -431,12 +453,12 @@ export async function GET(
                   {
                     top: "65%",
                     marginTop: "-20px",
-                    right: "10px",
+                    right: "25px",
                     rotation: "10deg",
                     size: "35px",
                   },
                   {
-                    bottom: "0px",
+                    bottom: "15px",
                     left: "35%",
                     marginLeft: "-30px",
                     rotation: "0deg",
