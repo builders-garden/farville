@@ -2,7 +2,7 @@ import { Card, CardContent } from "../ui/card";
 
 export function ClanSeason() {
   return (
-    <div className="flex flex-col items-center justify-center h-full">
+    <div className="flex flex-col items-center justify-start h-full">
       <Card className={`border-none cursor-pointer bg-[#5B4120]/90`}>
         <CardContent className="flex flex-col justify-between items-center p-3 text-center gap-3">
           <p className="text-lg font-bold text-amber-200">🌟 Clan Seasons 🌟</p>

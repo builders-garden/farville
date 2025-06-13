@@ -26,7 +26,7 @@ export default function ClanMembers({
   return (
     <>
       <div className="w-full max-w-2xl space-y-2">
-        <div className="flex justify-between items-center p-3 text-white/70 text-sm">
+        <div className="flex justify-between items-center p-3 py-1 text-white/70 text-sm">
           <span>Farmers</span>
           <span>{members.length}/20</span>
         </div>

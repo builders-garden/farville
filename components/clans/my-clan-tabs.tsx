@@ -51,7 +51,7 @@ export default function MyClanTabs({
   }
 
   return (
-    <div className="grid grid-cols-4 gap-2 my-4 w-full">
+    <div className="grid grid-cols-4 gap-2 my-2 w-full">
       {tabs.map((tab) => (
         <motion.button
           key={tab.id}
@@ -73,7 +73,7 @@ export default function MyClanTabs({
               alt={`${tab.label} Icon`}
               width={40}
               height={40}
-              className={`${tab.id === "quests" ? "w-6 h-6" : "w-10 h-10"}`}
+              className={`${tab.id === "quests" ? "w-4 h-4" : "w-8 h-8"}`}
             />
             {tab.count !== undefined && tab.count > 0 && (
               <span className="inline-flex items-center justify-center bg-amber-500 text-[9px] rounded-full w-4 h-4 text-white">
