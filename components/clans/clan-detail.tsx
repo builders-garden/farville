@@ -13,21 +13,16 @@ import { ClanImage } from "./clan-image";
 interface ClanDetailProps {
   clanData: ClanWithData | undefined;
   refetchClan: () => void;
-  refetchStateClan: () => void;
 }
 
-export function ClanDetail({
-  clanData,
-  refetchClan,
-  refetchStateClan,
-}: ClanDetailProps) {
-  const { state } = useGame();
+export function ClanDetail({ clanData, refetchClan }: ClanDetailProps) {
+  const { state, refetch, updateUserClan } = useGame();
   const [isLeaving, setIsLeaving] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isSuccessionModalOpen, setIsSuccessionModalOpen] = useState(false);
   const { leaveClan } = useClanOperations(() => {
-    refetchStateClan();
+    refetch.userClan();
     refetchClan();
   });
 
@@ -54,6 +49,8 @@ export function ClanDetail({
       onSuccess: () => {
         setIsLeaving(false);
         setIsModalOpen(false);
+        updateUserClan(undefined); // Optimistically clear clan
+        refetch.userClan();
       },
       onError: () => {
         setIsLeaving(false);

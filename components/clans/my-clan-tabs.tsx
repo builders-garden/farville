@@ -51,7 +51,7 @@ export default function MyClanTabs({
   }
 
   return (
-    <div className="grid grid-cols-4 gap-2 my-4 w-full">
+    <div className={`grid grid-cols-${tabs.length} gap-2 my-4 w-full`}>
       {tabs.map((tab) => (
         <motion.button
           key={tab.id}
