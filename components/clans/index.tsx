@@ -20,7 +20,10 @@ interface ClansModalProps {
 export default function ClansModal({ onClose }: ClansModalProps) {
   const { safeAreaInsets } = useFrameContext();
   const { state, refetch } = useGame();
+
+  // Always derive userHasClan from state.clan
   const userHasClan = Boolean(state.clan);
+
   const userFid = state.user?.fid;
 
   const [mainActiveTab, setMainActiveTab] = useState<MainTab>(
@@ -54,10 +57,6 @@ export default function ClansModal({ onClose }: ClansModalProps) {
     if (searchClansRefetchRef.current) {
       searchClansRefetchRef.current();
     }
-
-    // Note: The TypeScript declaration in GameContext is missing the 'clan' property
-    // but it exists in the implementation in use-game-state.tsx
-    // We could also use (refetch as any).clan() if needed for specific clan refresh
   };
 
   return (

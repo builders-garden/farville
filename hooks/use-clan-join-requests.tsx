@@ -16,7 +16,6 @@ type ClanJoinRequest = {
 };
 
 export const useClanJoinRequests = (clanId?: string) => {
-  console.log("clanId", clanId);
   const { data, isLoading, refetch } = useApiQuery<ClanJoinRequest[]>({
     queryKey: ["clan-join-requests", clanId],
     url: clanId ? `/api/clan/${clanId}/join-requests` : "",

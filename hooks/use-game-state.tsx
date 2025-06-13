@@ -965,6 +965,13 @@ export const useGameState = (mode: Mode) => {
     []
   );
 
+  const updateUserClan = useCallback((clan: UserClan | undefined) => {
+    setState((prevState) => ({
+      ...prevState,
+      clan,
+    }));
+  }, []);
+
   return {
     state,
     loading:
@@ -1026,5 +1033,6 @@ export const useGameState = (mode: Mode) => {
     updateUserCollectibles,
     updateUserCommunityBoosterStatus,
     makeAllGridCellsHarvestable,
+    updateUserClan, // <-- add this
   };
 };

@@ -34,6 +34,7 @@ import {
 } from "@prisma/client";
 import { useInitializeMode } from "@/hooks/game-actions/use-initialize-mode";
 import { toasterStyle } from "@/lib/toast";
+import { UserClan } from "@/lib/prisma/types";
 
 // Update the OverlayType to be more flexible with parameters
 export type OverlayConfig =
@@ -163,6 +164,7 @@ interface GameContextType {
   }) => void;
   makeAllGridCellsHarvestable: () => void;
   refetch: RefetchType;
+  updateUserClan: (userClan: UserClan | undefined) => void;
 }
 
 export const GameContext = createContext<GameContextType | null>(null);
@@ -209,6 +211,7 @@ export function GameProvider({
     updateUserCollectibles,
     updateUserCommunityBoosterStatus,
     makeAllGridCellsHarvestable,
+    updateUserClan,
   } = useGameState(mode);
   const [selectedSeed, setSelectedSeed] = useState<SeedType | null>(null);
   const [selectedPerk, setSelectedPerk] = useState<UserItem | null>(null);
@@ -642,6 +645,7 @@ export function GameProvider({
         updateUserCommunityBoosterStatus,
         makeAllGridCellsHarvestable,
         refetch,
+        updateUserClan,
       }}
     >
       {children}

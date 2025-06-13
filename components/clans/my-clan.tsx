@@ -14,7 +14,7 @@ import sdk from "@farcaster/frame-sdk";
 import { ClanQuests } from "./clan-quests";
 
 export default function MyClan() {
-  const { state, refetch } = useGame();
+  const { state } = useGame();
 
   const [activeTab, setActiveTab] = useState<Tab>("members");
 
@@ -51,11 +51,7 @@ export default function MyClan() {
 
   return (
     <div className="flex flex-col items-center justify-center w-full pb-8 gap-2">
-      <ClanDetail
-        clanData={clanData}
-        refetchClan={refetchClanData}
-        refetchStateClan={refetch.userClan}
-      />
+      <ClanDetail clanData={clanData} refetchClan={refetchClanData} />
 
       <MyClanTabs
         activeTab={activeTab}

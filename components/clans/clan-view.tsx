@@ -30,11 +30,7 @@ export function ClanView({ clanId, onClose }: ClanViewProps) {
         </div>
       ) : (
         <>
-          <ClanDetail
-            clanData={clanData}
-            refetchClan={refetchClanData}
-            refetchStateClan={() => {}}
-          />
+          <ClanDetail clanData={clanData} refetchClan={refetchClanData} />
 
           <ClanMembers
             members={clanData.members}
