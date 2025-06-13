@@ -98,7 +98,10 @@ export const SearchClan = ({
       {/* Search Bar - Always visible */}
       {!isViewingClan && (
         <div className="flex items-center bg-[#6D4C2C] rounded-lg p-2 mb-3 border border-[#8B5E3C]/50">
-          <Search size={16} className="text-white/70 mr-2" />
+          <Search
+            size={16}
+            className="text-white/70 mr-2"
+          />
           <input
             type="text"
             placeholder="Clan Name..."
@@ -128,9 +131,10 @@ export const SearchClan = ({
         </div>
       ) : (
         <div
-          className={`flex flex-col gap-2 overflow-y-auto py-2 pr-1 -mr-2 overflow-x-hidden w-full ${
+          className={`flex flex-col gap-2 overflow-y-auto no-scrollbar py-2 pr-1 -mr-2 overflow-x-hidden w-full ${
             isViewingClan ? "" : "max-h-[60vh]"
           }`}
+          style={{ minHeight: "0" }}
         >
           {
             /* If viewing a clan, show the clan view */
@@ -145,7 +149,7 @@ export const SearchClan = ({
               clansWithDetails.map((clan) => (
                 <motion.div
                   key={clan.id}
-                  className="bg-[#6D4C2C] rounded-xl overflow-hidden shadow-md border border-[#8B5E3C]/50 cursor-pointer hover:border-[#FFB938]/50 transition-all w-full"
+                  className="bg-[#6D4C2C] rounded-xl overflow-hidden shadow-md border border-[#8B5E3C]/50 cursor-pointer hover:border-[#FFB938]/50 transition-all w-full flex-shrink-0"
                   whileHover={{
                     boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
                   }}

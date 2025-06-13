@@ -11,21 +11,11 @@ import sdk from "@farcaster/frame-sdk";
  * @returns The farcaster manifest for the frame
  */
 export async function getFarcasterManifest() {
-  let frameName = "Farville";
-  let noindex = false;
+  const frameName = "Farville";
+  let noindex = true;
   const appUrl = env.NEXT_PUBLIC_URL;
-  if (appUrl.includes("localhost")) {
-    frameName += " Local";
-    noindex = true;
-  } else if (appUrl.includes("ngrok")) {
-    frameName += " NGROK";
-    noindex = true;
-  } else if (appUrl.includes("dev.farville.farm")) {
-    frameName += " Dev";
-    noindex = true;
-  } else if (appUrl.includes("coolify")) {
-    frameName += " Coolify";
-    noindex = true;
+  if (appUrl === "https://farville.farm") {
+    noindex = false;
   }
   return {
     accountAssociation: {
