@@ -74,13 +74,24 @@ export const SearchClan = ({
     };
   }, [setSearchRefetch, refetch]);
 
-  // Add member count and level info to clan data
+  // Add member count and level info to clan data, then sort by member count (ascending)
+  // Special clan ID that should always appear last
+  const foundersClan = "70800afa-90ed-4e48-baa1-ae1c0e27ff6f";
+
   const clansWithDetails: ClanWithDetails[] =
-    clans?.map((clan) => ({
-      ...clan,
-      memberCount: clan.members.length, // This would come from the backend in a real implementation
-      level: 1, // This would come from the backend in a real implementation
-    })) || [];
+    clans
+      ?.map((clan) => ({
+        ...clan,
+        memberCount: clan.members.length,
+      }))
+      .sort((a, b) => {
+        // Special clan always goes last
+        if (a.id === foundersClan) return 1;
+        if (b.id === foundersClan) return -1;
+
+        // For all other clans, sort by member count (ascending)
+        return (a.memberCount || 0) - (b.memberCount || 0);
+      }) || [];
 
   // Format XP for display
   const formatXP = (xp: number): string => {
