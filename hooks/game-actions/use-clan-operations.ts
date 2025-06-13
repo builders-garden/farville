@@ -11,7 +11,8 @@ export const useClanOperations = (
       name: string;
       motto: string;
       isPublic?: boolean;
-      txHash?: string;
+      txHash: string; // Now required
+      imageUrl?: string;
       requiredLevel?: number;
     }) => clanData,
     method: "POST",
@@ -40,7 +41,7 @@ export const useClanOperations = (
       name: string;
       motto: string;
       isPublic?: boolean;
-      txHash?: string;
+      txHash: string; // Now required
       imageUrl?: string;
       requiredLevel?: number;
     },

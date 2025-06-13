@@ -6,7 +6,16 @@ import {
   updateClan,
 } from "@/lib/prisma/queries";
 import { ClanRole } from "@/lib/types/game";
+import { prisma } from "@/lib/prisma/client";
 import z from "zod";
+
+// Basic payment validation - checks if txHash exists and follows expected format
+// In a production environment, you might want to verify the transaction on-chain
+const validatePaymentTxHash = (txHash: string): boolean => {
+  // Check if it's a valid transaction hash format (66 characters, starts with 0x)
+  const txHashRegex = /^0x[a-fA-F0-9]{64}$/;
+  return txHashRegex.test(txHash);
+};
 
 export async function GET(req: NextRequest) {
   try {
@@ -31,7 +40,7 @@ const createClanSchema = z.object({
   motto: z.string().max(100).optional(),
   isPublic: z.boolean().optional(),
   imageUrl: z.string().url().optional(),
-  txHash: z.string().max(66).optional(),
+  txHash: z.string().min(1, "Payment transaction hash is required").max(66),
   requiredLevel: z.number().int().min(1).optional(),
 });
 
@@ -45,11 +54,32 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const parsedData = createClanSchema.parse(body);
 
-    // Assuming you have a function to create a clan
+    // Validate payment transaction hash
+    if (!validatePaymentTxHash(parsedData.txHash)) {
+      return NextResponse.json(
+        { error: "Invalid payment transaction hash format" },
+        { status: 400 }
+      );
+    }
+
+    // Additional validation: Ensure the transaction hash is not already used by another clan
+    // This prevents reusing the same payment for multiple clan creations
+    const existingClanWithTxHash = await prisma.clan.findFirst({
+      where: { txHash: parsedData.txHash },
+    });
+
+    if (existingClanWithTxHash) {
+      return NextResponse.json(
+        { error: "Payment has already been used for clan creation" },
+        { status: 400 }
+      );
+    }
+
+    // Create the clan with the validated payment
     const clan = await createClan({
       ...parsedData,
       createdBy: Number(fid),
-      leaderFid: Number(fid), // For the first step, let's assume the creator is the leader
+      leaderFid: Number(fid),
     });
 
     return NextResponse.json(clan, { status: 201 });

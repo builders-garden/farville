@@ -1,10 +1,25 @@
-import { useState } from "react";
+import { useState, useCallback, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
 import { useClanOperations } from "@/hooks/game-actions/use-clan-operations";
 import { useGame } from "@/context/GameContext";
 import Image from "next/image";
-import { X } from "lucide-react";
+import { X, Loader2 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "@/components/ui/button";
+import { useAccount, useBalance } from "wagmi";
+import { useQuery } from "@tanstack/react-query";
+import { getWalletBalance } from "@/lib/lifi";
+import { cn } from "@/lib/utils";
+import { base } from "viem/chains";
+import {
+  BASE_USDC_ADDRESS,
+  BG_MULTISIG_ADDRESS,
+  BASE_SCAN_BASE_URL,
+} from "@/lib/contracts/constants";
+import { env } from "@/lib/env";
+import sdk from "@farcaster/frame-sdk";
+import { PaymentCompletedEvent } from "@daimo/pay-common";
+import { DaimoPayButton } from "@daimo/pay";
 
 interface CreateClanModalProps {
   onClose: () => void;
@@ -19,7 +34,8 @@ export default function CreateClanModal({
 }: CreateClanModalProps) {
   const { state } = useGame();
   const userLevel = state.level;
-  
+  const { address } = useAccount();
+
   const [name, setName] = useState("");
   const [motto, setMotto] = useState("");
   const [isPublic, setIsPublic] = useState(true);
@@ -31,41 +47,104 @@ export default function CreateClanModal({
   >("idle");
   const [error, setError] = useState("");
 
+  // Payment states
+  const [paymentStarted, setPaymentStarted] = useState(false);
+  const [paymentCompleted, setPaymentCompleted] = useState(false);
+  const [finalTxHash, setFinalTxHash] = useState("");
+  const [paymentHandled, setPaymentHandled] = useState(false);
+
   const { createClan } = useClanOperations(refetchClan);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  // USD balance of wallet
+  const { data: tokenBalancesData, isLoading: tokenBalancesIsLoading } =
+    useQuery({
+      queryKey: ["tokenBalances", address],
+      queryFn: async () => {
+        if (address) {
+          const x = await getWalletBalance(address);
+          return x;
+        }
+        return {
+          totalBalanceUSD: 0,
+          tokenBalances: {},
+        };
+      },
+      enabled: !!address,
+    });
 
-    if (!name) {
-      setError("Clan name is required");
-      return;
+  // ETH balance on base to send tx
+  const { data: balance } = useBalance({
+    address,
+    chainId: base.id,
+  });
+
+  // Check if user has enough ETH balance for transaction
+  const hasEnoughEthBalance = useMemo(() => {
+    if (!balance || !address) return false;
+    const requiredEth = BigInt(0);
+    return BigInt(balance.value) > requiredEth;
+  }, [balance, address]);
+
+  // Check if user has enough USD balance for payment
+  const hasEnoughUSDBalance = useMemo(() => {
+    if (!tokenBalancesData || !tokenBalancesData.totalBalanceUSD || !address)
+      return false;
+    return tokenBalancesData.totalBalanceUSD >= 3; // $3 required
+  }, [tokenBalancesData, address]);
+
+  const walletBalance = tokenBalancesData?.totalBalanceUSD || 0;
+
+  // Reset state when modal opens
+  useEffect(() => {
+    if (walletBalance < 3 && !tokenBalancesIsLoading) {
+      setError(
+        "You need at least $3 in your wallet to create a clan. Please add funds."
+      );
+    } else if (walletBalance >= 3) {
+      setError("");
     }
+  }, [walletBalance, tokenBalancesIsLoading]);
 
-    setIsSubmitting(true);
-    setSubmitState("creating");
+  const handlePaymentStarted = useCallback(() => {
+    setPaymentHandled(false);
+    setPaymentStarted(true);
     setError("");
+  }, []);
 
-    try {
-      // Pass an onSuccess and onError callback to handle the clan creation process
+  const handlePaymentCompleted = useCallback(
+    (e: PaymentCompletedEvent) => {
+      if (paymentHandled) return; // Prevent duplicate handling
+
+      if (!address) {
+        setError("Wallet address is not available.");
+        setPaymentCompleted(false);
+        return;
+      }
+
+      setPaymentCompleted(true);
+      setPaymentStarted(false);
+      setFinalTxHash(e.txHash);
+      setPaymentHandled(true);
+
+      // Now create the clan with the transaction hash
+      setIsSubmitting(true);
+      setSubmitState("creating");
+
       createClan(
         {
           name,
           motto,
           isPublic,
+          txHash: e.txHash,
           ...(imageUrl && { imageUrl }),
           ...(requiredLevel && { requiredLevel }),
         },
         {
           onSuccess: () => {
-            // Update state to success
             setSubmitState("success");
-
-            // Only call onSuccess after the API call succeeds
             if (onSuccess) {
               onSuccess();
             }
-
-            // Close modal after a short delay to show the success state
             setTimeout(() => {
               onClose();
             }, 1000);
@@ -75,22 +154,59 @@ export default function CreateClanModal({
             setError("Failed to create clan. Please try again.");
             setIsSubmitting(false);
             setSubmitState("idle");
+            setPaymentCompleted(false);
+            setPaymentHandled(false);
           },
         }
       );
+    },
+    [
+      paymentHandled,
+      address,
+      name,
+      motto,
+      isPublic,
+      imageUrl,
+      requiredLevel,
+      createClan,
+      onSuccess,
+      onClose,
+    ]
+  );
 
-      // Don't close the modal here, wait for the API call to complete
-    } catch (err) {
-      console.error("Error creating clan:", err);
-      setError("Failed to create clan. Please try again.");
-      setIsSubmitting(false);
-      setSubmitState("idle");
+  const handlePaymentBounced = useCallback(() => {
+    setPaymentStarted(false);
+    setPaymentCompleted(false);
+    setPaymentHandled(false);
+    setError(
+      "There was an error processing your payment. You received back your amount in $USDC on your wallet address. Try again."
+    );
+  }, []);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!name) {
+      setError("Clan name is required");
+      return;
     }
+
+    if (!address) {
+      setError("Please connect your wallet to create a clan");
+      return;
+    }
+
+    if (walletBalance < 3) {
+      setError("You need at least $3 in your wallet to create a clan");
+      return;
+    }
+
+    // Payment will be handled by DaimoPayButton
   };
 
   return (
     <div
-      className="fixed inset-0 bg-black/50 flex items-center justify-center z-60"
+      className="fixed inset-0 bg-black/50 flex items-center justify-center z-[99]"
       onClick={onClose}
     >
       <motion.div
@@ -119,6 +235,31 @@ export default function CreateClanModal({
           onSubmit={handleSubmit}
           className="space-y-4"
         >
+          {/* Wallet Balance and Cost Display */}
+          {address && (
+            <div className="bg-[#4A341A] p-3 rounded-lg border border-[#8B5E3C]/10">
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-white/70">Cost to create clan:</span>
+                <span className="text-[#FFB938] font-bold">$3 USDC</span>
+              </div>
+              <div className="flex justify-between items-center text-sm mt-1">
+                <span className="text-white/70">Your balance:</span>
+                <span
+                  className={cn(
+                    "font-bold",
+                    walletBalance >= 3 ? "text-green-400" : "text-red-400"
+                  )}
+                >
+                  {tokenBalancesIsLoading ? (
+                    <Loader2 className="w-4 h-4 animate-spin inline" />
+                  ) : (
+                    `$${walletBalance.toFixed(2)}`
+                  )}
+                </span>
+              </div>
+            </div>
+          )}
+
           {error && (
             <div className="bg-red-500/20 border border-red-500/50 rounded-md p-2 text-red-300 text-sm">
               {error}
@@ -185,13 +326,15 @@ export default function CreateClanModal({
               <select
                 value={requiredLevel || ""}
                 onChange={(e) =>
-                  setRequiredLevel(e.target.value ? Number(e.target.value) : null)
+                  setRequiredLevel(
+                    e.target.value ? Number(e.target.value) : null
+                  )
                 }
                 className="w-full bg-[#5A4129] border border-[#8B5E3C] text-white/90 rounded-md px-3 py-2 focus:outline-none focus:border-[#FFB938]"
               >
                 <option value="">None</option>
                 {Array.from(
-                  { length: Math.min(userLevel - 1, 19) }, 
+                  { length: Math.min(userLevel - 1, 19) },
                   (_, i) => i + 2
                 ).map((level) => (
                   <option
@@ -221,55 +364,132 @@ export default function CreateClanModal({
           </div>
 
           <div className="flex gap-3 pt-2">
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex-1 py-2 px-4 rounded bg-white/10 text-white/90 hover:bg-white/20 transition-colors text-sm font-medium"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={isSubmitting || !name}
-              className={`
-                flex-1 py-2 px-4 rounded transition-colors text-sm font-medium
-                ${
-                  submitState === "success"
-                    ? "bg-green-500 text-white cursor-not-allowed"
-                    : isSubmitting || !name
-                    ? "bg-[#FFB938]/50 text-[#7E4E31]/70 cursor-not-allowed"
-                    : "bg-[#FFB938] text-[#7E4E31] hover:bg-[#ffc65c]"
-                }
-              `}
-            >
-              {submitState === "creating" ? (
-                <div className="flex items-center justify-center">
-                  <div className="h-5 w-5 border-2 border-t-transparent border-[#7E4E31] rounded-full animate-spin mr-2"></div>
-                  Creating...
-                </div>
-              ) : submitState === "success" ? (
-                <div className="flex items-center justify-center">
-                  <svg
-                    className="h-5 w-5 mr-2 text-[#7E4E31]"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                  Done!
-                </div>
+            {!paymentCompleted ? (
+              !error &&
+              hasEnoughEthBalance &&
+              hasEnoughUSDBalance &&
+              address ? (
+                <DaimoPayButton.Custom
+                  appId={env.NEXT_PUBLIC_DAIMO_PAY_ID}
+                  metadata={{
+                    userId: state.user.fid.toString(),
+                  }}
+                  preferredChains={[base.id]}
+                  preferredTokens={[
+                    { chain: base.id, address: BASE_USDC_ADDRESS },
+                  ]}
+                  toAddress={BG_MULTISIG_ADDRESS}
+                  toUnits="3"
+                  toToken={BASE_USDC_ADDRESS}
+                  toChain={base.id}
+                  connectedWalletOnly={true}
+                  onPaymentStarted={handlePaymentStarted}
+                  onPaymentCompleted={handlePaymentCompleted}
+                  onPaymentBounced={handlePaymentBounced}
+                  closeOnSuccess
+                >
+                  {({ show }) => (
+                    <Button
+                      type="button"
+                      onClick={show}
+                      disabled={isSubmitting || !name || paymentStarted}
+                      className={cn(
+                        "flex-1 py-2 px-4 rounded transition-colors text-sm font-medium",
+                        isSubmitting || !name || paymentStarted
+                          ? "bg-[#FFB938]/50 text-[#7E4E31]/70 cursor-not-allowed"
+                          : "bg-[#FFB938] text-[#7E4E31] hover:bg-[#ffc65c]"
+                      )}
+                    >
+                      {paymentStarted ? (
+                        <div className="flex items-center justify-center">
+                          <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                          Processing...
+                        </div>
+                      ) : (
+                        "Pay $3 & Create"
+                      )}
+                    </Button>
+                  )}
+                </DaimoPayButton.Custom>
               ) : (
-                "Create"
-              )}
-            </button>
+                <button
+                  type="submit"
+                  disabled={true}
+                  className="flex-1 py-2 px-4 rounded transition-colors text-sm font-medium bg-[#FFB938]/50 text-[#7E4E31]/70 cursor-not-allowed"
+                >
+                  {!address
+                    ? "Connect Wallet"
+                    : !hasEnoughUSDBalance
+                    ? "Insufficient Balance"
+                    : "Create"}
+                </button>
+              )
+            ) : (
+              <button
+                type="submit"
+                disabled={isSubmitting || !name}
+                className={`
+                  flex-1 py-2 px-4 rounded transition-colors text-sm font-medium
+                  ${
+                    submitState === "success"
+                      ? "bg-green-500 text-white cursor-not-allowed"
+                      : isSubmitting || !name
+                      ? "bg-[#FFB938]/50 text-[#7E4E31]/70 cursor-not-allowed"
+                      : "bg-[#FFB938] text-[#7E4E31] hover:bg-[#ffc65c]"
+                  }
+                `}
+              >
+                {submitState === "creating" ? (
+                  <div className="flex items-center justify-center">
+                    <div className="h-5 w-5 border-2 border-t-transparent border-[#7E4E31] rounded-full animate-spin mr-2"></div>
+                    Creating...
+                  </div>
+                ) : submitState === "success" ? (
+                  <div className="flex items-center justify-center">
+                    <svg
+                      className="h-5 w-5 mr-2 text-[#7E4E31]"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M5 13l4 4L19 7"
+                      />
+                    </svg>
+                    Done!
+                  </div>
+                ) : (
+                  "Creating..."
+                )}
+              </button>
+            )}
           </div>
+
+          {/* Payment success message and transaction link */}
+          {paymentCompleted &&
+            finalTxHash &&
+            !isSubmitting &&
+            submitState !== "success" && (
+              <div className="mt-4 p-3 bg-green-500/20 border border-green-500/50 rounded-md">
+                <p className="text-green-300 text-sm text-center">
+                  Payment successful! Creating your clan...
+                </p>
+                <p
+                  className="text-green-200/70 text-xs text-center underline cursor-pointer mt-1"
+                  onClick={async () => {
+                    await sdk.actions.openUrl(
+                      `${BASE_SCAN_BASE_URL}/tx/${finalTxHash}`
+                    );
+                  }}
+                >
+                  View transaction on BaseScan
+                </p>
+              </div>
+            )}
         </form>
       </motion.div>
     </div>
