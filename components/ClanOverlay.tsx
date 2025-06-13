@@ -257,7 +257,7 @@ export default function ClanOverlay({
                 className="text-white/80 mb-1"
               />
               <span className="text-xs font-medium text-white/90">
-                {clan.requiredLevel ? `Lvl ${clan.requiredLevel}` : "No Req"}
+                {clan.requiredLevel ? `Lvl ${clan.requiredLevel}` : "Lvl 1"}
               </span>
               <span className="text-[10px] text-white/70">required</span>
             </div>
