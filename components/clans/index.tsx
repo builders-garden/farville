@@ -59,14 +59,6 @@ export default function ClansModal({ onClose }: ClansModalProps) {
     }
   };
 
-  console.log("DATA", {
-    stateClan: state.clan,
-    userHasClan,
-    mainActiveTab,
-    outgoingRequests,
-    isViewingClan,
-  });
-
   return (
     <div className="fixed inset-0 bg-black/50 flex items-start z-50">
       <motion.div
