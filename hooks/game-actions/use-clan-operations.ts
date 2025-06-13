@@ -12,9 +12,10 @@ export const useClanOperations = (
       motto: string;
       isPublic?: boolean;
       txHash: string; // Now required
-      imageUrl?: string;
       requiredLevel?: number;
       paymentId: string;
+      imageUrl?: string;
+      imageFile?: File;
     }) => clanData,
     method: "POST",
     onSuccess: (data) => {

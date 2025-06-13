@@ -280,3 +280,9 @@ export function incrementClanXp(clanId: string, amount: number) {
     },
   });
 }
+
+export function deleteClan(clanId: string) {
+  return prisma.clan.delete({
+    where: { id: clanId },
+  });
+}

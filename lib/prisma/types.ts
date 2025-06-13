@@ -122,6 +122,10 @@ export type ClanWithData = Clan & {
   joinRequests: ClanRequestToJoin[];
 };
 
+export type ClanWithMembers = Clan & {
+  members: ClanMember[];
+};
+
 export interface ClanJoinRequestWithClan extends ClanJoinRequest {
   clan: {
     id: string;

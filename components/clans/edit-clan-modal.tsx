@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { useClanOperations } from "@/hooks/game-actions/use-clan-operations";
 import { useGame } from "@/context/GameContext";
@@ -26,6 +26,7 @@ export default function EditClanModal({
   const [motto, setMotto] = useState(clan.motto || "");
   const [isPublic, setIsPublic] = useState(clan.isPublic);
   const [imageUrl, setImageUrl] = useState(clan.imageUrl || "");
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const [requiredLevel, setRequiredLevel] = useState<number | null>(
     clan.requiredLevel
   );
@@ -37,39 +38,34 @@ export default function EditClanModal({
 
   const { updateClan } = useClanOperations(refetchClan);
 
+  // If editing, prefill imageUrl with current clan image if present
+  useEffect(() => {
+    if (clan.imageUrl) {
+      setImageUrl(clan.imageUrl);
+    }
+  }, [clan.imageUrl]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     setIsSubmitting(true);
     setSubmitState("updating");
     setError("");
-
     try {
-      // Pass an onSuccess and onError callback to handle the clan update process
       updateClan(
         {
           clanId: clan.id,
           motto,
           isPublic,
-          imageUrl,
+          ...(imageFile && { imageFile }),
           requiredLevel,
         },
         {
           onSuccess: () => {
-            // Update state to success
             setSubmitState("success");
-
-            // Explicitly refetch clan data after a short delay to ensure backend update is complete
             setTimeout(() => {
-              console.log("refetching clan");
               refetchClan();
-              // Also call onSuccess to trigger any additional refetches
-              if (onSuccess) {
-                onSuccess();
-              }
+              if (onSuccess) onSuccess();
             }, 200);
-
-            // Close modal after a short delay to show the success state
             setTimeout(() => {
               onClose();
             }, 1000);
@@ -109,24 +105,19 @@ export default function EditClanModal({
           </h3>
           <button
             onClick={onClose}
-            className="w-8 h-8 flex items-center justify-center rounded-full 
+            className="w-8 h-8 flex items-center justify-center rounded-full \
                     bg-white/10 hover:bg-white/20 transition-colors text-white/80 hover:text-white"
             aria-label="Close"
           >
             <X size={16} />
           </button>
         </div>
-
-        <form
-          onSubmit={handleSubmit}
-          className="space-y-4"
-        >
+        <form onSubmit={handleSubmit} className="space-y-4">
           {error && (
             <div className="bg-red-500/20 border border-red-500/50 rounded-md p-2 text-red-300 text-sm">
               {error}
             </div>
           )}
-
           <div className="space-y-2">
             <label className="block text-white/80 text-sm font-medium">
               Motto
@@ -140,31 +131,61 @@ export default function EditClanModal({
               maxLength={40}
             />
           </div>
-
           <div className="space-y-2">
             <label className="block text-white/80 text-sm font-medium">
-              Image URL
+              Image
             </label>
-            <input
-              type="text"
-              value={imageUrl}
-              onChange={(e) => setImageUrl(e.target.value)}
-              placeholder="Optional clan image"
-              className="w-full bg-[#5A4129] border border-[#8B5E3C] text-white/90 rounded-md px-3 py-2 placeholder:text-white/40 focus:outline-none focus:border-[#FFB938]"
-            />
-            {imageUrl && (
-              <div className="relative h-20 w-20 mx-auto mt-2 rounded-md border-2 border-[#8B5E3C] overflow-hidden bg-[#5A4129] flex items-center justify-center">
-                <Image
-                  src={imageUrl}
-                  alt="Preview"
-                  fill
-                  className="object-cover"
-                  onError={() => setImageUrl("")}
+            <div className="flex flex-col gap-2 mt-2">
+              <label
+                className="flex items-center justify-center px-4 py-2 bg-[#5A4129] border border-[#FFB938] text-[#FFB938] rounded-md hover:bg-[#6A5139] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{ opacity: imageUrl ? 0.5 : 1 }}
+              >
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0] || null;
+                    setImageFile(file);
+                    if (file) setImageUrl(""); // Clear URL if file is set
+                  }}
+                  className="hidden"
                 />
+                <span className="text-[#FFB938] text-sm">
+                  Choose image file
+                </span>
+              </label>
+              {imageFile && (
+                <span className="text-white/60 text-xs text-center">
+                  {imageFile.name.length > 20
+                    ? `${imageFile.name.slice(0, 20)}...`
+                    : imageFile.name}
+                </span>
+              )}
+            </div>
+            {(imageFile || imageUrl) && (
+              <div className="relative h-20 w-20 mx-auto mt-2 rounded-md border-2 border-[#8B5E3C] overflow-hidden bg-[#5A4129] flex items-center justify-center">
+                {imageFile ? (
+                  <img
+                    src={URL.createObjectURL(imageFile)}
+                    alt="Preview"
+                    className="object-cover w-full h-full"
+                  />
+                ) : imageUrl ? (
+                  <Image
+                    src={imageUrl}
+                    alt="Preview"
+                    fill
+                    className="object-cover"
+                    onError={() => setImageUrl("")}
+                  />
+                ) : (
+                  <span className="text-white/60 text-xs">
+                    No image selected or URL provided
+                  </span>
+                )}
               </div>
             )}
           </div>
-
           {userLevel > 1 && (
             <div className="space-y-2">
               <label className="block text-white/80 text-sm font-medium">
@@ -184,17 +205,13 @@ export default function EditClanModal({
                   { length: Math.min(userLevel - 1, 19) },
                   (_, i) => i + 2
                 ).map((level) => (
-                  <option
-                    key={level}
-                    value={level}
-                  >
+                  <option key={level} value={level}>
                     Lvl {level}+
                   </option>
                 ))}
               </select>
             </div>
           )}
-
           <div className="flex items-center space-x-2">
             <Checkbox
               id="public"
@@ -202,14 +219,10 @@ export default function EditClanModal({
               onCheckedChange={(checked) => setIsPublic(Boolean(checked))}
               className="data-[state=checked]:bg-[#FFB938] data-[state=checked]:border-[#FFB938]"
             />
-            <label
-              htmlFor="public"
-              className="text-sm text-white/80"
-            >
+            <label htmlFor="public" className="text-sm text-white/80">
               Public clan
             </label>
           </div>
-
           <div className="flex gap-3 pt-2">
             <button
               type="button"

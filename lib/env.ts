@@ -28,6 +28,8 @@ export const env = createEnv({
     TITLES_MODEL_ID: z.string().min(1),
     // DAIMO
     DAIMO_PAY_API_KEY: z.string().min(1),
+    // ImageKit
+    IMAGEKIT_PRIVATE_KEY: z.string().min(1),
   },
   client: {
     NEXT_PUBLIC_URL: z.string().url().min(1),

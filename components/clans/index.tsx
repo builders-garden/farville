@@ -11,6 +11,7 @@ import ClanOutgoingRequests from "./clan-outgoing-requests";
 import { useApiQuery } from "@/hooks/use-api-query";
 import { ClanJoinRequestWithClan } from "@/lib/prisma/types";
 import Image from "next/image";
+import { ClanSeason } from "./clan-season";
 
 interface ClansModalProps {
   onClose: () => void;
@@ -131,6 +132,7 @@ export default function ClansModal({ onClose }: ClansModalProps) {
             />
           )}
           {mainActiveTab === "outgoing" && <ClanOutgoingRequests />}
+          {mainActiveTab === "leaderboard" && <ClanSeason />}
         </div>
 
         {/* Floating Create Clan Button */}

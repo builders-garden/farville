@@ -11,6 +11,7 @@ import ClanRequests from "./clan-requests";
 import { FloatingShareButton } from "../FloatingShareButton";
 import { clanFlexCardComposeCastUrl } from "@/lib/utils";
 import sdk from "@farcaster/frame-sdk";
+import { ClanQuests } from "./clan-quests";
 
 export default function MyClan() {
   const { state, refetch } = useGame();
@@ -70,6 +71,8 @@ export default function MyClan() {
           onMemberUpdate={refetchClanData}
         />
       )}
+
+      {activeTab === "quests" && !isLoading && clanData && <ClanQuests />}
 
       {activeTab === "newcomers" && !isLoading && clanData && (
         <div className="w-full max-w-2xl">
