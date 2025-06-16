@@ -44,7 +44,6 @@ export const RequestChatCard: React.FC<RequestChatCardProps> = ({
     <>
       <div
         className={`flex w-full mb-4 flex-col items-${isOwn ? "end" : "start"}`}
-        key={request.requestId || request.id}
       >
         <div
           className={`relative w-full flex flex-col ${
@@ -165,8 +164,12 @@ export const RequestChatCard: React.FC<RequestChatCardProps> = ({
       {showRequestModal && request.requestId && (
         <RequestModal
           onClose={() => {
-            refetchClanData();
             setShowRequestModal(false);
+          }}
+          onDonationSuccess={() => {
+            // Call refetchClanData immediately when donation succeeds
+            // This will refresh the parent component's data and re-render this component with updated props
+            refetchClanData();
           }}
           id={request.requestId}
         />

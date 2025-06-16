@@ -67,6 +67,8 @@ export function ClanDetail({ clanData, refetchClan }: ClanDetailProps) {
         onSuccess: () => {
           setIsLeaving(false);
           setIsSuccessionModalOpen(false);
+          updateUserClan(undefined); // Optimistically clear clan
+          refetch.userClan();
         },
         onError: () => {
           setIsLeaving(false);
@@ -90,10 +92,7 @@ export function ClanDetail({ clanData, refetchClan }: ClanDetailProps) {
     <Card className="bg-gradient-to-br from-[#6D4C2C] to-[#5B4120] rounded-lg border-none w-full max-w-2xl">
       <CardContent className="flex flex-col w-full gap-3 xs:gap-4 p-3 xs:p-4">
         <div className="flex flex-row items-start gap-2">
-          <ClanImage
-            imageUrl={clanData.imageUrl}
-            clanName={clanData.name}
-          />
+          <ClanImage imageUrl={clanData.imageUrl} clanName={clanData.name} />
           <div className="flex flex-col w-full gap-1 xs:gap-2">
             <div className="flex justify-between items-start">
               <h3 className="text-white/90 font-bold text-xs xs:text-sm">
@@ -101,10 +100,7 @@ export function ClanDetail({ clanData, refetchClan }: ClanDetailProps) {
                   ? clanData.name.slice(0, 14) + "..."
                   : clanData?.name}
               </h3>
-              <ClanStatus
-                isPublic={clanData.isPublic}
-                short
-              />
+              <ClanStatus isPublic={clanData.isPublic} short />
             </div>
             <div className="flex w-full">
               <div className="text-[#f2a311] text-[10px]">

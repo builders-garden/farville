@@ -10,12 +10,14 @@ interface SelectMintPriceProps {
   totalBalanceUSD: number;
   selectedPrice: number;
   setSelectedPrice: Dispatch<SetStateAction<number>>;
+  onPriceChange?: (price: number) => void;
 }
 
 export const SelectMintPrice = ({
   totalBalanceUSD,
   selectedPrice,
   setSelectedPrice,
+  onPriceChange,
 }: SelectMintPriceProps) => {
   return (
     <div className="flex flex-col items-center justify-center gap-2">
@@ -41,7 +43,10 @@ export const SelectMintPrice = ({
             <Button
               key={`mint-price-${price}`}
               variant="ghost"
-              onClick={() => setSelectedPrice(price)}
+              onClick={() => {
+                setSelectedPrice(price);
+                onPriceChange?.(price);
+              }}
               className={cn(
                 "text-md px-3 w-full rounded-md text-white font-semibold",
                 selectedPrice === price

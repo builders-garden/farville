@@ -20,6 +20,7 @@ export const useDonationHistory = (
     method: "GET",
     isProtected: true,
     enabled: !!donator && !!receiver,
+    staleTime: 0,
   });
 
   const { todayDonations, canDonateToReceiver, canDonateToAnotherUser } =

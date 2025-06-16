@@ -1,6 +1,7 @@
 import { ClanRole } from "@/lib/types/game";
 import { prisma } from "../client";
 import { Prisma } from "@prisma/client";
+import { CLAN_MAX_MEMBERS } from "@/lib/game-constants";
 
 export function getClans(filters?: {
   strToSearch?: string;
@@ -207,6 +208,7 @@ export function createClan(data: {
   imageUrl?: string;
   txHash?: string;
   requiredLevel?: number;
+  maxMembers?: number;
 }) {
   return prisma.$transaction(async (tx) => {
     const clanData: Prisma.ClanUncheckedCreateInput = {
@@ -218,6 +220,7 @@ export function createClan(data: {
       imageUrl: data.imageUrl ?? "",
       txHash: data.txHash ?? "",
       requiredLevel: data.requiredLevel ?? null,
+      maxMembers: data.maxMembers ?? CLAN_MAX_MEMBERS,
     };
 
     const clan = await tx.clan.create({

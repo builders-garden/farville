@@ -9,12 +9,14 @@ interface ClanMembersProps {
   members: ClanMember[];
   clanId?: string;
   onMemberUpdate?: () => void;
+  maxMembers: number;
 }
 
 export default function ClanMembers({
   members,
   clanId,
   onMemberUpdate,
+  maxMembers = 25,
 }: ClanMembersProps) {
   const { state } = useGame();
   const [selectedMember, setSelectedMember] = useState<ClanMember | null>(null);
@@ -28,7 +30,9 @@ export default function ClanMembers({
       <div className="w-full max-w-2xl space-y-2">
         <div className="flex justify-between items-center p-3 py-1 text-white/70 text-sm">
           <span>Farmers</span>
-          <span>{members.length}/20</span>
+          <span>
+            {members.length}/{maxMembers}
+          </span>
         </div>
         {members.map((member, index) => (
           <Card

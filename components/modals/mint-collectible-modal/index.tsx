@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import { useAccount, useBalance, useSwitchChain } from "wagmi";
 import { useQuery } from "@tanstack/react-query";
 import { getWalletBalance } from "@/lib/lifi";
@@ -25,7 +25,7 @@ import {
   PaymentCompletedEvent,
   PaymentStartedEvent,
 } from "@daimo/pay-common";
-import { DaimoPayButton } from "@daimo/pay";
+import { DaimoPayButton, useDaimoPayUI } from "@daimo/pay";
 import { base, mainnet } from "viem/chains";
 
 import {
@@ -57,6 +57,7 @@ export default function MintCollectibleModal({
 }: MintCollectibleModalProps) {
   const { state, updateUserCollectibles, refetchUser } = useGame();
   const { address } = useAccount();
+  const { resetPayment } = useDaimoPayUI();
 
   // Step 1
   const [pfpDescription, setPfpDescription] = useState<string | null>(null);
@@ -195,6 +196,11 @@ export default function MintCollectibleModal({
     refetchUser,
   });
 
+  // Use ref to track previous calldata and price to prevent unnecessary resets
+  const prevResetDataRef = useRef<{ calldata: string; price: number } | null>(
+    null
+  );
+
   // needed for Step 5. Construct mint tx calldata once the backend signature is ready
   useEffect(() => {
     if (!backendSignature || !pinataMetadataCID || !address) return;
@@ -206,12 +212,27 @@ export default function MintCollectibleModal({
       backendSignature: backendSignature,
     });
     setTxCalldata(newTxCalldata);
+
+    // Only reset payment if calldata or price actually changed
+    const currentData = { calldata: newTxCalldata, price: selectedPrice };
+    if (
+      !prevResetDataRef.current ||
+      prevResetDataRef.current.calldata !== currentData.calldata ||
+      prevResetDataRef.current.price !== currentData.price
+    ) {
+      resetPayment({
+        toUnits: selectedPrice.toString(),
+        toCallData: newTxCalldata as `0x${string}`,
+      });
+      prevResetDataRef.current = currentData;
+    }
   }, [
     address,
     state.user.fid,
     selectedPrice,
     pinataMetadataCID,
     backendSignature,
+    resetPayment,
   ]);
 
   // ETH balance on base to send tx
@@ -424,7 +445,13 @@ export default function MintCollectibleModal({
     ) {
       loadPfpDescription();
     }
-  }, [userPfp, selectedCollectible]);
+  }, [
+    userPfp,
+    selectedCollectible,
+    getImageDescription,
+    pfpDescription,
+    state.user.fid,
+  ]);
 
   // if user is not on base, switch to base
   useEffect(() => {
@@ -815,6 +842,12 @@ export default function MintCollectibleModal({
                   totalBalanceUSD={tokenBalancesData?.totalBalanceUSD ?? 0}
                   selectedPrice={selectedPrice}
                   setSelectedPrice={setSelectedPrice}
+                  onPriceChange={(price) => {
+                    resetPayment({
+                      toUnits: price.toString(),
+                      toCallData: txCalldata as `0x${string}`,
+                    });
+                  }}
                 />
               ) : null}
 
@@ -825,7 +858,10 @@ export default function MintCollectibleModal({
                     onClick={handleShareMint}
                     className="w-full flex-1 py-2 px-4 rounded-[5px] text-[#5C4121] bg-yellow-500 hover:bg-yellow-500/80 hover:text-[#5C4121]"
                   >
-                    <Share2 size={18} className="w-3 h-3 xs:w-4 xs:h-4" />
+                    <Share2
+                      size={18}
+                      className="w-3 h-3 xs:w-4 xs:h-4"
+                    />
                     Share
                   </Button>
                   <div className="flex w-full gap-2">
@@ -851,7 +887,10 @@ export default function MintCollectibleModal({
                       variant="outline"
                       className="w-fit flex py-1 px-2 xs:py-2 xs:px-4 rounded-[5px] bg-transparent hover:bg-yellow-500/10 border-2 border-yellow-500/20 text-yellow-500 hover:text-yellow-500/80 text-[9px] xs:text-xs font-medium items-center justify-center gap-2"
                     >
-                      <Download size={18} className="w-3 h-3 xs:w-4 xs:h-4" />
+                      <Download
+                        size={18}
+                        className="w-3 h-3 xs:w-4 xs:h-4"
+                      />
                     </Button>
                   </div>
                 </>
