@@ -17,10 +17,7 @@ export function ClanView({ clanId, onClose }: ClanViewProps) {
         onClick={onClose}
         className="flex items-center px-4 py-2 rounded-lg text-white text-sm w-fit border-2 border-white/40"
       >
-        <ArrowLeft
-          size={16}
-          className="inline mr-2"
-        />
+        <ArrowLeft size={16} className="inline mr-2" />
         Back
       </button>
       {isLoading ? (
@@ -33,15 +30,13 @@ export function ClanView({ clanId, onClose }: ClanViewProps) {
         </div>
       ) : (
         <>
-          <ClanDetail
-            clanData={clanData}
-            refetchClan={refetchClanData}
-          />
+          <ClanDetail clanData={clanData} refetchClan={refetchClanData} />
 
           <ClanMembers
             members={clanData.members}
             clanId={clanData.id}
             onMemberUpdate={refetchClanData}
+            maxMembers={clanData.maxMembers}
           />
         </>
       )}
