@@ -65,6 +65,7 @@ export default function MyClan() {
           members={clanData.members}
           clanId={clanData.id}
           onMemberUpdate={refetchClanData}
+          maxMembers={clanData.maxMembers}
         />
       )}
 

@@ -1175,3 +1175,5 @@ export const FP_TIME = {
 };
 
 export const CLAN_CREATION_COST_USD = 5;
+
+export const CLAN_MAX_MEMBERS = 25;

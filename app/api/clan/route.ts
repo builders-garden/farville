@@ -14,7 +14,7 @@ import {
 } from "@/lib/contracts/constants";
 import { base } from "viem/chains";
 import z from "zod";
-import { CLAN_CREATION_COST_USD } from "@/lib/game-constants";
+import { CLAN_CREATION_COST_USD, CLAN_MAX_MEMBERS } from "@/lib/game-constants";
 import { uploadImage } from "@/lib/imagekit";
 
 // Basic payment validation - checks if txHash exists and follows expected format
@@ -236,6 +236,7 @@ export async function POST(req: NextRequest) {
       ...parsedData,
       txHash: paymentValidation.txHash || parsedData.txHash,
       imageUrl: clanImage,
+      maxMembers: CLAN_MAX_MEMBERS,
       createdBy: Number(fid),
       leaderFid: Number(fid),
     });
