@@ -16,7 +16,7 @@ interface DonateResponse {
   success: boolean;
 }
 
-export const useDonate = () => {
+export const useDonate = (onSuccess?: () => void) => {
   const { refetchUserItems } = useGame();
 
   const { mutateAsync: donate } = useApiMutation<
@@ -35,6 +35,10 @@ export const useDonate = () => {
     onSuccess: async () => {
       await hapticsNotificationOccurred("success");
       refetchUserItems();
+      // Call the optional onSuccess callback if provided
+      if (onSuccess) {
+        onSuccess();
+      }
     },
   });
 
