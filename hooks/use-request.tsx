@@ -13,6 +13,7 @@ export const useRequest = (id: string) => {
     url: `/api/requests/${id}`,
     method: "GET",
     isProtected: true,
+    staleTime: 0,
   });
 
   return { request, isLoading, refetch };

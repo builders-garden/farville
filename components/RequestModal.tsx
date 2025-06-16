@@ -99,12 +99,16 @@ export default function RequestModal({
       ? request.quantity - (request.filledQuantity || 0)
       : 0;
 
-  const [selectedQuantity, setSelectedQuantity] = useState(() => {
+  const defaultSelectedQuantity = () => {
     if (currentQuantity > 0) {
       return Math.min(currentQuantity, remainingQuantity);
     }
     return 0;
-  });
+  };
+
+  const [selectedQuantity, setSelectedQuantity] = useState(
+    defaultSelectedQuantity
+  );
 
   const handleMaxQuantity = () => {
     setSelectedQuantity(Math.min(currentQuantity, remainingQuantity));
@@ -421,10 +425,7 @@ export default function RequestModal({
                       )}
                     </div>
                   )}
-                  <DonationHistoryList
-                    donations={todayDonations}
-                    mode={mode}
-                  />
+                  <DonationHistoryList donations={todayDonations} mode={mode} />
                 </>
               )
             )}
@@ -476,12 +477,19 @@ export default function RequestModal({
                         );
                         const rewardedXp = safeQuantity * XP_PER_DONATED_ITEM;
                         setRewardedXp(rewardedXp);
-                        donate({
-                          itemId: request.itemId,
-                          quantity: safeQuantity,
-                          toFid: request.fid,
-                          requestId: request.id,
-                        });
+                        donate(
+                          {
+                            itemId: request.itemId,
+                            quantity: safeQuantity,
+                            toFid: request.fid,
+                            requestId: request.id,
+                          },
+                          {
+                            onSuccess: () => {
+                              setSelectedQuantity(defaultSelectedQuantity());
+                            },
+                          }
+                        );
                         if (request.itemId) {
                           updateUserItems([
                             {

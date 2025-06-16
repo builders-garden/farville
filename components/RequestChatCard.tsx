@@ -44,7 +44,6 @@ export const RequestChatCard: React.FC<RequestChatCardProps> = ({
     <>
       <div
         className={`flex w-full mb-4 flex-col items-${isOwn ? "end" : "start"}`}
-        key={request.requestId || request.id}
       >
         <div
           className={`relative w-full flex flex-col ${

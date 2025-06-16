@@ -109,10 +109,19 @@ export const POST = async (
     lastDonationToReceiver,
   } = userCanDonate(todayDonations, Number(toFid), mode);
 
-  if (!canDonateToReceiver && !canDonateToAnotherUser) {
+  if (!canDonateToReceiver) {
     return NextResponse.json(
       {
-        message: `You have reached the maximum daily donation limits.`,
+        message: `You have reached the maximum daily donation limits with this user.`,
+      },
+      { status: 400 }
+    );
+  }
+
+  if (!canDonateToAnotherUser) {
+    return NextResponse.json(
+      {
+        message: `You have reached the maximum daily donation limits for today. Please try again tomorrow.`,
       },
       { status: 400 }
     );

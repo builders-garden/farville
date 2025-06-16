@@ -23,7 +23,7 @@ export default function ClanRequests({
         {requests.length === 0 ? (
           <div className="text-center text-white/80 py-8">No requests yet.</div>
         ) : (
-          <div key="requests-header">
+          <>
             <button
               onClick={refetchClanData}
               className="self-end px-4 py-2 mb-2 text-sm bg-[#6D4C2C] text-white rounded-md hover:bg-[#8B5E3C] transition-colors flex items-center"
@@ -38,11 +38,11 @@ export default function ClanRequests({
                 console.warn(
                   `Request ${req.requestId} has no associated user data`
                 );
-                return null; // Skip rendering if user data is missing
+                return undefined; // Skip rendering if user data is missing
               }
               return (
                 <RequestChatCard
-                  key={req.id}
+                  key={req.requestId || req.id}
                   isOwn={isOwn}
                   request={req}
                   requestor={{
@@ -55,7 +55,7 @@ export default function ClanRequests({
                 />
               );
             })}
-          </div>
+          </>
         )}
       </div>
 

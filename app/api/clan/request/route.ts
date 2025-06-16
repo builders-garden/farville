@@ -66,14 +66,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    console.log("Creating clan request with data:", {
-      requestId,
-      clanId,
-      itemId,
-      quantity,
-      fid: Number(fid),
-    });
-
     const notificationTitle = requestId
       ? "A new clan request was shared"
       : "Someone needs your help!";
