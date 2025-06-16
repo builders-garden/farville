@@ -21,15 +21,23 @@ import { useUserModes } from "@/hooks/use-user-modes";
 
 export default function RequestModal({
   onClose,
+  onDonationSuccess,
   id,
 }: {
   onClose: () => void;
+  onDonationSuccess?: () => void;
   id: string;
 }) {
   const { safeAreaInsets } = useFrameContext();
-  const { request, isLoading } = useRequest(id);
-  console.log("request", request, id);
-  const { donate } = useDonate();
+  const { request, isLoading, refetch: refetchRequest } = useRequest(id);
+  const { donate } = useDonate(() => {
+    // Refetch the request data when donation succeeds
+    refetchRequest();
+    // Call the onDonationSuccess callback if provided
+    if (onDonationSuccess) {
+      onDonationSuccess();
+    }
+  });
   const {
     state,
     updateUserItems,
