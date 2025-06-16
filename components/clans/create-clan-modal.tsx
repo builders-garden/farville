@@ -43,6 +43,18 @@ export default function CreateClanModal({
   const [imageUrl, setImageUrl] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [requiredLevel, setRequiredLevel] = useState<number | null>(null);
+
+  // Handle image file selection
+  const handleImageFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
+
+    if (file) {
+      setImageFile(file);
+      setImageUrl(""); // Clear URL if file is set
+    } else {
+      setImageFile(null);
+    }
+  };
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitState, setSubmitState] = useState<
     "idle" | "creating" | "success"
@@ -255,13 +267,13 @@ export default function CreateClanModal({
           {/* Wallet Balance and Cost Display */}
           {address && (
             <div className="bg-[#4A341A] p-3 rounded-lg border border-[#8B5E3C]/10">
-              <div className="flex justify-between items-center text-sm">
+              <div className="flex justify-between items-center text-xs">
                 <span className="text-white/70">Cost:</span>
                 <span className="text-[#FFB938] font-bold">
                   ${CLAN_CREATION_COST_USD} USDC
                 </span>
               </div>
-              <div className="flex justify-between items-center text-sm mt-1">
+              <div className="flex justify-between items-center text-xs mt-1">
                 <span className="text-white/70">Your balance:</span>
                 <span
                   className={cn(
@@ -320,25 +332,20 @@ export default function CreateClanModal({
               Image
             </label>
             <div className="flex flex-col gap-2 mt-2">
-              <label
-                className="flex items-center justify-center px-4 py-2 bg-[#5A4129] border border-[#FFB938] text-[#FFB938] rounded-md hover:bg-[#6A5139] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                style={{ opacity: imageUrl ? 0.5 : 1 }}
-              >
+              <label className="flex items-center justify-center px-4 py-2 border rounded-md cursor-pointer transition-colors bg-[#5A4129] border-[#FFB938] text-[#FFB938] hover:bg-[#6A5139]">
                 <input
                   type="file"
-                  accept="image/*"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0] || null;
-                    setImageFile(file);
-                    if (file) setImageUrl(""); // Clear URL if file is set
-                  }}
+                  accept="image/png,image/jpeg,image/jpg,image/gif,image/svg+xml,image/webp"
+                  onChange={handleImageFileChange}
                   className="hidden"
-                  disabled={!!imageUrl}
                 />
-                <span className="text-[#FFB938] text-sm">
-                  Choose image file
-                </span>
+                <span className="text-sm">Choose image file</span>
               </label>
+
+              <div className="text-white/50 text-[8px] text-center">
+                PNG, JPEG, JPG, GIF, SVG, WEBP
+              </div>
+
               {imageFile && (
                 <span className="text-white/60 text-xs text-center">
                   {imageFile.name.length > 20
@@ -350,10 +357,11 @@ export default function CreateClanModal({
             {(imageFile || imageUrl) && (
               <div className="relative h-20 w-20 mx-auto mt-2 rounded-md border-2 border-[#8B5E3C] overflow-hidden bg-[#5A4129] flex items-center justify-center">
                 {imageFile ? (
-                  <img
+                  <Image
                     src={URL.createObjectURL(imageFile)}
                     alt="Preview"
-                    className="object-cover w-full h-full"
+                    fill
+                    className="object-cover"
                   />
                 ) : (
                   <Image
