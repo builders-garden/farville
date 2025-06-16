@@ -30,6 +30,18 @@ export default function EditClanModal({
   const [requiredLevel, setRequiredLevel] = useState<number | null>(
     clan.requiredLevel
   );
+
+  // Handle image file selection
+  const handleImageFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
+
+    if (file) {
+      setImageFile(file);
+      setImageUrl(""); // Clear URL if file is set
+    } else {
+      setImageFile(null);
+    }
+  };
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitState, setSubmitState] = useState<
     "idle" | "updating" | "success"
@@ -47,6 +59,7 @@ export default function EditClanModal({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     setIsSubmitting(true);
     setSubmitState("updating");
     setError("");
@@ -139,24 +152,20 @@ export default function EditClanModal({
               Image
             </label>
             <div className="flex flex-col gap-2 mt-2">
-              <label
-                className="flex items-center justify-center px-4 py-2 bg-[#5A4129] border border-[#FFB938] text-[#FFB938] rounded-md hover:bg-[#6A5139] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                style={{ opacity: imageUrl ? 0.5 : 1 }}
-              >
+              <label className="flex items-center justify-center px-4 py-2 border rounded-md cursor-pointer transition-colors bg-[#5A4129] border-[#FFB938] text-[#FFB938] hover:bg-[#6A5139]">
                 <input
                   type="file"
-                  accept="image/*"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0] || null;
-                    setImageFile(file);
-                    if (file) setImageUrl(""); // Clear URL if file is set
-                  }}
+                  accept="image/png,image/jpeg,image/jpg,image/gif,image/svg+xml,image/webp"
+                  onChange={handleImageFileChange}
                   className="hidden"
                 />
-                <span className="text-[#FFB938] text-sm">
-                  Choose image file
-                </span>
+                <span className="text-sm">Choose image file</span>
               </label>
+
+              <div className="text-white/50 text-[8px] text-center">
+                PNG, JPEG, JPG, GIF, SVG, WEBP
+              </div>
+
               {imageFile && (
                 <span className="text-white/60 text-xs text-center">
                   {imageFile.name.length > 20
@@ -168,10 +177,11 @@ export default function EditClanModal({
             {(imageFile || imageUrl) && (
               <div className="relative h-20 w-20 mx-auto mt-2 rounded-md border-2 border-[#8B5E3C] overflow-hidden bg-[#5A4129] flex items-center justify-center">
                 {imageFile ? (
-                  <img
+                  <Image
                     src={URL.createObjectURL(imageFile)}
                     alt="Preview"
-                    className="object-cover w-full h-full"
+                    fill
+                    className="object-cover"
                   />
                 ) : imageUrl ? (
                   <Image

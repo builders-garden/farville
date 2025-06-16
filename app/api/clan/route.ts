@@ -136,6 +136,7 @@ const IMAGE_SCHEMA = z
         "image/jpg",
         "image/svg+xml",
         "image/gif",
+        "image/webp",
       ].includes(file.type),
     { message: "Invalid image file type" }
   )
