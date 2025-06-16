@@ -75,6 +75,7 @@ export default function MyClan() {
           <ClanJoinRequests
             clanId={clanData.id}
             refetchClanData={refetchClanData}
+            isAtCapacity={clanData.members.length >= clanData.maxMembers}
           />
         </div>
       )}
