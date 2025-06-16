@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import { useAccount, useBalance, useSwitchChain } from "wagmi";
 import { useQuery } from "@tanstack/react-query";
 import { getWalletBalance } from "@/lib/lifi";
@@ -196,6 +196,11 @@ export default function MintCollectibleModal({
     refetchUser,
   });
 
+  // Use ref to track previous calldata and price to prevent unnecessary resets
+  const prevResetDataRef = useRef<{ calldata: string; price: number } | null>(
+    null
+  );
+
   // needed for Step 5. Construct mint tx calldata once the backend signature is ready
   useEffect(() => {
     if (!backendSignature || !pinataMetadataCID || !address) return;
@@ -208,11 +213,19 @@ export default function MintCollectibleModal({
     });
     setTxCalldata(newTxCalldata);
 
-    // Reset payment with new calldata and price
-    resetPayment({
-      toUnits: selectedPrice.toString(),
-      toCallData: newTxCalldata as `0x${string}`,
-    });
+    // Only reset payment if calldata or price actually changed
+    const currentData = { calldata: newTxCalldata, price: selectedPrice };
+    if (
+      !prevResetDataRef.current ||
+      prevResetDataRef.current.calldata !== currentData.calldata ||
+      prevResetDataRef.current.price !== currentData.price
+    ) {
+      resetPayment({
+        toUnits: selectedPrice.toString(),
+        toCallData: newTxCalldata as `0x${string}`,
+      });
+      prevResetDataRef.current = currentData;
+    }
   }, [
     address,
     state.user.fid,
