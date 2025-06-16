@@ -120,27 +120,18 @@ export default function ClanDetailModal({
         <div className="space-y-4">
           {/* Clan Header with Icon and Name */}
           <div className="flex items-center gap-4">
-            <ClanImage
-              imageUrl={clan.imageUrl}
-              clanName={clan.name}
-            />
+            <ClanImage imageUrl={clan.imageUrl} clanName={clan.name} />
             <div className="flex flex-col">
               <h3 className="text-white font-bold text-lg">{clan.name}</h3>
               <div className="flex items-center text-xs text-white/70">
                 {clan.isPublic ? (
                   <>
-                    <Unlock
-                      size={14}
-                      className="mr-1"
-                    />
+                    <Unlock size={14} className="mr-1" />
                     <span>Public Feud</span>
                   </>
                 ) : (
                   <>
-                    <Lock
-                      size={14}
-                      className="mr-1"
-                    />
+                    <Lock size={14} className="mr-1" />
                     <span>Private Feud</span>
                   </>
                 )}
@@ -160,10 +151,7 @@ export default function ClanDetailModal({
           {/* Clan Stats */}
           <div className="grid grid-cols-3 gap-2">
             <div className="bg-[#6D4C2C]/80 p-3 rounded-lg flex flex-col items-center justify-center">
-              <Trophy
-                size={16}
-                className="text-[#FFB938] mb-1"
-              />
+              <Trophy size={16} className="text-[#FFB938] mb-1" />
               <span className="text-xs font-bold text-[#FFB938]">
                 LVL {clan.level}
               </span>
@@ -172,20 +160,14 @@ export default function ClanDetailModal({
               </span>
             </div>
             <div className="bg-[#6D4C2C]/80 p-3 rounded-lg flex flex-col items-center justify-center">
-              <Users
-                size={16}
-                className="text-white/80 mb-1"
-              />
+              <Users size={16} className="text-white/80 mb-1" />
               <span className="text-xs font-medium text-white/90">
                 {clan.memberCount || 0}/{clan.maxMembers || 20}
               </span>
               <span className="text-[10px] text-white/70">members</span>
             </div>
             <div className="bg-[#6D4C2C]/80 p-3 rounded-lg flex flex-col items-center justify-center">
-              <Shield
-                size={16}
-                className="text-white/80 mb-1"
-              />
+              <Shield size={16} className="text-white/80 mb-1" />
               <span className="text-xs font-medium text-white/90">
                 {clan.requiredLevel ? `Lvl ${clan.requiredLevel}` : "Lvl 1"}
               </span>

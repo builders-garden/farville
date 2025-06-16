@@ -89,6 +89,11 @@ export async function POST(
       return NextResponse.json({ error: "Clan not found" }, { status: 404 });
     }
 
+    // Check if the clan is at capacity
+    if (clan.members.length >= clan.maxMembers && action === "accept") {
+      return NextResponse.json({ error: "Clan is full" }, { status: 403 });
+    }
+
     // Make sure the user is a leader or officer
     const userMembership = clan.members?.find(
       (member) => member.fid === Number(fid)
