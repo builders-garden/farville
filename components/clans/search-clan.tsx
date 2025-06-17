@@ -179,7 +179,7 @@ export const SearchClan = ({
                     </div>
 
                     {/* Row 2: Image on left, stats on right */}
-                    <div className="flex">
+                    <div className="flex gap-3">
                       {/* Left - Clan Image */}
                       <ClanImage
                         imageUrl={clan.imageUrl}
