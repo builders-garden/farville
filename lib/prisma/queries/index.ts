@@ -27,5 +27,7 @@ export * from "./clan-membership";
 export * from "./clan-join-request";
 export * from "./clan-join-request-utils";
 export * from "./clan-request";
+export * from "./clan-has-quest";
+// export * from "./clan-quest";
 
 export * from "./game";

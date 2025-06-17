@@ -12,6 +12,7 @@ import { FloatingShareButton } from "../FloatingShareButton";
 import { clanFlexCardComposeCastUrl } from "@/lib/utils";
 import sdk from "@farcaster/frame-sdk";
 import { ClanQuests } from "./clan-quests";
+import { useClanQuests } from "@/hooks/clan/use-clan-quests";
 
 export default function MyClan() {
   const { state } = useGame();
@@ -34,6 +35,11 @@ export default function MyClan() {
     canManageRequests ? state.clan?.clanId : undefined
   );
 
+  const { quests: clanQuests } = useClanQuests(
+    state.clan?.clanId,
+    "incomplete"
+  );
+
   const membersMap = Object.fromEntries(
     clanData?.members?.map((m) => [m.fid, m.user]) ?? []
   );
@@ -48,6 +54,8 @@ export default function MyClan() {
     );
     await sdk.actions.openUrl(castUrl);
   };
+
+  console.log("clan quests", clanQuests);
 
   return (
     <div className="flex flex-col items-center justify-center w-full pb-8 gap-2">
@@ -69,7 +77,9 @@ export default function MyClan() {
         />
       )}
 
-      {activeTab === "quests" && !isLoading && clanData && <ClanQuests />}
+      {activeTab === "quests" && !isLoading && clanData && (
+        <ClanQuests quests={clanQuests} />
+      )}
 
       {activeTab === "newcomers" && !isLoading && clanData && (
         <div className="w-full max-w-2xl">
