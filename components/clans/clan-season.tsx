@@ -69,11 +69,7 @@ export function ClanSeason() {
     }
   };
 
-  const getMedalColor = (position: number, isUserClan = false) => {
-    if (isUserClan) {
-      return "from-[#FFB938]/20 to-[#F2A311]/20 border-[#FFB938]/70";
-    }
-
+  const getMedalColor = (position: number) => {
     switch (position) {
       case 1:
         return "from-yellow-400/20 to-yellow-600/20 border-yellow-400/50";
@@ -147,10 +143,16 @@ export function ClanSeason() {
           </motion.div>
 
           {/* User's Clan (if exists and not in top 20) */}
-          {userClan && userClan.rank > 20 && (
+          {userClan && userClan.rank > 3 && (
             <div className="w-full max-w-2xl mb-2">
-              <Card className="border-2 bg-gradient-to-r from-[#FFB938]/20 to-[#F2A311]/20 border-[#FFB938]/70">
+              <Card className="border-2 bg-gradient-to-r from-[#5B4120]/90 to-[#6B5230]/90 border-[#8B5E3C] relative overflow-hidden">
                 <CardContent className="flex items-center justify-between p-2">
+                  {/* Shimmer effect for user clan */}
+                  <div
+                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent shimmer-effect pointer-events-none"
+                    style={{ transform: "translateX(-100%)" }}
+                  />
+
                   {/* Left side: Clan Info */}
                   <div className="flex items-center gap-2 flex-1 min-w-0">
                     {/* Clan Image */}
@@ -170,7 +172,7 @@ export function ClanSeason() {
                           {userClan.name}
                         </h3>
                         {/* Position */}
-                        <div className="bg-[#FFB938] text-[#7E4E31] font-bold text-xs px-2 py-0.5 rounded min-w-12 text-center">
+                        <div className="bg-white/20 text-white font-bold text-xs px-2 py-0.5 rounded min-w-12 text-center">
                           #{userClan.rank}
                         </div>
                       </div>
@@ -202,16 +204,14 @@ export function ClanSeason() {
 
           {/* Season Leaderboard Label */}
           <div className="w-full max-w-2xl">
-            <p className="text-xs text-white/80 text-center">
-              Season Leaderboard
-            </p>
+            <p className="text-xs text-white/80 text-center">Top 20 Feuds</p>
           </div>
 
           {/* Leaderboard */}
           <div className="w-full max-w-2xl space-y-1 xs:space-y-2 pb-4">
             {clans.map((clan, index) => {
               const position = index + 1;
-              const isUserClan = userClan && clan.id === userClan.id;
+              const isUserClan = clan.id === userClanId;
               const isTopThree = position <= 3;
 
               return (
@@ -223,15 +223,23 @@ export function ClanSeason() {
                 >
                   <Card
                     className={`border-2 bg-gradient-to-r ${getMedalColor(
-                      position,
-                      isUserClan
+                      position
                     )} 
                       hover:scale-[1.02] transition-all duration-200 cursor-pointer
-                      ${isTopThree ? "shadow-lg" : ""}
-                      ${isUserClan ? "ring-2 ring-[#FFB938]/50" : ""}`}
+                      ${isTopThree ? "shadow-lg" : ""} ${
+                      isUserClan ? "relative overflow-hidden" : ""
+                    }`}
                     onClick={() => setSelectedClan(clan)}
                   >
                     <CardContent className="flex items-center justify-between p-2">
+                      {/* Shimmer effect for user clan */}
+                      {isUserClan && (
+                        <div
+                          className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent shimmer-effect pointer-events-none"
+                          style={{ transform: "translateX(-100%)" }}
+                        />
+                      )}
+
                       {/* Left side: Clan Info */}
                       <div className="flex items-center gap-2 flex-1 min-w-0">
                         {/* Clan Image with Medal */}
