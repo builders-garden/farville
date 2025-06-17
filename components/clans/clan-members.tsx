@@ -37,12 +37,16 @@ export default function ClanMembers({
         {members.map((member, index) => (
           <Card
             key={member.fid}
-            className={`border-none cursor-pointer ${
+            className={`cursor-pointer ${
               member.role === "leader"
                 ? "bg-gradient-to-r from-[#8B6B43]/90 to-[#9B7B53]/90"
                 : member.role === "officer"
                 ? "bg-gradient-to-r from-[#7A6B43]/90 to-[#8A7B53]/90"
                 : "bg-[#5B4120]/90"
+            } ${
+              member.fid === state.user?.fid
+                ? "border-2 border-[#FFB938]"
+                : "border-none"
             }`}
             onClick={() => setSelectedMember(member)}
           >
