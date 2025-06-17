@@ -34,7 +34,7 @@ export default function MainClanTabs({
     },
     {
       id: "leaderboard",
-      label: "Season",
+      label: "Top 20",
       icon: "👑", // Replace with your actual icon component
     },
   ];
@@ -55,7 +55,7 @@ export default function MainClanTabs({
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           onClick={() => setActiveTab(tab.id)}
-          className={`px-2 xs:px-3 py-1 xs:py-1 rounded-lg flex items-center justify-center gap-1 xs:gap-1.5 transition-all duration-200
+          className={`px-2 rounded-lg flex items-center justify-center gap-1 xs:gap-1.5 transition-all duration-200
                         ${
                           activeTab === tab.id
                             ? "bg-[#6d4c2c] text-white scale-105 shadow-lg"
@@ -74,13 +74,11 @@ export default function MainClanTabs({
                 repeat: Infinity,
                 repeatDelay: 2,
               }}
-              className="mb-1"
+              className="mb-1 mr-1"
             >
               {tab.icon}
             </motion.span>
-            <span className="text-[10px] xs:text-xs font-medium">
-              {tab.label}
-            </span>
+            <span className="text-[9px] font-medium">{tab.label}</span>
             {tab.count !== undefined && tab.count > 0 && (
               <span className="inline-flex items-center justify-center bg-amber-500 text-[9px] rounded-full w-4 h-4 text-white">
                 {tab.count > 9 ? "9+" : tab.count}

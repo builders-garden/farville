@@ -172,7 +172,7 @@ export function ClanSeason() {
                           {userClan.name}
                         </h3>
                         {/* Position */}
-                        <div className="bg-white/20 text-white font-bold text-xs px-2 py-0.5 rounded min-w-12 text-center">
+                        <div className="bg-yellow-500/30 text-white font-bold text-xs px-2 py-0.5 rounded min-w-12 text-center">
                           #{userClan.rank}
                         </div>
                       </div>
