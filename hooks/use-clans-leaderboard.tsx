@@ -33,27 +33,37 @@ export interface ClanLeaderboardEntry {
   };
 }
 
+export interface ClanLeaderboardResponse {
+  clans: ClanLeaderboardEntry[];
+  userClan?: ClanLeaderboardEntry & {
+    rank: number;
+  };
+}
+
 export const useClansLeaderboard = (
   limit = 50,
   options?: {
     includeMembers?: boolean;
     includeLeader?: boolean;
+    userClanId?: string;
   }
 ) => {
   const queryParams = new URLSearchParams();
   queryParams.append("limit", limit.toString());
   if (options?.includeMembers) queryParams.append("includeMembers", "true");
   if (options?.includeLeader) queryParams.append("includeLeader", "true");
+  if (options?.userClanId) queryParams.append("userClanId", options.userClanId);
 
   const url = `/api/leaderboard/clans?${queryParams.toString()}`;
 
-  return useApiQuery<ClanLeaderboardEntry[]>({
+  return useApiQuery<ClanLeaderboardResponse>({
     url,
     queryKey: [
       "clans-leaderboard",
       limit,
       options?.includeMembers,
       options?.includeLeader,
+      options?.userClanId,
     ],
     isProtected: true,
     staleTime: 60 * 1000, // 1 minute

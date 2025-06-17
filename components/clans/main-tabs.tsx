@@ -35,7 +35,7 @@ export default function MainClanTabs({
     {
       id: "leaderboard",
       label: "Season",
-      icon: "📊", // Replace with your actual icon component
+      icon: "👑", // Replace with your actual icon component
     },
   ];
 
