@@ -9,14 +9,14 @@ import { ClanRole } from "@/lib/types/game";
 import { ClanDetail } from "./clan-detail";
 import ClanRequests from "./clan-requests";
 import { FloatingShareButton } from "../FloatingShareButton";
-import { clanFlexCardComposeCastUrl } from "@/lib/utils";
-import sdk from "@farcaster/frame-sdk";
 import { ClanQuests } from "./clan-quests";
+import ClanShareModal from "./clan-share-modal";
 
 export default function MyClan() {
   const { state } = useGame();
 
   const [activeTab, setActiveTab] = useState<Tab>("members");
+  const [showShareModal, setShowShareModal] = useState(false);
 
   const {
     clanData,
@@ -40,18 +40,15 @@ export default function MyClan() {
 
   const handleShareClan = async () => {
     if (!clanData) return;
-
-    const { castUrl } = clanFlexCardComposeCastUrl(
-      state.user.fid,
-      clanData.id,
-      clanData.name
-    );
-    await sdk.actions.openUrl(castUrl);
+    setShowShareModal(true);
   };
 
   return (
     <div className="flex flex-col items-center justify-center w-full pb-8 gap-2">
-      <ClanDetail clanData={clanData} refetchClan={refetchClanData} />
+      <ClanDetail
+        clanData={clanData}
+        refetchClan={refetchClanData}
+      />
 
       <MyClanTabs
         activeTab={activeTab}
@@ -95,6 +92,16 @@ export default function MyClan() {
       {/* Floating Share Button */}
       {clanData && activeTab !== "requests" && (
         <FloatingShareButton onClick={handleShareClan} />
+      )}
+
+      {/* Clan Share Modal */}
+      {showShareModal && clanData && (
+        <ClanShareModal
+          clanId={clanData.id}
+          clanName={clanData.name}
+          userFid={state.user.fid}
+          onClose={() => setShowShareModal(false)}
+        />
       )}
     </div>
   );

@@ -47,9 +47,9 @@ export const POST = async (req: NextRequest) => {
         token: farcasterToken,
       });
       isValidSignature = !!payload;
-      fid = payload.sub;
+      fid = Number(payload.sub);
       walletAddress = payload.address as `0x${string}`;
-      expirationTime = payload.exp;
+      expirationTime = payload.exp ?? Date.now() + 7 * 24 * 60 * 60 * 1000;
     } catch (e) {
       if (e instanceof Errors.InvalidTokenError) {
         console.error("Invalid token", e);

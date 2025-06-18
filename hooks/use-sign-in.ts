@@ -32,7 +32,7 @@ export const useSignIn = (isInMaintenance: boolean) => {
           throw new Error(
             "No FID found. Please make sure you're logged into Warpcast."
           );
-        const { token: farcasterToken } = await sdk.experimental.quickAuth();
+        const { token: farcasterToken } = await sdk.quickAuth.getToken();
         if (!farcasterToken) throw new Error("Sign in failed");
         token = farcasterToken;
       }
