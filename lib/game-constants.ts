@@ -1069,6 +1069,8 @@ export const ADMIN_FIDS = [
   ...CREATOR_FIDS,
   189636, // bianco
   16286, // frank
+  592677, // BG
+  1044451, // BETTTR 🙏
 ];
 
 export const DAILY_QUESTS_NUMBER = 3;
