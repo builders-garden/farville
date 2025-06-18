@@ -13,7 +13,13 @@ export async function GET(request: NextRequest) {
   }
 
   if (userIsNotAdminAndIsNotProduction(Number(fid))) {
-    return NextResponse.json({ message: "Unauthorized" }, { status: 403 });
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+  }
+
+  // if the fid is provided in the query params, check if it matches the fid in the header
+  const contextFid = request.nextUrl.searchParams.get("fid");
+  if (contextFid && contextFid !== fid) {
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
 
   const userModes = await getUserModes(Number(fid));
