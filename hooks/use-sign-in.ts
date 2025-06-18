@@ -11,7 +11,10 @@ export const useSignIn = (isInMaintenance: boolean) => {
   const [isSignedIn, setIsSignedIn] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { error: authCheckError } = useAuthCheck(isInMaintenance);
+  const { error: authCheckError } = useAuthCheck(
+    isInMaintenance,
+    context?.user?.fid?.toString()
+  );
 
   const signIn = useCallback(async () => {
     try {
