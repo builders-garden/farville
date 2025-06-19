@@ -285,7 +285,7 @@ export const ClanChat: React.FC<ClanChatProps> = ({ clanId }) => {
               onChange={(e) => setNewMessage(e.target.value)}
               placeholder="Type a message..."
               maxLength={500}
-              className="w-full bg-white/10 border border-white/20 rounded-full px-4 py-2 text-white text-xs placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-transparent"
+              className="w-full bg-white/10 border border-white/20 rounded-full px-4 py-2 text-white text-base placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-transparent"
               disabled={isSending}
             />
             <Button
