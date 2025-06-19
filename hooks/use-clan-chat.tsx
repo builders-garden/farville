@@ -12,6 +12,7 @@ export const useClanChat = (clanId?: string) => {
   const queryClient = useQueryClient();
   const [messages, setMessages] = useState<ClanChatMessageWithUser[]>([]);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [hasMoreMessages, setHasMoreMessages] = useState(true);
 
   // Send message mutation
   const sendMessageMutation = useApiMutation<
@@ -49,7 +50,8 @@ export const useClanChat = (clanId?: string) => {
 
   // Load more messages
   const loadMoreMessages = useCallback(async () => {
-    if (!clanId || isLoadingMore || messages.length === 0) return;
+    if (!clanId || isLoadingMore || messages.length === 0 || !hasMoreMessages)
+      return;
 
     setIsLoadingMore(true);
     try {
@@ -66,14 +68,23 @@ export const useClanChat = (clanId?: string) => {
       );
       if (response.ok) {
         const olderMessages: ClanChatMessageWithUser[] = await response.json();
-        setMessages((prev) => [...olderMessages, ...prev]);
+        if (olderMessages.length === 0) {
+          // No more messages available
+          setHasMoreMessages(false);
+        } else {
+          setMessages((prev) => [...olderMessages, ...prev]);
+          // If we got fewer messages than requested, we've reached the end
+          if (olderMessages.length < 20) {
+            setHasMoreMessages(false);
+          }
+        }
       }
     } catch (error) {
       console.error("Failed to load more messages:", error);
     } finally {
       setIsLoadingMore(false);
     }
-  }, [clanId, messages, isLoadingMore]);
+  }, [clanId, messages, isLoadingMore, hasMoreMessages]);
 
   // Socket event handlers
   useEffect(() => {
@@ -142,6 +153,8 @@ export const useClanChat = (clanId?: string) => {
   useEffect(() => {
     if (initialMessages) {
       setMessages(initialMessages.reverse()); // Reverse to show oldest first
+      // Reset hasMoreMessages state - if we got fewer than expected, there might not be more
+      setHasMoreMessages(initialMessages.length >= 20); // Assuming 20 is the default limit
     }
   }, [initialMessages]);
 
@@ -208,6 +221,7 @@ export const useClanChat = (clanId?: string) => {
     messages,
     isLoading,
     isLoadingMore,
+    hasMoreMessages,
     sendMessage,
     deleteMessage,
     loadMoreMessages,

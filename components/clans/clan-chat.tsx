@@ -172,6 +172,8 @@ export const ClanChat: React.FC<ClanChatProps> = ({ clanId }) => {
   const {
     messages,
     isLoading,
+    isLoadingMore,
+    hasMoreMessages,
     sendMessage,
     deleteMessage,
     loadMoreMessages,
@@ -185,6 +187,22 @@ export const ClanChat: React.FC<ClanChatProps> = ({ clanId }) => {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  // Auto-load more messages when scrolled to top
+  useEffect(() => {
+    const container = messagesContainerRef.current;
+    if (!container) return;
+
+    const handleScroll = () => {
+      // Check if scrolled to top (with small threshold)
+      if (container.scrollTop <= 10 && hasMoreMessages && !isLoadingMore) {
+        loadMoreMessages();
+      }
+    };
+
+    container.addEventListener('scroll', handleScroll);
+    return () => container.removeEventListener('scroll', handleScroll);
+  }, [hasMoreMessages, isLoadingMore, loadMoreMessages]);
 
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
@@ -240,17 +258,20 @@ export const ClanChat: React.FC<ClanChatProps> = ({ clanId }) => {
             </div>
           ) : (
             <>
-              {/* Load More Messages Button */}
-              <div className="p-2 text-center">
-                <Button
-                  onClick={loadMoreMessages}
-                  variant="ghost"
-                  size="sm"
-                  className="text-white/70 text-xs hover:text-white hover:bg-white/10 transition-colors"
-                >
-                  Load older messages
-                </Button>
-              </div>
+              {/* Load More Messages Button - only show if there are more messages */}
+              {hasMoreMessages && (
+                <div className="p-2 text-center">
+                  <Button
+                    onClick={loadMoreMessages}
+                    variant="ghost"
+                    size="sm"
+                    className="text-white/70 text-xs hover:text-white hover:bg-white/10 transition-colors"
+                    disabled={isLoadingMore}
+                  >
+                    {isLoadingMore ? "Loading..." : "Load older messages"}
+                  </Button>
+                </div>
+              )}
 
               {/* Messages */}
               {messages.map((message) => (
