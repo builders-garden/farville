@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import Image from "next/image";
 
-export type Tab = "members" | "quests" | "requests" | "newcomers";
+export type Tab = "members" | "quests" | "requests" | "newcomers" | "chat";
 
 interface MyClanTabsProps {
   activeTab: Tab;
@@ -26,6 +26,11 @@ export default function MyClanTabs({
       id: "members",
       label: "Members",
       icon: "/images/icons/farmer.png",
+    },
+    {
+      id: "chat",
+      label: "Chat",
+      icon: "/images/icons/clans.png",
     },
     {
       id: "quests",

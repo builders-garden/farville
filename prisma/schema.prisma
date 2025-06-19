@@ -31,6 +31,7 @@ model Item {
   requiredLevel      Int
   createdAt          DateTime            @default(now()) @db.Timestamptz(6)
   slug               String              @unique
+  clan_quest         clan_quest[]
   clanRequests       ClanRequest[]
   quests             Quest[]
   requests           Request[]
@@ -124,6 +125,7 @@ model User {
   clan_join_request      ClanJoinRequest[]
   clan                   ClanMembership?
   clanRequests           ClanRequest[]
+  clan_user_statistic    clan_user_statistic[]
   referrals              Referral[]
   requests               Request[]
   streaks                Streak[]
@@ -139,6 +141,7 @@ model User {
   leaderboardEntries     UserLeaderboardEntry[]
   notifications          UserNotification[]
   statistics             UserStatistic[]
+  ClanChatMessage        ClanChatMessage[]
 
   @@map("user")
 }
@@ -348,24 +351,27 @@ model CommunityBoosterPoints {
 }
 
 model Clan {
-  id            String            @id @default(dbgenerated("gen_random_uuid()"))
-  name          String            @unique
-  motto         String
-  createdBy     Int
-  leaderFid     Int
-  imageUrl      String?
-  isPublic      Boolean           @default(false)
-  maxMembers    Int               @default(20)
-  xp            Int               @default(0)
-  txHash        String?
-  createdAt     DateTime          @default(now()) @db.Timestamptz(6)
-  updatedAt     DateTime          @default(now()) @db.Timestamptz(6)
-  requiredLevel Int?
-  creator       User              @relation("ClanCreator", fields: [createdBy], references: [fid], onDelete: NoAction, onUpdate: NoAction, map: "clan_created_by_fkey")
-  leader        User              @relation("ClanLeader", fields: [leaderFid], references: [fid], onDelete: NoAction, onUpdate: NoAction, map: "clan_leader_fid_fkey")
-  joinRequests  ClanJoinRequest[]
-  members       ClanMembership[]
-  requests      ClanRequest[]
+  id                  String                @id @default(dbgenerated("gen_random_uuid()"))
+  name                String                @unique
+  motto               String
+  createdBy           Int
+  leaderFid           Int
+  imageUrl            String?
+  isPublic            Boolean               @default(false)
+  maxMembers          Int                   @default(20)
+  xp                  Int                   @default(0)
+  txHash              String?
+  createdAt           DateTime              @default(now()) @db.Timestamptz(6)
+  updatedAt           DateTime              @default(now()) @db.Timestamptz(6)
+  requiredLevel       Int?
+  creator             User                  @relation("ClanCreator", fields: [createdBy], references: [fid], onDelete: NoAction, onUpdate: NoAction, map: "clan_created_by_fkey")
+  leader              User                  @relation("ClanLeader", fields: [leaderFid], references: [fid], onDelete: NoAction, onUpdate: NoAction, map: "clan_leader_fid_fkey")
+  clan_has_quest      clan_has_quest[]
+  joinRequests        ClanJoinRequest[]
+  members             ClanMembership[]
+  requests            ClanRequest[]
+  clan_user_statistic clan_user_statistic[]
+  chatMessages        ClanChatMessage[]
 
   @@map("clan")
 }
@@ -410,4 +416,62 @@ model ClanRequest {
   request   Request? @relation(fields: [requestId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "clan_request_requestid_fkey")
 
   @@map("clan_request")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model clan_has_quest {
+  clanId      String
+  questId     String
+  progress    Int        @default(0)
+  status      String     @default("incomplete")
+  completedAt DateTime?  @db.Timestamptz(6)
+  createdAt   DateTime   @default(now()) @db.Timestamptz(6)
+  clan        Clan       @relation(fields: [clanId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "clan_has_quest_clanid_fkey")
+  clan_quest  clan_quest @relation(fields: [questId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "clan_has_quest_questid_fkey")
+
+  @@id([clanId, questId])
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model clan_quest {
+  id             String           @id @default(dbgenerated("gen_random_uuid()"))
+  itemId         Int
+  amount         Int              @default(1)
+  xp             Int
+  createdAt      DateTime         @default(now()) @db.Timestamptz(6)
+  category       String
+  endAt          DateTime?        @db.Timestamptz(6)
+  startAt        DateTime         @db.Timestamptz(6)
+  clan_has_quest clan_has_quest[]
+  item           Item             @relation(fields: [itemId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "clan_quest_itemid_fkey")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model clan_user_statistic {
+  fid                           Int
+  clanId                        String
+  generatedXp                   Int
+  donations                     Int      @default(0)
+  donatedCropsToOtherPlayers    Int      @default(0)
+  donatedCropsToQuests          Int      @default(0)
+  lastActivity                  DateTime @default(now()) @db.Timestamptz(6)
+  createdAt                     DateTime @default(now()) @db.Timestamptz(6)
+  receivedCropsFromOtherPlayers Int      @default(0)
+  clan                          Clan     @relation(fields: [clanId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  user                          User     @relation(fields: [fid], references: [fid], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([fid, clanId])
+}
+
+model ClanChatMessage {
+  id        String   @id @default(dbgenerated("gen_random_uuid()"))
+  clanId    String
+  fid       Int
+  message   String
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  clan      Clan     @relation(fields: [clanId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "clan_chat_message_clanid_fkey")
+  user      User     @relation(fields: [fid], references: [fid], onDelete: Cascade, onUpdate: NoAction, map: "clan_chat_message_fid_fkey")
+
+  @@index([clanId, createdAt], map: "idx_clan_chat_message_clan_time")
+  @@map("clan_chat_message")
 }
