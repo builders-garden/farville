@@ -148,21 +148,6 @@ const Message: React.FC<MessageProps> = ({
           </div>
         </div>
       </div>
-
-      {/* Avatar for own messages (right side) - aligned with bubble corner */}
-      {isOwnMessage && (
-        <div className="flex-shrink-0 self-end mb-1">
-          <LeaderboardUserAvatar
-            pfpUrl={
-              message.user.selectedAvatarUrl || message.user.avatarUrl || ""
-            }
-            username={message.user.username}
-            isOgUser={message.user.mintedOG}
-            size={{ width: 8, height: 8 }}
-            borderSize={1}
-          />
-        </div>
-      )}
     </div>
   );
 };
@@ -200,8 +185,8 @@ export const ClanChat: React.FC<ClanChatProps> = ({ clanId }) => {
       }
     };
 
-    container.addEventListener('scroll', handleScroll);
-    return () => container.removeEventListener('scroll', handleScroll);
+    container.addEventListener("scroll", handleScroll);
+    return () => container.removeEventListener("scroll", handleScroll);
   }, [hasMoreMessages, isLoadingMore, loadMoreMessages]);
 
   const handleSendMessage = (e: React.FormEvent) => {
