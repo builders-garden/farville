@@ -95,7 +95,7 @@ export default function MyClan() {
       )}
 
       {/* Floating Share Button */}
-      {clanData && activeTab !== "requests" && (
+      {clanData && activeTab !== "requests" && activeTab !== "chat" && (
         <FloatingShareButton onClick={handleShareClan} />
       )}
 
