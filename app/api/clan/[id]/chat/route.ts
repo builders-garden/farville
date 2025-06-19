@@ -1,10 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import {
-  createClanChatMessage,
-  getClanChatMessages,
-  deleteClanChatMessage,
-} from "@/lib/prisma/queries";
+import { getClanChatMessages } from "@/lib/prisma/queries";
 import { getClanByFid } from "@/lib/prisma/queries/clan-membership";
+import { env } from "@/lib/env";
+import axios from "axios";
 import z from "zod";
 
 const sendMessageSchema = z.object({
@@ -37,15 +35,9 @@ export async function GET(
     const { id: clanId } = await params;
     const { searchParams } = new URL(req.url);
 
-    console.log("GET /api/clan/[id]/chat - clanId:", clanId);
-    console.log("Query params:", Object.fromEntries(searchParams.entries()));
-
     const fid = req.headers.get("x-user-fid");
 
-    console.log("Fid from headers:", fid);
-
     if (!fid) {
-      console.log("No fid in headers");
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -111,8 +103,6 @@ export async function POST(
     const { id: clanId } = await params;
     const fid = req.headers.get("x-user-fid");
 
-    console.log("fid:", fid);
-
     if (!fid) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -138,17 +128,32 @@ export async function POST(
 
     const { message } = parseResult.data;
 
-    // Create the chat message
-    const chatMessage = await createClanChatMessage(
-      clanId,
-      parseInt(fid),
-      message
-    );
+    // Call the backend service to create the message and emit socket events
+    try {
+      const response = await axios.post(
+        `${env.FARVILLE_SERVICE_URL}/api/clan/${clanId}/chat`,
+        { message },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            "x-fid": fid,
+            "x-api-secret": env.FARVILLE_SERVICE_API_KEY,
+          },
+        }
+      );
 
-    // TODO: Emit the message to all clan members via socket when server-side socket is set up
-    // This would typically be done through a message queue or server-side socket.io instance
-
-    return NextResponse.json(chatMessage);
+      return NextResponse.json(response.data);
+    } catch (axiosError) {
+      if (axios.isAxiosError(axiosError)) {
+        const errorData = axiosError.response?.data || {};
+        console.error("Backend service error:", errorData);
+        return NextResponse.json(
+          { error: errorData.error || "Failed to send message" },
+          { status: axiosError.response?.status || 500 }
+        );
+      }
+      throw axiosError;
+    }
   } catch (error) {
     console.error("Error sending clan chat message:", error);
     return NextResponse.json(
@@ -192,9 +197,31 @@ export async function DELETE(
 
     const { messageId } = parseResult.data;
 
-    await deleteClanChatMessage(messageId, parseInt(fid));
+    // Call the backend service to delete the message and emit socket events
+    try {
+      await axios.delete(
+        `${env.FARVILLE_SERVICE_URL}/api/clan/${clanId}/chat/${messageId}`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            "x-fid": fid,
+            "x-api-secret": env.FARVILLE_SERVICE_API_KEY,
+          },
+        }
+      );
 
-    return NextResponse.json({ success: true });
+      return NextResponse.json({ success: true });
+    } catch (axiosError) {
+      if (axios.isAxiosError(axiosError)) {
+        const errorData = axiosError.response?.data || {};
+        console.error("Backend service error:", errorData);
+        return NextResponse.json(
+          { error: errorData.error || "Failed to delete message" },
+          { status: axiosError.response?.status || 500 }
+        );
+      }
+      throw axiosError;
+    }
   } catch (error) {
     console.error("Error deleting clan chat message:", error);
     return NextResponse.json(

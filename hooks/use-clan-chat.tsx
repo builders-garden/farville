@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useSocket } from "./use-socket";
 import { useApiQuery } from "./use-api-query";
 import { useApiMutation } from "./use-api-mutation";
@@ -8,10 +9,33 @@ import { useGame } from "@/context/GameContext";
 export const useClanChat = (clanId?: string) => {
   const { socket } = useSocket();
   const { state } = useGame();
+  const queryClient = useQueryClient();
   const [messages, setMessages] = useState<ClanChatMessageWithUser[]>([]);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
 
-  // Fetch initial messages
+  // Send message mutation
+  const sendMessageMutation = useApiMutation<
+    ClanChatMessageWithUser,
+    { message: string }
+  >({
+    url: `/api/clan/${clanId}/chat`,
+    method: "POST",
+    isProtected: true,
+    body: (variables) => ({ message: variables.message }),
+  });
+
+  // Delete message mutation
+  const deleteMessageMutation = useApiMutation<
+    { success: boolean },
+    { messageId: string }
+  >({
+    url: `/api/clan/${clanId}/chat`,
+    method: "DELETE",
+    isProtected: true,
+    body: (variables) => ({ messageId: variables.messageId }),
+  });
+
+  // Fetch initial messages (HTTP request for history)
   const {
     data: initialMessages,
     isLoading,
@@ -23,26 +47,6 @@ export const useClanChat = (clanId?: string) => {
     enabled: !!clanId,
   });
 
-  // Send message mutation
-  const sendMessageMutation = useApiMutation<
-    ClanChatMessageWithUser,
-    { message: string }
-  >({
-    url: `/api/clan/${clanId}/chat`,
-    method: "POST",
-    body: (variables) => ({ message: variables.message }),
-  });
-
-  // Delete message mutation
-  const deleteMessageMutation = useApiMutation<
-    { success: boolean },
-    { messageId: string }
-  >({
-    url: `/api/clan/${clanId}/chat`,
-    method: "DELETE",
-    body: (variables) => ({ messageId: variables.messageId }),
-  });
-
   // Load more messages
   const loadMoreMessages = useCallback(async () => {
     if (!clanId || isLoadingMore || messages.length === 0) return;
@@ -51,7 +55,14 @@ export const useClanChat = (clanId?: string) => {
     try {
       const oldestMessage = messages[0];
       const response = await fetch(
-        `/api/clan/${clanId}/chat?limit=20&cursor=${oldestMessage.createdAt}`
+        `/api/clan/${clanId}/chat?limit=20&cursor=${oldestMessage.createdAt}`,
+        {
+          method: "GET",
+          credentials: "include", // For authentication consistency
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
       );
       if (response.ok) {
         const olderMessages: ClanChatMessageWithUser[] = await response.json();
@@ -82,6 +93,7 @@ export const useClanChat = (clanId?: string) => {
         mintedOG: boolean;
       };
     }) => {
+      console.log("📨 Received clan-chat-message:", data);
       if (data.clanId === clanId) {
         // Convert socket data to ClanChatMessageWithUser format
         const message: ClanChatMessageWithUser = {
@@ -97,20 +109,34 @@ export const useClanChat = (clanId?: string) => {
         setMessages((prev) => {
           const messageExists = prev.some((msg) => msg.id === message.id);
           if (messageExists) return prev;
+          console.log("✅ Adding new message to local state:", message);
           return [...prev, message];
         });
       }
     };
 
+    const handleMessageDeleted = (data: { messageId: string }) => {
+      setMessages((prev) => prev.filter((msg) => msg.id !== data.messageId));
+    };
+
+    const handleError = (data: { message: string }) => {
+      console.error("Socket error:", data.message);
+    };
+
     // Join clan chat room
+    console.log("🏠 Joining clan chat room:", clanId);
     socket.emit("join-clan-chat", clanId);
     socket.on("clan-chat-message", handleNewMessage);
+    socket.on("clan-chat-message-deleted", handleMessageDeleted);
+    socket.on("error", handleError);
 
     return () => {
       socket.emit("leave-clan-chat", clanId);
       socket.off("clan-chat-message", handleNewMessage);
+      socket.off("clan-chat-message-deleted", handleMessageDeleted);
+      socket.off("error", handleError);
     };
-  }, [socket, clanId]);
+  }, [socket, clanId, state.user?.fid]);
 
   // Initialize messages when data is loaded
   useEffect(() => {
@@ -119,28 +145,27 @@ export const useClanChat = (clanId?: string) => {
     }
   }, [initialMessages]);
 
-  // Send message function
+  // Send message function (using useApiMutation)
   const sendMessage = useCallback(
     (message: string) => {
-      if (!message.trim()) return;
+      if (
+        !message.trim() ||
+        !clanId ||
+        !state.user ||
+        sendMessageMutation.isPending
+      ) {
+        return;
+      }
 
       sendMessageMutation.mutate(
         { message: message.trim() },
         {
-          onSuccess: (newMessage) => {
-            // Add the message immediately from the API response
-            setMessages((prev) => [...prev, newMessage]);
-            // Also refetch to ensure consistency with server state
-            refetch();
-            console.log("SENDING MESSAGE", newMessage, socket, state.user);
-            // Emit the socket message for real-time updates to other users
-            if (socket && state.user) {
-              socket.emit("send-clan-chat-message", {
-                clanId: clanId!,
-                message: message.trim(),
-                fid: state.user.fid,
-              });
-            }
+          onSuccess: () => {
+            // Invalidate and refetch the clan chat query to get the latest messages
+            queryClient.invalidateQueries({
+              queryKey: ["clan-chat", clanId],
+            });
+            // The message will also be received via socket event for real-time updates
           },
           onError: (error) => {
             console.error("Failed to send message:", error);
@@ -148,25 +173,35 @@ export const useClanChat = (clanId?: string) => {
         }
       );
     },
-    [sendMessageMutation, refetch, socket, clanId, state.user]
+    [clanId, state.user, sendMessageMutation, queryClient]
   );
 
-  // Delete message function
+  // Delete message function (using useApiMutation)
   const deleteMessage = useCallback(
     (messageId: string) => {
+      if (!clanId || !state.user) {
+        return;
+      }
+
+      // Optimistically remove the message from local state
+      setMessages((prev) => prev.filter((msg) => msg.id !== messageId));
+
       deleteMessageMutation.mutate(
         { messageId },
         {
           onSuccess: () => {
-            setMessages((prev) => prev.filter((msg) => msg.id !== messageId));
+            // The API route will trigger socket emission to other clan members
           },
           onError: (error) => {
             console.error("Failed to delete message:", error);
+            // Revert optimistic update on error
+            // Note: We'd need to re-fetch to get the correct state, but for now we'll let
+            // the socket event system handle consistency
           },
         }
       );
     },
-    [deleteMessageMutation]
+    [clanId, state.user, deleteMessageMutation]
   );
 
   return {

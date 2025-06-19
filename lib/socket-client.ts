@@ -38,6 +38,8 @@ export type ServerToClientEvents = {
       mintedOG: boolean;
     };
   }) => void;
+  "clan-chat-message-deleted": (data: { messageId: string }) => void;
+  error: (data: { message: string }) => void;
 };
 
 export type ClientToServerEvents = {
@@ -49,11 +51,6 @@ export type ClientToServerEvents = {
   }) => void;
   "join-clan-chat": (clanId: string) => void;
   "leave-clan-chat": (clanId: string) => void;
-  "send-clan-chat-message": (data: {
-    clanId: string;
-    message: string;
-    fid: number;
-  }) => void;
 };
 
 let socket: Socket<ServerToClientEvents, ClientToServerEvents> | null = null;

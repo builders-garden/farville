@@ -122,6 +122,7 @@ model User {
   selectedAvatarUrl      String?
   createdClans           Clan[]                  @relation("ClanCreator")
   leaderClans            Clan[]                  @relation("ClanLeader")
+  ClanChatMessage        ClanChatMessage[]
   clan_join_request      ClanJoinRequest[]
   clan                   ClanMembership?
   clanRequests           ClanRequest[]
@@ -141,7 +142,6 @@ model User {
   leaderboardEntries     UserLeaderboardEntry[]
   notifications          UserNotification[]
   statistics             UserStatistic[]
-  ClanChatMessage        ClanChatMessage[]
 
   @@map("user")
 }
@@ -366,12 +366,12 @@ model Clan {
   requiredLevel       Int?
   creator             User                  @relation("ClanCreator", fields: [createdBy], references: [fid], onDelete: NoAction, onUpdate: NoAction, map: "clan_created_by_fkey")
   leader              User                  @relation("ClanLeader", fields: [leaderFid], references: [fid], onDelete: NoAction, onUpdate: NoAction, map: "clan_leader_fid_fkey")
+  chatMessages        ClanChatMessage[]
   clan_has_quest      clan_has_quest[]
   joinRequests        ClanJoinRequest[]
   members             ClanMembership[]
   requests            ClanRequest[]
   clan_user_statistic clan_user_statistic[]
-  chatMessages        ClanChatMessage[]
 
   @@map("clan")
 }
