@@ -167,7 +167,7 @@ const RequestMessage: React.FC<RequestMessageProps> = ({
                 {requestData ? (
                   <>
                     <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-medium text-white truncate">
+                      <span className="text-[9px] font-medium text-white truncate">
                         {itemData.name}
                       </span>
                       <span className="text-[9px] text-white/80 ml-1">
@@ -189,7 +189,7 @@ const RequestMessage: React.FC<RequestMessageProps> = ({
                     </div>
                   </>
                 ) : (
-                  <span className="text-[11px] text-white/90">
+                  <span className="text-[9px] text-white/90">
                     I need {request.quantity} {itemData.name}. Please help!
                   </span>
                 )}
@@ -321,7 +321,7 @@ const Message: React.FC<MessageProps> = ({
             </div>
           )}
 
-          <p className="text-[11px] break-words leading-relaxed mb-1">
+          <p className="text-[9px] break-words leading-relaxed mb-1">
             {message.message}
           </p>
 
@@ -615,7 +615,7 @@ export const ClanChat: React.FC<ClanChatProps> = ({
             ) : (
               <>
                 {/* Chat Items (Messages and Requests) */}
-                {chatItems.map((item) => {
+                {chatItems.map((item, index) => {
                   if (item.type === "message") {
                     const message = item;
                     return (
@@ -629,9 +629,11 @@ export const ClanChat: React.FC<ClanChatProps> = ({
                     );
                   } else {
                     const request = item;
+                    // Create a more robust unique key for requests
+                    const requestKey = `request-${request.requestId || request.id || `${request.fid}-${request.itemId}-${index}`}`;
                     return (
                       <RequestMessage
-                        key={`request-${request.requestId || request.id}`}
+                        key={requestKey}
                         request={request}
                         viewerFid={state.user?.fid || 0}
                         refetchClanData={refetchClanData}
@@ -660,7 +662,7 @@ export const ClanChat: React.FC<ClanChatProps> = ({
             placeholder="Type..."
             maxLength={500}
             rows={1}
-            className="w-full bg-white/10 border border-white/20 rounded-2xl px-4 py-2 text-white text-[11px] placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-transparent resize-none overflow-hidden min-h-[2.5rem] max-h-32"
+            className="w-full bg-white/10 border border-white/20 rounded-2xl px-4 py-2 text-white text-[9px] placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-transparent resize-none overflow-hidden min-h-[2.5rem] max-h-32"
             disabled={isSending}
           />
 
