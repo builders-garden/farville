@@ -1,12 +1,13 @@
 import { Card, CardContent } from "../../ui/card";
 import { ClanHasQuestWithQuest } from "@/lib/prisma/types";
-import ClanQuest from "./ClanQuest";
+import ClanQuest from "./clan-quest";
 
 interface ClanQuestsProps {
   quests: ClanHasQuestWithQuest[];
+  refetchClanQuests: () => void;
 }
 
-export function ClanQuests({ quests }: ClanQuestsProps) {
+export function ClanQuests({ quests, refetchClanQuests }: ClanQuestsProps) {
   if (quests.length === 0) {
     return (
       <Card className={`border-none cursor-pointer bg-[#5B4120]/90`}>
@@ -23,7 +24,11 @@ export function ClanQuests({ quests }: ClanQuestsProps) {
   return (
     <div className="flex flex-col w-full gap-4">
       {quests.map((quest) => (
-        <ClanQuest key={quest.quest.id} quest={quest} />
+        <ClanQuest
+          key={quest.quest.id}
+          quest={quest}
+          refetchClanQuests={refetchClanQuests}
+        />
       ))}
     </div>
   );

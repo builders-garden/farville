@@ -14,6 +14,7 @@ import {
   initializeGrid,
 } from "@/lib/prisma/queries";
 import {
+  checkOrInitClanQuests,
   initQuestsAndLeaderboardEntry,
   userIsNotAdminAndIsNotProduction,
 } from "@/lib/utils";
@@ -108,6 +109,8 @@ export const POST = async (req: NextRequest) => {
 
   const userModes = await getUserModes(fid);
   await initQuestsAndLeaderboardEntry(fid, userModes);
+
+  await checkOrInitClanQuests(fid);
 
   // Generate a session token using fid and current timestamp
   const jwtToken = await new jose.SignJWT({

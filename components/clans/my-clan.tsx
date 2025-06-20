@@ -35,7 +35,7 @@ export default function MyClan() {
     canManageRequests ? state.clan?.clanId : undefined
   );
 
-  const { quests: clanQuests } = useClanQuests(
+  const { quests: clanQuests, refetch: refetchClanQuests } = useClanQuests(
     state.clan?.clanId,
     "incomplete"
   );
@@ -78,7 +78,7 @@ export default function MyClan() {
       )}
 
       {activeTab === "quests" && !isLoading && clanData && (
-        <ClanQuests quests={clanQuests} />
+        <ClanQuests quests={clanQuests} refetchClanQuests={refetchClanQuests} />
       )}
 
       {activeTab === "newcomers" && !isLoading && clanData && (

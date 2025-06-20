@@ -320,6 +320,29 @@ export const useClanOperations = (
     },
   });
 
+  const { mutate: fillClanQuest } = useApiMutation({
+    url: (data: { clanId: string }) => `/api/clan/${data.clanId}/quests`,
+    body: (data: { clanId: string; questId: string; amount: number }) => ({
+      questId: data.questId,
+      amount: data.amount,
+    }),
+    method: "POST",
+    onSuccess: (data) => {
+      toast.success("Clan quest filled successfully!", {
+        position: "top-center",
+        duration: 3000,
+      });
+      console.log("Clan quest filled successfully:", data);
+    },
+    onError: (error: Error) => {
+      console.error("Error filling clan quest:", error);
+      toast.error("Failed to fill clan quest", {
+        position: "top-center",
+        duration: 3000,
+      });
+    },
+  });
+
   return {
     createClan,
     joinClan,
@@ -327,5 +350,6 @@ export const useClanOperations = (
     updateClan,
     manageMember,
     shareRequestToClan,
+    fillClanQuest,
   };
 };

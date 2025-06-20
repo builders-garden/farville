@@ -1,6 +1,7 @@
 import { trackEvent } from "@/lib/posthog/server";
 import { getUserModes } from "@/lib/prisma/queries";
 import {
+  checkOrInitClanQuests,
   initQuestsAndLeaderboardEntry,
   userIsNotAdminAndIsNotProduction,
 } from "@/lib/utils";
@@ -18,6 +19,8 @@ export async function GET(request: NextRequest) {
 
   const userModes = await getUserModes(Number(fid));
   await initQuestsAndLeaderboardEntry(Number(fid), userModes);
+
+  await checkOrInitClanQuests(Number(fid));
 
   trackEvent(Number(fid), "sign_in", {
     fid,

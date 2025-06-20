@@ -31,6 +31,7 @@ model Item {
   requiredLevel      Int
   createdAt          DateTime            @default(now()) @db.Timestamptz(6)
   slug               String              @unique
+  ClanQuest          ClanQuest[]
   clanRequests       ClanRequest[]
   quests             Quest[]
   requests           Request[]
@@ -38,7 +39,6 @@ model Item {
   userHarvestedCrops UserHarvestedCrop[]
   userItems          UserHasItem[]
   vouchers           Voucher[]
-  ClanQuest          ClanQuest[]
 
   @@map("item")
 }
@@ -122,9 +122,11 @@ model User {
   selectedAvatarUrl      String?
   createdClans           Clan[]                  @relation("ClanCreator")
   leaderClans            Clan[]                  @relation("ClanLeader")
+  clan_chat_message      ClanChatMessage[]
   clan_join_request      ClanJoinRequest[]
   clan                   ClanMembership?
   clanRequests           ClanRequest[]
+  clanStatistics         ClanUserStatistic[]
   referrals              Referral[]
   requests               Request[]
   streaks                Streak[]
@@ -140,7 +142,6 @@ model User {
   leaderboardEntries     UserLeaderboardEntry[]
   notifications          UserNotification[]
   statistics             UserStatistic[]
-  ClanUserStatistic      ClanUserStatistic[]
 
   @@map("user")
 }
@@ -365,11 +366,12 @@ model Clan {
   requiredLevel     Int?
   creator           User                @relation("ClanCreator", fields: [createdBy], references: [fid], onDelete: NoAction, onUpdate: NoAction, map: "clan_created_by_fkey")
   leader            User                @relation("ClanLeader", fields: [leaderFid], references: [fid], onDelete: NoAction, onUpdate: NoAction, map: "clan_leader_fid_fkey")
+  clan_chat_message ClanChatMessage[]
+  ClanHasQuest      ClanHasQuest[]
   joinRequests      ClanJoinRequest[]
   members           ClanMembership[]
   requests          ClanRequest[]
   ClanUserStatistic ClanUserStatistic[]
-  ClanHasQuest      ClanHasQuest[]
 
   @@map("clan")
 }
@@ -417,17 +419,16 @@ model ClanRequest {
 }
 
 model ClanQuest {
-  id        String    @id @default(dbgenerated("gen_random_uuid()"))
-  category  String
-  itemId    Int
-  amount    Int       @default(1)
-  xp        Int
-  startAt   DateTime  @db.Timestamptz(6)
-  endAt     DateTime? @db.Timestamptz(6)
-  createdAt DateTime  @default(now()) @db.Timestamptz(6)
-
-  item         Item           @relation(fields: [itemId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "clan_quest_itemid_fkey")
+  id           String         @id @default(dbgenerated("gen_random_uuid()"))
+  itemId       Int
+  amount       Int            @default(1)
+  xp           Int
+  createdAt    DateTime       @default(now()) @db.Timestamptz(6)
+  category     String
+  endAt        DateTime?      @db.Timestamptz(6)
+  startAt      DateTime       @db.Timestamptz(6)
   ClanHasQuest ClanHasQuest[]
+  item         Item           @relation(fields: [itemId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "clan_quest_itemid_fkey")
 
   @@map("clan_quest")
 }
@@ -452,13 +453,26 @@ model ClanUserStatistic {
   generatedXp                   Int
   donations                     Int      @default(0)
   donatedCropsToOtherPlayers    Int      @default(0)
-  receivedCropsFromOtherPlayers Int      @default(0)
   donatedCropsToQuests          Int      @default(0)
   lastActivity                  DateTime @default(now()) @db.Timestamptz(6)
   createdAt                     DateTime @default(now()) @db.Timestamptz(6)
-  user                          User     @relation(fields: [fid], references: [fid], onDelete: NoAction, onUpdate: NoAction)
+  receivedCropsFromOtherPlayers Int      @default(0)
   clan                          Clan     @relation(fields: [clanId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  user                          User     @relation(fields: [fid], references: [fid], onDelete: NoAction, onUpdate: NoAction)
 
   @@id([fid, clanId])
   @@map("clan_user_statistic")
+}
+
+model ClanChatMessage {
+  id        String   @id @default(dbgenerated("gen_random_uuid()"))
+  clanId    String
+  fid       Int
+  message   String
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  clan      Clan     @relation(fields: [clanId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "clan_chat_message_clanid_fkey")
+  user      User     @relation(fields: [fid], references: [fid], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([clanId, createdAt], map: "idx_clan_chat_message_clan_time")
+  @@map("clan_chat_message")
 }
