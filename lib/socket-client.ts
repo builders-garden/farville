@@ -24,6 +24,22 @@ export type ServerToClientEvents = {
     combo: number;
   }) => void;
   "new-decrement": (data: { stage: number; combo: number }) => void;
+  "clan-chat-message": (data: {
+    id: string;
+    clanId: string;
+    message: string;
+    createdAt: Date;
+    user: {
+      fid: number;
+      username: string;
+      displayName: string | null;
+      avatarUrl: string | null;
+      selectedAvatarUrl: string | null;
+      mintedOG: boolean;
+    };
+  }) => void;
+  "clan-chat-message-deleted": (data: { messageId: string }) => void;
+  error: (data: { message: string }) => void;
 };
 
 export type ClientToServerEvents = {
@@ -33,6 +49,8 @@ export type ClientToServerEvents = {
     username: string;
     ptAmount: number;
   }) => void;
+  "join-clan-chat": (clanId: string) => void;
+  "leave-clan-chat": (clanId: string) => void;
 };
 
 let socket: Socket<ServerToClientEvents, ClientToServerEvents> | null = null;

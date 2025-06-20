@@ -11,6 +11,7 @@ import ClanRequests from "./clan-requests";
 import { FloatingShareButton } from "../FloatingShareButton";
 import { ClanQuests } from "./clan-quests";
 import ClanShareModal from "./clan-share-modal";
+import { ClanChat } from "./clan-chat";
 
 export default function MyClan() {
   const { state } = useGame();
@@ -66,6 +67,10 @@ export default function MyClan() {
         />
       )}
 
+      {activeTab === "chat" && !isLoading && clanData && (
+        <ClanChat clanId={clanData.id} />
+      )}
+
       {activeTab === "quests" && !isLoading && clanData && <ClanQuests />}
 
       {activeTab === "newcomers" && !isLoading && clanData && (
@@ -90,7 +95,7 @@ export default function MyClan() {
       )}
 
       {/* Floating Share Button */}
-      {clanData && activeTab !== "requests" && (
+      {clanData && activeTab !== "requests" && activeTab !== "chat" && (
         <FloatingShareButton onClick={handleShareClan} />
       )}
 

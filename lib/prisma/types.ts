@@ -12,6 +12,7 @@ import {
   Clan,
   ClanJoinRequest,
   ClanRequest,
+  ClanChatMessage,
 } from "@prisma/client";
 import { Mode } from "../types/game";
 
@@ -120,6 +121,18 @@ export type ClanWithData = Clan & {
   members: ClanMember[];
   requests: ClanRequestWithItemData[];
   joinRequests: ClanRequestToJoin[];
+  chatMessages?: ClanChatMessageWithUser[];
+};
+
+export type ClanChatMessageWithUser = ClanChatMessage & {
+  user: {
+    fid: number;
+    username: string;
+    displayName: string | null;
+    avatarUrl: string | null;
+    selectedAvatarUrl: string | null;
+    mintedOG: boolean;
+  };
 };
 
 export type ClanWithMembers = Clan & {

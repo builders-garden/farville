@@ -7,6 +7,7 @@ import { useSignIn } from "@/hooks/use-sign-in";
 import Image from "next/image";
 import React, { useEffect, useState } from "react";
 import { GameProvider } from "./../context/GameContext";
+import { SocketAuthenticator } from "./SocketAuthenticator";
 import { getThisWeekMonday } from "@/lib/utils";
 import { Maintenance } from "./home/maintenance";
 import { Website } from "./home/website";
@@ -124,7 +125,10 @@ export default function Game({
         </div>
       )}
       {isSignedIn && (
-        <GameProvider initialOverlay={initialOverlay}>{children}</GameProvider>
+        <GameProvider initialOverlay={initialOverlay}>
+          <SocketAuthenticator />
+          {children}
+        </GameProvider>
       )}
     </main>
   );
