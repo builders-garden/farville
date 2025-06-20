@@ -7,7 +7,6 @@ import ClanJoinRequests from "./clan-join-requests";
 import { useClanJoinRequests } from "@/hooks/use-clan-join-requests";
 import { ClanRole } from "@/lib/types/game";
 import { ClanDetail } from "./clan-detail";
-import ClanRequests from "./clan-requests";
 import { FloatingShareButton } from "../FloatingShareButton";
 import { ClanQuests } from "./clan-quests";
 import ClanShareModal from "./clan-share-modal";
@@ -16,7 +15,7 @@ import { ClanChat } from "./clan-chat";
 export default function MyClan() {
   const { state } = useGame();
 
-  const [activeTab, setActiveTab] = useState<Tab>("members");
+  const [activeTab, setActiveTab] = useState<Tab>("chat");
   const [showShareModal, setShowShareModal] = useState(false);
 
   const {
@@ -45,7 +44,11 @@ export default function MyClan() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center w-full pb-8 gap-2">
+    <div
+      className={`flex flex-col items-center justify-center w-full gap-2 ${
+        activeTab === "chat" ? "pb-4" : "pb-8"
+      }`}
+    >
       <ClanDetail
         clanData={clanData}
         refetchClan={refetchClanData}
@@ -68,7 +71,14 @@ export default function MyClan() {
       )}
 
       {activeTab === "chat" && !isLoading && clanData && (
-        <ClanChat clanId={clanData.id} />
+        <ClanChat
+          clanId={clanData.id}
+          requests={clanData.requests.map((req) => ({
+            ...req,
+            user: membersMap[req.fid],
+          }))}
+          refetchClanData={refetchClanData}
+        />
       )}
 
       {activeTab === "quests" && !isLoading && clanData && <ClanQuests />}
@@ -83,19 +93,8 @@ export default function MyClan() {
         </div>
       )}
 
-      {activeTab === "requests" && !isLoading && clanData && (
-        <ClanRequests
-          requests={clanData.requests.map((req) => ({
-            ...req,
-            user: membersMap[req.fid],
-          }))}
-          viewerFid={state.user.fid}
-          refetchClanData={refetchClanData}
-        />
-      )}
-
       {/* Floating Share Button */}
-      {clanData && activeTab !== "requests" && activeTab !== "chat" && (
+      {clanData && activeTab !== "chat" && (
         <FloatingShareButton onClick={handleShareClan} />
       )}
 

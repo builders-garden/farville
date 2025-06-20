@@ -4,7 +4,11 @@ import { useClanChat } from "@/hooks/use-clan-chat";
 import { useGame } from "@/context/GameContext";
 import { LeaderboardUserAvatar } from "../leaderboard/LeaderboardUserAvatar";
 import { Card, CardContent } from "../ui/card";
-import { ClanChatMessageWithUser } from "@/lib/prisma/types";
+import {
+  ClanChatMessageWithUser,
+  ClanRequestWithItemData,
+  ClanMember,
+} from "@/lib/prisma/types";
 import { Button } from "../ui/button";
 import {
   DropdownMenu,
@@ -12,10 +16,222 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import RequestModal from "../RequestModal";
+import Image from "next/image";
+import InventoryItem from "@/components/InventoryItem";
+import { Item } from "@prisma/client";
+import { RequestItem } from "./clan-requests/request-item";
+import { useCreateRequest } from "@/hooks/game-actions/use-create-request";
+import { Mode } from "@/lib/types/game";
+import { useClanOperations } from "@/hooks/game-actions/use-clan-operations";
+
+// Unified type for chat items (both messages and requests)
+type ChatItem =
+  | ({ type: "message" } & ClanChatMessageWithUser)
+  | ({ type: "request" } & ClanRequestWithItemData & {
+        user: ClanMember["user"];
+      });
 
 interface ClanChatProps {
   clanId: string;
+  requests?: (ClanRequestWithItemData & { user: ClanMember["user"] })[];
+  refetchClanData?: () => void;
 }
+
+interface RequestMessageProps {
+  request: ClanRequestWithItemData & { user: ClanMember["user"] };
+  viewerFid: number;
+  refetchClanData?: () => void;
+}
+
+const RequestMessage: React.FC<RequestMessageProps> = ({
+  request,
+  viewerFid,
+  refetchClanData,
+}) => {
+  const { state } = useGame();
+  const isOwn = request.fid === viewerFid;
+  const [showRequestModal, setShowRequestModal] = useState(false);
+
+  const itemData = request.itemId
+    ? state.items.find((item) => item.id === request.itemId)
+    : request.request?.item;
+
+  const requestData = request.request;
+  const requestFulfilled = requestData
+    ? requestData.filledQuantity >= requestData.quantity
+    : false;
+
+  const formatTime = (date: Date) => {
+    return new Intl.DateTimeFormat("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+    }).format(new Date(date));
+  };
+
+  // Generate a consistent color for each user based on their username
+  const getUsernameColor = (username: string) => {
+    const colors = [
+      "text-red-300",
+      "text-blue-300",
+      "text-green-300",
+      "text-yellow-300",
+      "text-purple-300",
+      "text-pink-300",
+      "text-indigo-300",
+      "text-cyan-300",
+      "text-orange-300",
+      "text-lime-300",
+    ];
+    const hash = username
+      .split("")
+      .reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    return colors[hash % colors.length];
+  };
+
+  if (!itemData) {
+    return null; // Don't render if item data is missing
+  }
+
+  return (
+    <>
+      <div
+        className={`flex gap-2 px-3 py-1 ${
+          isOwn ? "justify-end" : "justify-start"
+        }`}
+      >
+        {/* Avatar for others (left side) */}
+        {!isOwn && (
+          <div className="flex-shrink-0 self-end mb-1">
+            <LeaderboardUserAvatar
+              pfpUrl={
+                request.user.selectedAvatarUrl || request.user.avatarUrl || ""
+              }
+              username={request.user.username}
+              isOgUser={request.user.mintedOG}
+              size={{ width: 8, height: 8 }}
+              borderSize={1}
+            />
+          </div>
+        )}
+
+        {/* Request bubble */}
+        <div
+          className={`max-w-[75%] ${
+            isOwn ? "items-end" : "items-start"
+          } flex flex-col`}
+        >
+          {/* Request content */}
+          <div
+            className={`relative rounded-2xl px-3 py-2 ${
+              isOwn
+                ? "bg-yellow-600/80 text-white rounded-br-md"
+                : "bg-white/15 text-white/90 rounded-bl-md"
+            }`}
+          >
+            {/* Username inside bubble (only for others) */}
+            {!isOwn && (
+              <div className="mb-2">
+                <span
+                  className={`text-[9px] font-medium ${getUsernameColor(
+                    request.user.username
+                  )}`}
+                >
+                  {request.user.displayName || request.user.username}
+                </span>
+              </div>
+            )}
+
+            {/* Request content */}
+            <div className="flex flex-row items-center gap-2 mb-2">
+              <Image
+                src={
+                  itemData.icon
+                    ? `/images/${itemData.icon}`
+                    : "/images/default-item.png"
+                }
+                alt={itemData.name || "Item"}
+                width={32}
+                height={32}
+                className="rounded flex-shrink-0"
+              />
+              <div className="flex flex-col flex-1 min-w-0">
+                {requestData ? (
+                  <>
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-medium text-white truncate">
+                        {itemData.name}
+                      </span>
+                      <span className="text-[9px] text-white/80 ml-1">
+                        ({requestData.filledQuantity}/{requestData.quantity})
+                      </span>
+                    </div>
+                    <div className="w-full bg-white/20 rounded-full h-1 mt-1">
+                      <div
+                        className="bg-yellow-400 h-1 rounded-full transition-all duration-300"
+                        style={{
+                          width: `${Math.min(
+                            (requestData.filledQuantity /
+                              requestData.quantity) *
+                              100,
+                            100
+                          )}%`,
+                        }}
+                      ></div>
+                    </div>
+                  </>
+                ) : (
+                  <span className="text-[11px] text-white/90">
+                    I need {request.quantity} {itemData.name}. Please help!
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* Time and Donate button row */}
+            <div className="flex items-center justify-between">
+              <span
+                className={`text-[9px] ${
+                  isOwn ? "text-white/60" : "text-white/40"
+                }`}
+              >
+                {formatTime(request.createdAt)}
+              </span>
+              {!isOwn && !requestFulfilled && requestData && (
+                <button
+                  className="bg-yellow-500 text-white text-[9px] py-1 px-2 rounded hover:bg-yellow-600 transition-colors"
+                  onClick={() => setShowRequestModal(true)}
+                >
+                  Donate
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Request Modal */}
+      {showRequestModal && request.requestId && (
+        <RequestModal
+          onClose={() => setShowRequestModal(false)}
+          onDonationSuccess={() => {
+            refetchClanData?.();
+            setShowRequestModal(false);
+          }}
+          id={request.requestId}
+        />
+      )}
+    </>
+  );
+};
 
 interface MessageProps {
   message: ClanChatMessageWithUser;
@@ -96,7 +312,7 @@ const Message: React.FC<MessageProps> = ({
           {!isOwnMessage && (
             <div className="mb-1">
               <span
-                className={`text-[10px] font-medium ${getUsernameColor(
+                className={`text-[9px] font-medium ${getUsernameColor(
                   message.user.username
                 )}`}
               >
@@ -105,7 +321,7 @@ const Message: React.FC<MessageProps> = ({
             </div>
           )}
 
-          <p className="text-xs break-words leading-relaxed mb-1">
+          <p className="text-[11px] break-words leading-relaxed mb-1">
             {message.message}
           </p>
 
@@ -152,7 +368,11 @@ const Message: React.FC<MessageProps> = ({
   );
 };
 
-export const ClanChat: React.FC<ClanChatProps> = ({ clanId }) => {
+export const ClanChat: React.FC<ClanChatProps> = ({
+  clanId,
+  requests = [],
+  refetchClanData,
+}) => {
   const { state } = useGame();
   const {
     messages,
@@ -167,11 +387,153 @@ export const ClanChat: React.FC<ClanChatProps> = ({ clanId }) => {
   const [newMessage, setNewMessage] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Request dialog states
+  const [selectedItem, setSelectedItem] = useState<Item | null>(null);
+  const [requestQuantity, setRequestQuantity] = useState(1);
+  const [isRequestDialogOpen, setIsRequestDialogOpen] = useState(false);
+
+  // Request creation hooks
+  const { mutate: createRequest } = useCreateRequest();
+  const { shareRequestToClan } = useClanOperations();
+
+  // Helper functions for request creation
+  const handleItemClick = (item: Item) => {
+    setSelectedItem(item);
+  };
+
+  const findUserItem = (itemSlug: string) => {
+    const userItem = state.items.find((item) => item.slug === itemSlug);
+    if (!userItem) return undefined;
+
+    const userInventoryItem = [
+      ...state.seeds,
+      ...state.crops,
+      ...state.perks,
+    ].find((ui) => ui.item.slug === itemSlug);
+
+    return userInventoryItem;
+  };
+
+  const renderCategorySection = (
+    category: string,
+    icon: string,
+    title: string
+  ) => {
+    const filteredItems = state.items.filter(
+      (item) => item.category === category
+    );
+
+    // Get the appropriate collection based on category
+    const userItems =
+      category === "seed"
+        ? state.seeds
+        : category === "crop"
+        ? state.crops
+        : category === "special-crop"
+        ? state.specialCrops
+        : state.perks;
+
+    const isImageUrl = icon.startsWith("http") || icon.startsWith("/");
+
+    return (
+      <div key={category}>
+        <h3 className="text-white/90 font-bold text-md mb-4 flex items-center gap-2">
+          {isImageUrl ? (
+            <Image
+              src={icon}
+              alt={title}
+              width={28}
+              height={28}
+            />
+          ) : (
+            <span className="text-2xl mt-[-4px]">{icon}</span>
+          )}
+          {title}
+        </h3>
+        <div className="grid grid-cols-6 gap-4 md:grid-cols-8">
+          {filteredItems.map((item) => {
+            const userItem = userItems.find((ui) => ui.item.slug === item.slug);
+            const quantity = userItem?.quantity || 0;
+
+            return (
+              <InventoryItem
+                key={item.id}
+                item={item}
+                quantity={quantity}
+                onClick={() => {
+                  if (category !== "special-crop") {
+                    handleItemClick(item);
+                  }
+                }}
+              />
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
+
+  const handleCreateRequest = () => {
+    if (!selectedItem || !state.clan) return;
+
+    try {
+      createRequest(
+        {
+          itemId: selectedItem.id,
+          quantity: requestQuantity,
+          mode: Mode.Classic,
+        },
+        {
+          onSuccess: async (data) => {
+            console.log("Request created successfully");
+            shareRequestToClan({
+              requestId: data.id,
+              // @ts-expect-error clanId is always defined
+              clanId: state.clan.clanId,
+            });
+            setSelectedItem(null);
+            setRequestQuantity(1);
+            setIsRequestDialogOpen(false);
+          },
+          onError: (error) => {
+            console.error("Error creating request:", error);
+          },
+        }
+      );
+
+      refetchClanData?.();
+    } catch (error) {
+      console.error("Error creating request:", error);
+    }
+  };
+
+  // Merge and sort messages and requests chronologically
+  const chatItems: ChatItem[] = React.useMemo(() => {
+    const messageItems: ChatItem[] = messages.map((msg) => ({
+      type: "message" as const,
+      ...msg,
+    }));
+    const requestItems: ChatItem[] = requests.map((req) => ({
+      type: "request" as const,
+      ...req,
+    }));
+
+    const allItems = [...messageItems, ...requestItems];
+    return allItems.sort(
+      (a, b) =>
+        new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+    );
+  }, [messages, requests]);
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+    const container = messagesContainerRef.current;
+    if (container) {
+      container.scrollTop = container.scrollHeight;
+    }
+  }, [chatItems]);
 
   // Auto-load more messages when scrolled to top
   useEffect(() => {
@@ -195,6 +557,30 @@ export const ClanChat: React.FC<ClanChatProps> = ({ clanId }) => {
 
     sendMessage(newMessage);
     setNewMessage("");
+    // Reset textarea height
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "auto";
+    }
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const value = e.target.value;
+    setNewMessage(value);
+
+    // Auto-resize textarea
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "auto";
+      textareaRef.current.style.height =
+        textareaRef.current.scrollHeight + "px";
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      const formEvent = { preventDefault: () => {} } as React.FormEvent;
+      handleSendMessage(formEvent);
+    }
   };
 
   const handleDeleteMessage = (messageId: string) => {
@@ -222,86 +608,158 @@ export const ClanChat: React.FC<ClanChatProps> = ({ clanId }) => {
   }
 
   return (
-    <Card className="bg-gradient-to-br from-[#6D4C2C] to-[#5B4120] rounded-lg border-none h-96 flex flex-col w-full">
-      <CardContent className="p-0 flex flex-col h-full">
-        {/* Chat Header */}
-        <div className="p-3 border-b border-white/10">
-          <h3 className="text-white/90 font-semibold text-sm">Feud Chat</h3>
-        </div>
+    <div className="flex flex-col h-[34rem] w-full">
+      {/* Main Chat Container */}
+      <Card className="bg-gradient-to-br from-[#6D4C2C] to-[#5B4120] rounded-lg border-none flex-1 flex flex-col min-h-0">
+        <CardContent className="p-0 flex flex-col h-full min-h-0">
+          {/* Chat Header */}
+          <div className="p-3 border-b border-white/10">
+            <h3 className="text-white/90 font-semibold text-sm">Feud Chat</h3>
+          </div>
 
-        {/* Messages Container */}
-        <div
-          ref={messagesContainerRef}
-          className="flex-1 overflow-y-auto [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-[#5B4120] [&::-webkit-scrollbar-thumb]:bg-yellow-600/60 [&::-webkit-scrollbar-thumb:hover]:bg-yellow-600/80"
-        >
-          {messages.length === 0 ? (
-            <div className="flex items-center justify-center h-full">
-              <div className="text-white/50 text-xs text-center">
-                <p>No messages yet.</p>
-                <p>Be the first to say hello! 👋</p>
-              </div>
-            </div>
-          ) : (
-            <>
-              {/* Load More Messages Button - only show if there are more messages */}
-              {hasMoreMessages && (
-                <div className="p-2 text-center">
-                  <Button
-                    onClick={loadMoreMessages}
-                    variant="ghost"
-                    size="sm"
-                    className="text-white/70 text-xs hover:text-white hover:bg-white/10 transition-colors"
-                    disabled={isLoadingMore}
-                  >
-                    {isLoadingMore ? "Loading..." : "Load older messages"}
-                  </Button>
-                </div>
-              )}
-
-              {/* Messages */}
-              {messages.map((message) => (
-                <Message
-                  key={message.id}
-                  message={message}
-                  onDelete={handleDeleteMessage}
-                  canDelete={canDeleteMessage(message)}
-                  isOwnMessage={message.user.fid === state.user?.fid}
-                />
-              ))}
-              <div ref={messagesEndRef} />
-            </>
-          )}
-        </div>
-
-        {/* Message Input */}
-        <div className="p-3 border-t border-white/10">
-          <form
-            onSubmit={handleSendMessage}
-            className="flex gap-2"
+          {/* Messages Container */}
+          <div
+            ref={messagesContainerRef}
+            className="flex-1 py-2 overflow-y-auto min-h-0 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-[#5B4120] [&::-webkit-scrollbar-thumb]:bg-yellow-600/60 [&::-webkit-scrollbar-thumb:hover]:bg-yellow-600/80"
           >
-            <input
-              type="text"
-              value={newMessage}
-              onChange={(e) => setNewMessage(e.target.value)}
-              placeholder="Type..."
-              maxLength={500}
-              className="w-full bg-white/10 border border-white/20 rounded-full px-4 py-2 text-white text-sm placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-transparent"
-              disabled={isSending}
-            />
+            {chatItems.length === 0 ? (
+              <div className="flex items-center justify-center h-full">
+                <div className="text-white/50 text-xs text-center">
+                  <p>No messages yet.</p>
+                  <p>Be the first to say hello! 👋</p>
+                </div>
+              </div>
+            ) : (
+              <>
+                {/* Load More Messages Button - only show if there are more messages */}
+                {hasMoreMessages && (
+                  <div className="p-2 text-center">
+                    <Button
+                      onClick={loadMoreMessages}
+                      variant="ghost"
+                      size="sm"
+                      className="text-white/70 text-xs hover:text-white hover:bg-white/10 transition-colors"
+                      disabled={isLoadingMore}
+                    >
+                      {isLoadingMore ? "Loading..." : "Load older messages"}
+                    </Button>
+                  </div>
+                )}
+
+                {/* Chat Items (Messages and Requests) */}
+                {chatItems.map((item) => {
+                  if (item.type === "message") {
+                    const message = item;
+                    return (
+                      <Message
+                        key={`message-${message.id}`}
+                        message={message}
+                        onDelete={handleDeleteMessage}
+                        canDelete={canDeleteMessage(message)}
+                        isOwnMessage={message.user.fid === state.user?.fid}
+                      />
+                    );
+                  } else {
+                    const request = item;
+                    return (
+                      <RequestMessage
+                        key={`request-${request.requestId || request.id}`}
+                        request={request}
+                        viewerFid={state.user?.fid || 0}
+                        refetchClanData={refetchClanData}
+                      />
+                    );
+                  }
+                })}
+                <div ref={messagesEndRef} />
+              </>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Message Input - Fixed to bottom */}
+      <div className="pt-3">
+        <form
+          onSubmit={handleSendMessage}
+          className="flex gap-2 items-end"
+        >
+          <textarea
+            ref={textareaRef}
+            value={newMessage}
+            onChange={handleInputChange}
+            onKeyDown={handleKeyDown}
+            placeholder="Type..."
+            maxLength={500}
+            rows={1}
+            className="w-full bg-white/10 border border-white/20 rounded-2xl px-4 py-2 text-white text-[11px] placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-transparent resize-none overflow-hidden min-h-[2.5rem] max-h-32"
+            disabled={isSending}
+          />
+
+          {/* Show Send button when message is not empty, Request button when empty */}
+          {newMessage.trim() ? (
             <Button
               type="submit"
-              disabled={!newMessage.trim() || isSending}
+              disabled={isSending}
               size="sm"
-              className="bg-yellow-600 text-white rounded-full h-auto w-[20%] p-0"
+              className="bg-yellow-600 hover:bg-yellow-500 text-white rounded-full p-0 h-10 w-10 flex-shrink-0 transition-colors"
             >
               <Send className="h-3 w-3" />
             </Button>
-          </form>
-          <div className="text-white/40 text-[10px] mt-1 text-center">
-            {newMessage.length}/500 characters
-          </div>
-        </div>
-      </CardContent>
-    </Card>
+          ) : (
+            <Dialog
+              open={isRequestDialogOpen}
+              onOpenChange={setIsRequestDialogOpen}
+            >
+              <DialogTrigger asChild>
+                <Button
+                  type="button"
+                  size="sm"
+                  className="bg-yellow-600 hover:bg-yellow-500 text-white rounded-full p-0 h-10 w-10 flex-shrink-0 transition-colors"
+                >
+                  <Image
+                    src="/images/icons/tractor.png"
+                    alt="Request"
+                    width={20}
+                    height={20}
+                  />
+                </Button>
+              </DialogTrigger>
+
+              <DialogContent className="w-[360px] bg-[#7E4E31] border-[#8B5E3C]/50 rounded-lg p-4">
+                <DialogHeader className="gap-2 mb-2">
+                  <DialogTitle className="text-white/90">
+                    Clan Requests
+                  </DialogTitle>
+                  <DialogDescription className="text-white/80 text-xs flex flex-col gap-2">
+                    <span>Send a request to your clan for items you need.</span>
+                    <span>Pick an item and specify the quantity you need.</span>
+                  </DialogDescription>
+                </DialogHeader>
+
+                {!selectedItem ? (
+                  <div className="flex flex-col gap-2 w-full mx-auto space-y-8">
+                    {renderCategorySection("seed", "🌱", "Seeds")}
+                    {renderCategorySection("crop", "🌾", "Crops")}
+                  </div>
+                ) : (
+                  <RequestItem
+                    item={selectedItem}
+                    requestQuantity={requestQuantity}
+                    setRequestQuantity={setRequestQuantity}
+                    userItem={findUserItem(selectedItem.slug)}
+                    handleRequest={handleCreateRequest}
+                    onClose={() => {
+                      setSelectedItem(null);
+                      setRequestQuantity(1);
+                    }}
+                  />
+                )}
+              </DialogContent>
+            </Dialog>
+          )}
+        </form>
+      </div>
+    </div>
   );
 };
