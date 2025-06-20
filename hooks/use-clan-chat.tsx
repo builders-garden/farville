@@ -23,6 +23,22 @@ interface ClanRequestSharedData {
   createdAt: Date;
 }
 
+interface ClanRequestUpdatedData {
+  requestId: string;
+  clanId: string;
+  newFilledQuantity: number;
+  quantity: number;
+  donorData: {
+    fid: number;
+    username: string;
+    displayName: string | null;
+    avatarUrl: string | null;
+    selectedAvatarUrl: string | null;
+    mintedOG: boolean;
+  };
+  updatedAt: Date;
+}
+
 export const useClanChat = (clanId?: string, onNewClanRequest?: () => void) => {
   const { socket } = useSocket();
   const { state } = useGame();
@@ -154,6 +170,13 @@ export const useClanChat = (clanId?: string, onNewClanRequest?: () => void) => {
       }
     };
 
+    const handleClanRequestUpdated = (data: ClanRequestUpdatedData) => {
+      console.log("📦 Received clan-request-updated:", data);
+      if (data.clanId === clanId && onNewClanRequest) {
+        onNewClanRequest();
+      }
+    };
+
     const handleError = (data: { message: string }) => {
       console.error("Socket error:", data.message);
     };
@@ -164,6 +187,7 @@ export const useClanChat = (clanId?: string, onNewClanRequest?: () => void) => {
     socket.on("clan-chat-message", handleNewMessage);
     socket.on("clan-chat-message-deleted", handleMessageDeleted);
     socket.on("clan-request-shared", handleClanRequestShared);
+    socket.on("clan-request-updated", handleClanRequestUpdated);
     socket.on("error", handleError);
 
     return () => {
@@ -171,6 +195,7 @@ export const useClanChat = (clanId?: string, onNewClanRequest?: () => void) => {
       socket.off("clan-chat-message", handleNewMessage);
       socket.off("clan-chat-message-deleted", handleMessageDeleted);
       socket.off("clan-request-shared", handleClanRequestShared);
+      socket.off("clan-request-updated", handleClanRequestUpdated);
       socket.off("error", handleError);
     };
   }, [socket, clanId, state.user?.fid, onNewClanRequest]);

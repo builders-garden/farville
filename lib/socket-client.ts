@@ -55,6 +55,21 @@ export type ServerToClientEvents = {
     };
     createdAt: Date;
   }) => void;
+  "clan-request-updated": (data: {
+    requestId: string;
+    clanId: string;
+    newFilledQuantity: number;
+    quantity: number;
+    donorData: {
+      fid: number;
+      username: string;
+      displayName: string | null;
+      avatarUrl: string | null;
+      selectedAvatarUrl: string | null;
+      mintedOG: boolean;
+    };
+    updatedAt: Date;
+  }) => void;
   error: (data: { message: string }) => void;
 };
 
