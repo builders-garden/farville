@@ -17,7 +17,7 @@ export interface ClanChatMessageWithUser extends ClanChatMessage {
  */
 export async function getClanChatMessages(
   clanId: string,
-  limit: number = 50,
+  limit: number = 100, // Default to 100 messages instead of 50
   cursor?: string
 ): Promise<ClanChatMessageWithUser[]> {
   return await prisma.clanChatMessage.findMany({

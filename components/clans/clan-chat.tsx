@@ -374,16 +374,8 @@ export const ClanChat: React.FC<ClanChatProps> = ({
   refetchClanData,
 }) => {
   const { state } = useGame();
-  const {
-    messages,
-    isLoading,
-    isLoadingMore,
-    hasMoreMessages,
-    sendMessage,
-    deleteMessage,
-    loadMoreMessages,
-    isSending,
-  } = useClanChat(clanId, refetchClanData);
+  const { messages, isLoading, sendMessage, deleteMessage, isSending } =
+    useClanChat(clanId, refetchClanData);
   const [newMessage, setNewMessage] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
@@ -535,22 +527,6 @@ export const ClanChat: React.FC<ClanChatProps> = ({
     }
   }, [chatItems]);
 
-  // Auto-load more messages when scrolled to top
-  useEffect(() => {
-    const container = messagesContainerRef.current;
-    if (!container) return;
-
-    const handleScroll = () => {
-      // Check if scrolled to top (with small threshold)
-      if (container.scrollTop <= 10 && hasMoreMessages && !isLoadingMore) {
-        loadMoreMessages();
-      }
-    };
-
-    container.addEventListener("scroll", handleScroll);
-    return () => container.removeEventListener("scroll", handleScroll);
-  }, [hasMoreMessages, isLoadingMore, loadMoreMessages]);
-
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newMessage.trim() || isSending) return;
@@ -638,21 +614,6 @@ export const ClanChat: React.FC<ClanChatProps> = ({
               </div>
             ) : (
               <>
-                {/* Load More Messages Button - only show if there are more messages */}
-                {hasMoreMessages && (
-                  <div className="p-2 text-center">
-                    <Button
-                      onClick={loadMoreMessages}
-                      variant="ghost"
-                      size="sm"
-                      className="text-white/70 text-xs hover:text-white hover:bg-white/10 transition-colors"
-                      disabled={isLoadingMore}
-                    >
-                      {isLoadingMore ? "Loading..." : "Load older messages"}
-                    </Button>
-                  </div>
-                )}
-
                 {/* Chat Items (Messages and Requests) */}
                 {chatItems.map((item) => {
                   if (item.type === "message") {

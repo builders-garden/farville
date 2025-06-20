@@ -15,9 +15,9 @@ const getMessagesSchema = z.object({
     .optional()
     .nullable()
     .transform((val) => {
-      if (!val) return 20;
+      if (!val) return 100; // Default to 100 messages instead of 20
       const parsed = parseInt(val, 10);
-      return isNaN(parsed) ? 20 : Math.min(Math.max(parsed, 1), 100); // Clamp between 1-100
+      return isNaN(parsed) ? 100 : Math.min(Math.max(parsed, 1), 100); // Clamp between 1-100
     }),
   cursor: z.string().optional().nullable(),
 });

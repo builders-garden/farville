@@ -44,8 +44,6 @@ export const useClanChat = (clanId?: string, onNewClanRequest?: () => void) => {
   const { state } = useGame();
   const queryClient = useQueryClient();
   const [messages, setMessages] = useState<ClanChatMessageWithUser[]>([]);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [hasMoreMessages, setHasMoreMessages] = useState(true);
 
   // Send message mutation
   const sendMessageMutation = useApiMutation<
@@ -69,55 +67,17 @@ export const useClanChat = (clanId?: string, onNewClanRequest?: () => void) => {
     body: (variables) => ({ messageId: variables.messageId }),
   });
 
-  // Fetch initial messages (HTTP request for history)
+  // Fetch initial messages (HTTP request for history) - Get last 100 messages
   const {
     data: initialMessages,
     isLoading,
     refetch,
   } = useApiQuery<ClanChatMessageWithUser[]>({
     queryKey: ["clan-chat", clanId],
-    url: `/api/clan/${clanId}/chat`,
+    url: `/api/clan/${clanId}/chat?limit=100`,
     isProtected: true,
     enabled: !!clanId,
   });
-
-  // Load more messages
-  const loadMoreMessages = useCallback(async () => {
-    if (!clanId || isLoadingMore || messages.length === 0 || !hasMoreMessages)
-      return;
-
-    setIsLoadingMore(true);
-    try {
-      const oldestMessage = messages[0];
-      const response = await fetch(
-        `/api/clan/${clanId}/chat?limit=20&cursor=${oldestMessage.createdAt}`,
-        {
-          method: "GET",
-          credentials: "include", // For authentication consistency
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      if (response.ok) {
-        const olderMessages: ClanChatMessageWithUser[] = await response.json();
-        if (olderMessages.length === 0) {
-          // No more messages available
-          setHasMoreMessages(false);
-        } else {
-          setMessages((prev) => [...olderMessages, ...prev]);
-          // If we got fewer messages than requested, we've reached the end
-          if (olderMessages.length < 20) {
-            setHasMoreMessages(false);
-          }
-        }
-      }
-    } catch (error) {
-      console.error("Failed to load more messages:", error);
-    } finally {
-      setIsLoadingMore(false);
-    }
-  }, [clanId, messages, isLoadingMore, hasMoreMessages]);
 
   // Socket event handlers
   useEffect(() => {
@@ -204,8 +164,6 @@ export const useClanChat = (clanId?: string, onNewClanRequest?: () => void) => {
   useEffect(() => {
     if (initialMessages) {
       setMessages(initialMessages.reverse()); // Reverse to show oldest first
-      // Reset hasMoreMessages state - if we got fewer than expected, there might not be more
-      setHasMoreMessages(initialMessages.length >= 20); // Assuming 20 is the default limit
     }
   }, [initialMessages]);
 
@@ -271,11 +229,8 @@ export const useClanChat = (clanId?: string, onNewClanRequest?: () => void) => {
   return {
     messages,
     isLoading,
-    isLoadingMore,
-    hasMoreMessages,
     sendMessage,
     deleteMessage,
-    loadMoreMessages,
     isSending: sendMessageMutation.isPending,
     isDeleting: deleteMessageMutation.isPending,
     refetch,
