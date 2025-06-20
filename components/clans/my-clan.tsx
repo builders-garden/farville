@@ -59,6 +59,7 @@ export default function MyClan() {
         setActiveTab={setActiveTab}
         pendingRequestsCount={joinRequests?.length || 0}
         canManageRequests={canManageRequests}
+        hasUnfulfilledRequests={state.hasUnfulfilledClanRequests}
       />
 
       {activeTab === "members" && !isLoading && clanData && (

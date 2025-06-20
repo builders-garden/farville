@@ -161,8 +161,16 @@ export default function Toolbar({
               setShowClans(true);
             }}
             data-tutorial="marketplace"
-            className="w-9 h-9 xs:w-12 xs:h-12 rounded-lg flex items-center justify-center bg-[#8B5E3C] hover:bg-[#6d4c2c] transition-colors"
+            className={`w-9 h-9 xs:w-12 xs:h-12 rounded-lg flex items-center justify-center transition-colors relative
+            ${
+              state.hasUnfulfilledClanRequests
+                ? "bg-[#A17449] shadow-lg shadow-[#A17449]/50 animate-pulse"
+                : "bg-[#8B5E3C] hover:bg-[#6d4c2c]"
+            }`}
           >
+            {state.hasUnfulfilledClanRequests && (
+              <div className="absolute -top-1 -right-1 w-3 h-3 bg-[#FFD700] rounded-full" />
+            )}
             <div className="relative w-6 h-6 xs:w-10 xs:h-10">
               {state.clan?.clan.imageUrl ? (
                 <Image
@@ -184,7 +192,13 @@ export default function Toolbar({
               )}
             </div>
           </motion.button>
-          <span className="text-[4px] xs:text-[6px] text-white mt-1">
+          <span
+            className={`text-[4px] xs:text-[6px] mt-1 ${
+              state.hasUnfulfilledClanRequests
+                ? "text-white drop-shadow-[0_0_3px_rgba(255,255,255,0.7)]"
+                : "text-white"
+            }`}
+          >
             Feuds
           </span>
         </div>

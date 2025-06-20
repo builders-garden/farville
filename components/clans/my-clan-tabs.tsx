@@ -8,6 +8,7 @@ interface MyClanTabsProps {
   setActiveTab: (tab: Tab) => void;
   pendingRequestsCount?: number;
   canManageRequests: boolean;
+  hasUnfulfilledRequests?: boolean;
 }
 
 export default function MyClanTabs({
@@ -15,6 +16,7 @@ export default function MyClanTabs({
   setActiveTab,
   pendingRequestsCount = 0,
   canManageRequests,
+  hasUnfulfilledRequests = false,
 }: MyClanTabsProps) {
   const tabs: {
     id: Tab;
@@ -58,15 +60,20 @@ export default function MyClanTabs({
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           onClick={() => setActiveTab(tab.id)}
-          className={`px-2 xs:px-3 py-1 xs:py-1 rounded-lg flex items-center justify-center gap-1 xs:gap-1.5 transition-all duration-200
+          className={`px-2 xs:px-3 py-1 xs:py-1 rounded-lg flex items-center justify-center gap-1 xs:gap-1.5 transition-all duration-200 relative
                         ${
                           activeTab === tab.id
                             ? "bg-[#a66d36] text-white scale-105 shadow-lg"
+                            : tab.id === "chat" && hasUnfulfilledRequests
+                            ? "bg-[#A17449] text-white hover:bg-[#A17449]/80 animate-pulse shadow-lg shadow-[#A17449]/50"
                             : "bg-[#6d4c2c] text-white/70 hover:bg-[#6d4c2c]/50"
                         }`}
           whileHover={{ scale: activeTab === tab.id ? 1.05 : 1.02 }}
           whileTap={{ scale: 0.98 }}
         >
+          {tab.id === "chat" && hasUnfulfilledRequests && (
+            <div className="absolute -top-1 -right-1 w-3 h-3 bg-[#FFD700] rounded-full" />
+          )}
           <div className="flex items-center gap-1">
             <Image
               src={tab.icon}
