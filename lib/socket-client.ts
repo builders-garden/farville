@@ -39,6 +39,22 @@ export type ServerToClientEvents = {
     };
   }) => void;
   "clan-chat-message-deleted": (data: { messageId: string }) => void;
+  "clan-request-shared": (data: {
+    requestId?: string;
+    clanId: string;
+    itemId?: number;
+    quantity?: number;
+    fid: number;
+    userData: {
+      fid: number;
+      username: string;
+      displayName: string | null;
+      avatarUrl: string | null;
+      selectedAvatarUrl: string | null;
+      mintedOG: boolean;
+    };
+    createdAt: Date;
+  }) => void;
   error: (data: { message: string }) => void;
 };
 

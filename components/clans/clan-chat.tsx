@@ -383,7 +383,7 @@ export const ClanChat: React.FC<ClanChatProps> = ({
     deleteMessage,
     loadMoreMessages,
     isSending,
-  } = useClanChat(clanId);
+  } = useClanChat(clanId, refetchClanData);
   const [newMessage, setNewMessage] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);

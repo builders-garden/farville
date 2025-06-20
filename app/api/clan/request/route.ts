@@ -10,6 +10,8 @@ import { UserClan } from "@/lib/prisma/types";
 import { Mode } from "@/lib/types/game";
 import { NextRequest, NextResponse } from "next/server";
 import z from "zod";
+import { env } from "@/lib/env";
+import axios from "axios";
 
 const createClanRequestSchema = z.object({
   requestId: z.string().min(1, "Request ID is required").optional(),
@@ -82,6 +84,39 @@ export async function POST(req: NextRequest) {
         quantity,
         fid: Number(fid),
       }),
+      // Emit socket event for real-time updates
+      (async () => {
+        try {
+          await axios.post(
+            `${env.FARVILLE_SERVICE_URL}/api/clan/${clanId}/request`,
+            {
+              requestId,
+              itemId,
+              quantity,
+              userData: {
+                fid: user.fid,
+                username: user.username,
+                displayName: user.displayName,
+                avatarUrl: user.avatarUrl,
+                selectedAvatarUrl: user.selectedAvatarUrl,
+                mintedOG: user.mintedOG,
+              },
+            },
+            {
+              headers: {
+                "Content-Type": "application/json",
+                "x-fid": fid,
+                "x-api-secret": env.FARVILLE_SERVICE_API_KEY,
+              },
+            }
+          );
+        } catch (socketError) {
+          console.warn(
+            "Failed to emit socket event for clan request:",
+            socketError
+          );
+        }
+      })(),
       clanData.clan.members.map((member) => {
         if (member.fid === Number(fid)) return; // Skip notifying self
         return sendDelayedNotificationToService(

@@ -6,7 +6,24 @@ import { useApiMutation } from "./use-api-mutation";
 import { ClanChatMessageWithUser } from "@/lib/prisma/types";
 import { useGame } from "@/context/GameContext";
 
-export const useClanChat = (clanId?: string) => {
+interface ClanRequestSharedData {
+  requestId?: string;
+  clanId: string;
+  itemId?: number;
+  quantity?: number;
+  fid: number;
+  userData: {
+    fid: number;
+    username: string;
+    displayName: string | null;
+    avatarUrl: string | null;
+    selectedAvatarUrl: string | null;
+    mintedOG: boolean;
+  };
+  createdAt: Date;
+}
+
+export const useClanChat = (clanId?: string, onNewClanRequest?: () => void) => {
   const { socket } = useSocket();
   const { state } = useGame();
   const queryClient = useQueryClient();
@@ -130,6 +147,13 @@ export const useClanChat = (clanId?: string) => {
       setMessages((prev) => prev.filter((msg) => msg.id !== data.messageId));
     };
 
+    const handleClanRequestShared = (data: ClanRequestSharedData) => {
+      console.log("📬 Received clan-request-shared:", data);
+      if (data.clanId === clanId && onNewClanRequest) {
+        onNewClanRequest();
+      }
+    };
+
     const handleError = (data: { message: string }) => {
       console.error("Socket error:", data.message);
     };
@@ -139,15 +163,17 @@ export const useClanChat = (clanId?: string) => {
     socket.emit("join-clan-chat", clanId);
     socket.on("clan-chat-message", handleNewMessage);
     socket.on("clan-chat-message-deleted", handleMessageDeleted);
+    socket.on("clan-request-shared", handleClanRequestShared);
     socket.on("error", handleError);
 
     return () => {
       socket.emit("leave-clan-chat", clanId);
       socket.off("clan-chat-message", handleNewMessage);
       socket.off("clan-chat-message-deleted", handleMessageDeleted);
+      socket.off("clan-request-shared", handleClanRequestShared);
       socket.off("error", handleError);
     };
-  }, [socket, clanId, state.user?.fid]);
+  }, [socket, clanId, state.user?.fid, onNewClanRequest]);
 
   // Initialize messages when data is loaded
   useEffect(() => {
