@@ -65,7 +65,7 @@ export default function MyClanTabs({
                           activeTab === tab.id
                             ? "bg-[#a66d36] text-white scale-105 shadow-lg"
                             : tab.id === "chat" && hasUnfulfilledRequests
-                            ? "bg-[#A17449] text-white hover:bg-[#A17449]/80 animate-pulse shadow-lg shadow-[#A17449]/50"
+                            ? "bg-[#A17449] text-white hover:bg-[#A17449]/80 shadow-lg shadow-[#A17449]/50"
                             : "bg-[#6d4c2c] text-white/70 hover:bg-[#6d4c2c]/50"
                         }`}
           whileHover={{ scale: activeTab === tab.id ? 1.05 : 1.02 }}

@@ -662,7 +662,7 @@ export const ClanChat: React.FC<ClanChatProps> = ({
             placeholder="Type..."
             maxLength={500}
             rows={1}
-            className="w-full bg-white/10 border border-white/20 rounded-2xl px-4 py-2 text-white text-[9px] placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-transparent resize-none overflow-hidden min-h-[2.5rem] max-h-32"
+            className="w-full bg-white/10 border border-white/20 rounded-2xl px-4 py-2 text-white text-base placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-transparent resize-none overflow-hidden min-h-[2.5rem] max-h-32"
             disabled={isSending}
           />
 
