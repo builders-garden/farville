@@ -569,9 +569,16 @@ export const ClanChat: React.FC<ClanChatProps> = ({
 
     // Auto-resize textarea
     if (textareaRef.current) {
+      const previousHeight = textareaRef.current.style.height;
       textareaRef.current.style.height = "auto";
-      textareaRef.current.style.height =
-        textareaRef.current.scrollHeight + "px";
+      const newHeight = textareaRef.current.scrollHeight + "px";
+      textareaRef.current.style.height = newHeight;
+
+      // If textarea height changed, keep chat scrolled to bottom
+      if (previousHeight !== newHeight && messagesContainerRef.current) {
+        messagesContainerRef.current.scrollTop =
+          messagesContainerRef.current.scrollHeight;
+      }
     }
   };
 
@@ -599,7 +606,7 @@ export const ClanChat: React.FC<ClanChatProps> = ({
 
   if (isLoading) {
     return (
-      <Card className="bg-gradient-to-br from-[#6D4C2C] to-[#5B4120] rounded-lg border-none h-96 w-full flex flex-col">
+      <Card className="bg-gradient-to-br from-[#6D4C2C] to-[#5B4120] rounded-lg border-none h-[34rem] w-full flex flex-col">
         <CardContent className="flex items-center justify-center h-full">
           <div className="text-white/70">Loading chat...</div>
         </CardContent>
