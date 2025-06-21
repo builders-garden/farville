@@ -58,11 +58,17 @@ const RequestMessage: React.FC<RequestMessageProps> = ({
   refetchClanData,
 }) => {
   const { state } = useGame();
-  const isOwn = request.fid === viewerFid;
   const [showRequestModal, setShowRequestModal] = useState(false);
+  
+  // Defensive checks to prevent crashes - after hooks
+  if (!request || !state) {
+    return null;
+  }
+  
+  const isOwn = request.fid === viewerFid;
 
   const itemData = request.itemId
-    ? state.items.find((item) => item.id === request.itemId)
+    ? state.items?.find((item) => item.id === request.itemId)
     : request.request?.item;
 
   const requestData = request.request;
@@ -70,31 +76,50 @@ const RequestMessage: React.FC<RequestMessageProps> = ({
     ? requestData.filledQuantity >= requestData.quantity
     : false;
 
-  const formatTime = (date: Date) => {
-    return new Intl.DateTimeFormat("en-US", {
-      hour: "2-digit",
-      minute: "2-digit",
-    }).format(new Date(date));
+  const formatTime = (date: Date | string) => {
+    try {
+      const dateObj = typeof date === 'string' ? new Date(date) : date;
+      if (isNaN(dateObj.getTime())) {
+        return 'Invalid date';
+      }
+      return new Intl.DateTimeFormat("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
+      }).format(dateObj);
+    } catch (error) {
+      console.error('Error formatting time:', error);
+      return 'Invalid date';
+    }
   };
 
   // Generate a consistent color for each user based on their username
   const getUsernameColor = (username: string) => {
-    const colors = [
-      "text-red-300",
-      "text-blue-300",
-      "text-green-300",
-      "text-yellow-300",
-      "text-purple-300",
-      "text-pink-300",
-      "text-indigo-300",
-      "text-cyan-300",
-      "text-orange-300",
-      "text-lime-300",
-    ];
-    const hash = username
-      .split("")
-      .reduce((acc, char) => acc + char.charCodeAt(0), 0);
-    return colors[hash % colors.length];
+    try {
+      const colors = [
+        "text-red-300",
+        "text-blue-300",
+        "text-green-300",
+        "text-yellow-300",
+        "text-purple-300",
+        "text-pink-300",
+        "text-indigo-300",
+        "text-cyan-300",
+        "text-orange-300",
+        "text-lime-300",
+      ];
+      
+      if (!username || typeof username !== 'string') {
+        return colors[0]; // Default to first color
+      }
+      
+      const hash = username
+        .split("")
+        .reduce((acc, char) => acc + char.charCodeAt(0), 0);
+      return colors[hash % colors.length];
+    } catch (error) {
+      console.error('Error generating username color:', error);
+      return "text-white"; // Safe fallback
+    }
   };
 
   if (!itemData) {
@@ -109,14 +134,14 @@ const RequestMessage: React.FC<RequestMessageProps> = ({
         }`}
       >
         {/* Avatar for others (left side) */}
-        {!isOwn && (
+        {!isOwn && request.user && (
           <div className="flex-shrink-0 self-end mb-1">
             <LeaderboardUserAvatar
               pfpUrl={
                 request.user.selectedAvatarUrl || request.user.avatarUrl || ""
               }
-              username={request.user.username}
-              isOgUser={request.user.mintedOG}
+              username={request.user.username || "Unknown"}
+              isOgUser={request.user.mintedOG || false}
               size={{ width: 8, height: 8 }}
               borderSize={1}
             />
@@ -246,31 +271,55 @@ const Message: React.FC<MessageProps> = ({
   canDelete,
   isOwnMessage,
 }) => {
-  const formatTime = (date: Date) => {
-    return new Intl.DateTimeFormat("en-US", {
-      hour: "2-digit",
-      minute: "2-digit",
-    }).format(new Date(date));
+  // Defensive check to prevent crashes
+  if (!message || !message.user) {
+    return null;
+  }
+
+  const formatTime = (date: Date | string) => {
+    try {
+      const dateObj = typeof date === 'string' ? new Date(date) : date;
+      if (isNaN(dateObj.getTime())) {
+        return 'Invalid date';
+      }
+      return new Intl.DateTimeFormat("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
+      }).format(dateObj);
+    } catch (error) {
+      console.error('Error formatting time:', error);
+      return 'Invalid date';
+    }
   };
 
   // Generate a consistent color for each user based on their username
   const getUsernameColor = (username: string) => {
-    const colors = [
-      "text-red-300",
-      "text-blue-300",
-      "text-green-300",
-      "text-yellow-300",
-      "text-purple-300",
-      "text-pink-300",
-      "text-indigo-300",
-      "text-cyan-300",
-      "text-orange-300",
-      "text-lime-300",
-    ];
-    const hash = username
-      .split("")
-      .reduce((acc, char) => acc + char.charCodeAt(0), 0);
-    return colors[hash % colors.length];
+    try {
+      const colors = [
+        "text-red-300",
+        "text-blue-300",
+        "text-green-300",
+        "text-yellow-300",
+        "text-purple-300",
+        "text-pink-300",
+        "text-indigo-300",
+        "text-cyan-300",
+        "text-orange-300",
+        "text-lime-300",
+      ];
+      
+      if (!username || typeof username !== 'string') {
+        return colors[0]; // Default to first color
+      }
+      
+      const hash = username
+        .split("")
+        .reduce((acc, char) => acc + char.charCodeAt(0), 0);
+      return colors[hash % colors.length];
+    } catch (error) {
+      console.error('Error generating username color:', error);
+      return "text-white"; // Safe fallback
+    }
   };
 
   return (
@@ -280,14 +329,14 @@ const Message: React.FC<MessageProps> = ({
       }`}
     >
       {/* Avatar for others (left side) - aligned with bubble corner */}
-      {!isOwnMessage && (
+      {!isOwnMessage && message.user && (
         <div className="flex-shrink-0 self-end mb-1">
           <LeaderboardUserAvatar
             pfpUrl={
               message.user.selectedAvatarUrl || message.user.avatarUrl || ""
             }
-            username={message.user.username}
-            isOgUser={message.user.mintedOG}
+            username={message.user.username || "Unknown"}
+            isOgUser={message.user.mintedOG || false}
             size={{ width: 8, height: 8 }}
             borderSize={1}
           />
@@ -503,20 +552,46 @@ export const ClanChat: React.FC<ClanChatProps> = ({
 
   // Merge and sort messages and requests chronologically
   const chatItems: ChatItem[] = React.useMemo(() => {
-    const messageItems: ChatItem[] = messages.map((msg) => ({
-      type: "message" as const,
-      ...msg,
-    }));
-    const requestItems: ChatItem[] = requests.map((req) => ({
-      type: "request" as const,
-      ...req,
-    }));
+    try {
+      // Defensive checks for arrays
+      const safeMessages = Array.isArray(messages) ? messages : [];
+      const safeRequests = Array.isArray(requests) ? requests : [];
+      
+      const messageItems: ChatItem[] = safeMessages
+        .filter(msg => msg && msg.id) // Filter out invalid messages
+        .map((msg) => ({
+          type: "message" as const,
+          ...msg,
+        }));
+        
+      const requestItems: ChatItem[] = safeRequests
+        .filter(req => req && (req.id || req.requestId)) // Filter out invalid requests
+        .map((req) => ({
+          type: "request" as const,
+          ...req,
+        }));
 
-    const allItems = [...messageItems, ...requestItems];
-    return allItems.sort(
-      (a, b) =>
-        new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-    );
+      const allItems = [...messageItems, ...requestItems];
+      return allItems.sort((a, b) => {
+        try {
+          const aTime = new Date(a.createdAt).getTime();
+          const bTime = new Date(b.createdAt).getTime();
+          
+          // Handle invalid dates
+          if (isNaN(aTime) && isNaN(bTime)) return 0;
+          if (isNaN(aTime)) return 1;
+          if (isNaN(bTime)) return -1;
+          
+          return aTime - bTime;
+        } catch (error) {
+          console.error('Error sorting chat items:', error);
+          return 0;
+        }
+      });
+    } catch (error) {
+      console.error('Error creating chat items:', error);
+      return [];
+    }
   }, [messages, requests]);
 
   // Auto-scroll to bottom when new messages arrive
@@ -571,13 +646,18 @@ export const ClanChat: React.FC<ClanChatProps> = ({
   };
 
   const canDeleteMessage = (message: ClanChatMessageWithUser) => {
-    if (!state.user || !state.clan) return false;
+    try {
+      if (!state.user || !state.clan || !message || !message.user) return false;
 
-    // User can delete their own messages
-    if (message.user.fid === state.user.fid) return true;
+      // User can delete their own messages
+      if (message.user.fid === state.user.fid) return true;
 
-    // Leaders and officers can delete any message
-    return state.clan.role === "leader" || state.clan.role === "officer";
+      // Leaders and officers can delete any message
+      return state.clan.role === "leader" || state.clan.role === "officer";
+    } catch (error) {
+      console.error('Error checking message deletion permissions:', error);
+      return false;
+    }
   };
 
   if (isLoading) {
@@ -585,6 +665,17 @@ export const ClanChat: React.FC<ClanChatProps> = ({
       <Card className="bg-gradient-to-br from-[#6D4C2C] to-[#5B4120] rounded-lg border-none h-[34rem] w-full flex flex-col">
         <CardContent className="flex items-center justify-center h-full">
           <div className="text-white/70">Loading chat...</div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Defensive check for critical state
+  if (!state || !state.user) {
+    return (
+      <Card className="bg-gradient-to-br from-[#6D4C2C] to-[#5B4120] rounded-lg border-none h-[34rem] w-full flex flex-col">
+        <CardContent className="flex items-center justify-center h-full">
+          <div className="text-white/70">Unable to load chat. Please try again.</div>
         </CardContent>
       </Card>
     );
@@ -616,29 +707,47 @@ export const ClanChat: React.FC<ClanChatProps> = ({
               <>
                 {/* Chat Items (Messages and Requests) */}
                 {chatItems.map((item, index) => {
-                  if (item.type === "message") {
-                    const message = item;
-                    return (
-                      <Message
-                        key={`message-${message.id}`}
-                        message={message}
-                        onDelete={handleDeleteMessage}
-                        canDelete={canDeleteMessage(message)}
-                        isOwnMessage={message.user.fid === state.user?.fid}
-                      />
-                    );
-                  } else {
-                    const request = item;
-                    // Create a more robust unique key for requests
-                    const requestKey = `request-${request.requestId || request.id || `${request.fid}-${request.itemId}-${index}`}`;
-                    return (
-                      <RequestMessage
-                        key={requestKey}
-                        request={request}
-                        viewerFid={state.user?.fid || 0}
-                        refetchClanData={refetchClanData}
-                      />
-                    );
+                  try {
+                    if (!item || !item.type) {
+                      console.warn('Invalid chat item at index:', index);
+                      return null;
+                    }
+
+                    if (item.type === "message") {
+                      const message = item;
+                      if (!message.id || !message.user) {
+                        console.warn('Invalid message at index:', index);
+                        return null;
+                      }
+                      return (
+                        <Message
+                          key={`message-${message.id}`}
+                          message={message}
+                          onDelete={handleDeleteMessage}
+                          canDelete={canDeleteMessage(message)}
+                          isOwnMessage={message.user.fid === state.user?.fid}
+                        />
+                      );
+                    } else {
+                      const request = item;
+                      if (!request.fid) {
+                        console.warn('Invalid request at index:', index);
+                        return null;
+                      }
+                      // Create a more robust unique key for requests
+                      const requestKey = `request-${request.requestId || request.id || `${request.fid}-${request.itemId}-${index}`}`;
+                      return (
+                        <RequestMessage
+                          key={requestKey}
+                          request={request}
+                          viewerFid={state.user?.fid || 0}
+                          refetchClanData={refetchClanData}
+                        />
+                      );
+                    }
+                  } catch (error) {
+                    console.error('Error rendering chat item at index:', index, error);
+                    return null;
                   }
                 })}
                 <div ref={messagesEndRef} />
