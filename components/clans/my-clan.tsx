@@ -49,15 +49,17 @@ export default function MyClan() {
     setShowShareModal(true);
   };
 
-  console.log("clan quests", clanQuests);
-
   return (
     <div
       className={`flex flex-col items-center justify-center w-full gap-2 ${
         activeTab === "chat" ? "pb-4" : "pb-8"
       }`}
     >
-      <ClanDetail clanData={clanData} refetchClan={refetchClanData} />
+      <ClanDetail
+        clanData={clanData}
+        refetchClan={refetchClanData}
+        fullHeight={activeTab === "members"}
+      />
 
       <MyClanTabs
         activeTab={activeTab}
@@ -77,8 +79,13 @@ export default function MyClan() {
       )}
 
       {activeTab === "quests" && !isLoading && clanData && (
-        <ClanQuests quests={clanQuests} refetchClanQuests={refetchClanQuests} />
+        <ClanQuests
+          quests={clanQuests}
+          refetchClanQuests={refetchClanQuests}
+          refetchClanData={refetchClanData}
+        />
       )}
+
       {activeTab === "chat" && !isLoading && clanData && (
         <ClanChat
           clanId={clanData.id}

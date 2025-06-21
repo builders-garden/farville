@@ -1,5 +1,7 @@
+import { QuestStatus } from "@/lib/types/game";
 import { useApiMutation } from "../use-api-mutation";
 import { toast } from "sonner";
+import { ClanQuest, Item } from "@prisma/client";
 
 export const useClanOperations = (
   refetchClan?: () => void,
@@ -327,7 +329,20 @@ export const useClanOperations = (
       amount: data.amount,
     }),
     method: "POST",
-    onSuccess: (data) => {
+    onSuccess: (data: {
+      message: string;
+      quest: {
+        progress: number;
+        status: QuestStatus;
+        completedAt: Date | undefined;
+        clanId: string;
+        questId: string;
+        createdAt: Date;
+        quest?: ClanQuest & {
+          item: Item;
+        };
+      };
+    }) => {
       toast.success("Clan quest filled successfully!", {
         position: "top-center",
         duration: 3000,

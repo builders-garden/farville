@@ -13,9 +13,14 @@ import { ClanImage } from "./clan-image";
 interface ClanDetailProps {
   clanData: ClanWithData | undefined;
   refetchClan: () => void;
+  fullHeight: boolean;
 }
 
-export function ClanDetail({ clanData, refetchClan }: ClanDetailProps) {
+export function ClanDetail({
+  clanData,
+  refetchClan,
+  fullHeight,
+}: ClanDetailProps) {
   const { state, refetch, updateUserClan } = useGame();
   const [isLeaving, setIsLeaving] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -92,10 +97,7 @@ export function ClanDetail({ clanData, refetchClan }: ClanDetailProps) {
     <Card className="bg-gradient-to-br from-[#6D4C2C] to-[#5B4120] rounded-lg border-none w-full max-w-2xl">
       <CardContent className="flex flex-col w-full gap-3 xs:gap-4 p-3 xs:p-4">
         <div className="flex flex-row items-start gap-3">
-          <ClanImage
-            imageUrl={clanData.imageUrl}
-            clanName={clanData.name}
-          />
+          <ClanImage imageUrl={clanData.imageUrl} clanName={clanData.name} />
           <div className="flex flex-col w-full gap-1 xs:gap-2">
             <div className="flex justify-between items-start">
               <h3 className="text-white/90 font-bold text-xs xs:text-sm">
@@ -103,10 +105,7 @@ export function ClanDetail({ clanData, refetchClan }: ClanDetailProps) {
                   ? clanData.name.slice(0, 14) + "..."
                   : clanData?.name}
               </h3>
-              <ClanStatus
-                isPublic={clanData.isPublic}
-                short
-              />
+              <ClanStatus isPublic={clanData.isPublic} short />
             </div>
             <div className="flex w-full">
               <div className="text-[#f2a311] text-[10px]">
@@ -117,58 +116,60 @@ export function ClanDetail({ clanData, refetchClan }: ClanDetailProps) {
             </div>
           </div>
         </div>
-        <div className="flex flex-col w-full gap-2">
-          <div className="flex flex-row justify-between text-white/70">
-            <div className="flex flex-col gap-2 text-xs font-semibold">
-              <span>
-                Min Level:{" "}
-                {clanData.requiredLevel ? clanData.requiredLevel : "None"}
-              </span>
-              <span>
-                Farmed:{" "}
-                {clanData
-                  ? clanData.xp >= 1000000
-                    ? `${(clanData.xp / 1000000).toFixed(2)}M`
-                    : clanData.xp >= 1000
-                    ? `${(clanData.xp / 1000).toFixed(2)}K`
-                    : clanData.xp
-                  : undefined}{" "}
-                XP
-              </span>
-              {!isDisplayingMyClan && (
-                <span>Shared requests: {clanData.requests.length}</span>
+        {fullHeight && (
+          <div className="flex flex-col w-full gap-2">
+            <div className="flex flex-row justify-between text-white/70">
+              <div className="flex flex-col gap-2 text-xs font-semibold">
+                <span>
+                  Min Level:{" "}
+                  {clanData.requiredLevel ? clanData.requiredLevel : "None"}
+                </span>
+                <span>
+                  Farmed:{" "}
+                  {clanData
+                    ? clanData.xp >= 1000000
+                      ? `${(clanData.xp / 1000000).toFixed(2)}M`
+                      : clanData.xp >= 1000
+                      ? `${(clanData.xp / 1000).toFixed(2)}K`
+                      : clanData.xp
+                    : undefined}{" "}
+                  XP
+                </span>
+                {!isDisplayingMyClan && (
+                  <span>Shared requests: {clanData.requests.length}</span>
+                )}
+              </div>
+              {isDisplayingMyClan && (
+                <div className="flex flex-col items-center gap-2">
+                  {canEdit && (
+                    <button
+                      className="flex flex-row text-[10px] text-white/90 items-center justify-center gap-2 w-24 h-8 rounded-lg hover:bg-yellow-800 transition-colors bg-yellow-700"
+                      onClick={() => setIsEditModalOpen(true)}
+                      aria-label="Edit clan"
+                    >
+                      <Pencil className="w-4 h-4" />
+                      <span>Edit</span>
+                    </button>
+                  )}
+                  <button
+                    className="flex flex-row items-center justify-center gap-2 w-24 h-8 bg-red-700 rounded-lg text-[10px] text-white/90 hover:bg-red-600 transition-colors"
+                    onClick={() => setIsModalOpen(true)}
+                    disabled={isLeaving}
+                  >
+                    {isLeaving ? (
+                      <Loader2 className="animate-spin w-4 h-4" />
+                    ) : (
+                      <>
+                        <LogOut className="w-4 h-4" />
+                        <span>Leave</span>
+                      </>
+                    )}
+                  </button>
+                </div>
               )}
             </div>
-            {isDisplayingMyClan && (
-              <div className="flex flex-col items-center gap-2">
-                {canEdit && (
-                  <button
-                    className="flex flex-row text-[10px] text-white/90 items-center justify-center gap-2 w-24 h-8 rounded-lg hover:bg-yellow-800 transition-colors bg-yellow-700"
-                    onClick={() => setIsEditModalOpen(true)}
-                    aria-label="Edit clan"
-                  >
-                    <Pencil className="w-4 h-4" />
-                    <span>Edit</span>
-                  </button>
-                )}
-                <button
-                  className="flex flex-row items-center justify-center gap-2 w-24 h-8 bg-red-700 rounded-lg text-[10px] text-white/90 hover:bg-red-600 transition-colors"
-                  onClick={() => setIsModalOpen(true)}
-                  disabled={isLeaving}
-                >
-                  {isLeaving ? (
-                    <Loader2 className="animate-spin w-4 h-4" />
-                  ) : (
-                    <>
-                      <LogOut className="w-4 h-4" />
-                      <span>Leave</span>
-                    </>
-                  )}
-                </button>
-              </div>
-            )}
           </div>
-        </div>
+        )}
       </CardContent>
 
       {isModalOpen && (

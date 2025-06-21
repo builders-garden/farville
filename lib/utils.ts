@@ -890,9 +890,16 @@ export const initClanQuests = async () => {
       Math.round(calculateQuestXP(20, cropData, amount) / 20 / 100) * 100;
     const startAt = new Date();
     startAt.setUTCHours(0, 0, 0, 0);
-    // const startAtISO = startAt.toISOString();
     const endAt = new Date();
     endAt.setUTCHours(23, 59, 59, 999);
+    // Add days until we reach Sunday (0 is Sunday, so we subtract the current day from 7)
+    const daysUntilSunday = 7 - endAt.getUTCDay();
+    endAt.setUTCDate(endAt.getUTCDate() + daysUntilSunday);
+    // If current week is odd, add 7 more days to get to next even week
+    const weekNumber = Math.ceil((endAt.getUTCDate() - endAt.getUTCDay()) / 7);
+    if (weekNumber % 2 !== 0) {
+      endAt.setUTCDate(endAt.getUTCDate() + 7);
+    }
 
     const newQuest: Prisma.ClanQuestCreateArgs["data"] = {
       itemId: randomCrop.id,

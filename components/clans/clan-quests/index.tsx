@@ -5,9 +5,14 @@ import ClanQuest from "./clan-quest";
 interface ClanQuestsProps {
   quests: ClanHasQuestWithQuest[];
   refetchClanQuests: () => void;
+  refetchClanData: () => void;
 }
 
-export function ClanQuests({ quests, refetchClanQuests }: ClanQuestsProps) {
+export function ClanQuests({
+  quests,
+  refetchClanQuests,
+  refetchClanData,
+}: ClanQuestsProps) {
   if (quests.length === 0) {
     return (
       <Card className={`border-none cursor-pointer bg-[#5B4120]/90`}>
@@ -28,25 +33,9 @@ export function ClanQuests({ quests, refetchClanQuests }: ClanQuestsProps) {
           key={quest.quest.id}
           quest={quest}
           refetchClanQuests={refetchClanQuests}
+          refetchClanData={refetchClanData}
         />
       ))}
     </div>
   );
 }
-
-//  {
-//   return (
-//     <Card className={`border-none cursor-pointer bg-[#5B4120]/90`}>
-//       <CardContent className="flex flex-col justify-between items-center p-3 text-center gap-3">
-//         <p className="text-md font-bold text-amber-200">👨🏻‍🌾 Feud Quests 👨🏻‍🌾</p>
-//         <p className="text-xs text-white/80">
-//           Feud Quests are coming soon! Complete tasks with your feud to earn
-//           rewards.
-//         </p>
-//         <p className="text-xs text-white/80">
-//           Will your feud be the first to complete all quests?
-//         </p>
-//       </CardContent>
-//     </Card>
-//   );
-// }

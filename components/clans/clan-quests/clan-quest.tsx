@@ -11,6 +11,7 @@ import { Slider } from "@/components/ui/slider";
 import { useGame } from "@/context/GameContext";
 import { useClanOperations } from "@/hooks/game-actions/use-clan-operations";
 import { ClanHasQuestWithQuest } from "@/lib/prisma/types";
+import { QuestStatus } from "@/lib/types/game";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import { useState } from "react";
@@ -18,6 +19,7 @@ import { useState } from "react";
 interface ClanQuestProps {
   quest: ClanHasQuestWithQuest;
   refetchClanQuests: () => void;
+  refetchClanData: () => void;
 }
 
 const renderClanQuestProgress = (quest: ClanHasQuestWithQuest) => {
@@ -79,6 +81,7 @@ const clanQuestDescription = (quest: ClanHasQuestWithQuest["quest"]) => {
 export default function ClanQuest({
   quest,
   refetchClanQuests,
+  refetchClanData,
 }: ClanQuestProps) {
   const { fillClanQuest } = useClanOperations();
   const { state } = useGame();
@@ -105,11 +108,14 @@ export default function ClanQuest({
         amount: depositQuantity,
       },
       {
-        onSuccess: () => {
+        onSuccess: (data) => {
           refetchClanQuests();
           setIsFillingQuest(false);
           setDepositQuantity(1); // Reset request quantity after successful fill
           setDialogOpen(false); // Close dialog
+          if (data.quest.status === QuestStatus.Completed) {
+            refetchClanData(); // Refetch clan data if quest is completed
+          }
         },
         onError: (error) => {
           refetchClanQuests();
@@ -122,7 +128,13 @@ export default function ClanQuest({
 
   return (
     <>
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+      <Dialog
+        open={dialogOpen}
+        onOpenChange={(open) => {
+          setDialogOpen(open);
+          if (!open) setDepositQuantity(1);
+        }}
+      >
         <motion.div
           key={quest.quest.id}
           initial={{ opacity: 0, x: -20 }}
@@ -270,7 +282,9 @@ export default function ClanQuest({
                     step={1}
                     onValueChange={(value) => setDepositQuantity(value[0])}
                     className="cursor-pointer"
-                    disabled={isFillingQuest}
+                    disabled={
+                      isFillingQuest || !userItem || userItem.quantity === 0
+                    }
                   />
 
                   <p className="text-white/70 text-xs text-right">
@@ -282,9 +296,13 @@ export default function ClanQuest({
               <div className="flex gap-2 text-xs">
                 <button
                   onClick={handleFillQuest}
-                  disabled={isFillingQuest}
+                  disabled={
+                    isFillingQuest ||
+                    (userItem?.quantity || 0) < depositQuantity ||
+                    userItem?.quantity === 0
+                  }
                   className="flex-1 bg-[#FFB938] text-[#7E4E31] px-4 py-2 rounded-lg font-bold 
-                   hover:bg-[#ffc661] transition-colors"
+                   hover:bg-[#ffc661] transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[#FFB938]"
                 >
                   {isFillingQuest ? (
                     <div className="flex items-center justify-center">
