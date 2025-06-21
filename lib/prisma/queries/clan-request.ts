@@ -28,3 +28,11 @@ export function deleteClanRequestsByFid(clanId: string, fid: number) {
     },
   });
 }
+
+export function getClanRequestByRequestId(requestId: string) {
+  return prisma.clanRequest.findFirst({
+    where: {
+      requestId,
+    },
+  });
+}

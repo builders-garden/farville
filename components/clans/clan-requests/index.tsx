@@ -1,7 +1,5 @@
 import { RequestChatCard } from "@/components/RequestChatCard";
 import { ClanRequestWithItemData, ClanMember } from "@/lib/prisma/types";
-import { ClanRequestsFloatingButtons } from "./clan-requests-floating-buttons";
-import { useState } from "react";
 import { RefreshCw } from "lucide-react";
 
 interface ClanRequestsProps {
@@ -15,8 +13,6 @@ export default function ClanRequests({
   viewerFid,
   refetchClanData,
 }: ClanRequestsProps) {
-  const [isFloatingButtonsOpen, setIsFloatingButtonsOpen] = useState(false);
-
   return (
     <>
       <div className="flex flex-col gap-2 w-full max-w-2xl py-2">
@@ -58,12 +54,6 @@ export default function ClanRequests({
           </>
         )}
       </div>
-
-      <ClanRequestsFloatingButtons
-        isExpanded={isFloatingButtonsOpen}
-        setIsExpanded={setIsFloatingButtonsOpen}
-        refetchClan={refetchClanData}
-      />
     </>
   );
 }

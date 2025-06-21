@@ -289,3 +289,40 @@ export function deleteClan(clanId: string) {
     where: { id: clanId },
   });
 }
+
+export async function getClansLeaderboardWithUserRank(
+  userClanId: string,
+  limit: number = 50,
+  options?: {
+    includeMembers?: boolean;
+    includeLeader?: boolean;
+  }
+) {
+  // Get the top clans for the leaderboard
+  const clans = await getClansLeaderboard(limit, options);
+
+  // Get the user's clan with its rank using a safer approach
+  const userClanData = await getClanById(userClanId, options);
+  
+  let userClan = null;
+  if (userClanData) {
+    // Calculate rank by counting clans with higher XP
+    const ranksAbove = await prisma.clan.count({
+      where: {
+        xp: {
+          gt: userClanData.xp,
+        },
+      },
+    });
+    
+    userClan = {
+      ...userClanData,
+      rank: ranksAbove + 1,
+    };
+  }
+
+  return {
+    clans,
+    userClan,
+  };
+}

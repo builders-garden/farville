@@ -35,6 +35,7 @@ import { useUserGlobalStats } from "./use-user-global-stats";
 import { useCommunityBoosterStatus } from "./use-community-booster";
 import { useCommunityDonation } from "./use-community-donation";
 import { useUserClan } from "./use-user-clan";
+import { useUserClanRequests } from "./use-user-clan-requests";
 
 export interface RefetchType {
   all: () => Promise<void>;
@@ -106,6 +107,7 @@ export interface GameState {
   isFarcasterManiaOn: boolean;
   isFarmersPowerOn: boolean;
   clan?: UserClan;
+  hasUnfulfilledClanRequests: boolean;
 }
 
 export const useGameState = (mode: Mode) => {
@@ -154,6 +156,7 @@ export const useGameState = (mode: Mode) => {
     communityDonations: [],
     isFarcasterManiaOn: false,
     isFarmersPowerOn: false,
+    hasUnfulfilledClanRequests: false,
   });
 
   const {
@@ -236,14 +239,21 @@ export const useGameState = (mode: Mode) => {
     refetch: refetchUserClan,
   } = useUserClan(user?.fid);
 
+  const {
+    hasUnfulfilledRequests,
+    isLoading: isLoadingClanRequests,
+    refetch: refetchClanRequests,
+  } = useUserClanRequests(userClan?.clan?.id);
+
   const updateUserClanState = useCallback(() => {
     if (userClan) {
       setState((prevState) => ({
         ...prevState!,
         clan: userClan,
+        hasUnfulfilledClanRequests: hasUnfulfilledRequests,
       }));
     }
-  }, [userClan]);
+  }, [userClan, hasUnfulfilledRequests]);
 
   const updateUserState = useCallback(() => {
     if (user) {
@@ -613,6 +623,15 @@ export const useGameState = (mode: Mode) => {
   useEffect(() => {
     updateUserClanState();
   }, [userClan, updateUserClanState]);
+
+  useEffect(() => {
+    if (userClan) {
+      setState((prevState) => ({
+        ...prevState!,
+        hasUnfulfilledClanRequests: hasUnfulfilledRequests,
+      }));
+    }
+  }, [hasUnfulfilledRequests, userClan]);
 
   const { userGlobalStats } = useUserGlobalStats(state.user?.fid);
 
@@ -988,7 +1007,8 @@ export const useGameState = (mode: Mode) => {
       isLoadingUserModes ||
       isLoadingUserCommunityBoosterStatus ||
       isLoadingCommunityDonations ||
-      isLoadingUserClan,
+      isLoadingUserClan ||
+      isLoadingClanRequests,
     refetch: {
       all: refetchAll,
       userItems: async () => {
@@ -1023,6 +1043,7 @@ export const useGameState = (mode: Mode) => {
       },
       userClan: async () => {
         await refetchUserClan();
+        await refetchClanRequests();
       },
     } as RefetchType,
     updateGridCells,

@@ -7,17 +7,17 @@ import ClanJoinRequests from "./clan-join-requests";
 import { useClanJoinRequests } from "@/hooks/use-clan-join-requests";
 import { ClanRole } from "@/lib/types/game";
 import { ClanDetail } from "./clan-detail";
-import ClanRequests from "./clan-requests";
 import { FloatingShareButton } from "../FloatingShareButton";
-import { clanFlexCardComposeCastUrl } from "@/lib/utils";
-import sdk from "@farcaster/frame-sdk";
 import { ClanQuests } from "./clan-quests";
 import { useClanQuests } from "@/hooks/clan/use-clan-quests";
+import ClanShareModal from "./clan-share-modal";
+import { ClanChat } from "./clan-chat";
 
 export default function MyClan() {
   const { state } = useGame();
 
-  const [activeTab, setActiveTab] = useState<Tab>("members");
+  const [activeTab, setActiveTab] = useState<Tab>("chat");
+  const [showShareModal, setShowShareModal] = useState(false);
 
   const {
     clanData,
@@ -46,19 +46,17 @@ export default function MyClan() {
 
   const handleShareClan = async () => {
     if (!clanData) return;
-
-    const { castUrl } = clanFlexCardComposeCastUrl(
-      state.user.fid,
-      clanData.id,
-      clanData.name
-    );
-    await sdk.actions.openUrl(castUrl);
+    setShowShareModal(true);
   };
 
   console.log("clan quests", clanQuests);
 
   return (
-    <div className="flex flex-col items-center justify-center w-full pb-8 gap-2">
+    <div
+      className={`flex flex-col items-center justify-center w-full gap-2 ${
+        activeTab === "chat" ? "pb-4" : "pb-8"
+      }`}
+    >
       <ClanDetail clanData={clanData} refetchClan={refetchClanData} />
 
       <MyClanTabs
@@ -66,6 +64,7 @@ export default function MyClan() {
         setActiveTab={setActiveTab}
         pendingRequestsCount={joinRequests?.length || 0}
         canManageRequests={canManageRequests}
+        hasUnfulfilledRequests={state.hasUnfulfilledClanRequests}
       />
 
       {activeTab === "members" && !isLoading && clanData && (
@@ -80,6 +79,16 @@ export default function MyClan() {
       {activeTab === "quests" && !isLoading && clanData && (
         <ClanQuests quests={clanQuests} refetchClanQuests={refetchClanQuests} />
       )}
+      {activeTab === "chat" && !isLoading && clanData && (
+        <ClanChat
+          clanId={clanData.id}
+          requests={clanData.requests.map((req) => ({
+            ...req,
+            user: membersMap[req.fid],
+          }))}
+          refetchClanData={refetchClanData}
+        />
+      )}
 
       {activeTab === "newcomers" && !isLoading && clanData && (
         <div className="w-full max-w-2xl">
@@ -91,20 +100,19 @@ export default function MyClan() {
         </div>
       )}
 
-      {activeTab === "requests" && !isLoading && clanData && (
-        <ClanRequests
-          requests={clanData.requests.map((req) => ({
-            ...req,
-            user: membersMap[req.fid],
-          }))}
-          viewerFid={state.user.fid}
-          refetchClanData={refetchClanData}
-        />
+      {/* Floating Share Button */}
+      {clanData && activeTab !== "chat" && (
+        <FloatingShareButton onClick={handleShareClan} />
       )}
 
-      {/* Floating Share Button */}
-      {clanData && activeTab !== "requests" && (
-        <FloatingShareButton onClick={handleShareClan} />
+      {/* Clan Share Modal */}
+      {showShareModal && clanData && (
+        <ClanShareModal
+          clanId={clanData.id}
+          clanName={clanData.name}
+          userFid={state.user.fid}
+          onClose={() => setShowShareModal(false)}
+        />
       )}
     </div>
   );

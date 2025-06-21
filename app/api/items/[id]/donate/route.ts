@@ -15,6 +15,7 @@ import {
   getClanByFid,
   incrementClanXp,
   incrementUserContributedXp,
+  getClanRequestByRequestId,
 } from "@/lib/prisma/queries";
 import { userCanDonate } from "@/lib/utils";
 import { Mode, PerkType, SpecialItemType } from "@/lib/types/game";
@@ -205,6 +206,45 @@ export const POST = async (
   }
 
   await Promise.all(promises);
+
+  // Check if this donation was for a clan request and emit socket event
+  try {
+    const clanRequest = await getClanRequestByRequestId(requestId);
+    if (clanRequest) {
+      // Get the updated request to get the new filled quantity
+      const updatedRequest = await getRequestById(requestId);
+      if (updatedRequest) {
+        await axios.post(
+          `${env.FARVILLE_SERVICE_URL}/api/clan/${clanRequest.clanId}/request/update`,
+          {
+            requestId,
+            newFilledQuantity: updatedRequest.filledQuantity,
+            quantity: updatedRequest.quantity,
+            donorData: {
+              fid: user.fid,
+              username: user.username,
+              displayName: user.displayName,
+              avatarUrl: user.avatarUrl,
+              selectedAvatarUrl: user.selectedAvatarUrl,
+              mintedOG: user.mintedOG,
+            },
+          },
+          {
+            headers: {
+              "Content-Type": "application/json",
+              "x-fid": fid,
+              "x-api-secret": env.FARVILLE_SERVICE_API_KEY,
+            },
+          }
+        );
+      }
+    }
+  } catch (socketError) {
+    console.warn(
+      "Failed to emit socket event for clan request update:",
+      socketError
+    );
+  }
 
   return NextResponse.json({ message: "Item donated" }, { status: 200 });
 };

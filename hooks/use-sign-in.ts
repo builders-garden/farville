@@ -11,7 +11,10 @@ export const useSignIn = (isInMaintenance: boolean) => {
   const [isSignedIn, setIsSignedIn] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { error: authCheckError } = useAuthCheck(isInMaintenance);
+  const { error: authCheckError } = useAuthCheck(
+    isInMaintenance,
+    context?.user?.fid?.toString()
+  );
 
   const signIn = useCallback(async () => {
     try {
@@ -29,7 +32,7 @@ export const useSignIn = (isInMaintenance: boolean) => {
           throw new Error(
             "No FID found. Please make sure you're logged into Warpcast."
           );
-        const { token: farcasterToken } = await sdk.experimental.quickAuth();
+        const { token: farcasterToken } = await sdk.quickAuth.getToken();
         if (!farcasterToken) throw new Error("Sign in failed");
         token = farcasterToken;
       }
