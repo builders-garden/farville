@@ -243,7 +243,7 @@ export const useGameState = (mode: Mode) => {
     hasUnfulfilledRequests,
     isLoading: isLoadingClanRequests,
     refetch: refetchClanRequests,
-  } = useUserClanRequests(userClan?.clan?.id);
+  } = useUserClanRequests(userClan?.clan?.id, user?.fid);
 
   const updateUserClanState = useCallback(() => {
     if (userClan) {

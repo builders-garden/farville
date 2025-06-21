@@ -1,7 +1,7 @@
 import { useApiQuery } from "./use-api-query";
 import { ClanWithData } from "@/lib/prisma/types";
 
-export const useUserClanRequests = (clanId?: string) => {
+export const useUserClanRequests = (clanId?: string, userFid?: number) => {
   const { data, isLoading, refetch } = useApiQuery<ClanWithData>({
     queryKey: ["clan-requests", clanId],
     url: `/api/clan/${clanId}`,
@@ -9,9 +9,14 @@ export const useUserClanRequests = (clanId?: string) => {
     enabled: !!clanId,
   });
 
-  // Calculate if there are unfulfilled requests
+  // Calculate if there are unfulfilled requests (excluding the user's own requests)
   const hasUnfulfilledRequests =
     data?.requests?.some((request) => {
+      // Skip the user's own requests
+      if (request.fid === userFid) {
+        return false;
+      }
+
       if (request.request) {
         return request.request.filledQuantity < request.request.quantity;
       }

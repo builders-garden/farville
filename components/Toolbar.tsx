@@ -164,7 +164,7 @@ export default function Toolbar({
             className={`w-9 h-9 xs:w-12 xs:h-12 rounded-lg flex items-center justify-center transition-colors relative
             ${
               state.hasUnfulfilledClanRequests
-                ? "bg-[#A17449] shadow-lg shadow-[#A17449]/50 animate-pulse"
+                ? "bg-[#A17449] shadow-lg shadow-[#A17449]/50"
                 : "bg-[#8B5E3C] hover:bg-[#6d4c2c]"
             }`}
           >
