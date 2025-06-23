@@ -4,6 +4,11 @@ import { fertilizeBulk, harvestBulk, perkBulk, plantBulk } from "./utils";
 import { getUserByMode } from "@/lib/prisma/queries";
 import Logger from "@/lib/logger";
 import { z } from "zod";
+import { withTracing } from "@/lib/otel/traceWrapper";
+
+// import { loggerProvider } from "@/lib/otel/logger";
+
+// const otelLogger = loggerProvider.getLogger("farville");
 
 export interface GridBulkRequest {
   action: ActionType;
@@ -32,7 +37,7 @@ const requestSchema = z.object({
   mode: z.nativeEnum(Mode),
 });
 
-export const POST = async (req: NextRequest) => {
+const handler = async function (req: NextRequest): Promise<NextResponse> {
   const fid = req.headers.get("x-user-fid");
 
   if (!fid) {
@@ -55,6 +60,13 @@ export const POST = async (req: NextRequest) => {
   Logger.logTest(
     `/api/grid-bulk user ${fid} body parsed, action ${action} item ${itemSlug} date ${new Date()}`
   );
+  // otelLogger.emit({
+  //   body: requestBody.data,
+  //   severityText: "INFO",
+  //   attributes: {
+  //     user: fid,
+  //   },
+  // });
 
   const user = await getUserByMode(Number(fid), mode);
   if (!user) {
@@ -169,3 +181,5 @@ export const POST = async (req: NextRequest) => {
     );
   }
 };
+
+export const POST = withTracing(handler);
