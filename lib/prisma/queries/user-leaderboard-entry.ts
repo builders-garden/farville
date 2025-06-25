@@ -75,6 +75,9 @@ export const getWeeklyUserLeaderboardByLeague = async (
           in: CREATOR_FIDS,
         },
       },
+      user: {
+        bot: false,
+      },
       lastLeague: currentWeek ? undefined : league,
     },
     orderBy: currentWeek
@@ -93,25 +96,39 @@ export const getWeeklyUserLeaderboardByLeague = async (
     if (!CREATOR_FIDS.includes(targetFid)) {
       const targetEntry = await prisma.userLeaderboardEntry.findUnique({
         where: { fid_mode: { fid: targetFid, mode } },
+        select: {
+          currentScore: true,
+          lastScore: true,
+          fid: true,
+          user: {
+            select: {
+              bot: true,
+            },
+          },
+        },
       });
 
       if (!targetEntry) {
         throw new Error("Target user not found in leaderboard");
       }
 
-      targetPosition = await prisma.userLeaderboardEntry.count({
-        where: {
-          league,
-          [currentWeek ? "currentScore" : "lastScore"]: {
-            gte: targetEntry[currentWeek ? "currentScore" : "lastScore"],
-          },
-          fid: {
-            not: {
-              in: CREATOR_FIDS,
+      if (targetEntry.user.bot) {
+        targetPosition = -1;
+      } else {
+        targetPosition = await prisma.userLeaderboardEntry.count({
+          where: {
+            league,
+            [currentWeek ? "currentScore" : "lastScore"]: {
+              gte: targetEntry[currentWeek ? "currentScore" : "lastScore"],
+            },
+            fid: {
+              not: {
+                in: CREATOR_FIDS,
+              },
             },
           },
-        },
-      });
+        });
+      }
     } else {
       targetPosition = -1;
     }
