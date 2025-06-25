@@ -73,7 +73,7 @@ export const useSignIn = (isInMaintenance: boolean) => {
         throw new Error(data.error || "Sign in failed");
       }
 
-      if (data.isBot) {
+      if (data.user.bot) {
         setIsBot(true);
       }
 

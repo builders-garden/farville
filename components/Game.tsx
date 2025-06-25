@@ -13,7 +13,7 @@ import { Maintenance } from "./home/maintenance";
 import { Website } from "./home/website";
 import sdk from "@farcaster/frame-sdk";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { BotBlocker } from "./home/bot-blocker";
+// import { BotBlocker } from "./home/bot-blocker";
 
 export default function Game({
   children,
@@ -46,7 +46,12 @@ export default function Game({
     return () => clearInterval(interval);
   }, []);
 
-  const { isSignedIn, isLoading, error, isBot } = useSignIn(isInMaintenance);
+  const {
+    isSignedIn,
+    isLoading,
+    error,
+    // isBot
+  } = useSignIn(isInMaintenance);
 
   const pathname = usePathname();
   const isRedeemPath = pathname.startsWith("/redeem/");
@@ -76,9 +81,9 @@ export default function Game({
     return <Website />;
   }
 
-  if (isBot) {
-    return <BotBlocker />;
-  }
+  // if (isBot) {
+  //   return <BotBlocker />;
+  // }
 
   if (isInMaintenance) {
     return <Maintenance maintenanceEnd={maintenanceEnd} />;
