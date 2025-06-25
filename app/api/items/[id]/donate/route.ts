@@ -23,6 +23,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import axios from "axios";
 import { env } from "@/lib/env";
+import { withTracing } from "@/lib/otel/traceWrapper";
 
 const requestSchema = z.object({
   quantity: z.number().min(1).max(10),
@@ -30,17 +31,29 @@ const requestSchema = z.object({
   requestId: z.string(),
 });
 
-export const POST = async (
+const handlerPOST = async (
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) => {
   const fid = req.headers.get("x-user-fid");
   if (!fid) {
-    return new Response("Fid not found", { status: 404 });
+    return NextResponse.json(
+      {
+        success: false,
+        error: "Fid not found",
+      },
+      { status: 404 }
+    );
   }
   const itemId = Number((await params).id);
   if (isNaN(itemId)) {
-    return new Response("Invalid item id", { status: 400 });
+    return NextResponse.json(
+      {
+        success: false,
+        error: "Invalid item id",
+      },
+      { status: 400 }
+    );
   }
 
   const requestJson = await req.json();
@@ -248,3 +261,5 @@ export const POST = async (
 
   return NextResponse.json({ message: "Item donated" }, { status: 200 });
 };
+
+export const POST = withTracing(handlerPOST);

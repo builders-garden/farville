@@ -25,7 +25,61 @@ export const loggerProvider = new LoggerProvider({
 });
 
 // Create a pino logger instance
-export const logger = pino({
+const logger = pino({
   name: "farville-app",
   level: "info",
 });
+
+// Logger class for project-wide logging
+// Use types compatible with OpenTelemetry AnyValueMap
+export type LogAttributes = Record<
+  string,
+  string | number | boolean | null | undefined
+>;
+
+class Logger {
+  static otelLogger = loggerProvider.getLogger("farville");
+
+  static info(message: string, attributes: LogAttributes = {}) {
+    this.otelLogger.emit({
+      body: message,
+      severityText: "INFO",
+      attributes,
+    });
+    logger.info({ ...attributes, msg: message });
+  }
+
+  static warn(message: string, attributes: LogAttributes = {}) {
+    this.otelLogger.emit({
+      body: message,
+      severityText: "WARN",
+      attributes,
+    });
+    logger.warn({ ...attributes, msg: message });
+  }
+
+  static error(message: string, attributes: LogAttributes = {}) {
+    this.otelLogger.emit({
+      body: message,
+      severityText: "ERROR",
+      attributes,
+    });
+    logger.error({ ...attributes, msg: message });
+  }
+
+  static debug(message: string, attributes: LogAttributes = {}) {
+    this.otelLogger.emit({
+      body: message,
+      severityText: "DEBUG",
+      attributes,
+    });
+    logger.debug({ ...attributes, msg: message });
+  }
+
+  // For backward compatibility with logTest
+  static logTest(message: string, attributes: LogAttributes = {}) {
+    this.info(message, attributes);
+  }
+}
+
+export default Logger;

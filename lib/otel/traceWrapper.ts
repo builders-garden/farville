@@ -139,8 +139,20 @@
 import { trace, context } from "@opentelemetry/api";
 import { NextRequest, NextResponse } from "next/server";
 
-export function withTracing(fn: (req: NextRequest) => Promise<NextResponse>) {
-  return async function handler(req: NextRequest): Promise<NextResponse> {
+export function withTracing(
+  fn: (
+    req: NextRequest,
+    { params }: { params: Promise<{ id: string }> }
+  ) => Promise<NextResponse>
+) {
+  return async function handler(
+    req: NextRequest,
+    {
+      params,
+    }: {
+      params: Promise<{ id: string }>;
+    }
+  ): Promise<NextResponse> {
     const span = trace.getSpan(context.active());
 
     if (span && req.method === "POST") {
@@ -155,7 +167,7 @@ export function withTracing(fn: (req: NextRequest) => Promise<NextResponse>) {
       }
     }
 
-    return fn(req);
+    return fn(req, { params });
   };
 }
 
