@@ -120,7 +120,7 @@ export const POST = async (req: NextRequest) => {
     .setExpirationTime(expirationTime)
     .sign(new TextEncoder().encode(env.JWT_SECRET));
 
-  const response = NextResponse.json({ success: true, token: jwtToken });
+  const response = NextResponse.json({ success: true, token: jwtToken, user });
 
   // Set the auth cookie with the JWT token
   response.cookies.set({

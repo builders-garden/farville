@@ -30,6 +30,7 @@ export interface UserWithStatistic {
   createdAt: Date;
   mintedOG: boolean;
   selectedAvatarUrl: string | null;
+  bot: boolean;
 }
 
 export interface UserWithStatistics {

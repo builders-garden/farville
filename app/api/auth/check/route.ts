@@ -1,5 +1,6 @@
 import { trackEvent } from "@/lib/posthog/server";
-import { getUserModes } from "@/lib/prisma/queries";
+import { getUserByMode, getUserModes } from "@/lib/prisma/queries";
+import { Mode } from "@/lib/types/game";
 import {
   initQuestsAndLeaderboardEntry,
   userIsNotAdminAndIsNotProduction,
@@ -20,6 +21,20 @@ export async function GET(request: NextRequest) {
   const contextFid = request.nextUrl.searchParams.get("fid");
   if (contextFid && contextFid !== fid) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+  }
+
+  const user = await getUserByMode(Number(fid), Mode.Classic);
+  if (!user) {
+    return NextResponse.json({ message: "User not found" }, { status: 404 });
+  }
+
+  if (user.bot === true) {
+    return NextResponse.json({
+      message: "nok",
+      data: {
+        isBot: true,
+      },
+    });
   }
 
   const userModes = await getUserModes(Number(fid));

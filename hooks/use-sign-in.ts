@@ -9,12 +9,14 @@ export const useSignIn = (isInMaintenance: boolean) => {
   const { isSDKLoaded, context, error: contextError } = useFrameContext();
   const { isTestMode } = useTestMode();
   const [isSignedIn, setIsSignedIn] = useState(false);
+  const [isBot, setIsBot] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { error: authCheckError } = useAuthCheck(
-    isInMaintenance,
-    context?.user?.fid?.toString()
-  );
+  const {
+    error: authCheckError,
+    data: authCheckResult,
+    isLoading: isLoadingAuthCheck,
+  } = useAuthCheck(isInMaintenance, context?.user?.fid?.toString());
 
   const signIn = useCallback(async () => {
     try {
@@ -64,6 +66,17 @@ export const useSignIn = (isInMaintenance: boolean) => {
       }
 
       const data = await res.json();
+      console.log("signIn data", data);
+
+      if (!data.success) {
+        console.error("signIn data error", data);
+        throw new Error(data.error || "Sign in failed");
+      }
+
+      if (data.isBot) {
+        setIsBot(true);
+      }
+
       return data;
     } catch (err) {
       const errorMessage =
@@ -81,6 +94,10 @@ export const useSignIn = (isInMaintenance: boolean) => {
       setError(null);
       if (!isSignedIn && !authCheckError) {
         setIsSignedIn(true);
+        // check if the user is a bot
+        if (authCheckResult?.data?.isBot) {
+          setIsBot(true);
+        }
       } else {
         const data = await signIn();
         if (!data.success) throw new Error(data.error ?? "Sign in failed");
@@ -96,7 +113,7 @@ export const useSignIn = (isInMaintenance: boolean) => {
     } finally {
       setIsLoading(false);
     }
-  }, [authCheckError, context?.user?.fid, isSignedIn, signIn]);
+  }, [authCheckError, authCheckResult, context?.user?.fid, isSignedIn, signIn]);
 
   useEffect(() => {
     if (
@@ -104,6 +121,7 @@ export const useSignIn = (isInMaintenance: boolean) => {
       isSDKLoaded &&
       !isSignedIn &&
       !isLoading &&
+      !isLoadingAuthCheck &&
       !error
     ) {
       handleSignIn().catch((err) => {
@@ -117,6 +135,7 @@ export const useSignIn = (isInMaintenance: boolean) => {
     isLoading,
     error,
     handleSignIn,
+    isLoadingAuthCheck,
   ]);
 
   useEffect(() => {
@@ -126,5 +145,5 @@ export const useSignIn = (isInMaintenance: boolean) => {
     }
   }, [isInMaintenance, authCheckError]);
 
-  return { signIn: handleSignIn, isSignedIn, isLoading, error };
+  return { signIn: handleSignIn, isSignedIn, isLoading, error, isBot };
 };
