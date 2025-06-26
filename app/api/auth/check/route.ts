@@ -1,6 +1,6 @@
 import { trackEvent } from "@/lib/posthog/server";
 import { getUserByMode, getUserModes } from "@/lib/prisma/queries";
-import { Mode } from "@/lib/types/game";
+import { Mode, UserType } from "@/lib/types/game";
 import {
   initQuestsAndLeaderboardEntry,
   userIsNotAdminAndIsNotProduction,
@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ message: "User not found" }, { status: 404 });
   }
 
-  if (user.bot === true) {
+  if (user.bot === UserType.Bot) {
     return NextResponse.json({
       message: "nok",
       data: {
