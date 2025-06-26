@@ -84,7 +84,7 @@ export default function ClanQuest({
   refetchClanData,
 }: ClanQuestProps) {
   const { fillClanQuest } = useClanOperations();
-  const { state } = useGame();
+  const { state, updateUserItems } = useGame();
 
   const [depositQuantity, setDepositQuantity] = useState(1);
   const [isFillingQuest, setIsFillingQuest] = useState(false);
@@ -110,6 +110,16 @@ export default function ClanQuest({
       {
         onSuccess: (data) => {
           refetchClanQuests();
+          if (userItem) {
+            updateUserItems([
+              {
+                itemId: item.id,
+                quantity: userItem ? userItem.quantity - depositQuantity : 0,
+                item,
+              },
+            ]);
+            userItem.quantity -= depositQuantity; // Update local user item quantity
+          }
           setIsFillingQuest(false);
           setDepositQuantity(1); // Reset request quantity after successful fill
           setDialogOpen(false); // Close dialog
