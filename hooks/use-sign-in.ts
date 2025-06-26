@@ -4,6 +4,7 @@ import { useTestMode } from "@/context/TestContext";
 import { useCallback, useEffect, useState } from "react";
 import posthog from "posthog-js";
 import { useAuthCheck } from "./use-auth-check";
+import { UserType } from "@/lib/types/game";
 
 export const useSignIn = (isInMaintenance: boolean) => {
   const { isSDKLoaded, context, error: contextError } = useFrameContext();
@@ -73,7 +74,7 @@ export const useSignIn = (isInMaintenance: boolean) => {
         throw new Error(data.error || "Sign in failed");
       }
 
-      if (data.user.bot) {
+      if (data.user.bot === UserType.Bot) {
         setIsBot(true);
       }
 

@@ -14,7 +14,7 @@ import {
   ClanRequest,
   ClanChatMessage,
 } from "@prisma/client";
-import { Mode } from "../types/game";
+import { Mode, UserType } from "../types/game";
 
 export interface UserWithStatistic {
   fid: number;
@@ -30,7 +30,7 @@ export interface UserWithStatistic {
   createdAt: Date;
   mintedOG: boolean;
   selectedAvatarUrl: string | null;
-  bot: boolean;
+  bot: UserType;
 }
 
 export interface UserWithStatistics {

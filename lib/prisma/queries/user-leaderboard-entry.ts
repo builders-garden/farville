@@ -1,7 +1,7 @@
 import { CREATOR_FIDS, LEVEL_XP_THRESHOLDS } from "@/lib/game-constants";
 import { prisma } from "../client";
 import { UserLeaderboardEntry } from "@prisma/client";
-import { Mode } from "@/lib/types/game";
+import { Mode, UserType } from "@/lib/types/game";
 import { MODE_DEFINITIONS, ModeFeature } from "@/lib/modes/constants";
 
 export const createUserLeaderboardEntry = async (
@@ -76,7 +76,9 @@ export const getWeeklyUserLeaderboardByLeague = async (
         },
       },
       user: {
-        bot: false,
+        bot: {
+          not: UserType.Bot, // Exclude bot users
+        },
       },
       lastLeague: currentWeek ? undefined : league,
     },
@@ -112,7 +114,7 @@ export const getWeeklyUserLeaderboardByLeague = async (
         throw new Error("Target user not found in leaderboard");
       }
 
-      if (targetEntry.user.bot) {
+      if (targetEntry.user.bot === UserType.Bot) {
         targetPosition = -1;
       } else {
         targetPosition = await prisma.userLeaderboardEntry.count({
