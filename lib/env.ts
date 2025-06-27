@@ -31,8 +31,9 @@ export const env = createEnv({
     // ImageKit
     IMAGEKIT_PRIVATE_KEY: z.string().min(1),
     // Signoz
+    OTEL_SERVICE_NAME: z.string().min(1),
     SIGNOZ_TRACE_URL: z.string().url().min(1),
-    SIGNOZ_INGESTION_KEY: z.string().min(1),
+    // SIGNOZ_INGESTION_KEY: z.string().min(1),
   },
   client: {
     NEXT_PUBLIC_URL: z.string().url().min(1),
