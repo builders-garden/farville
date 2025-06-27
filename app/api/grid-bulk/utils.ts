@@ -40,6 +40,7 @@ import { MODE_DEFINITIONS, ModeFeature } from "@/lib/modes/constants";
 import Logger from "@/lib/logger";
 import { env } from "@/lib/env";
 import axios from "axios";
+import { default as OtelLogger } from "@/lib/otel/logger";
 
 export interface GridBulkResult {
   type: ActionType;
@@ -75,9 +76,6 @@ export const plantBulk = async (
   mode: Mode
 ) => {
   const userSeeds = await getUserItemBySlug(fid, seedType, mode);
-  Logger.logTest(
-    `/api/grid-bulk user ${fid} action plant step '1. get user seeds' date ${new Date()}`
-  );
 
   if (!userSeeds || userSeeds.quantity < cells.length) {
     return NextResponse.json(
@@ -88,9 +86,6 @@ export const plantBulk = async (
     );
   }
   const gridCells = await getUserGridCells(fid, mode);
-  Logger.logTest(
-    `/api/grid-bulk user ${fid} action plant step: '2. get grid cells' date ${new Date()}`
-  );
 
   const notPlantedCells: (UserGridCell | undefined)[] = [];
   const plantableCells: UserGridCell[] = [];
@@ -103,9 +98,6 @@ export const plantBulk = async (
       plantableCells.push(gridCell);
     }
   }
-  Logger.logTest(
-    `/api/grid-bulk user ${fid} action plant step: '3. filter cells' date ${new Date()}`
-  );
   const cropType = seedType.replace("-seeds", "") as CropType;
 
   // get current community boost
@@ -130,17 +122,21 @@ export const plantBulk = async (
     })),
     ActionType.Plant
   )) as number;
-  Logger.logTest(
-    `/api/grid-bulk user ${fid} action plant step: '4. update grid cells in db' date ${new Date()}`
-  );
 
-  // TODO: add different track
   if (updatedCellsCounter > 0) {
     await removeUserItem(fid, userSeeds.itemId, updatedCellsCounter, mode);
-    Logger.logTest(
-      `/api/grid-bulk user ${fid} action plant step: '5. remove user seeds' date ${new Date()}`
-    );
 
+    const questsCalculationData = {
+      fid,
+      mode,
+      category: ActionType.Plant,
+      itemId: userSeeds.itemId,
+      itemAmount: updatedCellsCounter,
+    };
+    OtelLogger.info(
+      `quests calculation [${ActionType.Plant},itemId:${userSeeds.itemId},itemAmount:${updatedCellsCounter}]`,
+      questsCalculationData
+    );
     Promise.allSettled([
       sendDelayedNotificationToService(
         fid,
@@ -156,13 +152,7 @@ export const plantBulk = async (
         headers: {
           "x-api-secret": env.FARVILLE_SERVICE_API_KEY,
         },
-        data: {
-          fid,
-          mode,
-          category: "plant",
-          itemId: userSeeds.itemId,
-          itemAmount: updatedCellsCounter,
-        },
+        data: questsCalculationData,
       }),
       sendBatchToPostHog(
         fid,
@@ -174,9 +164,6 @@ export const plantBulk = async (
         }))
       ),
     ]);
-    Logger.logTest(
-      `/api/grid-bulk user ${fid} action plant step: '6. all promises settled' date ${new Date()}`
-    );
   }
   return {
     type: ActionType.Plant,
@@ -193,9 +180,7 @@ export const harvestBulk = async (
   mode: Mode
 ) => {
   const gridCells = await getUserGridCells(fid, mode);
-  Logger.logTest(
-    `/api/grid-bulk user ${fid} action harvest step: '1. get grid cells' date ${new Date()}`
-  );
+
   // Use a Map for O(1) lookup
   const gridCellMap = new Map(gridCells.map((gc) => [`${gc.x},${gc.y}`, gc]));
   const harvestableCells = [];
@@ -215,9 +200,6 @@ export const harvestBulk = async (
       harvestableCells.push(gridCell);
     }
   }
-  Logger.logTest(
-    `/api/grid-bulk user ${fid} action harvest step: '2. filter cells' date ${new Date()}`
-  );
 
   const crops = harvestableCells.map((gc) => {
     return {
@@ -228,9 +210,6 @@ export const harvestBulk = async (
     };
   });
 
-  Logger.logTest(
-    `/api/grid-bulk user ${fid} action harvest step: '3. map cells' date ${new Date()}`
-  );
   await updateGridCellsBulk(
     fid,
     harvestableCells.map((cell) => ({
@@ -244,13 +223,7 @@ export const harvestBulk = async (
     })),
     ActionType.Harvest
   );
-  Logger.logTest(
-    `/api/grid-bulk user ${fid} action harvest step: '4. update grid cells in db' date ${new Date()}`
-  );
   const rewards = await rewardUserBulk(fid, crops, mode);
-  Logger.logTest(
-    `/api/grid-bulk user ${fid} action harvest step: '5. reward user bulk' date ${new Date()}`
-  );
 
   // update user items based on the rewards for each type of crop
   const harvestCropSummary: {
@@ -272,17 +245,11 @@ export const harvestBulk = async (
       harvestCropSummary[crop.crop] = crop.amount;
     }
   });
-  Logger.logTest(
-    `/api/grid-bulk user ${fid} action harvest step: '6. calc summary' date ${new Date()}`
-  );
 
   // check if Harverst Honours is enabled inside this mode
   const isHarvestHonoursAndGoldEnabled = MODE_DEFINITIONS[
     mode
   ].features.includes(ModeFeature.HarvestHonours);
-  Logger.logTest(
-    `/api/grid-bulk user ${fid} action harvest step: '7. calc is honours and gold enabled' date ${new Date()}`
-  );
 
   let userHarvestedCrops: UserHarvestedCrop[] = [];
   if (isHarvestHonoursAndGoldEnabled) {
@@ -338,6 +305,18 @@ export const harvestBulk = async (
           });
         }
         promises.push(upsertUserHarvestedCrop(fid, cropType, amount));
+        const questsCalculationData = {
+          fid,
+          mode,
+          category: ActionType.Harvest,
+          itemId: CROP_DATA[cropType].id,
+          itemAmount: amount,
+        };
+        OtelLogger.info(
+          `
+          quests calculation [${ActionType.Harvest},itemId:${CROP_DATA[cropType].id},itemAmount:${amount}]`,
+          questsCalculationData
+        );
         promises.push(
           axios({
             url: `${env.FARVILLE_SERVICE_URL}/api/async-jobs/quests-calculation`,
@@ -345,13 +324,7 @@ export const harvestBulk = async (
             headers: {
               "x-api-secret": env.FARVILLE_SERVICE_API_KEY,
             },
-            data: {
-              fid,
-              mode,
-              category: ActionType.Harvest,
-              itemId: CROP_DATA[cropType].id,
-              itemAmount: amount,
-            },
+            data: questsCalculationData,
           })
         );
         if (amount - goldCropCount > 0) {

@@ -4,6 +4,8 @@ import { z } from "zod";
 import { MarketActionType, Mode } from "@/lib/types/game";
 import axios from "axios";
 import { env } from "@/lib/env";
+import { withTracing } from "@/lib/otel/traceWrapper";
+import { default as OtelLogger } from "@/lib/otel/logger";
 
 const requestSchema = z.object({
   action: z.nativeEnum(MarketActionType),
@@ -12,7 +14,7 @@ const requestSchema = z.object({
   mode: z.nativeEnum(Mode).default(Mode.Classic),
 });
 
-export const POST = async (req: NextRequest) => {
+const handlerPOST = async (req: NextRequest) => {
   const fid = req.headers.get("x-user-fid");
   if (!fid) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -57,19 +59,25 @@ export const POST = async (req: NextRequest) => {
         //   itemId,
         //   quantity
         // );
+        const questsCalculationData = {
+          fid: Number(fid),
+          category: "sell",
+          itemId,
+          itemAmount: quantity,
+          mode,
+        };
+        OtelLogger.info(
+          `quests calculation [${questsCalculationData.category},itemId:${questsCalculationData.itemId},itemAmount:${questsCalculationData.itemAmount},${questsCalculationData.mode}]`,
+          questsCalculationData
+        );
+
         await axios({
           url: `${env.FARVILLE_SERVICE_URL}/api/async-jobs/quests-calculation`,
           method: "POST",
           headers: {
             "x-api-secret": env.FARVILLE_SERVICE_API_KEY,
           },
-          data: {
-            fid: Number(fid),
-            category: "sell",
-            itemId,
-            itemAmount: quantity,
-            mode,
-          },
+          data: questsCalculationData,
         });
         return NextResponse.json({ message: "Item sold" });
       default:
@@ -85,3 +93,5 @@ export const POST = async (req: NextRequest) => {
     );
   }
 };
+
+export const POST = withTracing(handlerPOST);

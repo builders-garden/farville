@@ -12,6 +12,7 @@ import { NextRequest, NextResponse } from "next/server";
 import z from "zod";
 import { env } from "@/lib/env";
 import axios from "axios";
+import { withTracing } from "@/lib/otel/traceWrapper";
 
 const createClanRequestSchema = z.object({
   requestId: z.string().min(1, "Request ID is required").optional(),
@@ -20,7 +21,7 @@ const createClanRequestSchema = z.object({
   quantity: z.number().min(1, "Quantity must be at least 1").optional(),
 });
 
-export async function POST(req: NextRequest) {
+async function handlerPOST(req: NextRequest) {
   try {
     const fid = req.headers.get("x-user-fid");
     if (!fid) {
@@ -155,3 +156,5 @@ export async function POST(req: NextRequest) {
     );
   }
 }
+
+export const POST = withTracing(handlerPOST);
