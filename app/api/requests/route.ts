@@ -3,6 +3,7 @@ import { z } from "zod";
 import { GAME_ITEMS } from "@/lib/game-constants";
 import { createRequest, getItemById } from "@/lib/prisma/queries";
 import { Mode } from "@/lib/types/game";
+import { withTracing } from "@/lib/otel/traceWrapper";
 
 const requestSchema = z.object({
   itemId: z.number().min(1),
@@ -10,12 +11,12 @@ const requestSchema = z.object({
   mode: z.nativeEnum(Mode),
 });
 
-export const POST = async (request: NextRequest) => {
+const handlerPOST = async (request: NextRequest) => {
   const requestJson = await request.json();
   const requestBody = requestSchema.safeParse(requestJson);
 
   if (requestBody.success === false) {
-    return Response.json(
+    return NextResponse.json(
       { success: false, errors: requestBody.error.errors },
       { status: 400 }
     );
@@ -66,3 +67,5 @@ export const POST = async (request: NextRequest) => {
     );
   }
 };
+
+export const POST = withTracing(handlerPOST);

@@ -14,6 +14,7 @@ import {
   updateUserXP,
 } from "@/lib/prisma/queries";
 import { getThisWeekMonday } from "@/lib/utils";
+import { withTracing } from "@/lib/otel/traceWrapper";
 
 export async function GET(
   request: NextRequest,
@@ -45,7 +46,7 @@ const requestSchema = z.object({
   mode: z.nativeEnum(Mode),
 });
 
-export async function POST(
+async function handlerPOST(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -156,3 +157,5 @@ export async function POST(
 
   return NextResponse.json({ success: true, status, didLevelUp });
 }
+
+export const POST = withTracing(handlerPOST);
