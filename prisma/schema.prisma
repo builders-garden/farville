@@ -361,6 +361,8 @@ model Clan {
   isPublic       Boolean             @default(false)
   maxMembers     Int                 @default(20)
   xp             Int                 @default(0)
+  seasonXp       Int                 @default(0)
+  lastSeasonXp   Int                 @default(0)
   txHash         String?
   createdAt      DateTime            @default(now()) @db.Timestamptz(6)
   updatedAt      DateTime            @default(now()) @db.Timestamptz(6)
