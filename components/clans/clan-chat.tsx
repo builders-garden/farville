@@ -59,12 +59,12 @@ const RequestMessage: React.FC<RequestMessageProps> = ({
 }) => {
   const { state } = useGame();
   const [showRequestModal, setShowRequestModal] = useState(false);
-  
+
   // Defensive checks to prevent crashes - after hooks
   if (!request || !state) {
     return null;
   }
-  
+
   const isOwn = request.fid === viewerFid;
 
   const itemData = request.itemId
@@ -78,17 +78,17 @@ const RequestMessage: React.FC<RequestMessageProps> = ({
 
   const formatTime = (date: Date | string) => {
     try {
-      const dateObj = typeof date === 'string' ? new Date(date) : date;
+      const dateObj = typeof date === "string" ? new Date(date) : date;
       if (isNaN(dateObj.getTime())) {
-        return 'Invalid date';
+        return "Invalid date";
       }
       return new Intl.DateTimeFormat("en-US", {
         hour: "2-digit",
         minute: "2-digit",
       }).format(dateObj);
     } catch (error) {
-      console.error('Error formatting time:', error);
-      return 'Invalid date';
+      console.error("Error formatting time:", error);
+      return "Invalid date";
     }
   };
 
@@ -107,22 +107,22 @@ const RequestMessage: React.FC<RequestMessageProps> = ({
         "text-orange-300",
         "text-lime-300",
       ];
-      
-      if (!username || typeof username !== 'string') {
+
+      if (!username || typeof username !== "string") {
         return colors[0]; // Default to first color
       }
-      
+
       const hash = username
         .split("")
         .reduce((acc, char) => acc + char.charCodeAt(0), 0);
       return colors[hash % colors.length];
     } catch (error) {
-      console.error('Error generating username color:', error);
+      console.error("Error generating username color:", error);
       return "text-white"; // Safe fallback
     }
   };
 
-  if (!itemData) {
+  if (!itemData || !request.user) {
     return null; // Don't render if item data is missing
   }
 
@@ -134,7 +134,7 @@ const RequestMessage: React.FC<RequestMessageProps> = ({
         }`}
       >
         {/* Avatar for others (left side) */}
-        {!isOwn && request.user && (
+        {!isOwn && (
           <div className="flex-shrink-0 self-end mb-1">
             <LeaderboardUserAvatar
               pfpUrl={
@@ -278,17 +278,17 @@ const Message: React.FC<MessageProps> = ({
 
   const formatTime = (date: Date | string) => {
     try {
-      const dateObj = typeof date === 'string' ? new Date(date) : date;
+      const dateObj = typeof date === "string" ? new Date(date) : date;
       if (isNaN(dateObj.getTime())) {
-        return 'Invalid date';
+        return "Invalid date";
       }
       return new Intl.DateTimeFormat("en-US", {
         hour: "2-digit",
         minute: "2-digit",
       }).format(dateObj);
     } catch (error) {
-      console.error('Error formatting time:', error);
-      return 'Invalid date';
+      console.error("Error formatting time:", error);
+      return "Invalid date";
     }
   };
 
@@ -307,17 +307,17 @@ const Message: React.FC<MessageProps> = ({
         "text-orange-300",
         "text-lime-300",
       ];
-      
-      if (!username || typeof username !== 'string') {
+
+      if (!username || typeof username !== "string") {
         return colors[0]; // Default to first color
       }
-      
+
       const hash = username
         .split("")
         .reduce((acc, char) => acc + char.charCodeAt(0), 0);
       return colors[hash % colors.length];
     } catch (error) {
-      console.error('Error generating username color:', error);
+      console.error("Error generating username color:", error);
       return "text-white"; // Safe fallback
     }
   };
@@ -482,12 +482,7 @@ export const ClanChat: React.FC<ClanChatProps> = ({
       <div key={category}>
         <h3 className="text-white/90 font-bold text-md mb-4 flex items-center gap-2">
           {isImageUrl ? (
-            <Image
-              src={icon}
-              alt={title}
-              width={28}
-              height={28}
-            />
+            <Image src={icon} alt={title} width={28} height={28} />
           ) : (
             <span className="text-2xl mt-[-4px]">{icon}</span>
           )}
@@ -556,16 +551,16 @@ export const ClanChat: React.FC<ClanChatProps> = ({
       // Defensive checks for arrays
       const safeMessages = Array.isArray(messages) ? messages : [];
       const safeRequests = Array.isArray(requests) ? requests : [];
-      
+
       const messageItems: ChatItem[] = safeMessages
-        .filter(msg => msg && msg.id) // Filter out invalid messages
+        .filter((msg) => msg && msg.id) // Filter out invalid messages
         .map((msg) => ({
           type: "message" as const,
           ...msg,
         }));
-        
+
       const requestItems: ChatItem[] = safeRequests
-        .filter(req => req && (req.id || req.requestId)) // Filter out invalid requests
+        .filter((req) => req && (req.id || req.requestId)) // Filter out invalid requests
         .map((req) => ({
           type: "request" as const,
           ...req,
@@ -576,20 +571,20 @@ export const ClanChat: React.FC<ClanChatProps> = ({
         try {
           const aTime = new Date(a.createdAt).getTime();
           const bTime = new Date(b.createdAt).getTime();
-          
+
           // Handle invalid dates
           if (isNaN(aTime) && isNaN(bTime)) return 0;
           if (isNaN(aTime)) return 1;
           if (isNaN(bTime)) return -1;
-          
+
           return aTime - bTime;
         } catch (error) {
-          console.error('Error sorting chat items:', error);
+          console.error("Error sorting chat items:", error);
           return 0;
         }
       });
     } catch (error) {
-      console.error('Error creating chat items:', error);
+      console.error("Error creating chat items:", error);
       return [];
     }
   }, [messages, requests]);
@@ -655,7 +650,7 @@ export const ClanChat: React.FC<ClanChatProps> = ({
       // Leaders and officers can delete any message
       return state.clan.role === "leader" || state.clan.role === "officer";
     } catch (error) {
-      console.error('Error checking message deletion permissions:', error);
+      console.error("Error checking message deletion permissions:", error);
       return false;
     }
   };
@@ -675,7 +670,9 @@ export const ClanChat: React.FC<ClanChatProps> = ({
     return (
       <Card className="bg-gradient-to-br from-[#6D4C2C] to-[#5B4120] rounded-lg border-none h-[34rem] w-full flex flex-col">
         <CardContent className="flex items-center justify-center h-full">
-          <div className="text-white/70">Unable to load chat. Please try again.</div>
+          <div className="text-white/70">
+            Unable to load chat. Please try again.
+          </div>
         </CardContent>
       </Card>
     );
@@ -709,14 +706,14 @@ export const ClanChat: React.FC<ClanChatProps> = ({
                 {chatItems.map((item, index) => {
                   try {
                     if (!item || !item.type) {
-                      console.warn('Invalid chat item at index:', index);
+                      console.warn("Invalid chat item at index:", index);
                       return null;
                     }
 
                     if (item.type === "message") {
                       const message = item;
                       if (!message.id || !message.user) {
-                        console.warn('Invalid message at index:', index);
+                        console.warn("Invalid message at index:", index);
                         return null;
                       }
                       return (
@@ -731,11 +728,15 @@ export const ClanChat: React.FC<ClanChatProps> = ({
                     } else {
                       const request = item;
                       if (!request.fid) {
-                        console.warn('Invalid request at index:', index);
+                        console.warn("Invalid request at index:", index);
                         return null;
                       }
                       // Create a more robust unique key for requests
-                      const requestKey = `request-${request.requestId || request.id || `${request.fid}-${request.itemId}-${index}`}`;
+                      const requestKey = `request-${
+                        request.requestId ||
+                        request.id ||
+                        `${request.fid}-${request.itemId}-${index}`
+                      }`;
                       return (
                         <RequestMessage
                           key={requestKey}
@@ -746,7 +747,11 @@ export const ClanChat: React.FC<ClanChatProps> = ({
                       );
                     }
                   } catch (error) {
-                    console.error('Error rendering chat item at index:', index, error);
+                    console.error(
+                      "Error rendering chat item at index:",
+                      index,
+                      error
+                    );
                     return null;
                   }
                 })}
@@ -759,10 +764,7 @@ export const ClanChat: React.FC<ClanChatProps> = ({
 
       {/* Message Input - Fixed to bottom */}
       <div className="pt-3">
-        <form
-          onSubmit={handleSendMessage}
-          className="flex gap-2 items-end"
-        >
+        <form onSubmit={handleSendMessage} className="flex gap-2 items-end">
           <textarea
             ref={textareaRef}
             value={newMessage}
