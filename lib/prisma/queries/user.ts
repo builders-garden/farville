@@ -1,4 +1,4 @@
-import { Mode } from "@/lib/types/game";
+import { Mode, UserType } from "@/lib/types/game";
 import { prisma } from "../client";
 import { Prisma, User } from "@prisma/client";
 import { UserWithStatistic } from "../types";
@@ -43,6 +43,7 @@ export const createUserAndMode = async (
       typeof newUser.notificationDetails === "string"
         ? (JSON.parse(newUser.notificationDetails) as FrameNotificationDetails)
         : null,
+    bot: newUser.bot as UserType,
   };
 };
 

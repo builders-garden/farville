@@ -1,4 +1,4 @@
-import { Mode } from "@/lib/types/game";
+import { Mode, UserType } from "@/lib/types/game";
 import { prisma } from "../client";
 import { UserWithStatistic } from "../types";
 import { Prisma, UserStatistic } from "@prisma/client";
@@ -39,6 +39,7 @@ export const getUserByMode = async (
           ) as FrameNotificationDetails)
         : null,
     createdAt: user.user.createdAt,
+    bot: user.user.bot as UserType,
   };
 };
 
@@ -119,6 +120,7 @@ export const getUsersByFidsAndMode = async (
             ) as FrameNotificationDetails)
           : null,
       position: index + 1,
+      bot: user.user.bot as UserType,
     })),
   };
 };
@@ -185,6 +187,7 @@ export const getModePartialLeaderboardFromUserPosition = async (
           ) as FrameNotificationDetails)
         : null,
     position: skip + index + 1,
+    bot: user.user.bot as UserType,
   }));
 };
 
@@ -296,6 +299,7 @@ export const getUsersByXp = async (
               user.user.notificationDetails
             ) as FrameNotificationDetails)
           : null,
+      bot: user.user.bot as UserType,
     })),
     targetPosition,
   };
@@ -366,6 +370,7 @@ export const updateUserXP = async (
                   user.user.notificationDetails
                 ) as FrameNotificationDetails)
               : null,
+          bot: user.user.bot as UserType,
         },
         didLevelUp,
         newXP,

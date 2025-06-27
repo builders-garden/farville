@@ -165,3 +165,9 @@ export enum ClanRole {
   Officer = "officer",
   Member = "member",
 }
+
+export enum UserType {
+  Unsafe = "unsafe",
+  Bot = "bot",
+  Human = "human",
+}

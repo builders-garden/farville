@@ -16,6 +16,7 @@ import { base } from "viem/chains";
 import z from "zod";
 import { CLAN_CREATION_COST_USD, CLAN_MAX_MEMBERS } from "@/lib/game-constants";
 import { uploadImage } from "@/lib/imagekit";
+import { withTracing } from "@/lib/otel/traceWrapper";
 
 // Basic payment validation - checks if txHash exists and follows expected format
 // In a production environment, you might want to verify the transaction on-chain
@@ -155,7 +156,7 @@ const createClanSchema = z.object({
   paymentId: z.string().min(1),
 });
 
-export async function POST(req: NextRequest) {
+async function handlerPOST(req: NextRequest) {
   try {
     const fid = req.headers.get("x-user-fid");
     if (!fid) {
@@ -262,6 +263,8 @@ export async function POST(req: NextRequest) {
   }
 }
 
+export const POST = withTracing(handlerPOST);
+
 const updateClanSchema = z.object({
   clanId: z.string().min(1, "Clan ID is required"),
   motto: z.string().max(100).optional(),
@@ -270,7 +273,7 @@ const updateClanSchema = z.object({
   requiredLevel: z.number().int().min(2).max(20).nullish(),
 });
 
-export async function PATCH(req: NextRequest) {
+async function handlerPATCH(req: NextRequest) {
   try {
     const fid = req.headers.get("x-user-fid");
     if (!fid) {
@@ -370,3 +373,5 @@ export async function PATCH(req: NextRequest) {
     );
   }
 }
+
+export const PATCH = withTracing(handlerPATCH);

@@ -13,7 +13,7 @@ const memberActionSchema = z.object({
   clanId: z.string().min(1, "Clan ID is required"),
 });
 
-export async function PATCH(
+async function handlerPATCH(
   req: NextRequest,
   { params }: { params: Promise<{ fid: string }> }
 ) {
@@ -201,3 +201,5 @@ export async function PATCH(
     );
   }
 }
+
+export const PATCH = handlerPATCH;

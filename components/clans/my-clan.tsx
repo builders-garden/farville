@@ -16,7 +16,7 @@ import { ClanChat } from "./clan-chat";
 export default function MyClan() {
   const { state } = useGame();
 
-  const [activeTab, setActiveTab] = useState<Tab>("chat");
+  const [activeTab, setActiveTab] = useState<Tab>("members");
   const [showShareModal, setShowShareModal] = useState(false);
 
   const {

@@ -120,6 +120,7 @@ model User {
   mintedOG               Boolean                 @default(false)
   createdAt              DateTime                @default(now()) @db.Timestamptz(6)
   selectedAvatarUrl      String?
+  bot                    String                  @default("unsafe")
   createdClans           Clan[]                  @relation("ClanCreator")
   leaderClans            Clan[]                  @relation("ClanLeader")
   ClanChatMessage        ClanChatMessage[]
