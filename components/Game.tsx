@@ -125,7 +125,7 @@ export default function Game({
                  hover:bg-[#ffc661] transition-colors"
               onClick={() => {
                 sdk.actions.openUrl(
-                  "https://farcaster.xyz/~/inbox/create/5698"
+                  "https://farcaster.xyz/~/inbox/create/262800"
                 );
               }}
             >

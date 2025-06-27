@@ -62,7 +62,9 @@ export default function HelpModal({ onClose }: { onClose: () => void }) {
               title="Any issues?"
               description="Send a DM to the developers"
               onClick={() =>
-                sdk.actions.openUrl("https://farcaster.xyz/~/inbox/create/5698")
+                sdk.actions.openUrl(
+                  "https://farcaster.xyz/~/inbox/create/262800"
+                )
               }
             />
 
