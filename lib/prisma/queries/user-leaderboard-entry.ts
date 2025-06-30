@@ -97,7 +97,14 @@ export const getWeeklyUserLeaderboardByLeague = async (
   if (targetFid) {
     if (!CREATOR_FIDS.includes(targetFid)) {
       const targetEntry = await prisma.userLeaderboardEntry.findUnique({
-        where: { fid_mode: { fid: targetFid, mode } },
+        where: {
+          fid_mode: { fid: targetFid, mode },
+          user: {
+            bot: {
+              not: UserType.Bot, // Exclude bot users
+            },
+          },
+        },
         select: {
           currentScore: true,
           lastScore: true,
@@ -126,6 +133,11 @@ export const getWeeklyUserLeaderboardByLeague = async (
             fid: {
               not: {
                 in: CREATOR_FIDS,
+              },
+            },
+            user: {
+              bot: {
+                not: UserType.Bot, // Exclude bot users
               },
             },
           },

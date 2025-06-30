@@ -18,17 +18,15 @@ export const GET = async (req: NextRequest) => {
 
   const todayDonations = await getUserDonationsOfToday(Number(donator), mode);
 
-  const { canDonateToReceiver, canDonateToAnotherUser } = userCanDonate(
-    todayDonations,
-    Number(receiver),
-    mode
-  );
+  const { canDonateToReceiver, canDonateToAnotherUser, errorMessage } =
+    userCanDonate(todayDonations, Number(receiver), mode);
 
   return NextResponse.json(
     {
       todayDonations,
       canDonateToReceiver,
       canDonateToAnotherUser,
+      errorMessage,
     },
     { status: 200 }
   );

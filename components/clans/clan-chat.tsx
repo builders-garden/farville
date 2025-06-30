@@ -61,7 +61,11 @@ const RequestMessage: React.FC<RequestMessageProps> = ({
   const [showRequestModal, setShowRequestModal] = useState(false);
 
   // Defensive checks to prevent crashes - after hooks
-  if (!request || !state) {
+  if (
+    !request ||
+    !state ||
+    request.request?.quantity === request.request?.filledQuantity
+  ) {
     return null;
   }
 

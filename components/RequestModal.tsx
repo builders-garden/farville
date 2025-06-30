@@ -52,6 +52,7 @@ export default function RequestModal({
     canDonateToAnotherUser,
     isLoading: isDonationHistoryLoading,
   } = useDonationHistory(mode, state.user?.fid, request?.fid);
+
   const [showFloatingNumber, setShowFloatingNumber] = useState(false);
   const [rewardedXp, setRewardedXp] = useState(0);
   const [userNotInMode, setUserNotInMode] = useState(false);
@@ -147,8 +148,6 @@ export default function RequestModal({
   const receiverIsInTodayDonations = todayDonations?.some(
     (donation) => donation.receiverUser?.fid === request?.fid
   );
-
-  console.log("todayDonations", todayDonations);
 
   const userCannotDonate =
     !canDonateToReceiver ||
@@ -325,12 +324,16 @@ export default function RequestModal({
                     </div>
                   </div>
 
-                  {!canDonateToReceiver ? (
+                  {!canDonateToReceiver && !canDonateToAnotherUser ? (
                     <div className="flex flex-col items-center gap-1.5 xs:gap-3 mt-1.5 xs:mt-2">
                       <p className="text-amber-500/90 text-xs text-center">
-                        You can only donate to the same user{" "}
-                        {MODE_DEFINITIONS[mode].dailyLimitDonationsToSameUser}{" "}
-                        times every 24 hours
+                        You can already reached the donations limit.
+                        {
+                          MODE_DEFINITIONS[mode].dailyLimitDonationsToSameUser
+                        }{" "}
+                        donations to{" "}
+                        {MODE_DEFINITIONS[mode].dailyLimitDonationsToUsers}{" "}
+                        different users in the last 24 hours.
                       </p>
                       <p className="text-xs text-white/60">
                         Resets in: {countdown()}
