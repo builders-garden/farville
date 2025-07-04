@@ -54,7 +54,7 @@ export const useFrameContext = () => {
           !isTestMode
         ) {
           try {
-            sdk.actions.addFrame();
+            sdk.actions.addMiniApp();
           } catch (err) {
             console.error("Failed to add frame:", err);
           }

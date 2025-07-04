@@ -363,7 +363,7 @@ export default function WelcomeOverlay({
             }}
             onClick={async () => {
               startMusic();
-              await sdk.actions.addFrame();
+              await sdk.actions.addMiniApp();
               setShowShareButton(true);
               // onStart();
             }}
