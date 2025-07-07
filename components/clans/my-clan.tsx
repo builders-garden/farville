@@ -31,11 +31,11 @@ export default function MyClan() {
 
   // Get join requests if user can manage them
   const { requests: joinRequests } = useClanJoinRequests(
-    canManageRequests ? state.clan?.clanId : undefined
+    canManageRequests ? state.clan?.clanId : undefined,
   );
 
   const membersMap = Object.fromEntries(
-    clanData?.members?.map((m) => [m.fid, m.user]) ?? []
+    clanData?.members?.map((m) => [m.fid, m.user]) ?? [],
   );
 
   const handleShareClan = async () => {
@@ -49,10 +49,7 @@ export default function MyClan() {
         activeTab === "chat" ? "pb-4" : "pb-8"
       }`}
     >
-      <ClanDetail
-        clanData={clanData}
-        refetchClan={refetchClanData}
-      />
+      <ClanDetail clanData={clanData} refetchClan={refetchClanData} />
 
       <MyClanTabs
         activeTab={activeTab}
@@ -79,6 +76,7 @@ export default function MyClan() {
             user: membersMap[req.fid],
           }))}
           refetchClanData={refetchClanData}
+          members={clanData.members}
         />
       )}
 

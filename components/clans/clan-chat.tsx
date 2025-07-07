@@ -32,6 +32,12 @@ import { RequestItem } from "./clan-requests/request-item";
 import { useCreateRequest } from "@/hooks/game-actions/use-create-request";
 import { Mode } from "@/lib/types/game";
 import { useClanOperations } from "@/hooks/game-actions/use-clan-operations";
+import { MentionInput } from "../ui/mention-input";
+import {
+  isUserMentioned,
+  renderMessageWithMentions,
+} from "@/lib/utils/mentions";
+import { motion } from "framer-motion";
 
 // Unified type for chat items (both messages and requests)
 type ChatItem =
@@ -44,6 +50,7 @@ interface ClanChatProps {
   clanId: string;
   requests?: (ClanRequestWithItemData & { user: ClanMember["user"] })[];
   refetchClanData?: () => void;
+  members?: ClanMember[];
 }
 
 interface RequestMessageProps {
@@ -267,6 +274,7 @@ interface MessageProps {
   onDelete: (messageId: string) => void;
   canDelete: boolean;
   isOwnMessage: boolean;
+  currentUsername?: string;
 }
 
 const Message: React.FC<MessageProps> = ({
@@ -274,6 +282,7 @@ const Message: React.FC<MessageProps> = ({
   onDelete,
   canDelete,
   isOwnMessage,
+  currentUsername,
 }) => {
   // Defensive check to prevent crashes
   if (!message || !message.user) {
@@ -326,10 +335,23 @@ const Message: React.FC<MessageProps> = ({
     }
   };
 
+  // Check if current user is mentioned in this message
+  const isMentioned =
+    currentUsername && isUserMentioned(message.message, currentUsername);
+
   return (
-    <div
+    <motion.div
+      initial={
+        isMentioned ? { scale: 1.02, opacity: 0.8 } : { opacity: 0, x: -20 }
+      }
+      animate={{ scale: 1, opacity: 1, x: 0 }}
+      transition={{ duration: 0.3 }}
       className={`flex gap-2 px-3 py-1 ${
         isOwnMessage ? "justify-end" : "justify-start"
+      } ${
+        isMentioned
+          ? "bg-[#FFD700]/10 border-l-4 border-[#FFD700] pl-2 rounded-r-lg"
+          : ""
       }`}
     >
       {/* Avatar for others (left side) - aligned with bubble corner */}
@@ -358,6 +380,8 @@ const Message: React.FC<MessageProps> = ({
           className={`relative rounded-2xl px-3 py-2 ${
             isOwnMessage
               ? "bg-yellow-600/80 text-white rounded-br-md"
+              : isMentioned
+              ? "bg-[#FFD700]/20 text-white/90 rounded-bl-md border border-[#FFD700]/50"
               : "bg-white/15 text-white/90 rounded-bl-md"
           }`}
         >
@@ -375,7 +399,7 @@ const Message: React.FC<MessageProps> = ({
           )}
 
           <p className="text-[9px] break-words leading-relaxed mb-1">
-            {message.message}
+            {renderMessageWithMentions(message.message, currentUsername)}
           </p>
 
           {/* Time and actions row */}
@@ -417,7 +441,7 @@ const Message: React.FC<MessageProps> = ({
           </div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 
@@ -425,6 +449,7 @@ export const ClanChat: React.FC<ClanChatProps> = ({
   clanId,
   requests = [],
   refetchClanData,
+  members = [],
 }) => {
   const { state } = useGame();
   const { messages, isLoading, sendMessage, deleteMessage, isSending } =
@@ -432,7 +457,6 @@ export const ClanChat: React.FC<ClanChatProps> = ({
   const [newMessage, setNewMessage] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Request dialog states
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
@@ -486,7 +510,12 @@ export const ClanChat: React.FC<ClanChatProps> = ({
       <div key={category}>
         <h3 className="text-white/90 font-bold text-md mb-4 flex items-center gap-2">
           {isImageUrl ? (
-            <Image src={icon} alt={title} width={28} height={28} />
+            <Image
+              src={icon}
+              alt={title}
+              width={28}
+              height={28}
+            />
           ) : (
             <span className="text-2xl mt-[-4px]">{icon}</span>
           )}
@@ -607,28 +636,15 @@ export const ClanChat: React.FC<ClanChatProps> = ({
 
     sendMessage(newMessage);
     setNewMessage("");
-    // Reset textarea height
-    if (textareaRef.current) {
-      textareaRef.current.style.height = "auto";
-    }
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const value = e.target.value;
+  const handleInputChange = (value: string) => {
     setNewMessage(value);
 
-    // Auto-resize textarea
-    if (textareaRef.current) {
-      const previousHeight = textareaRef.current.style.height;
-      textareaRef.current.style.height = "auto";
-      const newHeight = textareaRef.current.scrollHeight + "px";
-      textareaRef.current.style.height = newHeight;
-
-      // If textarea height changed, keep chat scrolled to bottom
-      if (previousHeight !== newHeight && messagesContainerRef.current) {
-        messagesContainerRef.current.scrollTop =
-          messagesContainerRef.current.scrollHeight;
-      }
+    // Keep chat scrolled to bottom when input changes
+    if (messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTop =
+        messagesContainerRef.current.scrollHeight;
     }
   };
 
@@ -683,7 +699,7 @@ export const ClanChat: React.FC<ClanChatProps> = ({
   }
 
   return (
-    <div className="flex flex-col h-[34rem] w-full">
+    <div className="flex flex-col h-[34rem] w-full relative">
       {/* Main Chat Container */}
       <Card className="bg-gradient-to-br from-[#6D4C2C] to-[#5B4120] rounded-lg border-none flex-1 flex flex-col min-h-0">
         <CardContent className="p-0 flex flex-col h-full min-h-0">
@@ -727,6 +743,7 @@ export const ClanChat: React.FC<ClanChatProps> = ({
                           onDelete={handleDeleteMessage}
                           canDelete={canDeleteMessage(message)}
                           isOwnMessage={message.user.fid === state.user?.fid}
+                          currentUsername={state.user?.username}
                         />
                       );
                     } else {
@@ -767,18 +784,25 @@ export const ClanChat: React.FC<ClanChatProps> = ({
       </Card>
 
       {/* Message Input - Fixed to bottom */}
-      <div className="pt-3">
-        <form onSubmit={handleSendMessage} className="flex gap-2 items-end">
-          <textarea
-            ref={textareaRef}
+      <div className="pt-3 relative z-10">
+        <form
+          onSubmit={handleSendMessage}
+          className="flex gap-2 items-end"
+        >
+          <MentionInput
             value={newMessage}
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}
             placeholder="Type..."
             maxLength={500}
-            rows={1}
-            className="w-full bg-white/10 border border-white/20 rounded-2xl px-4 py-2 text-white text-base placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-transparent resize-none overflow-hidden min-h-[2.5rem] max-h-32"
             disabled={isSending}
+            className="w-full bg-white/10 border border-white/20 rounded-2xl px-4 py-2 text-white text-base placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-transparent resize-none overflow-hidden min-h-[2.5rem] max-h-32"
+            members={members}
+            currentUser={
+              state.user
+                ? { fid: state.user.fid, username: state.user.username }
+                : undefined
+            }
           />
 
           {/* Show Send button when message is not empty, Request button when empty */}
