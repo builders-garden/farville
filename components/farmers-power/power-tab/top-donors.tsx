@@ -2,7 +2,7 @@ import { LeaderboardUserAvatar } from "@/components/leaderboard/LeaderboardUserA
 import { useGame } from "@/context/GameContext";
 import { communityBoosterTopDonorsFlexCardComposeCastUrl } from "@/lib/utils";
 import sdk from "@farcaster/frame-sdk";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 
 interface TopDonorsProps {
   setActiveTab: (tab: "power" | "leaderboard") => void;

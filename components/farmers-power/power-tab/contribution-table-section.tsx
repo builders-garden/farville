@@ -9,7 +9,7 @@ import {
 import { LeaderboardUserAvatar } from "@/components/leaderboard/LeaderboardUserAvatar";
 import { UserCommunityDonationEnhanced } from "@/lib/prisma/types";
 import { useState } from "react";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import { Share2 } from "lucide-react";
 import { communityContributionFlexCardComposeCastUrl } from "@/lib/utils";
 import { useGame } from "@/context/GameContext";
@@ -51,10 +51,7 @@ export const ContributionTableSection: React.FC<{
 
   if (selectedUserFid) {
     return (
-      <ProfileModal
-        onClose={handleCloseProfile}
-        userFid={selectedUserFid}
-      />
+      <ProfileModal onClose={handleCloseProfile} userFid={selectedUserFid} />
     );
   }
 

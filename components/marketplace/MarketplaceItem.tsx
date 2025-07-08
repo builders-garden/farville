@@ -1,4 +1,4 @@
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import RequestButton from "../ui/request-button";
 import { useState } from "react";
 import {

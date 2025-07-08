@@ -1,7 +1,7 @@
 import { useGame } from "@/context/GameContext";
 import { EXPANSION_COSTS } from "@/lib/game-constants";
 import { Mode } from "@/lib/types/game";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 
 interface ExpansionPanelProps {
   expansionLevel: number;

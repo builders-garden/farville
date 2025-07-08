@@ -1,5 +1,5 @@
 import { Item } from "@prisma/client";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 
 interface InventoryItemProps {
   item: Item;

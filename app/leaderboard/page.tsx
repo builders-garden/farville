@@ -1,4 +1,4 @@
-import { AnimatePresence } from "framer-motion";
+import { AnimatePresence } from "motion/react";
 import { Metadata } from "next";
 import LeaderboardPage from "../../components/LeaderboardPage";
 import { env } from "@/lib/env";

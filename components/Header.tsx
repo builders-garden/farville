@@ -1,7 +1,7 @@
 "use client";
 
 import { useGame } from "../context/GameContext";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import { getCurrentLevelAndProgress, modeAvailableForUser } from "@/lib/utils";
 import Image from "next/image";
 import {
@@ -48,10 +48,7 @@ export default function Header() {
     <div className="bg-[#8B5E3C]/40 px-4 py-2 shadow-lg bg-opacity-95 backdrop-blur-sm border-b-2 border-[#6d4c2c]/50 z-30">
       <div className="flex justify-between items-center max-w-4xl mx-auto">
         <div className="h-[42px] rounded-xl flex items-center cursor-pointer gap-4">
-          <div
-            className="w-fit"
-            onClick={() => setShowTimeline(true)}
-          >
+          <div className="w-fit" onClick={() => setShowTimeline(true)}>
             <AnimatedCircularProgressBar
               max={100}
               min={0}

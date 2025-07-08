@@ -1,5 +1,5 @@
 import { useFrameContext } from "@/context/FrameContext";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import { Plus, X } from "lucide-react";
 import { useEffect, useState, useRef } from "react";
 import MainClanTabs, { Tab as MainTab } from "./main-tabs";

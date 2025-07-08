@@ -1,7 +1,7 @@
 "use client";
 
 import { MODE_DEFINITIONS, ModeFeature } from "@/lib/modes/constants";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import Image from "next/image";
 import { useNextStep } from "nextstepjs";
 import { useEffect, useState } from "react";
@@ -213,12 +213,7 @@ export default function Toolbar({
             className="relative w-9 h-9 xs:w-12 xs:h-12 rounded-lg flex items-center justify-center bg-[#8B5E3C] hover:bg-[#6d4c2c] transition-colors"
           >
             <div className="relative w-6 h-6 xs:w-8 xs:h-8">
-              <Image
-                src="/images/icons/help.png"
-                alt="Help"
-                fill
-                sizes="48"
-              />
+              <Image src="/images/icons/help.png" alt="Help" fill sizes="48" />
             </div>
           </motion.button>
           <span className="text-[4px] xs:text-[6px] text-white mt-1">Help</span>

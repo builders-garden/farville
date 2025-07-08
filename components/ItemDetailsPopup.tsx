@@ -1,5 +1,5 @@
 import { UserItem } from "@/hooks/use-user-items";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import Image from "next/image";
 import { Slider } from "@/components/ui/slider";
 import { useEffect, useState } from "react";

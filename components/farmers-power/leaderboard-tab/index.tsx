@@ -1,4 +1,4 @@
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import { LeaderboardUserAvatar } from "../../leaderboard/LeaderboardUserAvatar";
 import { FloatingShareButton } from "../../FloatingShareButton";
 import { DonationsLeaderboardResponse } from "@/hooks/use-donation-leadeboard";

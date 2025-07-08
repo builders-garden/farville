@@ -2,7 +2,7 @@ import { useGame } from "@/context/GameContext";
 import { useUpdateUserQuest } from "@/hooks/game-actions/use-update-user-quest";
 import { requestItemComposeCastUrl } from "@/lib/utils";
 import { QuestStatus } from "@/lib/types/game";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import Image from "next/image";
 import { useState } from "react";
 import ItemDetailsPopup from "./ItemDetailsPopup";

@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import React, { useEffect, useState } from "react";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 
 import { useFrameContext } from "@/context/FrameContext";
 import { useUserModes } from "@/hooks/use-user-modes";

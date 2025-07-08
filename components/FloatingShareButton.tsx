@@ -1,4 +1,4 @@
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import { Share2 } from "lucide-react";
 
 export const FloatingShareButton = ({ onClick }: { onClick: () => void }) => {

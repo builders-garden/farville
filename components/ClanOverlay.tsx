@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import { useFrameContext } from "../context/FrameContext";
 import { useClan } from "@/hooks/use-clan";
 import { useGame } from "@/context/GameContext";
@@ -190,27 +190,18 @@ export default function ClanOverlay({
         <div className="flex-1 p-6 space-y-6 pb-24">
           {/* Clan Header with Icon and Name */}
           <div className="flex items-center gap-4">
-            <ClanImage
-              imageUrl={clan.imageUrl}
-              clanName={clan.name}
-            />
+            <ClanImage imageUrl={clan.imageUrl} clanName={clan.name} />
             <div className="flex flex-col">
               <h3 className="text-white font-bold text-lg">{clan.name}</h3>
               <div className="flex items-center text-xs text-white/70">
                 {clan.isPublic ? (
                   <>
-                    <Unlock
-                      size={14}
-                      className="mr-1"
-                    />
+                    <Unlock size={14} className="mr-1" />
                     <span>Public Feud</span>
                   </>
                 ) : (
                   <>
-                    <Lock
-                      size={14}
-                      className="mr-1"
-                    />
+                    <Lock size={14} className="mr-1" />
                     <span>Private Feud</span>
                   </>
                 )}
@@ -230,10 +221,7 @@ export default function ClanOverlay({
           {/* Clan Stats */}
           <div className="grid grid-cols-3 gap-2">
             <div className="bg-[#6D4C2C]/80 p-3 rounded-lg flex flex-col items-center justify-center">
-              <Trophy
-                size={16}
-                className="text-[#FFB938] mb-1"
-              />
+              <Trophy size={16} className="text-[#FFB938] mb-1" />
               <span className="text-xs font-bold text-[#FFB938]">
                 LVL {clanLevel}
               </span>
@@ -242,20 +230,14 @@ export default function ClanOverlay({
               </span>
             </div>
             <div className="bg-[#6D4C2C]/80 p-3 rounded-lg flex flex-col items-center justify-center">
-              <Users
-                size={16}
-                className="text-white/80 mb-1"
-              />
+              <Users size={16} className="text-white/80 mb-1" />
               <span className="text-xs font-medium text-white/90">
                 {memberCount}
               </span>
               <span className="text-[10px] text-white/70">members</span>
             </div>
             <div className="bg-[#6D4C2C]/80 p-3 rounded-lg flex flex-col items-center justify-center">
-              <Shield
-                size={16}
-                className="text-white/80 mb-1"
-              />
+              <Shield size={16} className="text-white/80 mb-1" />
               <span className="text-xs font-medium text-white/90">
                 {clan.requiredLevel ? `Lvl ${clan.requiredLevel}` : "Lvl 1"}
               </span>

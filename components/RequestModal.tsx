@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import { useFrameContext } from "../context/FrameContext";
 import Image from "next/image";
 import { Skeleton } from "@/components/ui/skeleton";

@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import { useGame } from "../context/GameContext";
 
 export default function PlantingIndicator() {

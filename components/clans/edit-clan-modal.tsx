@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import { useClanOperations } from "@/hooks/game-actions/use-clan-operations";
 import { useGame } from "@/context/GameContext";
 import Image from "next/image";
@@ -125,10 +125,7 @@ export default function EditClanModal({
             <X size={16} />
           </button>
         </div>
-        <form
-          onSubmit={handleSubmit}
-          className="space-y-4"
-        >
+        <form onSubmit={handleSubmit} className="space-y-4">
           {error && (
             <div className="bg-red-500/20 border border-red-500/50 rounded-md p-2 text-red-300 text-sm">
               {error}
@@ -218,10 +215,7 @@ export default function EditClanModal({
                   { length: Math.min(userLevel - 1, 19) },
                   (_, i) => i + 2
                 ).map((level) => (
-                  <option
-                    key={level}
-                    value={level}
-                  >
+                  <option key={level} value={level}>
                     Lvl {level}+
                   </option>
                 ))}
@@ -235,10 +229,7 @@ export default function EditClanModal({
               onCheckedChange={(checked) => setIsPublic(Boolean(checked))}
               className="data-[state=checked]:bg-[#FFB938] data-[state=checked]:border-[#FFB938]"
             />
-            <label
-              htmlFor="public"
-              className="text-sm text-white/80"
-            >
+            <label htmlFor="public" className="text-sm text-white/80">
               Public feud
             </label>
           </div>

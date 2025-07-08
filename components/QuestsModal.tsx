@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import { useState, useEffect } from "react";
 import { useFrameContext } from "../context/FrameContext";
 import Quest from "./Quest";

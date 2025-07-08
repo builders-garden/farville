@@ -1,6 +1,6 @@
 import { Card, CardContent } from "../ui/card";
 import { useClansLeaderboard } from "@/hooks/use-clans-leaderboard";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import { Crown, Users, Zap } from "lucide-react";
 import { ClanImage } from "./clan-image";
 import ClanDetailModal from "./clan-detail-modal";

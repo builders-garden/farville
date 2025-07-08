@@ -4,7 +4,7 @@ import {
   getCurrentPowerStateTarget,
 } from "@/lib/utils";
 import { Clock } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import { useEffect, useState, useMemo, useCallback } from "react";
 import { useGame } from "@/context/GameContext";
 
@@ -176,10 +176,7 @@ export const PowerTimer = ({
       )}
       <div className="flex flex-col items-start justify-between gap-3 relative z-10">
         <div className="flex items-center gap-2 text-white/80">
-          <Clock
-            size={16}
-            className={styles.text}
-          />
+          <Clock size={16} className={styles.text} />
           <span className="text-[10px]">FP decrease in:</span>
         </div>
         <motion.div

@@ -1,8 +1,8 @@
 "use client";
 
-import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/solid";
+import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 import { Item } from "@prisma/client";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import { useNextStep } from "nextstepjs";
 import { useRef } from "react";
 import { useGame } from "../context/GameContext";

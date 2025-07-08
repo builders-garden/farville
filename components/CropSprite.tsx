@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "motion/react";
 import { CropType } from "../lib/types/game";
 import { useGame } from "../context/GameContext";
 import { useEffect, useState } from "react";

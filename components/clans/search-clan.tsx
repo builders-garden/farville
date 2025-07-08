@@ -1,4 +1,4 @@
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import { useClans } from "@/hooks/use-clans";
 import { Search } from "lucide-react";
 import { Clan } from "@prisma/client";
@@ -109,10 +109,7 @@ export const SearchClan = ({
       {/* Search Bar - Always visible */}
       {!isViewingClan && (
         <div className="flex items-center bg-[#6D4C2C] rounded-lg p-2 mb-3 border border-[#8B5E3C]/50">
-          <Search
-            size={16}
-            className="text-white/70 mr-2"
-          />
+          <Search size={16} className="text-white/70 mr-2" />
           <input
             type="text"
             placeholder="Clan Name..."

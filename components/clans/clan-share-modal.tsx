@@ -1,4 +1,4 @@
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import { useState } from "react";
 import { X, Share2, Copy } from "lucide-react";
 import { clanFlexCardComposeCastUrl } from "@/lib/utils";
@@ -65,10 +65,7 @@ export default function ClanShareModal({
         {/* Header */}
         <div className="flex justify-between items-center mb-4">
           <div className="flex items-center gap-2">
-            <Share2
-              size={20}
-              className="text-[#FFB938]"
-            />
+            <Share2 size={20} className="text-[#FFB938]" />
             <h3 className="text-white/90 font-bold text-lg">Share Feud</h3>
           </div>
           <button

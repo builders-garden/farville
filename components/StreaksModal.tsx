@@ -20,7 +20,7 @@ import {
   getStreakDates,
   streakFlexCardComposeCastUrl,
 } from "@/lib/utils";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import { Clock, Plus } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useState } from "react";

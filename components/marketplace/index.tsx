@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import { useEffect, useState } from "react";
 import { useGame } from "@/context/GameContext";
 import { CROP_DATA } from "@/lib/game-constants";

@@ -2,7 +2,7 @@
 
 import { useAudio } from "@/context/AudioContext";
 import { useUserQuests } from "@/hooks/use-quests";
-import { AnimatePresence } from "framer-motion";
+import { AnimatePresence } from "motion/react";
 import dynamic from "next/dynamic";
 import { useNextStep } from "nextstepjs";
 import { useEffect } from "react";
@@ -503,10 +503,7 @@ export default function GameWrapper() {
 
       {activeOverlay?.type === "requests" ? (
         <AnimatePresence>
-          <RequestModal
-            onClose={handleOverlayComplete}
-            id={activeOverlay.id}
-          />
+          <RequestModal onClose={handleOverlayComplete} id={activeOverlay.id} />
         </AnimatePresence>
       ) : activeOverlay?.type === "voucher" ? (
         <AnimatePresence>
@@ -537,10 +534,7 @@ export default function GameWrapper() {
           className="flex flex-col h-[100dvh] w-full max-w-md mx-auto overflow-hidden"
         >
           <Header />
-          <div
-            className="flex-1 relative min-h-0"
-            id="game-grid"
-          >
+          <div className="flex-1 relative min-h-0" id="game-grid">
             <GameGrid />
           </div>
           <Toolbar safeAreaInsets={safeAreaInsets} />

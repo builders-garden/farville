@@ -37,7 +37,7 @@ import {
   isUserMentioned,
   renderMessageWithMentions,
 } from "@/lib/utils/mentions";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 
 // Unified type for chat items (both messages and requests)
 type ChatItem =
@@ -510,12 +510,7 @@ export const ClanChat: React.FC<ClanChatProps> = ({
       <div key={category}>
         <h3 className="text-white/90 font-bold text-md mb-4 flex items-center gap-2">
           {isImageUrl ? (
-            <Image
-              src={icon}
-              alt={title}
-              width={28}
-              height={28}
-            />
+            <Image src={icon} alt={title} width={28} height={28} />
           ) : (
             <span className="text-2xl mt-[-4px]">{icon}</span>
           )}
@@ -785,10 +780,7 @@ export const ClanChat: React.FC<ClanChatProps> = ({
 
       {/* Message Input - Fixed to bottom */}
       <div className="pt-3 relative z-10">
-        <form
-          onSubmit={handleSendMessage}
-          className="flex gap-2 items-end"
-        >
+        <form onSubmit={handleSendMessage} className="flex gap-2 items-end">
           <MentionInput
             value={newMessage}
             onChange={handleInputChange}

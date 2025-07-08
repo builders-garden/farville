@@ -1,4 +1,4 @@
-import { AnimatePresence } from "framer-motion";
+import { AnimatePresence } from "motion/react";
 import { Metadata } from "next";
 import StatsPage from "../../components/StatsPage";
 import { env } from "@/lib/env";

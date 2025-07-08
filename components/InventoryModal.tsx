@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import { useGame } from "../context/GameContext";
 import { useFrameContext } from "../context/FrameContext";
 import { UserItem } from "@/hooks/use-user-items";

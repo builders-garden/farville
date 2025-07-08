@@ -8,7 +8,7 @@ import {
   shareWeeklyLeaderboardPositionComposeCastUrl,
 } from "@/lib/utils";
 import sdk from "@farcaster/frame-sdk";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import { Clock } from "lucide-react";
 import Image from "next/image";
 import { useState, useEffect } from "react";

@@ -11,7 +11,7 @@ import { merkleValues } from "@/lib/contracts/og-nft/merkle-root/merkleValues";
 import { missingUsers } from "@/lib/contracts/og-nft/merkle-root/missingUsers";
 import { mintedOgFlexCardComposeCastUrl } from "@/lib/utils";
 import sdk from "@farcaster/frame-sdk";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import { X } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useState } from "react";

@@ -1,7 +1,7 @@
 "use client";
 
 import { CropType, ItemCategory, PerkType } from "@/lib/types/game";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import { createPortal } from "react-dom";
 import Image from "next/image";
 import { useGame } from "@/context/GameContext";
@@ -101,11 +101,7 @@ export default function FloatingNumber({
           repeat: 2,
         }}
       >
-        <FloatingNumberContent
-          type={type}
-          number={number}
-          slug={slug}
-        />
+        <FloatingNumberContent type={type} number={number} slug={slug} />
       </motion.div>
     </motion.div>,
     document.body

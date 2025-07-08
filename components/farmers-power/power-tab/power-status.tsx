@@ -1,6 +1,6 @@
 import { AnimatedCircularProgressBar } from "@/components/ui/animated-circular-progress-bar";
 import { cn } from "@/lib/utils";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import { HowItWorks } from "./how-it-works";
 
 interface PowerStatsProps {

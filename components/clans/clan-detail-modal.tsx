@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import { Lock, Unlock, X, Shield, Users, Trophy } from "lucide-react";
 import { Clan } from "@prisma/client";
 import { useClanOperations } from "@/hooks/game-actions/use-clan-operations";

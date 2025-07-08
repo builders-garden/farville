@@ -10,7 +10,7 @@ import {
   getGrowthTimeBasedOnMode,
 } from "@/lib/utils";
 import { UserGridCell } from "@prisma/client";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import { useNextStep } from "nextstepjs";
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
