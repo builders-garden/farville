@@ -12,7 +12,6 @@ export const wagmiConfig = createConfig(
     appIcon: `${env.NEXT_PUBLIC_URL}/images/icon.png`,
     appDescription: "Farville",
     appUrl: env.NEXT_PUBLIC_URL,
-    walletConnectProjectId: env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID,
     ssr: true,
     chains: chains,
     transports: {
