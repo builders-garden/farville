@@ -6,15 +6,24 @@ import ClanQuestSilo from "./clan-quest-silo";
 interface ClanQuestCardProps {
   quest: ClanHasQuestWithQuest;
   children: React.ReactNode;
+  isCompleted?: boolean;
 }
 
-export default function ClanQuestCard({ quest, children }: ClanQuestCardProps) {
+export default function ClanQuestCard({
+  quest,
+  children,
+  isCompleted = false,
+}: ClanQuestCardProps) {
   return (
     <motion.div
       key={quest.quest.id}
       initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}
-      className="bg-[#6d4c2c] px-4 py-3 rounded-lg flex flex-row gap-4 border border-[#8B5E3C]/50 shadow-lg"
+      className={`px-4 py-3 rounded-lg flex flex-row gap-4 border shadow-lg ${
+        isCompleted
+          ? "bg-[#4a5d3a] border-green-600/50 opacity-75"
+          : "bg-[#6d4c2c] border-[#8B5E3C]/50"
+      }`}
     >
       {/* Left column: Quest info */}
       <div className="flex-1 flex flex-col justify-between">
@@ -32,25 +41,42 @@ export default function ClanQuestCard({ quest, children }: ClanQuestCardProps) {
                   width={28}
                   height={28}
                   alt={`Quest icon for ${quest.quest.category}`}
+                  className={isCompleted ? "opacity-70" : ""}
                 />
               )}
             </motion.div>
           </div>
-          <h3 className="text-white/90 font-medium text-xs">
+          <h3
+            className={`font-medium text-xs ${
+              isCompleted ? "text-white/60" : "text-white/90"
+            }`}
+          >
             {quest.quest.item?.name} Silo
           </h3>
+          {isCompleted && (
+            <span className="text-green-400 text-xs ml-1">✓</span>
+          )}
         </div>
 
         {/* Quest details */}
         <div className="flex flex-col gap-3">
-          <p className="text-white/70 text-xs">
-            {quest.progress || 0}/{quest.quest.amount} needed
+          <p
+            className={`text-xs ${
+              isCompleted ? "text-white/50" : "text-white/70"
+            }`}
+          >
+            {quest.progress || 0}/{quest.quest.amount}{" "}
+            {isCompleted ? "completed" : "needed"}
           </p>
-          <span className="text-yellow-400 font-medium flex items-center text-xs">
+          <span
+            className={`font-medium flex items-center text-xs ${
+              isCompleted ? "text-green-400/70" : "text-yellow-400"
+            }`}
+          >
             <span className="text-xs mr-1">⭐</span>
-            {quest.quest.xp}
+            {quest.quest.xp} {isCompleted && "earned"}
           </span>
-          {quest.quest.endAt && (
+          {quest.quest.endAt && !isCompleted && (
             <div className="text-white/50 text-[10px]">
               Ends:{" "}
               {(() => {
@@ -73,12 +99,18 @@ export default function ClanQuestCard({ quest, children }: ClanQuestCardProps) {
               })()}
             </div>
           )}
+          {quest.quest.endAt && isCompleted && (
+            <div className="text-green-400/60 text-[10px]">Completed</div>
+          )}
         </div>
       </div>
 
       {/* Right column: Silo at top, Fill button at bottom */}
       <div className="flex flex-col items-center justify-between gap-2">
-        <ClanQuestSilo quest={quest} />
+        <ClanQuestSilo
+          quest={quest}
+          isCompleted={isCompleted}
+        />
         {children}
       </div>
     </motion.div>

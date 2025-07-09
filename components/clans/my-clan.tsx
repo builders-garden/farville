@@ -40,6 +40,9 @@ export default function MyClan() {
     "incomplete"
   );
 
+  const { quests: completedClanQuests, refetch: refetchCompletedClanQuests } =
+    useClanQuests(state.clan?.clanId, "completed");
+
   const membersMap = Object.fromEntries(
     clanData?.members?.map((m) => [m.fid, m.user]) ?? []
   );
@@ -80,8 +83,10 @@ export default function MyClan() {
 
       {activeTab === "quests" && !isLoading && clanData && (
         <ClanQuests
-          quests={clanQuests}
-          refetchClanQuests={refetchClanQuests}
+          activeQuests={clanQuests}
+          completedQuests={completedClanQuests}
+          refetchActiveQuests={refetchClanQuests}
+          refetchCompletedQuests={refetchCompletedClanQuests}
           refetchClanData={refetchClanData}
         />
       )}
