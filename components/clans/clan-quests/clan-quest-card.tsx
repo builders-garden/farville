@@ -65,8 +65,9 @@ export default function ClanQuestCard({
               isCompleted ? "text-white/50" : "text-white/70"
             }`}
           >
-            {quest.progress || 0}/{quest.quest.amount}{" "}
-            {isCompleted ? "completed" : "needed"}
+            {isCompleted
+              ? `${quest.progress} filled`
+              : `${quest.progress || 0}/${quest.quest.amount} needed`}
           </p>
           <span
             className={`font-medium flex items-center text-xs ${
@@ -100,7 +101,7 @@ export default function ClanQuestCard({
             </div>
           )}
           {quest.quest.endAt && isCompleted && (
-            <div className="text-green-400/60 text-[10px]">Completed</div>
+            <div className="text-green-400/60 text-[10px]">Ended</div>
           )}
         </div>
       </div>
