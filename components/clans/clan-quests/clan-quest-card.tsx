@@ -14,10 +14,11 @@ export default function ClanQuestCard({ quest, children }: ClanQuestCardProps) {
       key={quest.quest.id}
       initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}
-      className="bg-[#6d4c2c] px-4 py-3 rounded-lg flex flex-col gap-3 border border-[#8B5E3C]/50 shadow-lg"
+      className="bg-[#6d4c2c] px-4 py-3 rounded-lg flex flex-row gap-4 border border-[#8B5E3C]/50 shadow-lg"
     >
-      {/* First row: Crop image + name (left) and Contribute button (right) */}
-      <div className="flex items-center justify-between">
+      {/* Left column: Quest info */}
+      <div className="flex-1 flex flex-col justify-between">
+        {/* Crop image + name */}
         <div className="flex items-center gap-1">
           <div className="w-8 h-8 flex items-center justify-center">
             <motion.div
@@ -39,11 +40,8 @@ export default function ClanQuestCard({ quest, children }: ClanQuestCardProps) {
             {quest.quest.item?.name} Silo
           </h3>
         </div>
-        {children}
-      </div>
 
-      {/* Second row: Quest details (left) and Silo (right) */}
-      <div className="flex items-center justify-between">
+        {/* Quest details */}
         <div className="flex flex-col gap-3">
           <p className="text-white/70 text-xs">
             {quest.progress || 0}/{quest.quest.amount} needed
@@ -76,9 +74,12 @@ export default function ClanQuestCard({ quest, children }: ClanQuestCardProps) {
             </div>
           )}
         </div>
+      </div>
 
-        {/* Silo on the right */}
+      {/* Right column: Silo at top, Fill button at bottom */}
+      <div className="flex flex-col items-center justify-between gap-2">
         <ClanQuestSilo quest={quest} />
+        {children}
       </div>
     </motion.div>
   );

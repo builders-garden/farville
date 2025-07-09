@@ -10,7 +10,7 @@ export default function ClanQuestSilo({ quest }: ClanQuestSiloProps) {
   const fillPercentage = Math.min((progress / target) * 100, 100);
 
   return (
-    <div className="relative w-14 h-20 flex-shrink-0">
+    <div className="relative w-14 h-20 flex-shrink-0 mt-3">
       {/* Silo structure - main body (shortened to not extend behind dome) */}
       <div className="absolute top-3 left-0 right-0 bottom-0 bg-gradient-to-b from-[#A67C52] via-[#8B5E3C] to-[#6d4c2c] rounded-b-lg border-2 border-t-0 border-[#4A3A2A] shadow-lg">
         {/* Fill indicator - fills the main body completely at 85% */}
