@@ -6,6 +6,7 @@ interface ClanQuestProps {
   quest: ClanHasQuestWithQuest;
   refetchClanQuests: () => void;
   refetchClanData: () => void;
+  refetchCompletedQuests?: () => void;
   isCompleted?: boolean;
 }
 
@@ -13,6 +14,7 @@ export default function ClanQuest({
   quest,
   refetchClanQuests,
   refetchClanData,
+  refetchCompletedQuests,
   isCompleted = false,
 }: ClanQuestProps) {
   return (
@@ -25,6 +27,7 @@ export default function ClanQuest({
           quest={quest}
           refetchClanQuests={refetchClanQuests}
           refetchClanData={refetchClanData}
+          refetchCompletedQuests={refetchCompletedQuests}
         >
           <button className="bg-amber-600 hover:bg-amber-700 text-white text-[9px] font-medium px-3 py-1 rounded shadow transition-colors duration-200">
             Fill

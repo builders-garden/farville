@@ -22,28 +22,44 @@ export function ClanQuests({
   const [activeTab, setActiveTab] = useState<QuestTab>("active");
   const hasCompletedQuests = completedQuests.length > 0;
 
-  const currentQuests = activeTab === "active" ? activeQuests : completedQuests;
-  const currentRefetch =
-    activeTab === "active" ? refetchActiveQuests : refetchCompletedQuests;
+  // When there are no completed quests, always show active quests
+  // When there are completed quests, respect the activeTab state
+  const currentQuests = hasCompletedQuests
+    ? activeTab === "active"
+      ? activeQuests
+      : completedQuests
+    : activeQuests;
+
+  const currentRefetch = hasCompletedQuests
+    ? activeTab === "active"
+      ? refetchActiveQuests
+      : refetchCompletedQuests
+    : refetchActiveQuests;
 
   return (
     <div className="flex flex-col w-full">
-      {/* Subtabs */}
-      <ClanQuestTabs
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        hasCompletedQuests={hasCompletedQuests}
-      />
+      {/* Subtabs - only show if there are completed quests */}
+      {hasCompletedQuests && (
+        <ClanQuestTabs
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          hasCompletedQuests={hasCompletedQuests}
+        />
+      )}
 
       {/* Quest content */}
       {currentQuests.length === 0 ? (
         <Card className={`border-none cursor-pointer bg-[#5B4120]/90`}>
           <CardContent className="flex flex-col justify-center items-center p-3 text-center gap-3">
             <p className="text-md font-bold text-amber-200">
-              👨🏻‍🌾 {activeTab === "completed" ? "Completed " : ""}Feud Quests 👨🏻‍🌾
+              👨🏻‍🌾{" "}
+              {hasCompletedQuests && activeTab === "completed"
+                ? "Completed "
+                : ""}
+              Feud Quests 👨🏻‍🌾
             </p>
             <p className="text-xs text-white/80">
-              {activeTab === "completed"
+              {hasCompletedQuests && activeTab === "completed"
                 ? "No completed quests for this week yet."
                 : "No active quests available for your feud at the moment."}
             </p>
@@ -57,7 +73,8 @@ export function ClanQuests({
               quest={quest}
               refetchClanQuests={currentRefetch}
               refetchClanData={refetchClanData}
-              isCompleted={activeTab === "completed"}
+              refetchCompletedQuests={refetchCompletedQuests}
+              isCompleted={hasCompletedQuests && activeTab === "completed"}
             />
           ))}
         </div>

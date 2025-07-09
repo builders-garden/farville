@@ -18,6 +18,7 @@ interface ClanQuestDialogProps {
   quest: ClanHasQuestWithQuest;
   refetchClanQuests: () => void;
   refetchClanData: () => void;
+  refetchCompletedQuests?: () => void;
   children: React.ReactNode;
 }
 
@@ -25,6 +26,7 @@ export default function ClanQuestDialog({
   quest,
   refetchClanQuests,
   refetchClanData,
+  refetchCompletedQuests,
   children,
 }: ClanQuestDialogProps) {
   const { fillClanQuest } = useClanOperations();
@@ -69,6 +71,7 @@ export default function ClanQuestDialog({
           setDialogOpen(false); // Close dialog
           if (data.quest.status === QuestStatus.Completed) {
             refetchClanData(); // Refetch clan data if quest is completed
+            refetchCompletedQuests?.(); // Refetch completed quests when a quest is completed
           }
         },
         onError: (error) => {
