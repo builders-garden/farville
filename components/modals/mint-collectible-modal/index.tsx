@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useMemo, useState, useRef } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useAccount, useBalance, useSwitchChain } from "wagmi";
 import { useQuery } from "@tanstack/react-query";
 import { getWalletBalance } from "@/lib/lifi";
@@ -196,14 +196,16 @@ export default function MintCollectibleModal({
     refetchUser,
   });
 
-  // Use ref to track previous calldata and price to prevent unnecessary resets
-  const prevResetDataRef = useRef<{ calldata: string; price: number } | null>(
-    null
-  );
+  // Simple flag to track if we need to reset payment
+  const [shouldResetPayment, setShouldResetPayment] = useState(false);
 
-  // needed for Step 5. Construct mint tx calldata once the backend signature is ready
+  // Generate calldata when we have all the required data
   useEffect(() => {
-    if (!backendSignature || !pinataMetadataCID || !address) return;
+    if (!backendSignature || !pinataMetadataCID || !address) {
+      setTxCalldata("0x");
+      return;
+    }
+
     const newTxCalldata = getPfpNftTxCalldata({
       address,
       fid: BigInt(state.user.fid),
@@ -211,20 +213,11 @@ export default function MintCollectibleModal({
       pinataMetadataCID: pinataMetadataCID,
       backendSignature: backendSignature,
     });
-    setTxCalldata(newTxCalldata);
 
-    // Only reset payment if calldata or price actually changed
-    const currentData = { calldata: newTxCalldata, price: selectedPrice };
-    if (
-      !prevResetDataRef.current ||
-      prevResetDataRef.current.calldata !== currentData.calldata ||
-      prevResetDataRef.current.price !== currentData.price
-    ) {
-      resetPayment({
-        toUnits: selectedPrice.toString(),
-        toCallData: newTxCalldata as `0x${string}`,
-      });
-      prevResetDataRef.current = currentData;
+    // Only update if calldata actually changed
+    if (newTxCalldata !== txCalldata) {
+      setTxCalldata(newTxCalldata);
+      setShouldResetPayment(true);
     }
   }, [
     address,
@@ -232,6 +225,36 @@ export default function MintCollectibleModal({
     selectedPrice,
     pinataMetadataCID,
     backendSignature,
+    txCalldata,
+  ]);
+
+  // Reset payment only when needed and payment is not in progress
+  useEffect(() => {
+    if (
+      shouldResetPayment &&
+      txCalldata !== "0x" &&
+      !paymentStarted &&
+      !paymentCompleted &&
+      !finalTxHash
+    ) {
+      console.log("Resetting payment with:", {
+        toUnits: selectedPrice.toString(),
+        toCallData: txCalldata,
+      });
+
+      resetPayment({
+        toUnits: selectedPrice.toString(),
+        toCallData: txCalldata as `0x${string}`,
+      });
+      setShouldResetPayment(false);
+    }
+  }, [
+    shouldResetPayment,
+    txCalldata,
+    selectedPrice,
+    paymentStarted,
+    paymentCompleted,
+    finalTxHash,
     resetPayment,
   ]);
 
@@ -570,6 +593,8 @@ export default function MintCollectibleModal({
     setPaymentStarted(false);
     setPaymentCompleted(false);
     setShowConfetti(false);
+    // Trigger a payment reset for retry
+    setShouldResetPayment(true);
 
     setErrorMessage(
       "There was an error processing your payment. You received back your amount in $USDC on your wallet address. Try again."
@@ -842,12 +867,6 @@ export default function MintCollectibleModal({
                   totalBalanceUSD={tokenBalancesData?.totalBalanceUSD ?? 0}
                   selectedPrice={selectedPrice}
                   setSelectedPrice={setSelectedPrice}
-                  onPriceChange={(price) => {
-                    resetPayment({
-                      toUnits: price.toString(),
-                      toCallData: txCalldata as `0x${string}`,
-                    });
-                  }}
                 />
               ) : null}
 

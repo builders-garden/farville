@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Press_Start_2P } from "next/font/google";
 import "./globals.css";
+import { preconnect } from "react-dom";
 import { Providers } from "./providers";
 
 const pixelFont = Press_Start_2P({
@@ -18,11 +19,10 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  preconnect("https://auth.farcaster.xyz");
+
   return (
-    <html
-      lang="en"
-      suppressHydrationWarning
-    >
+    <html lang="en" suppressHydrationWarning>
       <body className={`${pixelFont.className} antialiased`}>
         <Providers>{children}</Providers>
       </body>

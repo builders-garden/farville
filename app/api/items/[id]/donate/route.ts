@@ -117,25 +117,13 @@ const handlerPOST = async (
 
   const todayDonations = await getUserDonationsOfToday(Number(fid), mode);
 
-  const {
-    canDonateToReceiver,
-    canDonateToAnotherUser,
-    lastDonationToReceiver,
-  } = userCanDonate(todayDonations, Number(toFid), mode);
+  const { canDonateToReceiver, errorMessage, lastDonationToReceiver } =
+    userCanDonate(todayDonations, Number(toFid), mode);
 
   if (!canDonateToReceiver) {
     return NextResponse.json(
       {
-        message: `You have reached the maximum daily donation limits with this user.`,
-      },
-      { status: 400 }
-    );
-  }
-
-  if (!canDonateToAnotherUser) {
-    return NextResponse.json(
-      {
-        message: `You have reached the maximum daily donation limits for today. Please try again tomorrow.`,
+        message: errorMessage || "Cannot donate to this user",
       },
       { status: 400 }
     );

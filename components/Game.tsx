@@ -4,15 +4,15 @@ import { useFrameContext } from "@/context/FrameContext";
 import { OverlayConfig } from "@/context/GameContext";
 import { useTestMode } from "@/context/TestContext";
 import { useSignIn } from "@/hooks/use-sign-in";
+import { getThisWeekMonday } from "@/lib/utils";
+import sdk from "@farcaster/frame-sdk";
 import Image from "next/image";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { GameProvider } from "./../context/GameContext";
-import { SocketAuthenticator } from "./SocketAuthenticator";
-import { getThisWeekMonday } from "@/lib/utils";
 import { Maintenance } from "./home/maintenance";
 import { Website } from "./home/website";
-import sdk from "@farcaster/frame-sdk";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { SocketAuthenticator } from "./SocketAuthenticator";
 // import { BotBlocker } from "./home/bot-blocker";
 
 export default function Game({
@@ -50,6 +50,7 @@ export default function Game({
     isSignedIn,
     isLoading,
     error,
+    signIn,
     // isBot
   } = useSignIn(isInMaintenance);
 
@@ -115,22 +116,36 @@ export default function Game({
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-black/80" />
           <div className="relative z-10 flex flex-col items-center gap-8 max-w-md px-4 w-fit">
-            <div className="p-6 bg-red-500/20 backdrop-blur-sm rounded-lg border-2 border-red-500 shadow-lg">
-              <p className="text-red-100 text-lg font-medium text-center">
-                {error}
-              </p>
+            <div className="p-4 bg-red-500/20 backdrop-blur-sm rounded-lg border-2 border-red-500 shadow-lg">
+              <div className="flex flex-col gap-2">
+                <p className="text-red-100 text-lg font-medium text-center">
+                  Sign in failed
+                </p>
+                <p className="text-white/50 text-xs font-medium text-center mt-2 pt-2 border-red-500/30">
+                  {error}
+                </p>
+              </div>
             </div>
-            <button
-              className="bg-[#FFB938] text-[#7E4E31] px-4 py-2 rounded-lg font-bold 
+            <div className="flex flex-col gap-2 w-full">
+              <button
+                className="bg-[#FFB938] text-[#7E4E31] px-4 py-2 rounded-lg font-bold  w-full
                  hover:bg-[#ffc661] transition-colors"
-              onClick={() => {
-                sdk.actions.openUrl(
-                  "https://farcaster.xyz/~/inbox/create/262800"
-                );
-              }}
-            >
-              Contact Support
-            </button>
+                onClick={signIn}
+              >
+                Try again
+              </button>
+              <button
+                className="bg-transparent text-[#FFB938] px-4 py-2 rounded-lg font-bold border-2 border-[#FFB938]
+                 hover:bg-[#FFB938] hover:text-[#7E4E31] transition-colors w-full"
+                onClick={() => {
+                  sdk.actions.openUrl(
+                    "https://farcaster.xyz/~/inbox/create/262800"
+                  );
+                }}
+              >
+                Contact Support
+              </button>
+            </div>
           </div>
         </div>
       )}

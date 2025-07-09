@@ -94,6 +94,7 @@ export default function MyClan() {
             user: membersMap[req.fid],
           }))}
           refetchClanData={refetchClanData}
+          members={clanData.members}
         />
       )}
 

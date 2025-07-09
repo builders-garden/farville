@@ -1,10 +1,10 @@
-import { sdk } from "@farcaster/frame-sdk";
 import { useFrameContext } from "@/context/FrameContext";
 import { useTestMode } from "@/context/TestContext";
-import { useCallback, useEffect, useState } from "react";
-import posthog from "posthog-js";
-import { useAuthCheck } from "./use-auth-check";
 import { UserType } from "@/lib/types/game";
+import { sdk } from "@farcaster/frame-sdk";
+import posthog from "posthog-js";
+import { useCallback, useEffect, useState } from "react";
+import { useAuthCheck } from "./use-auth-check";
 
 export const useSignIn = (isInMaintenance: boolean) => {
   const { isSDKLoaded, context, error: contextError } = useFrameContext();
@@ -93,18 +93,19 @@ export const useSignIn = (isInMaintenance: boolean) => {
     try {
       setIsLoading(true);
       setError(null);
-      if (!isSignedIn && !authCheckError) {
+      if (!isSignedIn && !authCheckError && authCheckResult?.message === "ok") {
         setIsSignedIn(true);
         // check if the user is a bot
         if (authCheckResult?.data?.isBot) {
           setIsBot(true);
         }
-      } else {
+      } else if (!isSignedIn || authCheckError) {
+        console.log("handleSignIn signIn", authCheckError, !isSignedIn);
         const data = await signIn();
         if (!data.success) throw new Error(data.error ?? "Sign in failed");
         if (!data.token) throw new Error("Sign in failed");
+        setIsSignedIn(true);
       }
-      setIsSignedIn(true);
       posthog.identify(context?.user?.fid.toString());
     } catch (err) {
       const errorMessage =

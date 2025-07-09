@@ -700,7 +700,12 @@ export const userCanDonate = (
   donationsLast24h: UserDonationHistory[],
   receiver: number,
   mode: Mode
-) => {
+): {
+  canDonateToReceiver: boolean;
+  canDonateToAnotherUser: boolean;
+  errorMessage?: string;
+  lastDonationToReceiver?: UserDonationHistory;
+} => {
   const lastDonationToReceiver = donationsLast24h.find(
     (d) => d.receiverFid === receiver
   );
@@ -708,18 +713,43 @@ export const userCanDonate = (
     MODE_DEFINITIONS[mode].dailyLimitDonationsToSameUser;
   const dailyLimitDonationsToUsers =
     MODE_DEFINITIONS[mode].dailyLimitDonationsToUsers;
-  const canDonateToReceiver =
-    !dailyLimitDonationsToSameUser ||
-    !lastDonationToReceiver ||
-    (lastDonationToReceiver &&
-      lastDonationToReceiver?.times !== null &&
-      lastDonationToReceiver.times < dailyLimitDonationsToSameUser);
-  const canDonateToAnotherUser =
-    !dailyLimitDonationsToUsers ||
-    donationsLast24h.length < dailyLimitDonationsToUsers;
+
+  // Check if user has reached the per-user donation limit
+  const hasReachedPerUserLimit =
+    dailyLimitDonationsToSameUser &&
+    lastDonationToReceiver &&
+    lastDonationToReceiver.times !== null &&
+    lastDonationToReceiver.times >= dailyLimitDonationsToSameUser;
+
+  // Check if user has reached the daily limit for donations to users
+  const hasReachedUserLimit =
+    dailyLimitDonationsToUsers &&
+    donationsLast24h.length >= dailyLimitDonationsToUsers;
+
+  // Calculate canDonateToReceiver: can donate if not reached per-user limit
+  const canDonateToReceiver = !hasReachedPerUserLimit;
+
+  // Calculate canDonateToAnotherUser: can donate to new users if not reached user limit
+  // OR can donate to existing users if reached user limit but haven't reached per-user limit
+  const canDonateToAnotherUser = !hasReachedUserLimit;
+
+  // Generate appropriate error message
+  let errorMessage: string | undefined;
+
+  if (hasReachedPerUserLimit) {
+    errorMessage =
+      "You have reached the maximum daily donation limit with this user.";
+  }
+
+  if (hasReachedUserLimit && !lastDonationToReceiver) {
+    errorMessage =
+      "You have reached the maximum daily donation limit. You can only donate to users you've already donated to today.";
+  }
+
   return {
     canDonateToReceiver,
     canDonateToAnotherUser,
+    errorMessage,
     lastDonationToReceiver,
   };
 };
