@@ -6,6 +6,7 @@ import { publicClient } from "@/lib/viem";
 import { PFP_NFT_ABI } from "@/lib/contracts/pfp-nft/abi";
 import { CollectibleStatus } from "@/lib/types/game";
 import { updateUserCollectible } from "@/lib/prisma/queries";
+import { notifyCollectibleMint } from "@/lib/farville-service";
 
 const requestSchema = z.object({
   txHash: z.string().min(1),
@@ -43,6 +44,17 @@ export const POST = async (req: NextRequest) => {
       const res = await updateUserCollectible(Number(fid), collectibleId, {
         txHash,
         status: CollectibleStatus.Minted,
+      });
+
+      // Send Discord notification (non-blocking)
+      notifyCollectibleMint({
+        fid: Number(fid),
+        collectibleId,
+        txHash,
+        imageUrl: res.mintedImageUrl || undefined,
+      }).catch((error) => {
+        // Log error but don't fail the main request
+        console.error("Failed to send Discord notification:", error);
       });
 
       return NextResponse.json({
