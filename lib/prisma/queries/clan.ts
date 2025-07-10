@@ -293,6 +293,9 @@ export function incrementClanXp(clanId: string, amount: number) {
       xp: {
         increment: amount,
       },
+      seasonXp: {
+        increment: amount,
+      },
     },
   });
 }

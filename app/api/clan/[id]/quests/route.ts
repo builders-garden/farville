@@ -3,6 +3,7 @@ import {
   getClanQuestsByClanId,
   getUserItemByItemId,
   incrementClanXp,
+  incrementUserContributedXp,
   updateClanQuest,
   updateUserItem,
 } from "@/lib/prisma/queries";
@@ -128,6 +129,7 @@ export async function POST(
     // step 4: check if the status should be updated to 'completed' and quest's xp should be rewarded to the clan
     if (updateData.status === QuestStatus.Completed) {
       await incrementClanXp(clanId, clanQuest.quest.xp);
+      await incrementUserContributedXp(Number(fid), clanQuest.quest.xp);
     }
     // step 5: return success response
     return NextResponse.json({
