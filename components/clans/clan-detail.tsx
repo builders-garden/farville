@@ -97,7 +97,10 @@ export function ClanDetail({
     <Card className="bg-gradient-to-br from-[#6D4C2C] to-[#5B4120] rounded-lg border-none w-full max-w-2xl">
       <CardContent className="flex flex-col w-full gap-3 xs:gap-4 p-3 xs:p-4">
         <div className="flex flex-row items-start gap-3">
-          <ClanImage imageUrl={clanData.imageUrl} clanName={clanData.name} />
+          <ClanImage
+            imageUrl={clanData.imageUrl}
+            clanName={clanData.name}
+          />
           <div className="flex flex-col w-full gap-1 xs:gap-2">
             <div className="flex justify-between items-start">
               <h3 className="text-white/90 font-bold text-xs xs:text-sm">
@@ -105,7 +108,10 @@ export function ClanDetail({
                   ? clanData.name.slice(0, 14) + "..."
                   : clanData?.name}
               </h3>
-              <ClanStatus isPublic={clanData.isPublic} short />
+              <ClanStatus
+                isPublic={clanData.isPublic}
+                short
+              />
             </div>
             <div className="flex w-full">
               <div className="text-[#f2a311] text-[10px]">
@@ -118,22 +124,39 @@ export function ClanDetail({
         </div>
         {fullHeight && (
           <div className="flex flex-col w-full gap-2">
-            <div className="flex flex-row justify-between text-white/70">
-              <div className="flex flex-col gap-2 text-xs font-semibold">
-                <span>
-                  Min Level:{" "}
-                  {clanData.requiredLevel ? clanData.requiredLevel : "None"}
+            <div className="flex flex-row justify-between items-end text-white/70">
+              <div className="flex flex-col gap-2 text-[10px]">
+                <span className="text-white/60">
+                  Season:{" "}
+                  <span className="text-white/80 font-medium">
+                    {clanData
+                      ? clanData.seasonXp >= 1000000
+                        ? `${(clanData.seasonXp / 1000000).toFixed(2)}M`
+                        : clanData.seasonXp >= 1000
+                        ? `${(clanData.seasonXp / 1000).toFixed(2)}K`
+                        : clanData.seasonXp
+                      : undefined}{" "}
+                    XP
+                  </span>
                 </span>
-                <span>
-                  Farmed:{" "}
-                  {clanData
-                    ? clanData.xp >= 1000000
-                      ? `${(clanData.xp / 1000000).toFixed(2)}M`
-                      : clanData.xp >= 1000
-                      ? `${(clanData.xp / 1000).toFixed(2)}K`
-                      : clanData.xp
-                    : undefined}{" "}
-                  XP
+                <span className="text-white/60">
+                  Total:{" "}
+                  <span className="text-white/80 font-medium">
+                    {clanData
+                      ? clanData.xp >= 1000000
+                        ? `${(clanData.xp / 1000000).toFixed(2)}M`
+                        : clanData.xp >= 1000
+                        ? `${(clanData.xp / 1000).toFixed(2)}K`
+                        : clanData.xp
+                      : undefined}{" "}
+                    XP
+                  </span>
+                </span>
+                <span className="text-white/60">
+                  Min Level:{" "}
+                  <span className="text-white/80 font-medium">
+                    {clanData.requiredLevel ? clanData.requiredLevel : "None"}
+                  </span>
                 </span>
                 {!isDisplayingMyClan && (
                   <span>Shared requests: {clanData.requests.length}</span>
@@ -143,7 +166,7 @@ export function ClanDetail({
                 <div className="flex flex-col items-center gap-2">
                   {canEdit && (
                     <button
-                      className="flex flex-row text-[10px] text-white/90 items-center justify-center gap-2 w-24 h-8 rounded-lg hover:bg-yellow-800 transition-colors bg-yellow-700"
+                      className="flex flex-row text-[10px] text-white/90 items-center justify-center gap-2 w-24 h-6 rounded-lg hover:bg-yellow-800 transition-colors bg-yellow-700"
                       onClick={() => setIsEditModalOpen(true)}
                       aria-label="Edit clan"
                     >
@@ -152,7 +175,7 @@ export function ClanDetail({
                     </button>
                   )}
                   <button
-                    className="flex flex-row items-center justify-center gap-2 w-24 h-8 bg-red-700 rounded-lg text-[10px] text-white/90 hover:bg-red-600 transition-colors"
+                    className="flex flex-row items-center justify-center gap-2 w-24 h-6 bg-red-700 rounded-lg text-[10px] text-white/90 hover:bg-red-600 transition-colors"
                     onClick={() => setIsModalOpen(true)}
                     disabled={isLeaving}
                   >

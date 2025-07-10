@@ -43,6 +43,11 @@ export function getClans(filters?: {
         ? {
             select: {
               fid: true,
+              username: true,
+              displayName: true,
+              avatarUrl: true,
+              selectedAvatarUrl: true,
+              mintedOG: true,
             },
           }
         : false,
