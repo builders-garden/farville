@@ -4,7 +4,7 @@ import {
   getUserItemByItemId,
   incrementClanXp,
   incrementUserContributedXp,
-  updateClanQuest,
+  incrementClanQuestProgress,
   updateUserItem,
 } from "@/lib/prisma/queries";
 import { Mode, QuestStatus } from "@/lib/types/game";
@@ -105,41 +105,83 @@ export async function POST(
         { status: 400 }
       );
     }
-    // step 3: update the clan quest with the provided amount
-    const updateData = {
+    // step 3: atomically increment the clan quest progress
+    const updatedQuest = await incrementClanQuestProgress({
       clanId,
       questId,
-      progress: clanQuest.progress + amount,
-      status:
-        clanQuest.progress + amount >= clanQuest.quest.amount
-          ? QuestStatus.Completed
-          : (clanQuest.status as QuestStatus),
-      completedAt:
-        clanQuest.progress + amount >= clanQuest.quest.amount
-          ? new Date()
-          : undefined,
-    };
-    await updateClanQuest(updateData);
-    await updateUserItem(
-      Number(fid),
-      questItem.id,
-      userItem.quantity - amount,
-      Mode.Classic
-    );
-    // step 4: check if the status should be updated to 'completed' and quest's xp should be rewarded to the clan
-    if (updateData.status === QuestStatus.Completed) {
-      await incrementClanXp(clanId, clanQuest.quest.xp);
-      await incrementUserContributedXp(Number(fid), clanQuest.quest.xp);
+      amount,
+    });
+
+    // step 4: check if the user's contribution was actually needed
+    const questTarget = clanQuest.quest.amount;
+    const progressBeforeThisContribution = updatedQuest.progress - amount;
+    const actualNeededAmount = Math.max(0, questTarget - progressBeforeThisContribution);
+    const wastedAmount = amount - actualNeededAmount;
+
+    if (wastedAmount > 0) {
+      // The quest was already completed or overfilled, revert the excess
+      await incrementClanQuestProgress({
+        clanId,
+        questId,
+        amount: -wastedAmount, // Negative increment to revert excess
+      });
+      
+      // Only deduct the actually needed items from user inventory
+      await updateUserItem(
+        Number(fid),
+        questItem.id,
+        userItem.quantity - actualNeededAmount,
+        Mode.Classic
+      );
+      
+      // Update the quest progress for response
+      updatedQuest.progress -= wastedAmount;
+    } else {
+      // All contributed items were needed, deduct full amount
+      await updateUserItem(
+        Number(fid),
+        questItem.id,
+        userItem.quantity - amount,
+        Mode.Classic
+      );
     }
-    // step 5: return success response
+
+    // step 5: check if the quest should be marked as completed based on the new progress
+    const isNowCompleted = updatedQuest.progress >= questTarget;
+
+    if (isNowCompleted && updatedQuest.status !== QuestStatus.Completed) {
+      // Update the quest to completed status if it wasn't already
+      const completedQuest = await incrementClanQuestProgress({
+        clanId,
+        questId,
+        amount: 0, // Don't increment progress again
+        status: QuestStatus.Completed,
+        completedAt: new Date(),
+      });
+
+      // Reward XP to clan and user (only if they actually contributed)
+      if (actualNeededAmount > 0) {
+        await incrementClanXp(clanId, clanQuest.quest.xp);
+        await incrementUserContributedXp(Number(fid), clanQuest.quest.xp);
+      }
+
+      // Update the quest object for response
+      updatedQuest.status = completedQuest.status;
+      updatedQuest.completedAt = completedQuest.completedAt;
+    }
+    // step 6: return success response
     return NextResponse.json({
-      message: "Clan quest updated successfully",
+      message: wastedAmount > 0 
+        ? `Clan quest updated successfully. ${wastedAmount} items were not needed as the quest was already completed.`
+        : "Clan quest updated successfully",
       quest: {
         ...clanQuest,
-        progress: updateData.progress,
-        status: updateData.status,
-        completedAt: updateData.completedAt,
+        progress: updatedQuest.progress,
+        status: updatedQuest.status,
+        completedAt: updatedQuest.completedAt,
       },
+      actualContribution: actualNeededAmount,
+      wastedContribution: wastedAmount,
     });
   } catch (error) {
     console.error("Error creating clan quest:", error);

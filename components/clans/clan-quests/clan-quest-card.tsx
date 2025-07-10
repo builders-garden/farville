@@ -53,9 +53,6 @@ export default function ClanQuestCard({
           >
             {quest.quest.item?.name} Silo
           </h3>
-          {isCompleted && (
-            <span className="text-green-400 text-xs ml-1">✓</span>
-          )}
         </div>
 
         {/* Quest details */}

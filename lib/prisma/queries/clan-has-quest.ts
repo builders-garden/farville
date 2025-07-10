@@ -32,9 +32,16 @@ export function getClanQuestsByClanId(options: {
 
   return prisma.clanHasQuest.findMany({
     where: filters,
-    orderBy: {
-      createdAt: "desc",
-    },
+    orderBy: [
+      {
+        quest: {
+          id: "asc",
+        },
+      },
+      {
+        createdAt: "desc",
+      },
+    ],
     include: {
       quest: {
         include: {
@@ -97,6 +104,38 @@ export function updateClanQuest(data: {
       status: data.status,
       completedAt: data.completedAt,
     },
+  });
+}
+
+export function incrementClanQuestProgress(data: {
+  clanId: string;
+  questId: string;
+  amount: number;
+  status?: QuestStatus;
+  completedAt?: Date;
+}) {
+  const updateData: Prisma.ClanHasQuestUpdateInput = {
+    progress: {
+      increment: data.amount,
+    },
+  };
+
+  // Only include status and completedAt if they are provided
+  if (data.status !== undefined) {
+    updateData.status = data.status;
+  }
+  if (data.completedAt !== undefined) {
+    updateData.completedAt = data.completedAt;
+  }
+
+  return prisma.clanHasQuest.update({
+    where: {
+      clanId_questId: {
+        clanId: data.clanId,
+        questId: data.questId,
+      },
+    },
+    data: updateData,
   });
 }
 
