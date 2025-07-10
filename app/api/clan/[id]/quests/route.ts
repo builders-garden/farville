@@ -3,7 +3,6 @@ import {
   getClanQuestsByClanId,
   getUserItemByItemId,
   incrementClanXp,
-  incrementUserContributedXp,
   incrementClanQuestProgress,
   updateUserItem,
 } from "@/lib/prisma/queries";
@@ -115,7 +114,10 @@ export async function POST(
     // step 4: check if the user's contribution was actually needed
     const questTarget = clanQuest.quest.amount;
     const progressBeforeThisContribution = updatedQuest.progress - amount;
-    const actualNeededAmount = Math.max(0, questTarget - progressBeforeThisContribution);
+    const actualNeededAmount = Math.max(
+      0,
+      questTarget - progressBeforeThisContribution
+    );
     const wastedAmount = amount - actualNeededAmount;
 
     if (wastedAmount > 0) {
@@ -125,7 +127,7 @@ export async function POST(
         questId,
         amount: -wastedAmount, // Negative increment to revert excess
       });
-      
+
       // Only deduct the actually needed items from user inventory
       await updateUserItem(
         Number(fid),
@@ -133,7 +135,7 @@ export async function POST(
         userItem.quantity - actualNeededAmount,
         Mode.Classic
       );
-      
+
       // Update the quest progress for response
       updatedQuest.progress -= wastedAmount;
     } else {
@@ -162,7 +164,6 @@ export async function POST(
       // Reward XP to clan and user (only if they actually contributed)
       if (actualNeededAmount > 0) {
         await incrementClanXp(clanId, clanQuest.quest.xp);
-        await incrementUserContributedXp(Number(fid), clanQuest.quest.xp);
       }
 
       // Update the quest object for response
@@ -171,9 +172,10 @@ export async function POST(
     }
     // step 6: return success response
     return NextResponse.json({
-      message: wastedAmount > 0 
-        ? `Clan quest updated successfully. ${wastedAmount} items were not needed as the quest was already completed.`
-        : "Clan quest updated successfully",
+      message:
+        wastedAmount > 0
+          ? `Clan quest updated successfully. ${wastedAmount} items were not needed as the quest was already completed.`
+          : "Clan quest updated successfully",
       quest: {
         ...clanQuest,
         progress: updatedQuest.progress,
