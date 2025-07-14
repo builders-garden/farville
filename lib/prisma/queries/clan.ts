@@ -43,6 +43,11 @@ export function getClans(filters?: {
         ? {
             select: {
               fid: true,
+              username: true,
+              displayName: true,
+              avatarUrl: true,
+              selectedAvatarUrl: true,
+              mintedOG: true,
             },
           }
         : false,
@@ -55,12 +60,25 @@ export function getClansLeaderboard(
   options?: {
     includeMembers?: boolean;
     includeLeader?: boolean;
+    orderBy?: "xp" | "seasonXp" | "lastSeasonXp";
   }
 ) {
   return prisma.clan.findMany({
     orderBy: {
-      xp: "desc",
+      [options?.orderBy || "xp"]: "desc",
     },
+    // is this code below a good idea?
+    // where: {
+    //   xp: {
+    //     gt: 0, // Only include clans with XP greater than 0
+    //   },
+    //   seasonXp: {
+    //     gt: 0, // Only include clans with season XP greater than 0
+    //   },
+    //   lastSeasonXp: {
+    //     gt: 0, // Only include clans with last season XP greater than 0
+    //   },
+    // },
     take: limit,
     include: {
       members: options?.includeMembers
@@ -280,6 +298,9 @@ export function incrementClanXp(clanId: string, amount: number) {
       xp: {
         increment: amount,
       },
+      seasonXp: {
+        increment: amount,
+      },
     },
   });
 }
@@ -296,6 +317,7 @@ export async function getClansLeaderboardWithUserRank(
   options?: {
     includeMembers?: boolean;
     includeLeader?: boolean;
+    orderBy?: "xp" | "seasonXp" | "lastSeasonXp";
   }
 ) {
   // Get the top clans for the leaderboard
@@ -303,18 +325,18 @@ export async function getClansLeaderboardWithUserRank(
 
   // Get the user's clan with its rank using a safer approach
   const userClanData = await getClanById(userClanId, options);
-  
+
   let userClan = null;
   if (userClanData) {
     // Calculate rank by counting clans with higher XP
     const ranksAbove = await prisma.clan.count({
       where: {
-        xp: {
-          gt: userClanData.xp,
+        [options?.orderBy || "xp"]: {
+          gt: userClanData[options?.orderBy || "xp"],
         },
       },
     });
-    
+
     userClan = {
       ...userClanData,
       rank: ranksAbove + 1,

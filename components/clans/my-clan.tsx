@@ -9,6 +9,7 @@ import { ClanRole } from "@/lib/types/game";
 import { ClanDetail } from "./clan-detail";
 import { FloatingShareButton } from "../FloatingShareButton";
 import { ClanQuests } from "./clan-quests";
+import { useClanQuests } from "@/hooks/clan/use-clan-quests";
 import ClanShareModal from "./clan-share-modal";
 import { ClanChat } from "./clan-chat";
 
@@ -31,11 +32,19 @@ export default function MyClan() {
 
   // Get join requests if user can manage them
   const { requests: joinRequests } = useClanJoinRequests(
-    canManageRequests ? state.clan?.clanId : undefined,
+    canManageRequests ? state.clan?.clanId : undefined
   );
 
+  const { quests: clanQuests, refetch: refetchClanQuests } = useClanQuests(
+    state.clan?.clanId,
+    "incomplete"
+  );
+
+  const { quests: completedClanQuests, refetch: refetchCompletedClanQuests } =
+    useClanQuests(state.clan?.clanId, "completed");
+
   const membersMap = Object.fromEntries(
-    clanData?.members?.map((m) => [m.fid, m.user]) ?? [],
+    clanData?.members?.map((m) => [m.fid, m.user]) ?? []
   );
 
   const handleShareClan = async () => {
@@ -49,7 +58,11 @@ export default function MyClan() {
         activeTab === "chat" ? "pb-4" : "pb-8"
       }`}
     >
-      <ClanDetail clanData={clanData} refetchClan={refetchClanData} />
+      <ClanDetail
+        clanData={clanData}
+        refetchClan={refetchClanData}
+        fullHeight={activeTab === "members"}
+      />
 
       <MyClanTabs
         activeTab={activeTab}
@@ -68,6 +81,16 @@ export default function MyClan() {
         />
       )}
 
+      {activeTab === "quests" && !isLoading && clanData && (
+        <ClanQuests
+          activeQuests={clanQuests}
+          completedQuests={completedClanQuests}
+          refetchActiveQuests={refetchClanQuests}
+          refetchCompletedQuests={refetchCompletedClanQuests}
+          refetchClanData={refetchClanData}
+        />
+      )}
+
       {activeTab === "chat" && !isLoading && clanData && (
         <ClanChat
           clanId={clanData.id}
@@ -80,8 +103,6 @@ export default function MyClan() {
         />
       )}
 
-      {activeTab === "quests" && !isLoading && clanData && <ClanQuests />}
-
       {activeTab === "newcomers" && !isLoading && clanData && (
         <div className="w-full max-w-2xl">
           <ClanJoinRequests
@@ -93,7 +114,7 @@ export default function MyClan() {
       )}
 
       {/* Floating Share Button */}
-      {clanData && activeTab !== "chat" && (
+      {clanData && activeTab !== "chat" && activeTab !== "quests" && (
         <FloatingShareButton onClick={handleShareClan} />
       )}
 

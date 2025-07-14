@@ -13,9 +13,14 @@ import { ClanImage } from "./clan-image";
 interface ClanDetailProps {
   clanData: ClanWithData | undefined;
   refetchClan: () => void;
+  fullHeight: boolean;
 }
 
-export function ClanDetail({ clanData, refetchClan }: ClanDetailProps) {
+export function ClanDetail({
+  clanData,
+  refetchClan,
+  fullHeight,
+}: ClanDetailProps) {
   const { state, refetch, updateUserClan } = useGame();
   const [isLeaving, setIsLeaving] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -117,58 +122,77 @@ export function ClanDetail({ clanData, refetchClan }: ClanDetailProps) {
             </div>
           </div>
         </div>
-        <div className="flex flex-col w-full gap-2">
-          <div className="flex flex-row justify-between text-white/70">
-            <div className="flex flex-col gap-2 text-xs font-semibold">
-              <span>
-                Min Level:{" "}
-                {clanData.requiredLevel ? clanData.requiredLevel : "None"}
-              </span>
-              <span>
-                Farmed:{" "}
-                {clanData
-                  ? clanData.xp >= 1000000
-                    ? `${(clanData.xp / 1000000).toFixed(2)}M`
-                    : clanData.xp >= 1000
-                    ? `${(clanData.xp / 1000).toFixed(2)}K`
-                    : clanData.xp
-                  : undefined}{" "}
-                XP
-              </span>
-              {!isDisplayingMyClan && (
-                <span>Shared requests: {clanData.requests.length}</span>
+        {fullHeight && (
+          <div className="flex flex-col w-full gap-2">
+            <div className="flex flex-row justify-between items-end text-white/70">
+              <div className="flex flex-col gap-2 text-[10px]">
+                <span className="text-white/60">
+                  Season:{" "}
+                  <span className="text-white/80 font-medium">
+                    {clanData
+                      ? clanData.seasonXp >= 1000000
+                        ? `${(clanData.seasonXp / 1000000).toFixed(2)}M`
+                        : clanData.seasonXp >= 1000
+                        ? `${(clanData.seasonXp / 1000).toFixed(2)}K`
+                        : clanData.seasonXp
+                      : undefined}{" "}
+                    XP
+                  </span>
+                </span>
+                <span className="text-white/60">
+                  Total:{" "}
+                  <span className="text-white/80 font-medium">
+                    {clanData
+                      ? clanData.xp >= 1000000
+                        ? `${(clanData.xp / 1000000).toFixed(2)}M`
+                        : clanData.xp >= 1000
+                        ? `${(clanData.xp / 1000).toFixed(2)}K`
+                        : clanData.xp
+                      : undefined}{" "}
+                    XP
+                  </span>
+                </span>
+                <span className="text-white/60">
+                  Min Level:{" "}
+                  <span className="text-white/80 font-medium">
+                    {clanData.requiredLevel ? clanData.requiredLevel : "None"}
+                  </span>
+                </span>
+                {!isDisplayingMyClan && (
+                  <span>Shared requests: {clanData.requests.length}</span>
+                )}
+              </div>
+              {isDisplayingMyClan && (
+                <div className="flex flex-col items-center gap-2">
+                  {canEdit && (
+                    <button
+                      className="flex flex-row text-[10px] text-white/90 items-center justify-center gap-2 w-24 h-6 rounded-lg hover:bg-yellow-800 transition-colors bg-yellow-700"
+                      onClick={() => setIsEditModalOpen(true)}
+                      aria-label="Edit clan"
+                    >
+                      <Pencil className="w-4 h-4" />
+                      <span>Edit</span>
+                    </button>
+                  )}
+                  <button
+                    className="flex flex-row items-center justify-center gap-2 w-24 h-6 bg-red-700 rounded-lg text-[10px] text-white/90 hover:bg-red-600 transition-colors"
+                    onClick={() => setIsModalOpen(true)}
+                    disabled={isLeaving}
+                  >
+                    {isLeaving ? (
+                      <Loader2 className="animate-spin w-4 h-4" />
+                    ) : (
+                      <>
+                        <LogOut className="w-4 h-4" />
+                        <span>Leave</span>
+                      </>
+                    )}
+                  </button>
+                </div>
               )}
             </div>
-            {isDisplayingMyClan && (
-              <div className="flex flex-col items-center gap-2">
-                {canEdit && (
-                  <button
-                    className="flex flex-row text-[10px] text-white/90 items-center justify-center gap-2 w-24 h-8 rounded-lg hover:bg-yellow-800 transition-colors bg-yellow-700"
-                    onClick={() => setIsEditModalOpen(true)}
-                    aria-label="Edit clan"
-                  >
-                    <Pencil className="w-4 h-4" />
-                    <span>Edit</span>
-                  </button>
-                )}
-                <button
-                  className="flex flex-row items-center justify-center gap-2 w-24 h-8 bg-red-700 rounded-lg text-[10px] text-white/90 hover:bg-red-600 transition-colors"
-                  onClick={() => setIsModalOpen(true)}
-                  disabled={isLeaving}
-                >
-                  {isLeaving ? (
-                    <Loader2 className="animate-spin w-4 h-4" />
-                  ) : (
-                    <>
-                      <LogOut className="w-4 h-4" />
-                      <span>Leave</span>
-                    </>
-                  )}
-                </button>
-              </div>
-            )}
           </div>
-        </div>
+        )}
       </CardContent>
 
       {isModalOpen && (

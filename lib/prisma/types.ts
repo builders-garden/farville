@@ -12,6 +12,8 @@ import {
   Clan,
   ClanJoinRequest,
   ClanRequest,
+  ClanHasQuest,
+  ClanQuest,
   ClanChatMessage,
 } from "@prisma/client";
 import { Mode, UserType } from "../types/game";
@@ -149,3 +151,9 @@ export interface ClanJoinRequestWithClan extends ClanJoinRequest {
     isPublic: boolean;
   };
 }
+
+export type ClanHasQuestWithQuest = ClanHasQuest & {
+  quest: ClanQuest & {
+    item: Item;
+  };
+};

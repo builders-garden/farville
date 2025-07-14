@@ -5,6 +5,7 @@ import {
   ACHIEVEMENTS_THRESHOLDS,
   ADMIN_FIDS,
   BASE_GOLD_CROP_PERCENTAGE,
+  CLAN_QUESTS_NUMBER,
   CROP_DATA,
   DAILY_QUESTS_NUMBER,
   FP_TIME,
@@ -35,6 +36,14 @@ import {
   getUserHasQuests,
   initDailyUserQuests,
   initWeeklyUserQuests,
+  getItemsByCategory,
+  calculateValidAmount,
+  calculateQuestXP,
+  createClanQuests,
+  getClanQuests,
+  createClanHasQuests,
+  getClanByFid,
+  getClanQuestsByClanId,
 } from "./prisma/queries";
 import { encodeFunctionData, Address, Hex } from "viem";
 import { PFP_NFT_ABI } from "./contracts/pfp-nft/abi";
@@ -42,6 +51,7 @@ import { env } from "@/lib/env";
 import { UserHasVoucherWithVoucher } from "@/lib/prisma/types";
 import {
   Item,
+  Prisma,
   Streak,
   UserDonationHistory,
   UserHarvestedCrop,
@@ -894,6 +904,81 @@ export const initQuestsAndLeaderboardEntry = async (
     await initQuestsAndLeaderboardEntryByMode(fid, mode);
   }
 };
+
+export const initClanQuests = async () => {
+  let cropItems = await getItemsByCategory("crop");
+
+  const newQuests: Prisma.ClanQuestCreateManyInput[] = [];
+
+  const startAt = new Date();
+  startAt.setUTCHours(0, 0, 0, 0);
+  const endAt = new Date();
+  endAt.setUTCHours(23, 59, 59, 999);
+  // Add days until we reach Sunday (0 is Sunday, so we subtract the current day from 7)
+  const daysUntilSunday = 7 - endAt.getUTCDay();
+  endAt.setUTCDate(endAt.getUTCDate() + daysUntilSunday);
+  // uncomment these lines if we decide to have biweekly quests: If current week is odd, add 7 more days to get to next even week
+  // const weekNumber = Math.ceil((endAt.getUTCDate() - endAt.getUTCDay()) / 7);
+  // if (weekNumber % 2 !== 0) {
+  //   endAt.setUTCDate(endAt.getUTCDate() + 7);
+  // }
+
+  for (let i = 0; i < CLAN_QUESTS_NUMBER; i++) {
+    const randomCrop = chooseRandomItem(cropItems);
+    const cropData = CROP_DATA[randomCrop.slug];
+    const amount =
+      Math.round(
+        (await calculateValidAmount(cropData, 20, Mode.Classic, 1000)) / 100
+      ) * 100;
+    const xp =
+      Math.round(calculateQuestXP(20, cropData, amount) / 20 / 100) * 100;
+
+    const newQuest: Prisma.ClanQuestCreateArgs["data"] = {
+      itemId: randomCrop.id,
+      amount,
+      xp,
+      startAt: startAt,
+      endAt: endAt,
+      category: "donate",
+    };
+
+    newQuests.push(newQuest);
+
+    // remove the crop from the list to avoid duplicates
+    cropItems = cropItems.filter((item) => item.id !== randomCrop.id);
+  }
+
+  return await createClanQuests(newQuests);
+};
+
+export const initOrCreateClanQuests = async (clanId: string) => {
+  let validClanQuests = await getClanQuests({
+    activeToday: true,
+  });
+  if (!validClanQuests || validClanQuests.length < CLAN_QUESTS_NUMBER) {
+    validClanQuests = await initClanQuests();
+  }
+  await createClanHasQuests(
+    validClanQuests.map((quest) => ({
+      clanId,
+      questId: quest.id,
+      progress: 0,
+    }))
+  );
+};
+
+export async function checkOrInitClanQuests(fid: number) {
+  const userClan = await getClanByFid(fid);
+  if (userClan) {
+    const userClanQuests = await getClanQuestsByClanId({
+      clanId: userClan.clanId,
+      active: true,
+    });
+    if (!userClanQuests || userClanQuests.length < CLAN_QUESTS_NUMBER) {
+      await initOrCreateClanQuests(userClan.clanId);
+    }
+  }
+}
 
 export const modeAvailableForUser = (mode: Mode, fid: number) => {
   if (MODE_DEFINITIONS[mode].displayable === false) {
