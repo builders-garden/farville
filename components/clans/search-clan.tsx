@@ -7,10 +7,25 @@ import ClanDetailModal from "./clan-detail-modal";
 import { ClanView } from "./clan-view";
 import { ClanStatus } from "./clan-status";
 import { ClanImage } from "./clan-image";
+import { LeaderboardUserAvatar } from "../leaderboard/LeaderboardUserAvatar";
 
 interface ClanWithDetails extends Clan {
   memberCount?: number;
   level?: number;
+  members: {
+    fid: number;
+    role: string;
+    joinedAt: Date;
+    xpContributed: number;
+  }[];
+  leader?: {
+    fid: number;
+    username: string;
+    displayName: string | null;
+    avatarUrl: string | null;
+    selectedAvatarUrl: string | null;
+    mintedOG: boolean;
+  };
 }
 
 interface SearchClanProps {
@@ -174,7 +189,10 @@ export const SearchClan = ({
                         {clan.name}
                       </h3>
                       <div className="flex items-center text-xs text-white/70">
-                        <ClanStatus isPublic={clan.isPublic} />
+                        <ClanStatus
+                          isPublic={clan.isPublic}
+                          short
+                        />
                       </div>
                     </div>
 
@@ -184,11 +202,12 @@ export const SearchClan = ({
                       <ClanImage
                         imageUrl={clan.imageUrl}
                         clanName={clan.name}
+                        size="lg"
                       />
 
                       {/* Right - Stats */}
-                      <div className="flex-1 flex flex-col justify-center">
-                        {/* Stats Row 1: Level / XP */}
+                      <div className="flex-1 flex flex-col justify-center gap-1">
+                        {/* Stats Row 1: Members */}
                         <div className="flex justify-between items-center">
                           <span className="text-[10px] text-white/80">
                             Members
@@ -198,25 +217,50 @@ export const SearchClan = ({
                           </span>
                         </div>
 
-                        {/* Stats Row 2: Required Level / Members */}
-                        <div className="flex justify-between items-center mt-2">
+                        {/* Stats Row 2: Season XP */}
+                        <div className="flex justify-between items-center">
                           <span className="text-[10px] text-white/80">
-                            Experience
+                            Season
+                          </span>
+                          <span className="text-[9px] text-white/90">
+                            {formatXP(clan.seasonXp || 0)}
+                          </span>
+                        </div>
+
+                        {/* Stats Row 3: Total XP */}
+                        <div className="flex justify-between items-center">
+                          <span className="text-[10px] text-white/80">
+                            Total
                           </span>
                           <span className="text-[9px] text-white/90">
                             {formatXP(clan.xp || 0)}
                           </span>
                         </div>
 
-                        {/* Stats Row 3: Clan Level */}
-                        <div className="flex justify-between items-center mt-2">
-                          <span className="text-[10px] text-white/80">
-                            Required Level
-                          </span>
-                          <span className="text-[9px] text-white/90">
-                            {clan.requiredLevel ? clan.requiredLevel : "None"}
-                          </span>
-                        </div>
+                        {/* Stats Row 4: Leader */}
+                        {clan.leader && (
+                          <div className="flex justify-between items-center">
+                            <span className="text-[10px] text-white/80">
+                              Leader
+                            </span>
+                            <div className="flex items-center gap-1">
+                              <LeaderboardUserAvatar
+                                pfpUrl={
+                                  clan.leader.selectedAvatarUrl ||
+                                  clan.leader.avatarUrl ||
+                                  ""
+                                }
+                                username={clan.leader.username}
+                                isOgUser={false}
+                                size={{ width: 4, height: 4 }}
+                                borderSize={0}
+                              />
+                              <span className="text-[9px] text-white/90 max-w-[150px] truncate">
+                                {clan.leader.username}
+                              </span>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>

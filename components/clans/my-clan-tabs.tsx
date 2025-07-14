@@ -39,17 +39,16 @@ export default function MyClanTabs({
       label: "Quests",
       icon: "/images/icons/quests.png",
     },
-    {
+  ];
+
+  // Add joins tab if user can manage requests
+  if (canManageRequests) {
+    tabs.push({
       id: "newcomers",
       label: "Joins",
       icon: "/images/icons/clan-members.png",
       count: pendingRequestsCount,
-    },
-  ];
-
-  if (!canManageRequests) {
-    // If user cannot manage requests, remove the "Joins" tab
-    tabs.pop();
+    });
   }
 
   return (

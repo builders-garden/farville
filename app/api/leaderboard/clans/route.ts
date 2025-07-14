@@ -11,12 +11,19 @@ export async function GET(request: NextRequest) {
     const includeMembers = searchParams.get("includeMembers") === "true";
     const includeLeader = searchParams.get("includeLeader") === "true";
     const userClanId = searchParams.get("userClanId");
+    const type = searchParams.get("type") || "season";
 
     if (userClanId) {
       // If user clan ID is provided, get leaderboard with user clan rank
       const result = await getClansLeaderboardWithUserRank(userClanId, limit, {
         includeMembers,
         includeLeader,
+        orderBy:
+          type === "season"
+            ? "seasonXp"
+            : type === "lastSeason"
+            ? "lastSeasonXp"
+            : "xp",
       });
       return NextResponse.json(result);
     } else {

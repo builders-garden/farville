@@ -262,12 +262,12 @@ function maxPerksApplicationsByCrop(
   return k - 1;
 }
 
-const calculateValidAmount = async (
+export const calculateValidAmount = async (
   crop: CropData,
   level: number,
-  mode: Mode
+  mode: Mode,
+  questTimeInHours: number = 40
 ) => {
-  const questTimeInHours = 40;
   const userAvailableCells =
     (EXPANSION_COSTS.filter((cost) => cost.level <= level).pop()?.nextSize
       .width ?? 2) ** 2;
@@ -393,7 +393,7 @@ export const generateWeeklyQuests = async (
   return insertedQuests;
 };
 
-const calculateQuestXP = (
+export const calculateQuestXP = (
   level: number,
   cropData: CropData,
   amount: number

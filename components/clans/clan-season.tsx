@@ -5,7 +5,7 @@ import { Crown, Users, Zap } from "lucide-react";
 import { ClanImage } from "./clan-image";
 import ClanDetailModal from "./clan-detail-modal";
 import { ClanView } from "./clan-view";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ClanLeaderboardEntry } from "@/hooks/use-clans-leaderboard";
 import { useGame } from "@/context/GameContext";
 
@@ -13,10 +13,15 @@ export function ClanSeason() {
   const { state } = useGame();
   const userClanId = state.clan?.clanId;
 
+  const [leaderboardType, setLeaderboardType] = useState<"season" | "global">(
+    "season"
+  ); // Default to current season
+
   const { data: leaderboardData, isLoading } = useClansLeaderboard(20, {
     includeMembers: true,
     includeLeader: true,
     userClanId: userClanId,
+    type: leaderboardType,
   });
 
   const clans = leaderboardData?.clans || [];
@@ -26,6 +31,68 @@ export function ClanSeason() {
     null
   );
   const [isViewingClan, setIsViewingClan] = useState(false);
+
+  const [timeUntilSeasonEnd, setTimeUntilSeasonEnd] = useState({
+    days: 0,
+    hours: 0,
+    minutes: 0,
+  });
+
+  useEffect(() => {
+    const calculateTimeUntilSeasonEnd = () => {
+      const now = new Date();
+
+      // Get the current week number (starting from a reference point)
+      // We need to find when the current season ends
+      const jan1 = new Date(now.getFullYear(), 0, 1);
+      const weeksSinceJan1 = Math.floor(
+        (now.getTime() - jan1.getTime()) / (7 * 24 * 60 * 60 * 1000)
+      );
+
+      // Find the start of the current even week (season start)
+      let currentSeasonStartWeek = weeksSinceJan1;
+      if (currentSeasonStartWeek % 2 !== 0) {
+        currentSeasonStartWeek -= 1; // Go back to the previous even week
+      }
+
+      // Calculate the actual date of the current season start
+      const seasonStartDate = new Date(
+        jan1.getTime() + currentSeasonStartWeek * 7 * 24 * 60 * 60 * 1000
+      );
+
+      // Find the Monday of that week at 00:00 UTC
+      const daysFromMonday = (seasonStartDate.getUTCDay() + 6) % 7; // 0 = Monday, 6 = Sunday
+      seasonStartDate.setUTCDate(seasonStartDate.getUTCDate() - daysFromMonday);
+      seasonStartDate.setUTCHours(0, 0, 0, 0);
+
+      // Season ends 2 weeks after it starts
+      const seasonEndDate = new Date(
+        seasonStartDate.getTime() + 14 * 24 * 60 * 60 * 1000
+      );
+
+      // If we're past the season end, move to the next season
+      if (now >= seasonEndDate) {
+        seasonEndDate.setUTCDate(seasonEndDate.getUTCDate() + 14); // Next season ends 2 weeks later
+      }
+
+      const diff = seasonEndDate.getTime() - now.getTime();
+
+      return {
+        days: Math.floor(diff / (1000 * 60 * 60 * 24)),
+        hours: Math.floor((diff / (1000 * 60 * 60)) % 24),
+        minutes: Math.floor((diff / (1000 * 60)) % 60),
+      };
+    };
+
+    const timer = setInterval(() => {
+      setTimeUntilSeasonEnd(calculateTimeUntilSeasonEnd());
+    }, 60000); // Update every minute
+
+    // Initial calculation
+    setTimeUntilSeasonEnd(calculateTimeUntilSeasonEnd());
+
+    return () => clearInterval(timer);
+  }, []);
 
   // Handle viewing a clan in detail
   const handleViewClan = () => {
@@ -132,14 +199,87 @@ export function ClanSeason() {
       ) : (
         <>
           {/* Header */}
-          <motion.div
+          {/* <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             className="text-center px-2"
           >
             <h2 className="text-sm font-bold text-amber-200">
-              🌟 Feuds Leaderboard 🌟
+              🌟 Feuds Season 🌟
             </h2>
+          </motion.div> */}
+
+          {/* Season countdown */}
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.05 }}
+            className="w-full max-w-2xl"
+          >
+            <div className="bg-[#3B2F1F]/30 border border-[#8B5E3C]/20 rounded-lg p-2">
+              <div className="flex items-center justify-center gap-2 text-white/80">
+                <span className="text-xs">Season ends in:</span>
+                <div className="flex items-center gap-1 text-amber-200 font-medium text-xs">
+                  {timeUntilSeasonEnd.days > 0 && (
+                    <>
+                      <span>{timeUntilSeasonEnd.days}d</span>
+                      <span className="text-white/50">•</span>
+                    </>
+                  )}
+                  <span>{timeUntilSeasonEnd.hours}h</span>
+                  <span className="text-white/50">•</span>
+                  <span>{timeUntilSeasonEnd.minutes}m</span>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Leaderboard Type Selector */}
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="w-full max-w-2xl"
+          >
+            <div className="grid grid-cols-2 gap-2 bg-[#3B2F1F]/50 p-2 rounded-lg border border-[#8B5E3C]/30">
+              {[
+                { id: "season" as const, label: "Season", icon: "🏆" },
+                { id: "global" as const, label: "All Time", icon: "🌟" },
+              ].map((tab) => (
+                <motion.button
+                  key={tab.id}
+                  onClick={() => setLeaderboardType(tab.id)}
+                  className={`px-2 py-1.5 rounded-md flex items-center justify-center gap-1 transition-all duration-200 text-xs font-medium
+                    ${
+                      leaderboardType === tab.id
+                        ? "bg-[#6d4c2c] text-white shadow-lg scale-105"
+                        : "text-white/70 hover:bg-[#6d4c2c]/50 hover:text-white"
+                    }`}
+                  whileHover={{
+                    scale: leaderboardType === tab.id ? 1.05 : 1.02,
+                  }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <motion.span
+                    animate={{
+                      rotate: leaderboardType === tab.id ? [0, -5, 5, 0] : 0,
+                    }}
+                    transition={{
+                      duration: 0.5,
+                      repeat: Infinity,
+                      repeatDelay: 2,
+                    }}
+                    className="text-xs"
+                  >
+                    {tab.icon}
+                  </motion.span>
+                  <span className="hidden xs:inline">{tab.label}</span>
+                  <span className="xs:hidden">
+                    {tab.id === "season" ? "Current" : "All"}
+                  </span>
+                </motion.button>
+              ))}
+            </div>
           </motion.div>
 
           {/* User's Clan (if exists and not in top 20) */}
@@ -190,7 +330,11 @@ export function ClanSeason() {
                         <div className="flex items-center gap-1">
                           <Zap className="w-2.5 h-2.5 xs:w-3 xs:h-3 text-amber-400" />
                           <span className="text-white font-bold">
-                            {formatXP(userClan.xp)}
+                            {formatXP(
+                              leaderboardType === "season"
+                                ? userClan.seasonXp
+                                : userClan.xp
+                            )}
                           </span>
                           <span className="text-white/60">XP</span>
                         </div>
@@ -203,9 +347,15 @@ export function ClanSeason() {
           )}
 
           {/* Season Leaderboard Label */}
-          <div className="w-full max-w-2xl">
-            <p className="text-xs text-white/80 text-center">Top 20 Feuds</p>
-          </div>
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center px-2"
+          >
+            <h2 className="text-sm font-bold text-amber-200">
+              🌟 {leaderboardType === "season" ? "Feuds Season" : "All Time"} 🌟
+            </h2>
+          </motion.div>
 
           {/* Leaderboard */}
           <div className="w-full max-w-2xl space-y-1 xs:space-y-2 pb-4">
@@ -290,7 +440,11 @@ export function ClanSeason() {
                             <div className="flex items-center gap-1">
                               <Zap className="w-2.5 h-2.5 xs:w-3 xs:h-3 text-amber-400" />
                               <span className="text-white font-bold">
-                                {formatXP(clan.xp)}
+                                {formatXP(
+                                  leaderboardType === "season"
+                                    ? clan.seasonXp
+                                    : clan.xp
+                                )}
                               </span>
                               <span className="text-white/60">XP</span>
                             </div>

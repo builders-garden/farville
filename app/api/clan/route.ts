@@ -114,6 +114,7 @@ export async function GET(req: NextRequest) {
       strToSearch,
       isPublic,
       includeMembers: true,
+      includeLeader: true,
     });
     return NextResponse.json(clans);
   } catch (error) {
