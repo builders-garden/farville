@@ -10,6 +10,7 @@ import { base } from "viem/chains";
 import { useGame } from "@/context/GameContext";
 import { toast } from "sonner";
 import { PowerTimer } from "./power-timer";
+import { MilestoneCard } from "./milestone-card";
 import { ContributionTableSection } from "./contribution-table-section";
 import { useCommunityBoosterIncrement } from "@/hooks/use-community-booster";
 import {
@@ -253,6 +254,15 @@ export const PowerTab = ({
     }
   };
 
+  // Helper function to check if FP is at a checkpoint (no decrease will happen)
+  const isAtCheckpoint = (currentFP: number) => {
+    // If FP is 0, it's at the base checkpoint
+    if (currentFP === 0) return true;
+
+    // Check if FP matches any stage's fpRequired (checkpoint)
+    return POWER_STAGES.some((stage) => stage.fpRequired === currentFP);
+  };
+
   return (
     <>
       {/* if isFarcasterManiaOn, let's add a label saying "Farcaster Mania"
@@ -337,7 +347,7 @@ export const PowerTab = ({
                   isFarcasterManiaOn={isFarcasterManiaOn}
                 />
 
-                {currentFP > 0 && (
+                {currentFP > 0 && !isAtCheckpoint(currentFP) && (
                   <PowerTimer
                     powerCombo={powerCombo}
                     lastDonationTime={lastDonationTime}
@@ -346,6 +356,13 @@ export const PowerTab = ({
                     setCurrentFP={setCurrentFP}
                     lastTimerReset={lastTimerReset}
                     setLastTimerReset={setLastTimerReset}
+                    isFarcasterManiaOn={isFarcasterManiaOn}
+                  />
+                )}
+
+                {currentFP > 0 && isAtCheckpoint(currentFP) && (
+                  <MilestoneCard
+                    currentFP={currentFP}
                     isFarcasterManiaOn={isFarcasterManiaOn}
                   />
                 )}
