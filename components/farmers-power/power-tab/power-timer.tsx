@@ -3,6 +3,7 @@ import {
   getCurrentPowerStage,
   getCurrentPowerStateTarget,
 } from "@/lib/utils";
+import { POWER_STAGES } from "@/lib/game-constants";
 import { Clock } from "lucide-react";
 import { motion } from "framer-motion";
 import { useEffect, useState, useMemo, useCallback } from "react";
@@ -83,13 +84,28 @@ export const PowerTimer = ({
     }
 
     setCurrentFP((prevFP) => {
+      // Find the current stage the user is actually in
+      // getCurrentPowerStage returns the next stage index, so we need to subtract 1
+      const nextStageIndex = getCurrentPowerStage(prevFP);
+      const currentStageIndex = nextStageIndex - 1;
+
+      // Calculate checkpoint: the fpRequired of the current stage
+      // The checkpoint is the fpRequired of the highest stage the user has reached
+      let checkpoint = 0;
+      if (currentStageIndex >= 0) {
+        checkpoint = POWER_STAGES[currentStageIndex]?.fpRequired || 0;
+      }
+
+      // Use original decay logic
       const fpRequiredForStage = getCurrentPowerStateTarget(prevFP);
       const stage = getCurrentPowerStage(prevFP);
       const multiplier = 0.0015;
       const decayAmount = Math.ceil(
         fpRequiredForStage.target * stage * multiplier
       );
-      return Math.max(0, prevFP - decayAmount);
+
+      // Ensure FP doesn't go below the current stage checkpoint
+      return Math.max(checkpoint, prevFP - decayAmount);
     });
 
     // Calculate the proper next window using modulo logic
@@ -176,10 +192,7 @@ export const PowerTimer = ({
       )}
       <div className="flex flex-col items-start justify-between gap-3 relative z-10">
         <div className="flex items-center gap-2 text-white/80">
-          <Clock
-            size={16}
-            className={styles.text}
-          />
+          <Clock size={16} className={styles.text} />
           <span className="text-[10px]">FP decrease in:</span>
         </div>
         <motion.div
