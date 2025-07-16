@@ -50,6 +50,11 @@ export async function getFarcasterManifest() {
       heroImageUrl: `${env.NEXT_PUBLIC_URL}/images/hero.jpg`, // 1200 x 630px (1.91:1), promotional display image on top of the mini app store
       ogImageUrl: `${env.NEXT_PUBLIC_URL}/images/hero.jpg`, // 1200 x 630px (1.91:1), promotional image, same as app hero image
       noindex: noindex,
+      author: {
+        display_name: "Builders Garden",
+        pfp_url:
+          "https://imagedelivery.net/BXluQx4ige9GuW0Ia56BHw/21cd5780-1fa9-411d-9684-b746237b2c00/rectcrop3",
+      },
     },
   };
 }
