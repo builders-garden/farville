@@ -540,6 +540,14 @@ export const MONTHLY_REWARDS = [
   },
 ];
 
+export const MILESTONE_INTERVAL = 50;
+
+export const MILESTONE_REWARD = {
+  itemId: 9, // Fertilizer
+  baseQuantity: 10, // Base quantity for 50-day milestones
+  maxQuantity: 30, // Maximum quantity cap
+};
+
 export const MAX_FROSTS_QUANTITY = 2;
 
 export const FIRST_FROST_QUANTITY = 1;

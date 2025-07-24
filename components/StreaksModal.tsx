@@ -13,6 +13,8 @@ import {
   FROST_COST,
   GAME_ITEMS,
   MAX_FROSTS_QUANTITY,
+  MILESTONE_INTERVAL,
+  MILESTONE_REWARD,
   MONTHLY_REWARDS,
 } from "@/lib/game-constants";
 import {
@@ -127,15 +129,36 @@ export default function StreaksModal({ onClose }: { onClose: () => void }) {
         claimed: day <= lastClaimedDay,
       };
 
-      // Add rewards
-      for (const item of rewardData.rewards) {
-        const itemData = state.items.find((i) => i.id === item.itemId);
+      // Check for special milestone rewards first (multiples of 50)
+      const isMilestone = day % MILESTONE_INTERVAL === 0 && day > 0;
+      if (isMilestone) {
+        const milestoneMultiplier = day / MILESTONE_INTERVAL;
+        const quantity = Math.min(
+          MILESTONE_REWARD.baseQuantity * milestoneMultiplier,
+          MILESTONE_REWARD.maxQuantity
+        );
+
+        const itemData = state.items.find(
+          (i) => i.id === MILESTONE_REWARD.itemId
+        );
         if (itemData) {
           streak.rewards.push({
-            itemId: item.itemId,
+            itemId: MILESTONE_REWARD.itemId,
             icon: itemData.icon,
-            quantity: item.quantity,
+            quantity: quantity,
           });
+        }
+      } else {
+        // Add regular cycle rewards
+        for (const item of rewardData.rewards) {
+          const itemData = state.items.find((i) => i.id === item.itemId);
+          if (itemData) {
+            streak.rewards.push({
+              itemId: item.itemId,
+              icon: itemData.icon,
+              quantity: item.quantity,
+            });
+          }
         }
       }
 
@@ -280,7 +303,10 @@ export default function StreaksModal({ onClose }: { onClose: () => void }) {
             <div className="bg-gradient-to-br from-[#8B5c3C] to-[#6d4c2c] rounded-xl p-2 xs:p-3 border border-[#ffa07a]/20">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-1 xs:gap-2 text-white/80">
-                  <Clock size={16} className="text-[#FFB938]" />
+                  <Clock
+                    size={16}
+                    className="text-[#FFB938]"
+                  />
                   <span className="text-[8px] xs:text-[9px]">Next day in:</span>
                 </div>
                 <div className="flex gap-1 text-white font-bold">
