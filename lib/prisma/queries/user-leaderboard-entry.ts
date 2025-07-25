@@ -117,11 +117,7 @@ export const getWeeklyUserLeaderboardByLeague = async (
         },
       });
 
-      if (!targetEntry) {
-        throw new Error("Target user not found in leaderboard");
-      }
-
-      if (targetEntry.user.bot === UserType.Bot) {
+      if (!targetEntry || targetEntry.user.bot === UserType.Bot) {
         targetPosition = -1;
       } else {
         targetPosition = await prisma.userLeaderboardEntry.count({
