@@ -1,4 +1,8 @@
-import { MONTHLY_REWARDS } from "@/lib/game-constants";
+import {
+  MILESTONE_INTERVAL,
+  MILESTONE_REWARD,
+  MONTHLY_REWARDS,
+} from "@/lib/game-constants";
 import {
   getUserCurrentStreakNumber,
   getUserItems,
@@ -55,12 +59,38 @@ export const POST = async (req: NextRequest) => {
     );
   }
 
-  const rewards = MONTHLY_REWARDS.find(
-    (r) => r.day === (lastStreak.lastClaimed % MONTHLY_REWARDS.length) + 1
-  )?.rewards;
+  // Calculate which day we're claiming rewards for
+  const dayToClaim = lastStreak.lastClaimed + 1;
 
-  if (!rewards) {
-    return NextResponse.json({ error: "Rewards not found" }, { status: 500 });
+  // Check if this is a milestone day (multiple of 50)
+  const isMilestone = dayToClaim % MILESTONE_INTERVAL === 0 && dayToClaim > 0;
+
+  let rewards;
+
+  if (isMilestone) {
+    // Calculate milestone rewards
+    const milestoneMultiplier = dayToClaim / MILESTONE_INTERVAL;
+    const quantity = Math.min(
+      MILESTONE_REWARD.baseQuantity * milestoneMultiplier,
+      MILESTONE_REWARD.maxQuantity
+    );
+
+    rewards = [
+      {
+        itemId: MILESTONE_REWARD.itemId,
+        quantity: quantity,
+      },
+    ];
+  } else {
+    // Use regular cycle rewards
+    const cycleDay = ((dayToClaim - 1) % MONTHLY_REWARDS.length) + 1;
+    const rewardData = MONTHLY_REWARDS.find((r) => r.day === cycleDay);
+
+    if (!rewardData) {
+      return NextResponse.json({ error: "Rewards not found" }, { status: 500 });
+    }
+
+    rewards = rewardData.rewards;
   }
 
   const userItems = await getUserItems(Number(fid), Mode.Classic);
