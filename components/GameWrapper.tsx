@@ -5,7 +5,7 @@ import { useUserQuests } from "@/hooks/use-quests";
 import { AnimatePresence } from "framer-motion";
 import dynamic from "next/dynamic";
 import { useNextStep } from "nextstepjs";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useFrameContext } from "../context/FrameContext";
 import { useGame } from "../context/GameContext";
 import Header from "./Header";
@@ -33,6 +33,7 @@ import Image from "next/image";
 import { FP_DECREASE_DELAY_MS } from "@/lib/game-constants";
 import ClansModal from "./clans";
 import ClanOverlay from "./ClanOverlay";
+import RiseOfFarmsModal from "./modals/RiseOfFarmsModal";
 
 // const WelcomeOverlay = dynamic(() => import("./../components/WelcomeOverlay"), {
 //   ssr: false,
@@ -199,6 +200,33 @@ function TimelineModalContainer() {
   return (
     <AnimatePresence>
       {showTimeline && <TimelineModal onClose={() => setShowTimeline(false)} />}
+    </AnimatePresence>
+  );
+}
+
+function RiseOfFarmsModalContainer() {
+  const [showRiseOfFarms, setShowRiseOfFarms] = useState(false);
+
+  useEffect(() => {
+    // Check if user has chosen to hide the modal
+    const hideModal = localStorage.getItem("hideRiseOfFarmsModal");
+    if (hideModal !== "true") {
+      // Show modal after a short delay to ensure game is loaded
+      const timer = setTimeout(() => {
+        setShowRiseOfFarms(true);
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, []);
+
+  return (
+    <AnimatePresence>
+      {showRiseOfFarms && (
+        <RiseOfFarmsModal
+          isOpen={showRiseOfFarms}
+          onClose={() => setShowRiseOfFarms(false)}
+        />
+      )}
     </AnimatePresence>
   );
 }
@@ -557,6 +585,7 @@ export default function GameWrapper() {
           <SeedMenuContainer />
           <QuestsModalContainer />
           <TimelineModalContainer />
+          <RiseOfFarmsModalContainer />
         </div>
       ) : null}
     </div>
