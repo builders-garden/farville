@@ -4,7 +4,6 @@ import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
 import { Checkbox } from "../ui/checkbox";
 import { Button } from "../ui/button";
-import { X } from "lucide-react";
 import Image from "next/image";
 import sdk from "@farcaster/frame-sdk";
 
@@ -44,15 +43,6 @@ export default function RiseOfFarmsModal({
         className="bg-gradient-to-br max-w-[90vw] p-4 from-[#7E4E31] to-[#6D4C2C] border-[#8B5E3C] rounded-lg"
         showCloseButton={false}
       >
-        <button
-          onClick={handleClose}
-          className="absolute top-2 right-2 w-6 h-6 flex items-center justify-center rounded-full 
-                    bg-white/10 hover:bg-white/20 transition-colors text-white/80 hover:text-white z-10"
-          aria-label="Close"
-        >
-          <X size={14} />
-        </button>
-
         <DialogHeader>
           <DialogTitle className="text-white/90 text-xl font-bold text-center">
             Rise of Farms is Coming!
@@ -72,15 +62,15 @@ export default function RiseOfFarmsModal({
           </div>
 
           {/* Description */}
-          <div className="text-white/80 text-xs text-center">
+          <div className="text-white/80 text-xs text-center space-y-3">
+            <p>Farville is evolving.</p>
             <p>
-              Experience Farville like never before! In Rise of Farms, your
-              items become NFTs, giving your farm{" "}
-              <span className="font-bold text-[#FFB938]">real value</span>.
+              In Rise of Farms, the items you grow and collect become real
+              assets you can earn from.
             </p>
-            <p className="mt-4">
-              Build, trade, and grow your farm in a world where your hard work
-              translates into genuine ownership.
+            <p>
+              Plant, harvest, and upgrade your way into a farm that rewards your
+              time and skill.
             </p>
           </div>
 
@@ -115,7 +105,7 @@ export default function RiseOfFarmsModal({
               onClick={handleVisitChannel}
               className="flex-1 bg-[#FFB938] text-[#7E4E31] hover:bg-[#ffc661] font-bold"
             >
-              Channel
+              Learn More
             </Button>
           </div>
         </div>
