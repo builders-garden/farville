@@ -23,7 +23,10 @@ export async function getFarcasterManifest() {
       payload: env.NEXT_PUBLIC_FARCASTER_PAYLOAD,
       signature: env.NEXT_PUBLIC_FARCASTER_SIGNATURE,
     },
-    frame: {
+    baseBuilder: {
+      ownerAddress: "0xa9f82Fd357CE300edDA34DDfC55d378DeaC7A8AE",
+    },
+    miniapp: {
       version: "1",
       name: frameName,
       iconUrl: `${appUrl}/images/icon.png`,
