@@ -9,9 +9,9 @@ jiti("./lib/env");
 const nextConfig: NextConfig = {
   output: "standalone",
   transpilePackages: ["@t3-oss/env-nextjs", "@t3-oss/env-core"],
-  devIndicators: {
-    appIsrStatus: false,
-  },
+  // devIndicators: {
+  //   appIsrStatus: false,
+  // },
   images: {
     remotePatterns: [
       {
