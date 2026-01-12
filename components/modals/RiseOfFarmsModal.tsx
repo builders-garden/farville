@@ -1,51 +1,33 @@
 "use client";
 
-import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
-import { Checkbox } from "../ui/checkbox";
 import { Button } from "../ui/button";
 import Image from "next/image";
 import sdk from "@farcaster/frame-sdk";
 
-interface RiseOfFarmsModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-}
-
-export default function RiseOfFarmsModal({
-  isOpen,
-  onClose,
-}: RiseOfFarmsModalProps) {
-  const [dontShowAgain, setDontShowAgain] = useState(false);
-
-  const handleClose = () => {
-    if (dontShowAgain) {
-      localStorage.setItem("hideRiseOfFarmsModal", "true");
-    }
-    onClose();
+export default function RiseOfFarmsModal() {
+  const handlePlayOnFarcaster = () => {
+    sdk.actions.openUrl(
+      "https://farcaster.xyz/miniapps/UqCJjqsE8BKS/rise-of-farms"
+    );
   };
 
-  const handleVisitChannel = () => {
-    if (dontShowAgain) {
-      localStorage.setItem("hideRiseOfFarmsModal", "true");
-    }
-    // Open the Rise of Farms channel using Farcaster SDK
-    sdk.actions.openUrl("https://farcaster.xyz/~/channel/rise-of-farms");
-    onClose();
+  const handlePlayOnBase = () => {
+    sdk.actions.openUrl("cbwallet://miniapp?url=https://riseof.farm");
   };
 
   return (
-    <Dialog
-      open={isOpen}
-      onOpenChange={handleClose}
-    >
+    <Dialog open={true}>
       <DialogContent
-        className="bg-gradient-to-br max-w-[90vw] p-4 from-[#7E4E31] to-[#6D4C2C] border-[#8B5E3C] rounded-lg"
+        className="bg-gradient-to-br w-full h-full p-4 from-[#7E4E31] to-[#6D4C2C] border-[#8B5E3C] rounded-lg"
         showCloseButton={false}
+        onPointerDownOutside={(e) => e.preventDefault()}
+        onEscapeKeyDown={(e) => e.preventDefault()}
+        onInteractOutside={(e) => e.preventDefault()}
       >
         <DialogHeader>
           <DialogTitle className="text-white/90 text-xl font-bold text-center">
-            Rise of Farms is Coming!
+            Thanks for Playing Farville! 🌾❤️
           </DialogTitle>
         </DialogHeader>
 
@@ -63,49 +45,43 @@ export default function RiseOfFarmsModal({
 
           {/* Description */}
           <div className="text-white/80 text-xs text-center space-y-3">
-            <p>Farville is evolving.</p>
-            <p>
-              In Rise of Farms, the items you grow and collect become real
-              assets you can earn from.
+            <p className="font-bold text-white">
+              Farville has evolved into Rise of Farms!
             </p>
             <p>
-              Plant, harvest, and upgrade your way into a farm that rewards your
-              time and skill.
+              Rise of Farms is the new game where the items you grow and collect
+              become real assets you can earn from.
             </p>
-          </div>
-
-          {/* Checkbox */}
-          <div className="flex items-center space-x-2 px-2">
-            <Checkbox
-              id="dontShowAgain"
-              checked={dontShowAgain}
-              onCheckedChange={(checked) =>
-                setDontShowAgain(checked as boolean)
-              }
-              className="border-white/40 data-[state=checked]:bg-[#FFB938] data-[state=checked]:border-[#FFB938]"
-            />
-            <label
-              htmlFor="dontShowAgain"
-              className="text-xs text-white/70 cursor-pointer select-none"
-            >
-              Don&apos;t show this anymore
-            </label>
+            <p>
+              Soon, your OG NFT, collectibles, and stats will be brought into
+              your new profile on Rise of Farms, forever.
+            </p>
+            <p className="text-[#FFB938] font-semibold">
+              Start your new adventure now!
+            </p>
           </div>
 
           {/* Buttons */}
-          <div className="flex gap-3 pt-2">
+          <div className="flex flex-col gap-3 pt-2">
             <Button
-              variant="outline"
-              onClick={handleClose}
-              className="flex-1 bg-transparent border-[#8B5E3C] text-white/80 hover:bg-white/10 hover:text-white"
+              onClick={handlePlayOnFarcaster}
+              className="w-full flex justify-center items-center gap-2 rounded-xl text-sm py-3 bg-[#6A3CFF] hover:bg-[#6A3CFF] text-white font-bold"
             >
-              Dismiss
+              <Image
+                src="/images/fc-logo.png"
+                alt="Farcaster"
+                width={24}
+                height={24}
+                className="w-6 h-6"
+              />
+              Play on Farcaster
             </Button>
             <Button
-              onClick={handleVisitChannel}
-              className="flex-1 bg-[#FFB938] text-[#7E4E31] hover:bg-[#ffc661] font-bold"
+              onClick={handlePlayOnBase}
+              className="w-full flex justify-center items-center gap-2 rounded-xl text-sm py-3 bg-white hover:bg-white text-[#0029FE] font-bold"
             >
-              Learn More
+              <div className="w-5 h-5 bg-[#0029FE] rounded-sm"></div>
+              Play on Base
             </Button>
           </div>
         </div>
