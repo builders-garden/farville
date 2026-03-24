@@ -3,7 +3,7 @@ import { SeedType, PerkType, ActionType, Mode } from "@/lib/types/game";
 import { fertilizeBulk, harvestBulk, perkBulk, plantBulk } from "./utils";
 import { getUserByMode } from "@/lib/prisma/queries";
 import { z } from "zod";
-import { withTracing } from "@/lib/otel/traceWrapper";
+
 export interface GridBulkRequest {
   action: ActionType;
   itemSlug?: SeedType | PerkType;
@@ -127,4 +127,4 @@ const handler = async function (req: NextRequest): Promise<NextResponse> {
   }
 };
 
-export const POST = withTracing(handler);
+export const POST = handler;

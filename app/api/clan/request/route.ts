@@ -12,7 +12,7 @@ import { NextRequest, NextResponse } from "next/server";
 import z from "zod";
 import { env } from "@/lib/env";
 import axios from "axios";
-import { withTracing } from "@/lib/otel/traceWrapper";
+
 
 const createClanRequestSchema = z.object({
   requestId: z.string().min(1, "Request ID is required").optional(),
@@ -157,4 +157,4 @@ async function handlerPOST(req: NextRequest) {
   }
 }
 
-export const POST = withTracing(handlerPOST);
+export const POST = handlerPOST;

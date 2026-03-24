@@ -4,8 +4,7 @@ import { z } from "zod";
 import { MarketActionType, Mode } from "@/lib/types/game";
 import axios from "axios";
 import { env } from "@/lib/env";
-import { withTracing } from "@/lib/otel/traceWrapper";
-import { default as OtelLogger } from "@/lib/otel/logger";
+import Logger from "@/lib/logger";
 
 const requestSchema = z.object({
   action: z.nativeEnum(MarketActionType),
@@ -66,9 +65,8 @@ const handlerPOST = async (req: NextRequest) => {
           itemAmount: quantity,
           mode,
         };
-        OtelLogger.info(
-          `quests calculation [${questsCalculationData.category},itemId:${questsCalculationData.itemId},itemAmount:${questsCalculationData.itemAmount},${questsCalculationData.mode}]`,
-          questsCalculationData
+        Logger.info(
+          `quests calculation [${questsCalculationData.category},itemId:${questsCalculationData.itemId},itemAmount:${questsCalculationData.itemAmount},${questsCalculationData.mode}]`
         );
 
         await axios({
@@ -94,4 +92,4 @@ const handlerPOST = async (req: NextRequest) => {
   }
 };
 
-export const POST = withTracing(handlerPOST);
+export const POST = handlerPOST;

@@ -23,7 +23,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import axios from "axios";
 import { env } from "@/lib/env";
-import { withTracing } from "@/lib/otel/traceWrapper";
+
 
 const requestSchema = z.object({
   quantity: z.number().min(1).max(10),
@@ -250,4 +250,4 @@ const handlerPOST = async (
   return NextResponse.json({ message: "Item donated" }, { status: 200 });
 };
 
-export const POST = withTracing(handlerPOST);
+export const POST = handlerPOST;

@@ -40,7 +40,7 @@ import { MODE_DEFINITIONS, ModeFeature } from "@/lib/modes/constants";
 import Logger from "@/lib/logger";
 import { env } from "@/lib/env";
 import axios from "axios";
-import { default as OtelLogger } from "@/lib/otel/logger";
+
 
 export interface GridBulkResult {
   type: ActionType;
@@ -133,9 +133,8 @@ export const plantBulk = async (
       itemId: userSeeds.itemId,
       itemAmount: updatedCellsCounter,
     };
-    OtelLogger.info(
-      `quests calculation [${ActionType.Plant},itemId:${userSeeds.itemId},itemAmount:${updatedCellsCounter}]`,
-      questsCalculationData
+    Logger.info(
+      `quests calculation [${ActionType.Plant},itemId:${userSeeds.itemId},itemAmount:${updatedCellsCounter}]`
     );
     Promise.allSettled([
       sendDelayedNotificationToService(
@@ -312,10 +311,8 @@ export const harvestBulk = async (
           itemId: CROP_DATA[cropType].id,
           itemAmount: amount,
         };
-        OtelLogger.info(
-          `
-          quests calculation [${ActionType.Harvest},itemId:${CROP_DATA[cropType].id},itemAmount:${amount}]`,
-          questsCalculationData
+        Logger.info(
+          `quests calculation [${ActionType.Harvest},itemId:${CROP_DATA[cropType].id},itemAmount:${amount}]`
         );
         promises.push(
           axios({

@@ -3,7 +3,7 @@ import { z } from "zod";
 import { GAME_ITEMS } from "@/lib/game-constants";
 import { createRequest, getItemById } from "@/lib/prisma/queries";
 import { Mode } from "@/lib/types/game";
-import { withTracing } from "@/lib/otel/traceWrapper";
+
 
 const requestSchema = z.object({
   itemId: z.number().min(1),
@@ -68,4 +68,4 @@ const handlerPOST = async (request: NextRequest) => {
   }
 };
 
-export const POST = withTracing(handlerPOST);
+export const POST = handlerPOST;

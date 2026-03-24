@@ -14,7 +14,7 @@ import {
   updateUserXP,
 } from "@/lib/prisma/queries";
 import { getThisWeekMonday } from "@/lib/utils";
-import { withTracing } from "@/lib/otel/traceWrapper";
+
 
 export async function GET(
   request: NextRequest,
@@ -158,4 +158,4 @@ async function handlerPOST(
   return NextResponse.json({ success: true, status, didLevelUp });
 }
 
-export const POST = withTracing(handlerPOST);
+export const POST = handlerPOST;
