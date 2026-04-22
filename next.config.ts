@@ -7,7 +7,6 @@ const jiti = createJiti(fileURLToPath(import.meta.url));
 jiti("./lib/env");
 
 const nextConfig: NextConfig = {
-  output: "standalone",
   transpilePackages: ["@t3-oss/env-nextjs", "@t3-oss/env-core"],
   // devIndicators: {
   //   appIsrStatus: false,
