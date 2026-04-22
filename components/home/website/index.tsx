@@ -1,3 +1,5 @@
+"use client";
+
 import Image from "next/image";
 import { QRCodeSVG } from "qrcode.react";
 import { useState } from "react";
@@ -25,8 +27,7 @@ export const Website = () => {
             />
             <button
               onClick={toggleMute}
-              className="absolute bottom-4 right-4 p-2 sm:p-4 bg-black/70 rounded-full hover:bg-black/95 transition-colors w-8 h-8 sm:w-12 sm:h-12 flex items-center justify-center"
-            >
+              className="absolute bottom-4 right-4 p-2 sm:p-4 bg-black/70 rounded-full hover:bg-black/95 transition-colors w-8 h-8 sm:w-12 sm:h-12 flex items-center justify-center">
               {isMuted ? "🔇" : "🔊"}
             </button>
           </div>
@@ -52,8 +53,7 @@ export const Website = () => {
                   <a
                     href="https://builders.garden"
                     target="_blank"
-                    className="text-white/90 underline hover:text-white transition-colors"
-                  >
+                    className="text-white/90 underline hover:text-white transition-colors">
                     Builders Garden
                   </a>{" "}
                   team
@@ -79,8 +79,7 @@ export const Website = () => {
               <a
                 href="https://farcaster.xyz/miniapps/WoLihpyQDh7w/farville"
                 target="_blank"
-                className="w-full p-4 bg-[#8A63D2] text-white rounded-xl flex flex-row gap-4 items-center justify-start transition-transform hover:scale-105"
-              >
+                className="w-full p-4 bg-[#8A63D2] text-white rounded-xl flex flex-row gap-4 items-center justify-start transition-transform hover:scale-105">
                 <Image
                   src="/images/fc-logo.png"
                   alt="Farcaster Logo"
@@ -95,8 +94,7 @@ export const Website = () => {
               <a
                 href="https://docs.farville.farm/gameplay"
                 target="_blank"
-                className="w-full p-4 border-2 border-white/20 bg-white/10 backdrop-blur-sm text-white text-left rounded-xl flex flex-row gap-4 items-center justify-start transition-transform hover:scale-105"
-              >
+                className="w-full p-4 border-2 border-white/20 bg-white/10 backdrop-blur-sm text-white text-left rounded-xl flex flex-row gap-4 items-center justify-start transition-transform hover:scale-105">
                 <Image
                   src="/images/docs.png"
                   alt="Docs Logo"
